@@ -1,0 +1,9 @@
+---
+description: Prefer Cursor-indexed official docs for new or fast-moving libraries
+alwaysApply: true
+---
+
+# Official documentation in Cursor
+
+- For **new libraries** or **latest major versions** (e.g. Framer Motion, a fresh Compose/KMP stack), outdated training patterns are common. Encourage indexing **current** official docs in Cursor (**Settings → Docs**), then grounding answers with **`@docs`** when those sources are listed.
+- When suggesting APIs for a dependency that may have drifted since training cutoffs, briefly note that the user should confirm against their indexed doc (or the library’s official site) if they have not added it yet.

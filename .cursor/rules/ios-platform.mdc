@@ -1,0 +1,10 @@
+---
+description: iOS-specific implementations in iosMain
+globs: "**/iosMain/**/*.kt"
+alwaysApply: false
+---
+
+# iOS Native Interop
+
+- Use `platform.UIKit.*` for native UI components.
+- Ensure all Swift interop uses `@ObjCName` to keep names clean for the iOS team.

@@ -1,0 +1,12 @@
+---
+description: Global KMP standards for commonMain
+globs: "**/commonMain/**/*.kt"
+alwaysApply: true
+---
+
+# KMP Coding Standards
+
+- Prioritize `expect`/`actual` only when no multiplatform library exists.
+- Use `kotlinx-coroutines` for concurrency; never use platform-specific threads.
+- For UI, use `org.jetbrains.compose` (Compose Multiplatform).
+- For resources, use the new `Res` API (`Res.drawable.icon` instead of platform-specific IDs).
