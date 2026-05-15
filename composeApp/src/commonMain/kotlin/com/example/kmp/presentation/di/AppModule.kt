@@ -4,8 +4,10 @@ import com.example.kmp.database.AppDatabase
 import com.example.kmp.database.DatabaseDriverFactory
 import com.example.kmp.data.repository.GreetingRepositoryImpl
 import com.example.kmp.data.repository.JourneyRepositoryImpl
+import com.example.kmp.data.service.AiServiceImpl
 import com.example.kmp.domain.repository.GreetingRepository
 import com.example.kmp.domain.repository.JourneyRepository
+import com.example.kmp.domain.service.AiService
 import com.example.kmp.domain.usecase.*
 import com.example.kmp.presentation.screens.home.HomeScreenModel
 import org.koin.core.module.dsl.factoryOf
@@ -27,6 +29,7 @@ private val domainModule = module {
 private val dataModule = module {
     single<GreetingRepository> { GreetingRepositoryImpl() }
     single<JourneyRepository> { JourneyRepositoryImpl(get()) }
+    single<AiService> { AiServiceImpl() }
     
     single {
         val driver = get<DatabaseDriverFactory>().createDriver()

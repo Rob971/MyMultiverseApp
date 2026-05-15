@@ -1,5 +1,8 @@
 package com.example.kmp.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Journey(
     val id: String,
     val title: String,
@@ -16,6 +19,7 @@ data class Journey(
     val colorHex: String? = null,
 )
 
+@Serializable
 data class JourneyTask(
     val id: String,
     val journeyId: String,
@@ -28,3 +32,22 @@ data class JourneyTask(
     val claimedByInitials: String? = null,
     val cheersCount: Int = 0,
 )
+
+@Serializable
+data class SmartGoalProposal(
+    val title: String,
+    val subtitle: String,
+    val specific: String,
+    val measurable: String,
+    val achievable: String,
+    val relevant: String,
+    val timeBound: String,
+    val suggestedTasks: List<String>
+)
+
+sealed class ArchitectState {
+    object Idle : ArchitectState()
+    object Refining : ArchitectState()
+    data class Proposed(val proposal: SmartGoalProposal) : ArchitectState()
+    data class Error(val message: String) : ArchitectState()
+}
