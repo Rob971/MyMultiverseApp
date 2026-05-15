@@ -1,5 +1,6 @@
 package com.example.kmp.presentation.screens.calendar
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,12 +10,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,6 +31,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyTask
 import com.example.kmp.presentation.components.NapolitanBackground
+import com.example.kmp.presentation.components.TaskEditDialog
 import com.example.kmp.presentation.screens.home.HomeScreenModel
 import com.example.kmp.presentation.theme.SharedJourneyColors
 
@@ -50,6 +56,9 @@ data class CalendarScreen(
         
         var viewMode by remember { mutableStateOf(CalendarViewMode.WEEK) }
         val daysOfWeek = listOf("Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom")
+
+        var showAddTaskDialog by remember { mutableStateOf(false) }
+        var editingTask by remember { mutableStateOf<JourneyTask?>(null) }
 
         val visibleTasks = when (val s = scope) {
             is CalendarScope.Global -> journeys.flatMap { j -> j.tasks.map { t -> j to t } }
@@ -77,6 +86,29 @@ data class CalendarScreen(
                         navigationIcon = {
                             IconButton(onClick = { navigator.pop() }) {
                                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            }
+                        },
+                        actions = {
+                            when (scope) {
+                                is CalendarScope.Global, is CalendarScope.Goal -> {
+                                    IconButton(onClick = { showAddTaskDialog = true }) {
+                                        Icon(Icons.Default.Add, contentDescription = "Add Event")
+                                    }
+                                }
+                                is CalendarScope.Task -> {
+                                    val currentPair = visibleTasks.firstOrNull()
+                                    if (currentPair != null) {
+                                        IconButton(onClick = { editingTask = currentPair.second }) {
+                                            Icon(Icons.Default.Edit, contentDescription = "Edit")
+                                        }
+                                        IconButton(onClick = { 
+                                            screenModel.deleteTask(currentPair.first.id, currentPair.second.id)
+                                            navigator.pop()
+                                        }) {
+                                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red.copy(alpha = 0.7f))
+                                        }
+                                    }
+                                }
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -120,6 +152,21 @@ data class CalendarScreen(
                             }
                         }
 
+                        if (scope is CalendarScope.Task) {
+                            val currentPair = visibleTasks.firstOrNull()
+                            if (currentPair != null) {
+                                item {
+                                    WeekdaySelector(
+                                        task = currentPair.second,
+                                        daysOfWeek = daysOfWeek,
+                                        onToggleDay = { updatedTask ->
+                                            screenModel.updateTask(updatedTask)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
                         item {
                             Text(
                                 text = "Prossimi Appuntamenti",
@@ -135,6 +182,35 @@ data class CalendarScreen(
                         }
                     }
                 }
+            }
+
+            if (showAddTaskDialog) {
+                val targetJourneyId = when (val s = scope) {
+                    is CalendarScope.Goal -> s.journeyId
+                    else -> journeys.firstOrNull()?.id ?: ""
+                }
+                if (targetJourneyId.isNotEmpty()) {
+                    TaskEditDialog(
+                        journeyId = targetJourneyId,
+                        onDismiss = { showAddTaskDialog = false },
+                        onConfirm = {
+                            screenModel.addTask(targetJourneyId, it)
+                            showAddTaskDialog = false
+                        }
+                    )
+                }
+            }
+
+            editingTask?.let { task ->
+                TaskEditDialog(
+                    journeyId = task.journeyId,
+                    task = task,
+                    onDismiss = { editingTask = null },
+                    onConfirm = {
+                        screenModel.updateTask(it)
+                        editingTask = null
+                    }
+                )
             }
         }
     }
@@ -299,6 +375,69 @@ data class CalendarScreen(
                         Text(q, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black, color = SharedJourneyColors.InkDeep)
                         Spacer(Modifier.weight(1f))
                         Text("Vedi Piano", style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.InkMuted)
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun WeekdaySelector(
+        task: JourneyTask,
+        daysOfWeek: List<String>,
+        onToggleDay: (JourneyTask) -> Unit
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(SharedJourneyColors.GlassWhite, RoundedCornerShape(28.dp))
+                .padding(20.dp)
+        ) {
+            Text(
+                text = "Pianificazione Settimanale",
+                style = MaterialTheme.typography.titleSmall,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                daysOfWeek.forEachIndexed { index, day ->
+                    val dayNum = index + 1
+                    val isSelected = task.scheduledDays.contains(dayNum)
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable {
+                                val newDays = if (isSelected) {
+                                    task.scheduledDays.filter { it != dayNum }
+                                } else {
+                                    (task.scheduledDays + dayNum).sorted()
+                                }
+                                onToggleDay(task.copy(scheduledDays = newDays))
+                            }
+                            .padding(4.dp)
+                    ) {
+                        Surface(
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            color = if (isSelected) SharedJourneyColors.MediterraneanTeal else SharedJourneyColors.ParchmentWarm,
+                            border = if (isSelected) null else BorderStroke(1.dp, SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.2f))
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = day.first().toString(),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = if (isSelected) Color.White else SharedJourneyColors.InkMuted,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
                 }
             }

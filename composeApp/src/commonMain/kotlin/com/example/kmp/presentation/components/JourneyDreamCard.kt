@@ -53,6 +53,7 @@ fun JourneyDreamCard(
     onTaskAdd: (String, JourneyTask) -> Unit,
     onTaskUpdate: (JourneyTask) -> Unit,
     onTaskDelete: (String, String) -> Unit,
+    onTaskClick: (String, String) -> Unit,
     modifier: Modifier = Modifier,
     progressColor: Color = SharedJourneyColors.TerracottaOrange,
 ) {
@@ -254,7 +255,8 @@ fun JourneyDreamCard(
                                 task = task,
                                 onToggle = { onTaskToggle(dream.id, task.id) },
                                 onEdit = { editingTask = task },
-                                onDelete = { onTaskDelete(dream.id, task.id) }
+                                onDelete = { onTaskDelete(dream.id, task.id) },
+                                onClick = { onTaskClick(dream.id, task.id) }
                             )
                             Spacer(Modifier.height(8.dp))
                         }
@@ -303,7 +305,8 @@ private fun TaskRow(
     task: JourneyTask,
     onToggle: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onClick: () -> Unit
 ) {
     var showTaskMenu by remember { mutableStateOf(false) }
 
@@ -312,6 +315,7 @@ private fun TaskRow(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(SharedJourneyColors.SunDrenchedWhite)
+            .clickable { onClick() }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -5,5 +5,5 @@ import com.example.kmp.domain.repository.GreetingRepository
 
 class GreetingRepositoryImpl : GreetingRepository {
     override suspend fun loadGreeting(): Greeting =
-        Greeting(text = "Il cuore pulsante della nostra famiglia.")
+             Greeting(text = "Il cuore pulsante della nostra famiglia.")
 }

@@ -64,7 +64,8 @@ object HomeScreen : Screen {
                 onTaskToggle = { jId, tId -> screenModel.toggleTask(jId, tId) },
                 onTaskAdd = { jId, task -> screenModel.addTask(jId, task) },
                 onTaskUpdate = { task -> screenModel.updateTask(task) },
-                onTaskDelete = { jId, tId -> screenModel.deleteTask(jId, tId) }
+                onTaskDelete = { jId, tId -> screenModel.deleteTask(jId, tId) },
+                onTaskClick = { jId, tId -> navigator.push(CalendarScreen(CalendarScope.Task(jId, tId))) }
             )
         }
     }
@@ -83,7 +84,8 @@ fun HomeContent(
     onTaskToggle: (String, String) -> Unit,
     onTaskAdd: (String, com.example.kmp.domain.model.JourneyTask) -> Unit,
     onTaskUpdate: (com.example.kmp.domain.model.JourneyTask) -> Unit,
-    onTaskDelete: (String, String) -> Unit
+    onTaskDelete: (String, String) -> Unit,
+    onTaskClick: (String, String) -> Unit
 ) {
     Scaffold(
         topBar = { },
@@ -162,7 +164,8 @@ fun HomeContent(
                     onTaskToggle = onTaskToggle,
                     onTaskAdd = onTaskAdd,
                     onTaskUpdate = onTaskUpdate,
-                    onTaskDelete = onTaskDelete
+                    onTaskDelete = onTaskDelete,
+                    onTaskClick = onTaskClick
                 )
             }
 

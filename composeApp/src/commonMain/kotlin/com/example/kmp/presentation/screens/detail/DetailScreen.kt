@@ -10,12 +10,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -36,6 +38,7 @@ import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyTask
 import com.example.kmp.presentation.components.FriendlyProgressRing
 import com.example.kmp.presentation.components.NapolitanBackground
+import com.example.kmp.presentation.components.TaskEditDialog
 import com.example.kmp.presentation.screens.calendar.CalendarScreen
 import com.example.kmp.presentation.screens.calendar.CalendarScope
 import com.example.kmp.presentation.screens.home.HomeScreenModel
@@ -83,7 +86,10 @@ data class DetailScreen(
                         if (isNowCompleted) {
                             showCelebration = true
                         }
-                    }
+                    },
+                    onTaskAdd = { jId, task -> screenModel.addTask(jId, task) },
+                    onTaskUpdate = { task -> screenModel.updateTask(task) },
+                    onTaskDelete = { jId, tId -> screenModel.deleteTask(jId, tId) }
                 )
                 
                 if (showCelebration) {
@@ -130,7 +136,13 @@ fun DetailContent(
     onTaskScheduleClick: (String) -> Unit,
     onCheerClick: (String) -> Unit,
     onToggleTask: (String, Boolean) -> Unit,
+    onTaskAdd: (String, JourneyTask) -> Unit,
+    onTaskUpdate: (JourneyTask) -> Unit,
+    onTaskDelete: (String, String) -> Unit,
 ) {
+    var showAddTaskDialog by remember { mutableStateOf(false) }
+    var editingTask by remember { mutableStateOf<JourneyTask?>(null) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -265,15 +277,26 @@ fun DetailContent(
                         )
                     }
                     
-                    TextButton(
-                        onClick = onCalendarClick,
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = SharedJourneyColors.MediterraneanTeal
-                        )
-                    ) {
-                        Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text("Schedule", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            onClick = { showAddTaskDialog = true },
+                            colors = IconButtonDefaults.iconButtonColors(
+                                contentColor = SharedJourneyColors.MediterraneanTeal
+                            )
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Add Event")
+                        }
+
+                        TextButton(
+                            onClick = onCalendarClick,
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = SharedJourneyColors.MediterraneanTeal
+                            )
+                        ) {
+                            Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Schedule", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
@@ -284,7 +307,10 @@ fun DetailContent(
                     task = task, 
                     onScheduleClick = { onTaskScheduleClick(task.id) },
                     onCheerClick = { onCheerClick(task.id) },
-                    onToggle = { isChecked -> onToggleTask(task.id, isChecked) }
+                    onToggle = { isChecked -> onToggleTask(task.id, isChecked) },
+                    onEditClick = { editingTask = task },
+                    onDeleteClick = { onTaskDelete(journey.id, task.id) },
+                    onClick = { onTaskScheduleClick(task.id) }
                 )
             }
 
@@ -305,6 +331,29 @@ fun DetailContent(
                 }
             }
         }
+    }
+
+    if (showAddTaskDialog) {
+        TaskEditDialog(
+            journeyId = journey.id,
+            onDismiss = { showAddTaskDialog = false },
+            onConfirm = {
+                onTaskAdd(journey.id, it)
+                showAddTaskDialog = false
+            }
+        )
+    }
+
+    editingTask?.let { task ->
+        TaskEditDialog(
+            journeyId = journey.id,
+            task = task,
+            onDismiss = { editingTask = null },
+            onConfirm = {
+                onTaskUpdate(it)
+                editingTask = null
+            }
+        )
     }
 }
 
@@ -482,12 +531,18 @@ private fun TaskBlockItem(
     task: JourneyTask, 
     onScheduleClick: () -> Unit,
     onCheerClick: () -> Unit,
-    onToggle: (Boolean) -> Unit
+    onToggle: (Boolean) -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onClick: () -> Unit,
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 8.dp),
+            .padding(horizontal = 24.dp, vertical = 8.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         color = if (task.isCompleted) SharedJourneyColors.GlassWhite.copy(alpha = 0.5f) else SharedJourneyColors.GlassWhite,
         shadowElevation = 0.dp
@@ -523,16 +578,53 @@ private fun TaskBlockItem(
                     )
                 }
                 
-                IconButton(
-                    onClick = onScheduleClick,
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        Icons.Default.DateRange,
-                        contentDescription = "Edit Schedule",
-                        tint = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.6f),
-                        modifier = Modifier.size(20.dp)
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onScheduleClick,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.DateRange,
+                            contentDescription = "Edit Schedule",
+                            tint = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.6f),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Box {
+                        IconButton(
+                            onClick = { showMenu = true },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.MoreVert,
+                                contentDescription = "More options",
+                                tint = SharedJourneyColors.InkMuted,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false },
+                            modifier = Modifier.background(SharedJourneyColors.SunDrenchedWhite)
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Modifica") },
+                                onClick = {
+                                    showMenu = false
+                                    onEditClick()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Elimina", color = Color.Red) },
+                                onClick = {
+                                    showMenu = false
+                                    onDeleteClick()
+                                }
+                            )
+                        }
+                    }
                 }
             }
             
