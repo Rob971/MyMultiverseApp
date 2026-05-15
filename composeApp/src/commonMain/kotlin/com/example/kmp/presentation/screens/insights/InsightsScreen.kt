@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -41,10 +43,10 @@ data class InsightsScreen(val journey: Journey) : Screen {
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text("Strategia Visiva", fontWeight = FontWeight.Black) },
+                        title = { Text(stringResource(Res.string.insights_title), fontWeight = FontWeight.Black) },
                         navigationIcon = {
                             IconButton(onClick = { navigator.pop() }) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.action_back))
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(

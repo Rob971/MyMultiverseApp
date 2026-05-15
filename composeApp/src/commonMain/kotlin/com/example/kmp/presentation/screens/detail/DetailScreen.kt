@@ -29,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
@@ -155,7 +157,7 @@ fun DetailContent(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(Res.string.action_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -247,7 +249,7 @@ fun DetailContent(
                             color = SharedJourneyColors.InkDeep,
                         )
                         Text(
-                            text = "Family Heart",
+                            text = stringResource(Res.string.detail_progress_label),
                             style = MaterialTheme.typography.labelMedium,
                             color = SharedJourneyColors.InkMuted,
                         )
@@ -265,7 +267,7 @@ fun DetailContent(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "The Roadmap",
+                            text = stringResource(Res.string.detail_timeline),
                             style = MaterialTheme.typography.titleLarge,
                             color = SharedJourneyColors.InkDeep,
                             fontWeight = FontWeight.Black
@@ -326,7 +328,7 @@ fun DetailContent(
                             contentColor = SharedJourneyColors.InkMuted
                         )
                     ) {
-                        Text("Torna alla Dashboard", fontWeight = FontWeight.Bold)
+                        Text(stringResource(Res.string.action_back), fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -412,7 +414,7 @@ fun GoalStatsRow(journey: Journey, onInsightsClick: () -> Unit) {
             ) {
                 Text("📊", fontSize = 18.sp)
                 Spacer(Modifier.width(12.dp))
-                Text("Visual Strategy & Insights", fontWeight = FontWeight.ExtraBold, color = SharedJourneyColors.MediterraneanTeal)
+                Text(stringResource(Res.string.insights_title), fontWeight = FontWeight.ExtraBold, color = SharedJourneyColors.MediterraneanTeal)
             }
         }
     }
@@ -481,7 +483,7 @@ fun SmartPrincipleSection(journey: Journey) {
                 )
                 Spacer(Modifier.width(12.dp))
                 Text(
-                    text = "S.M.A.R.T. Framework",
+                    text = stringResource(Res.string.detail_smart_goals),
                     style = MaterialTheme.typography.titleMedium,
                     color = SharedJourneyColors.InkDeep,
                     fontWeight = FontWeight.Black
@@ -497,11 +499,11 @@ fun SmartPrincipleSection(journey: Journey) {
             
             if (expanded) {
                 Spacer(Modifier.height(20.dp))
-                SmartItem("Specific", journey.specificGoal)
-                SmartItem("Measurable", journey.measurableOutcome)
-                SmartItem("Achievable", journey.achievablePlan)
-                SmartItem("Relevant", journey.relevanceToFamily)
-                SmartItem("Time-bound", journey.timeBoundDeadline)
+                SmartItem(stringResource(Res.string.detail_specific), journey.specificGoal)
+                SmartItem(stringResource(Res.string.detail_measurable), journey.measurableOutcome)
+                SmartItem(stringResource(Res.string.detail_achievable), journey.achievablePlan)
+                SmartItem(stringResource(Res.string.detail_relevant), journey.relevanceToFamily)
+                SmartItem(stringResource(Res.string.detail_timebound), journey.timeBoundDeadline)
             }
         }
     }
@@ -585,7 +587,7 @@ private fun TaskBlockItem(
                     ) {
                         Icon(
                             Icons.Default.DateRange,
-                            contentDescription = "Edit Schedule",
+                            contentDescription = stringResource(Res.string.action_edit),
                             tint = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.6f),
                             modifier = Modifier.size(20.dp)
                         )
@@ -610,14 +612,14 @@ private fun TaskBlockItem(
                             modifier = Modifier.background(SharedJourneyColors.SunDrenchedWhite)
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Modifica") },
+                                text = { Text(stringResource(Res.string.action_edit)) },
                                 onClick = {
                                     showMenu = false
                                     onEditClick()
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Elimina", color = Color.Red) },
+                                text = { Text(stringResource(Res.string.action_delete), color = Color.Red) },
                                 onClick = {
                                     showMenu = false
                                     onDeleteClick()

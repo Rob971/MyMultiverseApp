@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -97,7 +99,7 @@ fun HomeContent(
                 contentColor = Color.White,
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Dream")
+                Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.action_add_dream))
             }
         }
     ) { padding ->
@@ -111,13 +113,13 @@ fun HomeContent(
         ) {
             item {
                 JourneyBanner(
-                    headline = "BENVENUTI A CASA",
+                    headline = stringResource(Res.string.home_banner_headline),
                     supportingLine =
                         when (greeting) {
-                            null -> "Caricando il tuo spazio famiglia..."
+                            null -> stringResource(Res.string.home_banner_loading)
                             else -> greeting.text
                         },
-                    description = "Uno spazio condiviso per coltivare i sogni della nostra famiglia, tracciare obiettivi S.M.A.R.T. e rafforzare i nostri legami quotidiani.",
+                    description = stringResource(Res.string.home_banner_description),
                     onCalendarClick = onGlobalCalendarClick
                 )
             }
@@ -140,7 +142,7 @@ fun HomeContent(
             item {
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    text = "I Nostri Sogni",
+                    text = stringResource(Res.string.home_dreams_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Black,
                     color = SharedJourneyColors.InkDeep,
@@ -177,7 +179,7 @@ fun HomeContent(
                 ) {
                     TextButton(onClick = onRefreshClick) {
                         Text(
-                            "Aggiorna Ispirazioni",
+                            stringResource(Res.string.home_refresh_inspirations),
                             style = MaterialTheme.typography.labelMedium,
                             color = SharedJourneyColors.InkMuted,
                             fontWeight = FontWeight.Bold

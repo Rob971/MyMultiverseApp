@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import com.example.kmp.domain.model.JourneyTask
 import com.example.kmp.presentation.theme.SharedJourneyColors
 import kotlinx.datetime.Clock
@@ -35,7 +37,7 @@ fun TaskEditDialog(
         containerColor = SharedJourneyColors.SunDrenchedWhite,
         title = {
             Text(
-                if (task == null) "Aggiungi Attività" else "Modifica Attività",
+                if (task == null) stringResource(Res.string.task_edit_title_add) else stringResource(Res.string.task_edit_title_edit),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Black,
                 color = SharedJourneyColors.MediterraneanTeal
@@ -49,14 +51,14 @@ fun TaskEditDialog(
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Titolo") },
+                    label = { Text(stringResource(Res.string.task_edit_field_title)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
                 OutlinedTextField(
                     value = planning,
                     onValueChange = { planning = it },
-                    label = { Text("Pianificazione (es: Mercato ogni sabato)") },
+                    label = { Text(stringResource(Res.string.task_edit_field_planning)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -98,7 +100,7 @@ fun TaskEditDialog(
                 OutlinedTextField(
                     value = reminderTime,
                     onValueChange = { reminderTime = it },
-                    label = { Text("Orario Promemoria (es: 08:00)") },
+                    label = { Text(stringResource(Res.string.task_edit_field_reminder)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -124,12 +126,12 @@ fun TaskEditDialog(
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)
             ) {
-                Text("Salva")
+                Text(stringResource(Res.string.action_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Annulla", color = SharedJourneyColors.InkMuted)
+                Text(stringResource(Res.string.action_cancel), color = SharedJourneyColors.InkMuted)
             }
         }
     )

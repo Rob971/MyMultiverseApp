@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import androidx.compose.ui.unit.sp
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyTask
@@ -145,14 +147,14 @@ fun JourneyDreamCard(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Modifica Sogno") },
+                                        text = { Text(stringResource(Res.string.edit_dream_edit_title)) },
                                         onClick = { 
                                             showMenu = false
                                             onEditClick() 
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Elimina Sogno", color = Color.Red) },
+                                        text = { Text(stringResource(Res.string.action_delete), color = Color.Red) },
                                         onClick = { 
                                             showMenu = false
                                             onDeleteClick() 
@@ -268,7 +270,7 @@ fun JourneyDreamCard(
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("Aggiungi Attività", fontWeight = FontWeight.Bold)
+                            Text(stringResource(Res.string.task_edit_title_add), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -349,14 +351,14 @@ private fun TaskRow(
                 modifier = Modifier.background(SharedJourneyColors.SunDrenchedWhite)
             ) {
                 DropdownMenuItem(
-                    text = { Text("Modifica") },
+                    text = { Text(stringResource(Res.string.action_edit)) },
                     onClick = { 
                         showTaskMenu = false
                         onEdit() 
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text("Elimina", color = Color.Red) },
+                    text = { Text(stringResource(Res.string.action_delete), color = Color.Red) },
                     onClick = { 
                         showTaskMenu = false
                         onDelete() 

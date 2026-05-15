@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -73,7 +75,7 @@ data class JourneyEditScreen(
                     TopAppBar(
                         title = { 
                             Text(
-                                if (journeyId == null) "Architetto dei Sogni" else "Modifica Sogno",
+                                if (journeyId == null) stringResource(Res.string.edit_dream_architect_title) else stringResource(Res.string.edit_dream_edit_title),
                                 fontWeight = FontWeight.Black
                             ) 
                         },
@@ -82,7 +84,7 @@ data class JourneyEditScreen(
                                 screenModel.resetArchitect()
                                 navigator.pop() 
                             }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                                Icon(Icons.Default.ArrowBack, contentDescription = stringResource(Res.string.action_back))
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -137,7 +139,7 @@ data class JourneyEditScreen(
                             contentColor = Color.White,
                             shape = RoundedCornerShape(16.dp)
                         ) {
-                            Icon(Icons.Default.Check, contentDescription = "Save")
+                            Icon(Icons.Default.Check, contentDescription = stringResource(Res.string.action_save))
                         }
                     }
                 }
@@ -204,7 +206,7 @@ data class JourneyEditScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                "Qual è il prossimo sogno della tua famiglia?",
+                stringResource(Res.string.edit_dream_seed_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Black,
                 color = SharedJourneyColors.MediterraneanTeal,
@@ -212,7 +214,7 @@ data class JourneyEditScreen(
             )
             Spacer(Modifier.height(12.dp))
             Text(
-                "Scrivi una frase o una parola chiave e l'Architetto AI ti aiuterà a pianificarlo.",
+                stringResource(Res.string.edit_dream_seed_description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = SharedJourneyColors.InkMuted,
                 textAlign = TextAlign.Center
@@ -221,7 +223,7 @@ data class JourneyEditScreen(
             TextField(
                 value = value,
                 onValueChange = onValueChange,
-                placeholder = { Text("Esempio: Comprare una moto, Viaggio in Spagna...") },
+                placeholder = { Text(stringResource(Res.string.edit_dream_seed_placeholder)) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = SharedJourneyColors.GlassWhite,
@@ -241,7 +243,7 @@ data class JourneyEditScreen(
             ) {
                 Icon(AppIcons.Sparkles, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(12.dp))
-                Text("Progetta con l'Architetto", fontWeight = FontWeight.Bold)
+                Text(stringResource(Res.string.edit_dream_seed_button), fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -256,13 +258,13 @@ data class JourneyEditScreen(
             CircularProgressIndicator(color = SharedJourneyColors.MediterraneanTeal)
             Spacer(Modifier.height(24.dp))
             Text(
-                "L'Architetto sta progettando...",
+                stringResource(Res.string.edit_dream_loading_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = SharedJourneyColors.MediterraneanTeal
             )
             Text(
-                "Definendo i parametri S.M.A.R.T. per il tuo successo.",
+                stringResource(Res.string.edit_dream_loading_description),
                 style = MaterialTheme.typography.bodySmall,
                 color = SharedJourneyColors.InkMuted
             )
@@ -295,17 +297,17 @@ data class JourneyEditScreen(
                     Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(AppIcons.Sparkles, contentDescription = null, tint = SharedJourneyColors.MediterraneanTeal, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Proposta dell'Architetto", style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.MediterraneanTeal, fontWeight = FontWeight.Bold)
+                        Text(stringResource(Res.string.edit_dream_proposal_badge), style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.MediterraneanTeal, fontWeight = FontWeight.Bold)
                     }
                 }
             }
 
-            item { EditField("Titolo del Sogno", title, onTitleChange) }
-            item { EditField("Sottotitolo", subtitle, onSubtitleChange) }
+            item { EditField(stringResource(Res.string.edit_dream_field_title), title, onTitleChange) }
+            item { EditField(stringResource(Res.string.edit_dream_field_subtitle), subtitle, onSubtitleChange) }
 
             item {
                 Text(
-                    "Parametri S.M.A.R.T.",
+                    stringResource(Res.string.edit_dream_smart_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = SharedJourneyColors.MediterraneanTeal,
@@ -313,16 +315,16 @@ data class JourneyEditScreen(
                 )
             }
 
-            item { EditField("Specifico (Cosa vogliamo?)", specific, onSpecificChange) }
-            item { EditField("Misurabile (Come lo tracciamo?)", measurable, onMeasurableChange) }
-            item { EditField("Raggiungibile (È realistico?)", achievable, onAchievableChange) }
-            item { EditField("Rilevante (Perché per noi?)", relevant, onRelevantChange) }
-            item { EditField("Tempo (Entro quando?)", timeBound, onTimeBoundChange) }
+            item { EditField(stringResource(Res.string.edit_dream_field_specific), specific, onSpecificChange) }
+            item { EditField(stringResource(Res.string.edit_dream_field_measurable), measurable, onMeasurableChange) }
+            item { EditField(stringResource(Res.string.edit_dream_field_achievable), achievable, onAchievableChange) }
+            item { EditField(stringResource(Res.string.edit_dream_field_relevant), relevant, onRelevantChange) }
+            item { EditField(stringResource(Res.string.edit_dream_field_timebound), timeBound, onTimeBoundChange) }
 
             if (suggestedTasks.isNotEmpty()) {
                 item {
                     Text(
-                        "Azioni Suggerite",
+                        stringResource(Res.string.edit_dream_suggested_actions),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = SharedJourneyColors.MediterraneanTeal,
@@ -353,7 +355,7 @@ data class JourneyEditScreen(
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Riprova con un'altra idea")
+                    Text(stringResource(Res.string.edit_dream_regenerate))
                 }
             }
         }
@@ -366,12 +368,12 @@ data class JourneyEditScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text("Oops!", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black, color = Color.Red.copy(alpha = 0.7f))
+            Text(stringResource(Res.string.edit_dream_error_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black, color = Color.Red.copy(alpha = 0.7f))
             Spacer(Modifier.height(8.dp))
             Text(message, textAlign = TextAlign.Center, color = SharedJourneyColors.InkMuted)
             Spacer(Modifier.height(24.dp))
             Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)) {
-                Text("Torna indietro")
+                Text(stringResource(Res.string.edit_dream_error_back))
             }
         }
     }

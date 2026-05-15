@@ -17,6 +17,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
@@ -87,9 +89,9 @@ data class CalendarScreen(
                         title = { 
                             Text(
                                 text = when (scope) {
-                                    is CalendarScope.Global -> "Calendario Famiglia"
-                                    is CalendarScope.Goal -> "Piano d'Azione"
-                                    is CalendarScope.Task -> "Dettaglio Attività"
+                                    is CalendarScope.Global -> stringResource(Res.string.calendar_global_title)
+                                    is CalendarScope.Goal -> stringResource(Res.string.calendar_goal_title)
+                                    is CalendarScope.Task -> stringResource(Res.string.calendar_task_title)
                                 },
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Black
@@ -97,27 +99,27 @@ data class CalendarScreen(
                         },
                         navigationIcon = {
                             IconButton(onClick = { navigator.pop() }) {
-                                Icon(AppIcons.ArrowBack, contentDescription = "Back")
+                                Icon(AppIcons.ArrowBack, contentDescription = stringResource(Res.string.action_back))
                             }
                         },
                         actions = {
                             when (scope) {
                                 is CalendarScope.Global, is CalendarScope.Goal -> {
                                     IconButton(onClick = { showAddTaskDialog = true }) {
-                                        Icon(AppIcons.Add, contentDescription = "Add Event")
+                                        Icon(AppIcons.Add, contentDescription = stringResource(Res.string.action_add_event))
                                     }
                                 }
                                 is CalendarScope.Task -> {
                                     val currentPair = visibleTasks.firstOrNull()
                                     if (currentPair != null) {
                                         IconButton(onClick = { editingTask = currentPair.second }) {
-                                            Icon(AppIcons.Edit, contentDescription = "Edit")
+                                            Icon(AppIcons.Edit, contentDescription = stringResource(Res.string.action_edit))
                                         }
                                         IconButton(onClick = { 
                                             screenModel.deleteTask(currentPair.first.id, currentPair.second.id)
                                             navigator.pop()
                                         }) {
-                                            Icon(AppIcons.Delete, contentDescription = "Delete", tint = Color.Red.copy(alpha = 0.7f))
+                                            Icon(AppIcons.Delete, contentDescription = stringResource(Res.string.action_delete), tint = Color.Red.copy(alpha = 0.7f))
                                         }
                                     }
                                 }
@@ -233,8 +235,8 @@ data class CalendarScreen(
 
                         item {
                             Text(
-                                text = if (selectedDate == Clock.System.todayIn(TimeZone.currentSystemDefault())) "Agenda di Oggi" 
-                                       else "Agenda per il ${selectedDate.dayOfMonth} ${selectedDate.month.name.lowercase()}",
+                                text = if (selectedDate == Clock.System.todayIn(TimeZone.currentSystemDefault())) stringResource(Res.string.calendar_today_agenda) 
+                                       else stringResource(Res.string.calendar_date_agenda, "${selectedDate.dayOfMonth} ${selectedDate.month.name.lowercase()}"),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = SharedJourneyColors.InkDeep,
                                 fontWeight = FontWeight.Black,
@@ -249,7 +251,7 @@ data class CalendarScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        "Nessuna attività programmata",
+                                        stringResource(Res.string.calendar_no_activities),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = SharedJourneyColors.InkMuted
                                     )
@@ -333,11 +335,11 @@ data class CalendarScreen(
                         ) {
                             Text(
                                 text = when(mode) {
-                                    CalendarViewMode.DAY -> "Giorno"
-                                    CalendarViewMode.WEEK -> "Sett."
-                                    CalendarViewMode.MONTH -> "Mese"
-                                    CalendarViewMode.QUARTER -> "Trim."
-                                    CalendarViewMode.YEAR -> "Anno"
+                                    CalendarViewMode.DAY -> stringResource(Res.string.calendar_view_day)
+                                    CalendarViewMode.WEEK -> stringResource(Res.string.calendar_view_week)
+                                    CalendarViewMode.MONTH -> stringResource(Res.string.calendar_view_month)
+                                    CalendarViewMode.QUARTER -> stringResource(Res.string.calendar_view_quarter)
+                                    CalendarViewMode.YEAR -> stringResource(Res.string.calendar_view_year)
                                 },
                                 style = MaterialTheme.typography.labelSmall,
                                 color = if (isSelected) Color.White else SharedJourneyColors.InkMuted,
@@ -377,6 +379,7 @@ data class CalendarScreen(
         }
     }
 
+    @Composable
     private fun formatDate(mode: CalendarViewMode, date: LocalDate): String {
         val month = date.month.name.lowercase().replaceFirstChar { it.uppercase() }
         return when (mode) {
@@ -396,9 +399,9 @@ data class CalendarScreen(
             CalendarViewMode.MONTH -> "$month ${date.year}"
             CalendarViewMode.QUARTER -> {
                 val quarter = (date.monthNumber - 1) / 3 + 1
-                "Trimestre Q$quarter, ${date.year}"
+                stringResource(Res.string.calendar_quarter_q, "$quarter, ${date.year}")
             }
-            CalendarViewMode.YEAR -> "Roadmap ${date.year}"
+            CalendarViewMode.YEAR -> stringResource(Res.string.calendar_year_roadmap, "${date.year}")
         }
     }
 
@@ -678,10 +681,10 @@ data class CalendarScreen(
     ) {
         val quarterIndex = (currentDate.monthNumber - 1) / 3
         val quarterThemes = listOf(
-            "Fondamenta" to "Stabilire basi solide e abitudini sane",
-            "Crescita" to "Sviluppare nuove competenze e passioni",
-            "Vitalità" to "Energia, attività all'aperto e benessere",
-            "Raccolto" to "Riflessione, gratitudine e festeggiamenti"
+            stringResource(Res.string.calendar_quarter_1_title) to stringResource(Res.string.calendar_quarter_1_subtitle),
+            stringResource(Res.string.calendar_quarter_2_title) to stringResource(Res.string.calendar_quarter_2_subtitle),
+            stringResource(Res.string.calendar_quarter_3_title) to stringResource(Res.string.calendar_quarter_3_subtitle),
+            stringResource(Res.string.calendar_quarter_4_title) to stringResource(Res.string.calendar_quarter_4_subtitle)
         )
         val (title, subtitle) = quarterThemes[quarterIndex]
 
@@ -736,7 +739,7 @@ data class CalendarScreen(
                                     }
                                 }
                             } else {
-                                Text("Nessun obiettivo attivo", style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.InkMuted)
+                                Text(stringResource(Res.string.calendar_no_active_goals), style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.InkMuted)
                             }
                         }
                     }
@@ -751,10 +754,10 @@ data class CalendarScreen(
         onQuarterSelected: (Int) -> Unit
     ) {
         val quarters = listOf(
-            Triple("Q1: Fondamenta", "Stabilire basi solide e abitudini sane", SharedJourneyColors.MediterraneanTeal),
-            Triple("Q2: Crescita", "Sviluppare nuove competenze e passioni", SharedJourneyColors.LemonZestYellow),
-            Triple("Q3: Vitalità", "Energia, attività all'aperto e benessere", SharedJourneyColors.TerracottaOrange),
-            Triple("Q4: Raccolto", "Riflessione, gratitudine e festeggiamenti", SharedJourneyColors.SageSoft)
+            Triple(stringResource(Res.string.calendar_quarter_1_title), stringResource(Res.string.calendar_quarter_1_subtitle), SharedJourneyColors.MediterraneanTeal),
+            Triple(stringResource(Res.string.calendar_quarter_2_title), stringResource(Res.string.calendar_quarter_2_subtitle), SharedJourneyColors.LemonZestYellow),
+            Triple(stringResource(Res.string.calendar_quarter_3_title), stringResource(Res.string.calendar_quarter_3_subtitle), SharedJourneyColors.TerracottaOrange),
+            Triple(stringResource(Res.string.calendar_quarter_4_title), stringResource(Res.string.calendar_quarter_4_subtitle), SharedJourneyColors.SageSoft)
         )
 
         // Mock progress for demo purposes, or calculate based on journeys
@@ -825,7 +828,7 @@ data class CalendarScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "Progress",
+                                stringResource(Res.string.calendar_progress),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = SharedJourneyColors.InkMuted,
                                 fontWeight = FontWeight.Bold
@@ -858,7 +861,7 @@ data class CalendarScreen(
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
                                     Text(
-                                        "In Corso",
+                                        stringResource(Res.string.calendar_in_progress),
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = SharedJourneyColors.TerracottaOrange,
@@ -867,7 +870,7 @@ data class CalendarScreen(
                                 }
                                 Spacer(Modifier.width(8.dp))
                                 Text(
-                                    "3 obiettivi attivi",
+                                    stringResource(Res.string.calendar_active_goals, "3"),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = SharedJourneyColors.InkMuted
                                 )
@@ -892,7 +895,7 @@ data class CalendarScreen(
                 .padding(20.dp)
         ) {
             Text(
-                text = "Pianificazione Settimanale",
+                text = stringResource(Res.string.calendar_weekly_planning),
                 style = MaterialTheme.typography.titleSmall,
                 color = SharedJourneyColors.InkDeep,
                 fontWeight = FontWeight.Bold,
