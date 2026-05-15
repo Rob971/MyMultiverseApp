@@ -4,6 +4,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.example.kmp.domain.model.*
 import com.example.kmp.domain.service.AiService
+import com.example.kmp.domain.manager.LanguageManager
 import com.example.kmp.domain.usecase.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -20,12 +21,19 @@ class HomeScreenModel(
     private val deleteTaskUseCase: DeleteTaskUseCase,
     private val refreshJourneysUseCase: RefreshJourneysUseCase,
     private val aiService: AiService,
+    private val languageManager: LanguageManager,
 ) : ScreenModel {
     private val _greeting = MutableStateFlow<Greeting?>(null)
     val greeting: StateFlow<Greeting?> = _greeting.asStateFlow()
 
     private val _architectState = MutableStateFlow<ArchitectState>(ArchitectState.Idle)
     val architectState: StateFlow<ArchitectState> = _architectState.asStateFlow()
+
+    val currentLanguage: StateFlow<String> = languageManager.currentLanguage
+
+    fun changeLanguage(languageCode: String) {
+        languageManager.changeLanguage(languageCode)
+    }
 
     val journeys: StateFlow<List<Journey>> = getJourneysUseCase()
         .stateIn(screenModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

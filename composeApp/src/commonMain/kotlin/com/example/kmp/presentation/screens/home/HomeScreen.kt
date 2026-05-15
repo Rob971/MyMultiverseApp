@@ -10,6 +10,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.background
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,6 +42,7 @@ object HomeScreen : Screen {
 
         val greeting by screenModel.greeting.collectAsState()
         val journeys by screenModel.journeys.collectAsState()
+        val currentLanguage by screenModel.currentLanguage.collectAsState()
 
         NapolitanBackground {
             HomeContent(
@@ -67,7 +70,9 @@ object HomeScreen : Screen {
                 onTaskAdd = { jId, task -> screenModel.addTask(jId, task) },
                 onTaskUpdate = { task -> screenModel.updateTask(task) },
                 onTaskDelete = { jId, tId -> screenModel.deleteTask(jId, tId) },
-                onTaskClick = { jId, tId -> navigator.push(CalendarScreen(CalendarScope.Task(jId, tId))) }
+                onTaskClick = { jId, tId -> navigator.push(CalendarScreen(CalendarScope.Task(jId, tId))) },
+                currentLanguage = currentLanguage,
+                onLanguageSelected = { lang -> screenModel.changeLanguage(lang) }
             )
         }
     }
@@ -87,10 +92,42 @@ fun HomeContent(
     onTaskAdd: (String, com.example.kmp.domain.model.JourneyTask) -> Unit,
     onTaskUpdate: (com.example.kmp.domain.model.JourneyTask) -> Unit,
     onTaskDelete: (String, String) -> Unit,
-    onTaskClick: (String, String) -> Unit
+    onTaskClick: (String, String) -> Unit,
+    currentLanguage: String,
+    onLanguageSelected: (String) -> Unit
 ) {
     Scaffold(
-        topBar = { },
+        topBar = {
+            var expanded by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+            @OptIn(ExperimentalMaterial3Api::class)
+            TopAppBar(
+                title = { },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                actions = {
+                    Box {
+                        TextButton(onClick = { expanded = true }) {
+                            Text(currentLanguage.uppercase(), fontWeight = FontWeight.Bold, color = SharedJourneyColors.MediterraneanTeal)
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.background(SharedJourneyColors.SunDrenchedWhite)
+                        ) {
+                            val languages = listOf("en" to "English", "it" to "Italiano", "es" to "Español", "fr" to "Français", "de" to "Deutsch")
+                            languages.forEach { (code, name) ->
+                                DropdownMenuItem(
+                                    text = { Text(name, color = if (code == currentLanguage) SharedJourneyColors.MediterraneanTeal else SharedJourneyColors.InkDeep) },
+                                    onClick = {
+                                        onLanguageSelected(code)
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+        },
         containerColor = Color.Transparent,
         floatingActionButton = {
             FloatingActionButton(
