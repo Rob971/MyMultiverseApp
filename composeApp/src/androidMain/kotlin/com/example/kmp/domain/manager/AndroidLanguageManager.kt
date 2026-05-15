@@ -12,11 +12,11 @@ class AndroidLanguageManager(
     private val settings: Settings
 ) : LanguageManager {
     
-    private val _currentLanguage = MutableStateFlow(settings.getString("app_language", "en"))
+    private val _currentLanguage = MutableStateFlow(settings.getString("app_language", "nap"))
     override val currentLanguage: StateFlow<String> = _currentLanguage
 
     init {
-        val lang = settings.getString("app_language", "")
+        val lang = settings.getString("app_language", "nap")
         if (lang.isNotEmpty()) {
             val localeList = LocaleListCompat.forLanguageTags(lang)
             AppCompatDelegate.setApplicationLocales(localeList)

@@ -113,7 +113,15 @@ fun HomeContent(
                             onDismissRequest = { expanded = false },
                             modifier = Modifier.background(SharedJourneyColors.SunDrenchedWhite)
                         ) {
-                            val languages = listOf("en" to "English", "it" to "Italiano", "es" to "Español", "fr" to "Français", "de" to "Deutsch")
+                            val languages = listOf(
+                                "ar-rSA" to "العربية",
+                                "de" to "Deutsch",
+                                "en" to "English",
+                                "es" to "Español",
+                                "fr" to "Français",
+                                "it" to "Italiano",
+                                "nap" to "Napulitano"
+                            )
                             languages.forEach { (code, name) ->
                                 DropdownMenuItem(
                                     text = { Text(name, color = if (code == currentLanguage) SharedJourneyColors.MediterraneanTeal else SharedJourneyColors.InkDeep) },

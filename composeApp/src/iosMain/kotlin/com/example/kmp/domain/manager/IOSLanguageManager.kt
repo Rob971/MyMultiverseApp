@@ -8,7 +8,7 @@ import platform.Foundation.NSUserDefaults
 class IOSLanguageManager(
     private val settings: Settings
 ) : LanguageManager {
-    private val _currentLanguage = MutableStateFlow(settings.getString("app_language", "en"))
+    private val _currentLanguage = MutableStateFlow(settings.getString("app_language", "nap"))
     override val currentLanguage: StateFlow<String> = _currentLanguage
 
     override fun changeLanguage(languageCode: String) {
