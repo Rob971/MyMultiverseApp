@@ -14,8 +14,13 @@ import org.koin.dsl.module
 private val domainModule = module {
     factoryOf(::GetGreetingUseCase)
     factoryOf(::GetJourneysUseCase)
+    factoryOf(::UpsertJourneyUseCase)
+    factoryOf(::DeleteJourneyUseCase)
     factoryOf(::ToggleTaskUseCase)
     factoryOf(::CheerTaskUseCase)
+    factoryOf(::AddTaskUseCase)
+    factoryOf(::UpdateTaskUseCase)
+    factoryOf(::DeleteTaskUseCase)
     factoryOf(::RefreshJourneysUseCase)
 }
 

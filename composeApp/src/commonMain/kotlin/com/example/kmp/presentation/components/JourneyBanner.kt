@@ -14,81 +14,97 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.kmp.presentation.theme.SharedJourneyColors
 
+/**
+ * 'Napolitan Heart' Banner: Custom Logo and vibrant gradients.
+ */
 @Composable
 fun JourneyBanner(
     headline: String,
     supportingLine: String?,
+    description: String? = null,
     onCalendarClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val shape = RoundedCornerShape(24.dp)
+    val shape = RoundedCornerShape(32.dp)
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .padding(top = 16.dp),
         shape = shape,
-        shadowElevation = 2.dp,
-        color = Color.Transparent
+        shadowElevation = 0.dp,
+        color = SharedJourneyColors.GlassWhite
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    brush = Brush.linearGradient(
+                    brush = Brush.verticalGradient(
                         colors = listOf(
-                            SharedJourneyColors.Terracotta.copy(alpha = 0.15f),
-                            SharedJourneyColors.WarmBeige.copy(alpha = 0.8f),
-                            SharedJourneyColors.Sage.copy(alpha = 0.1f),
+                            SharedJourneyColors.TerracottaOrange.copy(alpha = 0.1f),
+                            SharedJourneyColors.LemonZestYellow.copy(alpha = 0.05f),
                         ),
                     )
                 )
-                .padding(24.dp),
+                .padding(28.dp),
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(
-                        text = "👨‍👩‍👧",
-                        style = MaterialTheme.typography.displaySmall.copy(fontSize = 36.sp),
-                    )
-                    Text(
-                        text = headline,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Black,
-                        color = SharedJourneyColors.InkBrown,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                
-                supportingLine?.let { line ->
-                    Text(
-                        text = line,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = SharedJourneyColors.InkMuted,
-                        textAlign = TextAlign.Start,
-                    )
-                }
+                    // Centered Logo
+                    VesuvianHeartLogo(modifier = Modifier.size(64.dp))
 
-                Spacer(Modifier.height(8.dp))
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = headline,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Black,
+                            color = SharedJourneyColors.MediterraneanTeal,
+                            textAlign = TextAlign.Center
+                        )
+                        description?.let { text ->
+                            Text(
+                                text = text,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = SharedJourneyColors.InkDeep.copy(alpha = 0.8f),
+                                fontWeight = FontWeight.Normal,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                        supportingLine?.let { line ->
+                            Text(
+                                text = line,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = SharedJourneyColors.TerracottaOrange,
+                                fontWeight = FontWeight.SemiBold,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                    }
 
-                Button(
+                    Spacer(Modifier.height(4.dp))
+
+                    Button(
                     onClick = onCalendarClick,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = SharedJourneyColors.Terracotta,
+                        containerColor = SharedJourneyColors.MediterraneanTeal,
                         contentColor = Color.White
                     ),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("View Family Calendar", style = MaterialTheme.typography.labelLarge)
+                    Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Text("Il Nostro Calendario", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
                 }
             }
         }

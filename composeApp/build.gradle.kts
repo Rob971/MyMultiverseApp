@@ -45,6 +45,7 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
             
             implementation(libs.sql.delight.coroutines)
             implementation(libs.ktor.client.core)

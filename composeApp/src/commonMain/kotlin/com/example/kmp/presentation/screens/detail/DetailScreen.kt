@@ -15,11 +15,14 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -32,9 +35,11 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyTask
 import com.example.kmp.presentation.components.FriendlyProgressRing
+import com.example.kmp.presentation.components.NapolitanBackground
 import com.example.kmp.presentation.screens.calendar.CalendarScreen
 import com.example.kmp.presentation.screens.calendar.CalendarScope
 import com.example.kmp.presentation.screens.home.HomeScreenModel
+import com.example.kmp.presentation.screens.insights.InsightsScreen
 import com.example.kmp.presentation.theme.SharedJourneyColors
 import kotlinx.coroutines.delay
 
@@ -58,27 +63,32 @@ data class DetailScreen(
             }
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            DetailContent(
-                journey = journey,
-                onBackClick = { navigator.pop() },
-                onCalendarClick = { 
-                    navigator.push(CalendarScreen(CalendarScope.Goal(journeyId))) 
-                },
-                onTaskScheduleClick = { taskId -> 
-                    navigator.push(CalendarScreen(CalendarScope.Task(journeyId, taskId))) 
-                },
-                onCheerClick = { taskId -> screenModel.cheerTask(journeyId, taskId) },
-                onToggleTask = { taskId, isNowCompleted ->
-                    screenModel.toggleTask(journeyId, taskId)
-                    if (isNowCompleted) {
-                        showCelebration = true
+        NapolitanBackground {
+            Box(modifier = Modifier.fillMaxSize()) {
+                DetailContent(
+                    journey = journey,
+                    onBackClick = { navigator.pop() },
+                    onCalendarClick = { 
+                        navigator.push(CalendarScreen(CalendarScope.Goal(journeyId))) 
+                    },
+                    onInsightsClick = {
+                        navigator.push(InsightsScreen(journey))
+                    },
+                    onTaskScheduleClick = { taskId -> 
+                        navigator.push(CalendarScreen(CalendarScope.Task(journeyId, taskId))) 
+                    },
+                    onCheerClick = { taskId -> screenModel.cheerTask(journeyId, taskId) },
+                    onToggleTask = { taskId, isNowCompleted ->
+                        screenModel.toggleTask(journeyId, taskId)
+                        if (isNowCompleted) {
+                            showCelebration = true
+                        }
                     }
+                )
+                
+                if (showCelebration) {
+                    CelebrationOverlay()
                 }
-            )
-            
-            if (showCelebration) {
-                CelebrationOverlay()
             }
         }
     }
@@ -89,21 +99,22 @@ fun CelebrationOverlay() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.3f)),
+            .background(Color.Black.copy(alpha = 0.4f)),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "🎉 BRAVO! 🎉",
+                text = "✨ BRAVISSIMO! ✨",
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Black,
-                color = Color.White
+                color = SharedJourneyColors.LemonZestYellow
             )
             Text(
-                text = "Family Goal Accomplished!",
-                fontSize = 20.sp,
+                text = "Un cuore solo, una sola famiglia.",
+                fontSize = 18.sp,
                 color = Color.White,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 8.dp)
             )
         }
     }
@@ -115,6 +126,7 @@ fun DetailContent(
     journey: Journey,
     onBackClick: () -> Unit,
     onCalendarClick: () -> Unit,
+    onInsightsClick: () -> Unit,
     onTaskScheduleClick: (String) -> Unit,
     onCheerClick: (String) -> Unit,
     onToggleTask: (String, Boolean) -> Unit,
@@ -126,7 +138,7 @@ fun DetailContent(
                     Text(
                         text = journey.title,
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Black
                     ) 
                 },
                 navigationIcon = {
@@ -135,13 +147,13 @@ fun DetailContent(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = SharedJourneyColors.Parchment,
-                    titleContentColor = SharedJourneyColors.InkBrown,
-                    navigationIconContentColor = SharedJourneyColors.InkBrown
+                    containerColor = Color.Transparent,
+                    titleContentColor = SharedJourneyColors.MediterraneanTeal,
+                    navigationIconContentColor = SharedJourneyColors.MediterraneanTeal
                 )
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = Color.Transparent
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
@@ -151,46 +163,51 @@ fun DetailContent(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 32.dp, vertical = 24.dp),
+                        .padding(horizontal = 24.dp, vertical = 20.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Surface(
-                                color = parseColor(journey.colorHex).copy(alpha = 0.1f),
-                                shape = RoundedCornerShape(8.dp)
+                                color = SharedJourneyColors.TerracottaOrange.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(12.dp)
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
                                         Icons.Default.Star,
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp),
-                                        tint = parseColor(journey.colorHex)
+                                        tint = SharedJourneyColors.TerracottaOrange
                                     )
-                                    Spacer(Modifier.width(4.dp))
+                                    Spacer(Modifier.width(6.dp))
                                     Text(
-                                        text = "${journey.familyStreak} Day Streak!",
+                                        text = "${journey.familyStreak} Day Streak",
                                         style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = parseColor(journey.colorHex)
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = SharedJourneyColors.TerracottaOrange
                                     )
                                 }
                             }
                         }
                         
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(16.dp))
 
                         Text(
                             text = journey.subtitle,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = SharedJourneyColors.InkMuted,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
+            }
+
+            item {
+                GoalStatsRow(journey, onInsightsClick)
             }
 
             item {
@@ -201,24 +218,24 @@ fun DetailContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 24.dp),
+                        .padding(vertical = 32.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     FriendlyProgressRing(
                         progress = journey.progress,
-                        ringSize = 160.dp,
+                        ringSize = 180.dp,
                         strokeWidth = 14.dp,
-                        trackColor = SharedJourneyColors.WarmBeige,
+                        trackColor = SharedJourneyColors.SunDrenchedWhite.copy(alpha = 0.5f),
                         progressColor = parseColor(journey.colorHex),
                     )
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "${(journey.progress * 100).toInt()}%",
-                            style = MaterialTheme.typography.headlineLarge,
-                            color = SharedJourneyColors.InkBrown,
+                            style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Black),
+                            color = SharedJourneyColors.InkDeep,
                         )
                         Text(
-                            text = "Family Progress",
+                            text = "Family Heart",
                             style = MaterialTheme.typography.labelMedium,
                             color = SharedJourneyColors.InkMuted,
                         )
@@ -230,7 +247,7 @@ fun DetailContent(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 32.dp, vertical = 12.dp),
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -238,29 +255,25 @@ fun DetailContent(
                         Text(
                             text = "The Roadmap",
                             style = MaterialTheme.typography.titleLarge,
-                            color = SharedJourneyColors.InkBrown,
-                            fontWeight = FontWeight.Bold
+                            color = SharedJourneyColors.InkDeep,
+                            fontWeight = FontWeight.Black
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = "🚀",
-                            fontSize = 20.sp
+                            text = "🌋",
+                            fontSize = 22.sp
                         )
                     }
                     
-                    Button(
+                    TextButton(
                         onClick = onCalendarClick,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = parseColor(journey.colorHex).copy(alpha = 0.1f),
-                            contentColor = parseColor(journey.colorHex)
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                        elevation = null
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = SharedJourneyColors.MediterraneanTeal
+                        )
                     ) {
-                        Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Roadmap View", style = MaterialTheme.typography.labelSmall)
+                        Text("Schedule", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -287,10 +300,111 @@ fun DetailContent(
                             contentColor = SharedJourneyColors.InkMuted
                         )
                     ) {
-                        Text("Back to Dashboard")
+                        Text("Torna alla Dashboard", fontWeight = FontWeight.Bold)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun GoalStatsRow(journey: Journey, onInsightsClick: () -> Unit) {
+    val totalCheers = journey.tasks.sumOf { it.cheersCount }
+    val completedTasks = journey.tasks.count { it.isCompleted }
+    val totalTasks = journey.tasks.size
+    val topPartner = journey.tasks
+        .filter { it.claimedByInitials != null }
+        .groupBy { it.claimedByInitials }
+        .maxByOrNull { it.value.size }?.key ?: "---"
+
+    Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            StatCard(
+                label = "Cheers",
+                value = totalCheers.toString(),
+                icon = Icons.Default.Favorite,
+                color = SharedJourneyColors.TerracottaOrange,
+                modifier = Modifier.weight(1f)
+            )
+            StatCard(
+                label = "Progress",
+                value = "$completedTasks/$totalTasks",
+                icon = Icons.Default.CheckCircle,
+                color = SharedJourneyColors.MediterraneanTeal,
+                modifier = Modifier.weight(1f)
+            )
+            StatCard(
+                label = "Lead",
+                value = topPartner,
+                icon = Icons.Default.Person,
+                color = SharedJourneyColors.LemonZestYellow,
+                modifier = Modifier.weight(1f)
+            )
+        }
+        
+        Spacer(Modifier.height(16.dp))
+        
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onInsightsClick() },
+            colors = CardDefaults.cardColors(containerColor = SharedJourneyColors.GlassWhite),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text("📊", fontSize = 18.sp)
+                Spacer(Modifier.width(12.dp))
+                Text("Visual Strategy & Insights", fontWeight = FontWeight.ExtraBold, color = SharedJourneyColors.MediterraneanTeal)
+            }
+        }
+    }
+}
+
+@Composable
+fun StatCard(
+    label: String,
+    value: String,
+    icon: ImageVector,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        color = SharedJourneyColors.GlassWhite,
+        shadowElevation = 0.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Black,
+                color = SharedJourneyColors.InkDeep
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = SharedJourneyColors.InkMuted
+            )
         }
     }
 }
@@ -302,60 +416,62 @@ fun SmartPrincipleSection(journey: Journey) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 8.dp)
+            .padding(horizontal = 24.dp, vertical = 12.dp)
             .clickable { expanded = !expanded },
-        colors = CardDefaults.cardColors(containerColor = SharedJourneyColors.WarmBeige.copy(alpha = 0.2f)),
-        shape = RoundedCornerShape(16.dp)
+        colors = CardDefaults.cardColors(containerColor = SharedJourneyColors.GlassWhite.copy(alpha = 0.5f)),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Default.Info,
                     contentDescription = null,
-                    tint = SharedJourneyColors.InkBrown,
-                    modifier = Modifier.size(20.dp)
+                    tint = SharedJourneyColors.MediterraneanTeal,
+                    modifier = Modifier.size(22.dp)
                 )
                 Spacer(Modifier.width(12.dp))
                 Text(
                     text = "S.M.A.R.T. Framework",
                     style = MaterialTheme.typography.titleMedium,
-                    color = SharedJourneyColors.InkBrown,
-                    fontWeight = FontWeight.Bold
+                    color = SharedJourneyColors.InkDeep,
+                    fontWeight = FontWeight.Black
                 )
                 Spacer(Modifier.weight(1f))
                 Text(
-                    text = if (expanded) "Collapse" else "View Strategy",
+                    text = if (expanded) "Nascondi" else "Vedi Strategia",
                     style = MaterialTheme.typography.labelSmall,
-                    color = parseColor(journey.colorHex)
+                    color = SharedJourneyColors.MediterraneanTeal,
+                    fontWeight = FontWeight.Bold
                 )
             }
             
             if (expanded) {
-                Spacer(Modifier.height(16.dp))
-                SmartItem("Specific", journey.specificGoal, journey)
-                SmartItem("Measurable", journey.measurableOutcome, journey)
-                SmartItem("Achievable", journey.achievablePlan, journey)
-                SmartItem("Relevant", journey.relevanceToFamily, journey)
-                SmartItem("Time-bound", journey.timeBoundDeadline, journey)
+                Spacer(Modifier.height(20.dp))
+                SmartItem("Specific", journey.specificGoal)
+                SmartItem("Measurable", journey.measurableOutcome)
+                SmartItem("Achievable", journey.achievablePlan)
+                SmartItem("Relevant", journey.relevanceToFamily)
+                SmartItem("Time-bound", journey.timeBoundDeadline)
             }
         }
     }
 }
 
 @Composable
-fun SmartItem(label: String, value: String?, journey: Journey) {
+fun SmartItem(label: String, value: String?) {
     if (value == null) return
-    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+    Column(modifier = Modifier.padding(vertical = 6.dp)) {
         Text(
             text = label.uppercase(),
             style = MaterialTheme.typography.labelSmall,
-            color = parseColor(journey.colorHex),
-            fontWeight = FontWeight.ExtraBold
+            color = SharedJourneyColors.MediterraneanTeal,
+            fontWeight = FontWeight.Black
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            color = SharedJourneyColors.InkBrown
+            color = SharedJourneyColors.InkDeep
         )
     }
 }
@@ -371,32 +487,32 @@ private fun TaskBlockItem(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 6.dp),
-        shape = RoundedCornerShape(20.dp),
-        color = if (task.isCompleted) SharedJourneyColors.ParchmentSurface else Color.White,
-        shadowElevation = if (task.isCompleted) 0.dp else 2.dp
+            .padding(horizontal = 24.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(24.dp),
+        color = if (task.isCompleted) SharedJourneyColors.GlassWhite.copy(alpha = 0.5f) else SharedJourneyColors.GlassWhite,
+        shadowElevation = 0.dp
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.Top) {
                 Checkbox(
                     checked = task.isCompleted,
                     onCheckedChange = onToggle,
                     colors = CheckboxDefaults.colors(
-                        checkedColor = SharedJourneyColors.Sage,
-                        uncheckedColor = SharedJourneyColors.OutlineWarm,
+                        checkedColor = SharedJourneyColors.MediterraneanTeal,
+                        uncheckedColor = SharedJourneyColors.SageSoft,
                         checkmarkColor = Color.White
                     )
                 )
 
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = task.title,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = if (task.isCompleted) SharedJourneyColors.InkMuted else SharedJourneyColors.InkBrown,
+                        color = if (task.isCompleted) SharedJourneyColors.InkMuted else SharedJourneyColors.InkDeep,
                         textDecoration = if (task.isCompleted) TextDecoration.LineThrough else null,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.ExtraBold
                     )
                     
                     Text(
@@ -409,18 +525,18 @@ private fun TaskBlockItem(
                 
                 IconButton(
                     onClick = onScheduleClick,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
                         Icons.Default.DateRange,
                         contentDescription = "Edit Schedule",
-                        tint = parseColor(journey.colorHex).copy(alpha = 0.6f),
-                        modifier = Modifier.size(18.dp)
+                        tint = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.6f),
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
             
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(16.dp))
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -430,21 +546,22 @@ private fun TaskBlockItem(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (task.claimedByInitials != null) {
                         Surface(
-                            modifier = Modifier.size(32.dp),
+                            modifier = Modifier.size(36.dp),
                             shape = CircleShape,
-                            color = SharedJourneyColors.Sage.copy(alpha = 0.1f)
+                            color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.1f)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Text(
                                     task.claimedByInitials,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = SharedJourneyColors.Sage
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = SharedJourneyColors.MediterraneanTeal,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(10.dp))
                         Text(
-                            text = "is on it!",
+                            text = "è impegnato/a",
                             style = MaterialTheme.typography.labelSmall,
                             color = SharedJourneyColors.InkMuted
                         )
@@ -454,9 +571,10 @@ private fun TaskBlockItem(
                             contentPadding = PaddingValues(0.dp)
                         ) {
                             Text(
-                                "✋ Claim for today",
+                                "🤚 Prendi in carico",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = parseColor(journey.colorHex)
+                                color = SharedJourneyColors.MediterraneanTeal,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -464,25 +582,25 @@ private fun TaskBlockItem(
                 
                 Surface(
                     modifier = Modifier.clickable { onCheerClick() },
-                    shape = RoundedCornerShape(12.dp),
-                    color = SharedJourneyColors.WarmBeige.copy(alpha = 0.2f)
+                    shape = RoundedCornerShape(14.dp),
+                    color = SharedJourneyColors.TerracottaOrange.copy(alpha = 0.1f)
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             Icons.Default.Favorite,
                             contentDescription = "Cheer",
-                            modifier = Modifier.size(14.dp),
-                            tint = SharedJourneyColors.Terracotta
+                            modifier = Modifier.size(16.dp),
+                            tint = SharedJourneyColors.TerracottaOrange
                         )
-                        Spacer(Modifier.width(4.dp))
+                        Spacer(Modifier.width(6.dp))
                         Text(
-                            text = "${task.cheersCount} Cheers",
+                            text = "${task.cheersCount} Cuori",
                             style = MaterialTheme.typography.labelSmall,
-                            color = SharedJourneyColors.InkBrown,
-                            fontWeight = FontWeight.Bold
+                            color = SharedJourneyColors.InkDeep,
+                            fontWeight = FontWeight.Black
                         )
                     }
                 }
@@ -493,9 +611,9 @@ private fun TaskBlockItem(
 
 private fun parseColor(hex: String?): Color {
     return try {
-        if (hex == null) SharedJourneyColors.Terracotta
+        if (hex == null) SharedJourneyColors.TerracottaOrange
         else Color(("FF" + hex).toLong(16))
     } catch (_: Exception) {
-        SharedJourneyColors.Terracotta
+        SharedJourneyColors.TerracottaOrange
     }
 }

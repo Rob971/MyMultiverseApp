@@ -55,3 +55,9 @@ UPDATE TaskEntity SET claimedByInitials = ? WHERE id = ?;
 
 deleteJourney:
 DELETE FROM JourneyEntity WHERE id = ?;
+
+deleteTask:
+DELETE FROM TaskEntity WHERE id = ?;
+
+selectTaskById:
+SELECT * FROM TaskEntity WHERE id = ?;

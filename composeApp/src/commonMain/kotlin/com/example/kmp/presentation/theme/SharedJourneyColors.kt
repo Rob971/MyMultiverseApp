@@ -4,39 +4,37 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
 /**
- * Option 2 — "Shared Journey Dashboard": grounded, organic, parchment warmth.
- * Terracotta primary, sage secondary, warm parchment surfaces.
+ * 'Napolitan Heart' Visual Language: Calore & Appartenenza.
  */
 object SharedJourneyColors {
-    val Parchment = Color(0xFFFFF8F0)
-    val ParchmentSurface = Color(0xFFFFFBF7)
-    val Terracotta = Color(0xFFE2725B)
-    val Sage = Color(0xFF4F7942)
-    val WarmBeige = Color(0xFFE8DCC8)
-    val InkBrown = Color(0xFF3D2914)
-    val InkMuted = Color(0xFF5C4D3F)
-    val OutlineWarm = Color(0xFFD7C4B5)
-    val SageMuted = Color(0xFF6B9A5E)
-    val TerracottaDeep = Color(0xFFB85A47)
+    // Primary Palette
+    val TerracottaOrange = Color(0xFFE2725B)
+    val MediterraneanTeal = Color(0xFF005F6B)
+    val LemonZestYellow = Color(0xFFF4D03F)
+    
+    // Backgrounds & Surfaces
+    val ParchmentWarm = Color(0xFFFFF9F2)
+    val SunDrenchedWhite = Color(0xFFFFFBFA)
+    
+    // Accents & Ink
+    val InkDeep = Color(0xFF1C1C1C)
+    val InkMuted = Color(0xFF5C5C5C)
+    val SageSoft = Color(0xFF8DAA91)
+    
+    // Glassmorphism Bases
+    val GlassWhite = Color(0xCCFFFFFF)
+    val GlassTerracotta = Color(0x33E2725B)
 }
 
 fun sharedJourneyLightScheme() = lightColorScheme(
-    primary = SharedJourneyColors.Terracotta,
+    primary = SharedJourneyColors.TerracottaOrange,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFFFDAD4),
-    onPrimaryContainer = Color(0xFF5C1A0E),
-    secondary = SharedJourneyColors.Sage,
+    secondary = SharedJourneyColors.MediterraneanTeal,
     onSecondary = Color.White,
-    secondaryContainer = Color(0xFFD4E8CC),
-    onSecondaryContainer = Color(0xFF1A3315),
-    tertiary = Color(0xFFC9A66B),
-    onTertiary = Color(0xFF2B1F08),
-    background = SharedJourneyColors.Parchment,
-    onBackground = SharedJourneyColors.InkBrown,
-    surface = SharedJourneyColors.ParchmentSurface,
-    onSurface = SharedJourneyColors.InkBrown,
-    surfaceVariant = Color(0xFFF2EBE3),
-    onSurfaceVariant = SharedJourneyColors.InkMuted,
-    outline = SharedJourneyColors.OutlineWarm,
-    outlineVariant = Color(0xFFE5D9CE),
+    tertiary = SharedJourneyColors.LemonZestYellow,
+    onTertiary = SharedJourneyColors.InkDeep,
+    background = SharedJourneyColors.ParchmentWarm,
+    surface = SharedJourneyColors.SunDrenchedWhite,
+    onBackground = SharedJourneyColors.InkDeep,
+    onSurface = SharedJourneyColors.InkDeep,
 )
