@@ -27,6 +27,7 @@ import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.kmp.domain.model.Greeting
+import com.example.kmp.domain.model.Journey
 import com.example.kmp.presentation.components.JourneyBanner
 import com.example.kmp.presentation.components.JourneyDreamCard
 import com.example.kmp.presentation.screens.calendar.CalendarScreen
@@ -62,8 +63,8 @@ object HomeScreen : Screen {
 @Composable
 fun HomeContent(
     greeting: Greeting?,
-    journeys: List<JourneyDreamUi>,
-    onJourneyClick: (JourneyDreamUi) -> Unit,
+    journeys: List<Journey>,
+    onJourneyClick: (Journey) -> Unit,
     onRefreshClick: () -> Unit,
     onGlobalCalendarClick: () -> Unit,
 ) {
@@ -133,35 +134,5 @@ fun HomeContent(
                 }
             }
         }
-    }
-}
-
-@Preview
-@Composable
-fun HomeContentPreview() {
-    val mockJourneys = listOf(
-        JourneyDreamUi(
-            id = "1",
-            title = "Healthy Family Life",
-            subtitle = "Nutrition & mindful meals together",
-            progress = 0.72f,
-            participantInitials = listOf("M", "A", "K"),
-        ),
-        JourneyDreamUi(
-            id = "2",
-            title = "Daily movement",
-            subtitle = "Steps, playtime, and stretch breaks",
-            progress = 0.45f,
-            participantInitials = listOf("M", "K"),
-        ),
-    )
-    MaterialTheme {
-        HomeContent(
-            greeting = Greeting("Hello from Preview!"),
-            journeys = mockJourneys,
-            onJourneyClick = {},
-            onRefreshClick = {},
-            onGlobalCalendarClick = {}
-        )
     }
 }

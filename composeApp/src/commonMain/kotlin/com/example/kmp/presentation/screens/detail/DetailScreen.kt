@@ -29,15 +29,14 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.kmp.domain.model.Journey
+import com.example.kmp.domain.model.JourneyTask
 import com.example.kmp.presentation.components.FriendlyProgressRing
 import com.example.kmp.presentation.screens.calendar.CalendarScreen
 import com.example.kmp.presentation.screens.calendar.CalendarScope
 import com.example.kmp.presentation.screens.home.HomeScreenModel
-import com.example.kmp.presentation.screens.home.JourneyDreamUi
-import com.example.kmp.presentation.screens.home.JourneyTaskUi
 import com.example.kmp.presentation.theme.SharedJourneyColors
 import kotlinx.coroutines.delay
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 data class DetailScreen(
     private val journeyId: String,
@@ -113,7 +112,7 @@ fun CelebrationOverlay() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailContent(
-    journey: JourneyDreamUi,
+    journey: Journey,
     onBackClick: () -> Unit,
     onCalendarClick: () -> Unit,
     onTaskScheduleClick: (String) -> Unit,
@@ -297,7 +296,7 @@ fun DetailContent(
 }
 
 @Composable
-fun SmartPrincipleSection(journey: JourneyDreamUi) {
+fun SmartPrincipleSection(journey: Journey) {
     var expanded by remember { mutableStateOf(false) }
     
     Card(
@@ -344,7 +343,7 @@ fun SmartPrincipleSection(journey: JourneyDreamUi) {
 }
 
 @Composable
-fun SmartItem(label: String, value: String?, journey: JourneyDreamUi) {
+fun SmartItem(label: String, value: String?, journey: Journey) {
     if (value == null) return
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Text(
@@ -363,8 +362,8 @@ fun SmartItem(label: String, value: String?, journey: JourneyDreamUi) {
 
 @Composable
 private fun TaskBlockItem(
-    journey: JourneyDreamUi,
-    task: JourneyTaskUi, 
+    journey: Journey,
+    task: JourneyTask, 
     onScheduleClick: () -> Unit,
     onCheerClick: () -> Unit,
     onToggle: (Boolean) -> Unit
@@ -495,36 +494,8 @@ private fun TaskBlockItem(
 private fun parseColor(hex: String?): Color {
     return try {
         if (hex == null) SharedJourneyColors.Terracotta
-        else Color(longArrayOf(0xFFL shl 24 or hex.toLong(16)).first())
+        else Color(("FF" + hex).toLong(16))
     } catch (_: Exception) {
         SharedJourneyColors.Terracotta
-    }
-}
-
-@Preview
-@Composable
-fun DetailContentPreview() {
-    val mockJourney = JourneyDreamUi(
-        id = "preview",
-        title = "Healthy Family Life",
-        subtitle = "Nutrition & mindful meals together",
-        progress = 0.72f,
-        familyStreak = 5,
-        participantInitials = listOf("M", "A", "K"),
-        tasks = listOf(
-            JourneyTaskUi("1", "Plan weekly healthy menu", "Planning text here", true, "Weekly", claimedByInitials = "M", cheersCount = 10),
-            JourneyTaskUi("2", "No-screens during dinner", "Planning text here", false, "Daily", cheersCount = 5),
-            JourneyTaskUi("3", "Try one new vegetable", "Planning text here", false, "Weekly", claimedByInitials = "A", cheersCount = 2),
-        )
-    )
-    MaterialTheme {
-        DetailContent(
-            journey = mockJourney,
-            onBackClick = {},
-            onCalendarClick = {},
-            onTaskScheduleClick = {},
-            onCheerClick = {},
-            onToggleTask = { _, _ -> }
-        )
     }
 }

@@ -1,18 +1,32 @@
 package com.example.kmp.presentation.di
 
+import com.example.kmp.database.AppDatabase
+import com.example.kmp.database.DatabaseDriverFactory
 import com.example.kmp.data.repository.GreetingRepositoryImpl
+import com.example.kmp.data.repository.JourneyRepositoryImpl
 import com.example.kmp.domain.repository.GreetingRepository
-import com.example.kmp.domain.usecase.GetGreetingUseCase
+import com.example.kmp.domain.repository.JourneyRepository
+import com.example.kmp.domain.usecase.*
 import com.example.kmp.presentation.screens.home.HomeScreenModel
 import org.koin.core.module.dsl.factoryOf
 import org.koin.dsl.module
 
 private val domainModule = module {
     factoryOf(::GetGreetingUseCase)
+    factoryOf(::GetJourneysUseCase)
+    factoryOf(::ToggleTaskUseCase)
+    factoryOf(::CheerTaskUseCase)
+    factoryOf(::RefreshJourneysUseCase)
 }
 
 private val dataModule = module {
     single<GreetingRepository> { GreetingRepositoryImpl() }
+    single<JourneyRepository> { JourneyRepositoryImpl(get()) }
+    
+    single {
+        val driver = get<DatabaseDriverFactory>().createDriver()
+        AppDatabase(driver)
+    }
 }
 
 private val presentationModule = module {
@@ -20,5 +34,5 @@ private val presentationModule = module {
 }
 
 val appModule = module {
-    includes(domainModule, dataModule, presentationModule)
+    includes(domainModule, dataModule, presentationModule, platformModule())
 }

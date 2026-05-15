@@ -28,7 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.kmp.presentation.screens.home.JourneyDreamUi
+import com.example.kmp.domain.model.Journey
 import com.example.kmp.presentation.theme.SharedJourneyColors
 
 @Composable
@@ -52,7 +52,7 @@ private fun ParticipantAvatar(initial: String) {
 
 @Composable
 fun JourneyDreamCard(
-    dream: JourneyDreamUi,
+    dream: Journey,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     progressColor: Color = SharedJourneyColors.Terracotta,

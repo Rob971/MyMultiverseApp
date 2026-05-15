@@ -23,9 +23,9 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.kmp.domain.model.Journey
+import com.example.kmp.domain.model.JourneyTask
 import com.example.kmp.presentation.screens.home.HomeScreenModel
-import com.example.kmp.presentation.screens.home.JourneyDreamUi
-import com.example.kmp.presentation.screens.home.JourneyTaskUi
 import com.example.kmp.presentation.theme.SharedJourneyColors
 
 enum class CalendarViewMode { DAY, WEEK, MONTH, YEAR }
@@ -50,7 +50,6 @@ data class CalendarScreen(
         var viewMode by remember { mutableStateOf(CalendarViewMode.WEEK) }
         val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
-        // Filter data based on scope
         val visibleTasks = when (val s = scope) {
             is CalendarScope.Global -> journeys.flatMap { j -> j.tasks.map { t -> j to t } }
             is CalendarScope.Goal -> journeys.find { it.id == s.journeyId }?.let { j -> j.tasks.map { t -> j to t } } ?: emptyList()
@@ -63,16 +62,14 @@ data class CalendarScreen(
             topBar = {
                 TopAppBar(
                     title = { 
-                        Column {
-                            Text(
-                                text = when (scope) {
-                                    is CalendarScope.Global -> "Family Schedule"
-                                    is CalendarScope.Goal -> "Goal Roadmap"
-                                    is CalendarScope.Task -> "Task Schedule"
-                                },
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                        }
+                        Text(
+                            text = when (scope) {
+                                is CalendarScope.Global -> "Family Schedule"
+                                is CalendarScope.Goal -> "Goal Roadmap"
+                                is CalendarScope.Task -> "Task Schedule"
+                            },
+                            style = MaterialTheme.typography.titleLarge
+                        )
                     },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
@@ -81,7 +78,8 @@ data class CalendarScreen(
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = SharedJourneyColors.Parchment,
-                        titleContentColor = SharedJourneyColors.InkBrown
+                        titleContentColor = SharedJourneyColors.InkBrown,
+                        navigationIconContentColor = SharedJourneyColors.InkBrown
                     )
                 )
             },
@@ -192,7 +190,7 @@ data class CalendarScreen(
     }
 
     @Composable
-    private fun DayView(tasks: List<Pair<JourneyDreamUi, JourneyTaskUi>>) {
+    private fun DayView(tasks: List<Pair<Journey, JourneyTask>>) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("08:00", "12:00", "18:00", "21:00").forEach { time ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -208,7 +206,7 @@ data class CalendarScreen(
     }
 
     @Composable
-    private fun WeekView(tasks: List<Pair<JourneyDreamUi, JourneyTaskUi>>, days: List<String>) {
+    private fun WeekView(tasks: List<Pair<Journey, JourneyTask>>, days: List<String>) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             days.forEachIndexed { index, day ->
                 val dayNum = index + 1
@@ -279,7 +277,7 @@ data class CalendarScreen(
     }
 
     @Composable
-    private fun TaskSmallCard(journey: JourneyDreamUi, task: JourneyTaskUi) {
+    private fun TaskSmallCard(journey: Journey, task: JourneyTask) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
             color = parseColor(journey.colorHex).copy(alpha = 0.1f),
@@ -294,7 +292,7 @@ data class CalendarScreen(
     }
 
     @Composable
-    private fun AgendaItem(journey: JourneyDreamUi, task: JourneyTaskUi, days: List<String>) {
+    private fun AgendaItem(journey: Journey, task: JourneyTask, days: List<String>) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = Color.White,
@@ -322,7 +320,7 @@ data class CalendarScreen(
     private fun parseColor(hex: String?): Color {
         return try {
             if (hex == null) SharedJourneyColors.Terracotta
-            else Color(longArrayOf(0xFFL shl 24 or hex.toLong(16)).first())
+            else Color(("FF" + hex).toLong(16))
         } catch (_: Exception) {
             SharedJourneyColors.Terracotta
         }
