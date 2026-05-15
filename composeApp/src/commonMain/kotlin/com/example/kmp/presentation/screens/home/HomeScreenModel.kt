@@ -15,6 +15,27 @@ class HomeScreenModel(
     private val _greeting = MutableStateFlow<Greeting?>(null)
     val greeting: StateFlow<Greeting?> = _greeting.asStateFlow()
 
+    private val _journeys =
+        MutableStateFlow(
+            listOf(
+                JourneyDreamUi(
+                    id = "1",
+                    title = "Healthy Family Life",
+                    subtitle = "Nutrition & mindful meals together",
+                    progress = 0.72f,
+                    participantInitials = listOf("M", "A", "K"),
+                ),
+                JourneyDreamUi(
+                    id = "2",
+                    title = "Daily movement",
+                    subtitle = "Steps, playtime, and stretch breaks",
+                    progress = 0.45f,
+                    participantInitials = listOf("M", "K"),
+                ),
+            ),
+        )
+    val journeys: StateFlow<List<JourneyDreamUi>> = _journeys.asStateFlow()
+
     init {
         refresh()
     }
