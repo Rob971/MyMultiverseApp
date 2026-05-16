@@ -18,6 +18,7 @@ data class Journey(
     val relevanceToFamily: String? = null,
     val timeBoundDeadline: String? = null,
     val colorHex: String? = null,
+    val mealPlanningProfile: MealPlanningProfile? = null,
 )
 
 @Serializable
@@ -63,6 +64,16 @@ enum class JourneyCategory(
             return entries.firstOrNull { it.storageKey == value } ?: LongTermProjects
         }
     }
+}
+
+@Serializable
+data class MealPlanningProfile(
+    val cookingFor: String = "",
+    val dietaryRestrictions: List<String> = emptyList(),
+    val dislikedIngredients: String = "",
+) {
+    val hasAnswers: Boolean
+        get() = cookingFor.isNotBlank() || dietaryRestrictions.isNotEmpty() || dislikedIngredients.isNotBlank()
 }
 
 @Serializable

@@ -4,6 +4,7 @@ import com.example.kmp.database.AppDatabase
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
+import com.example.kmp.domain.model.MealPlanningProfile
 import com.example.kmp.domain.repository.JourneyRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -52,6 +53,11 @@ class JourneyRepositoryImpl(
                         relevanceToFamily = entity.relevanceToFamily,
                         timeBoundDeadline = entity.timeBoundDeadline,
                         colorHex = entity.colorHex,
+                        mealPlanningProfile = MealPlanningProfile(
+                            cookingFor = entity.mealCookingFor.orEmpty(),
+                            dietaryRestrictions = entity.mealDietaryRestrictions.toListValue(),
+                            dislikedIngredients = entity.mealDislikedIngredients.orEmpty()
+                        ).takeIf { it.hasAnswers },
                         tasks = tasks
                     )
                 }
@@ -72,7 +78,10 @@ class JourneyRepositoryImpl(
             achievablePlan = journey.achievablePlan,
             relevanceToFamily = journey.relevanceToFamily,
             timeBoundDeadline = journey.timeBoundDeadline,
-            colorHex = journey.colorHex
+            colorHex = journey.colorHex,
+            mealCookingFor = journey.mealPlanningProfile?.cookingFor,
+            mealDietaryRestrictions = journey.mealPlanningProfile?.dietaryRestrictions?.joinToString(","),
+            mealDislikedIngredients = journey.mealPlanningProfile?.dislikedIngredients
         )
         // Also insert/update tasks
         journey.tasks.forEach { task ->
@@ -169,7 +178,10 @@ class JourneyRepositoryImpl(
             achievablePlan = j.achievablePlan,
             relevanceToFamily = j.relevanceToFamily,
             timeBoundDeadline = j.timeBoundDeadline,
-            colorHex = j.colorHex
+            colorHex = j.colorHex,
+            mealCookingFor = j.mealCookingFor,
+            mealDietaryRestrictions = j.mealDietaryRestrictions,
+            mealDislikedIngredients = j.mealDislikedIngredients
         )
     }
 
@@ -178,4 +190,11 @@ class JourneyRepositoryImpl(
             queries.deleteJourney(id)
         }
     }
+}
+
+private fun String?.toListValue(): List<String> {
+    return orEmpty()
+        .split(",")
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
 }

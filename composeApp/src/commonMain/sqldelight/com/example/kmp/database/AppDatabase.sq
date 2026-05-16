@@ -11,7 +11,10 @@ CREATE TABLE JourneyEntity (
     achievablePlan TEXT,
     relevanceToFamily TEXT,
     timeBoundDeadline TEXT,
-    colorHex TEXT
+    colorHex TEXT,
+    mealCookingFor TEXT,
+    mealDietaryRestrictions TEXT,
+    mealDislikedIngredients TEXT
 );
 
 CREATE TABLE TaskEntity (
@@ -38,8 +41,8 @@ selectTasksByJourneyId:
 SELECT * FROM TaskEntity WHERE journeyId = ?;
 
 insertJourney:
-INSERT OR REPLACE INTO JourneyEntity(id, title, subtitle, category, progress, participantInitials, familyStreak, specificGoal, measurableOutcome, achievablePlan, relevanceToFamily, timeBoundDeadline, colorHex)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO JourneyEntity(id, title, subtitle, category, progress, participantInitials, familyStreak, specificGoal, measurableOutcome, achievablePlan, relevanceToFamily, timeBoundDeadline, colorHex, mealCookingFor, mealDietaryRestrictions, mealDislikedIngredients)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 insertTask:
 INSERT OR REPLACE INTO TaskEntity(id, journeyId, title, planning, isCompleted, label, scheduledDays, reminderTime, claimedByInitials, cheersCount)

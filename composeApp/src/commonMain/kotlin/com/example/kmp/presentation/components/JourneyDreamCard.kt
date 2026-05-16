@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
+import com.example.kmp.domain.model.MealPlanningProfile
 import com.example.kmp.presentation.theme.SharedJourneyColors
 
 @Composable
@@ -179,6 +180,7 @@ fun JourneyDreamCard(
                             totalCheers = totalCheers,
                             familyStreak = dream.familyStreak,
                             timeBoundDeadline = dream.timeBoundDeadline,
+                            mealPlanningProfile = dream.mealPlanningProfile,
                         )
 
                         Spacer(Modifier.height(16.dp))
@@ -319,6 +321,7 @@ private fun CategorySummary(
     totalCheers: Int,
     familyStreak: Int,
     timeBoundDeadline: String?,
+    mealPlanningProfile: MealPlanningProfile?,
 ) {
     val reminderCount = tasks.count { it.reminderTime != null }
     val scheduledCount = tasks.count { it.scheduledDays.isNotEmpty() }
@@ -326,7 +329,14 @@ private fun CategorySummary(
     val text = when (category) {
         JourneyCategory.CalendarLogistics -> "$scheduledCount scheduled items - $reminderCount reminders"
         JourneyCategory.HouseholdManagement -> "$openTasks open upkeep tasks - ${tasks.size} total routines"
-        JourneyCategory.MealPlanning -> "$scheduledCount planned kitchen blocks - $openTasks prep actions"
+        JourneyCategory.MealPlanning -> {
+            val people = mealPlanningProfile?.cookingFor?.takeIf { it.isNotBlank() } ?: "No party size"
+            val restrictions = mealPlanningProfile?.dietaryRestrictions
+                ?.takeIf { it.isNotEmpty() }
+                ?.joinToString(", ")
+                ?: "No restrictions"
+            "Cooking for $people - $restrictions - $openTasks prep actions"
+        }
         JourneyCategory.HealthWellness -> "$completedCount habits completed - $familyStreak day streak - $totalCheers cheers"
         JourneyCategory.LongTermProjects -> "${tasks.size} milestones - ${timeBoundDeadline ?: "No deadline set"}"
     }
@@ -337,6 +347,15 @@ private fun CategorySummary(
         color = SharedJourneyColors.InkMuted,
         fontWeight = FontWeight.SemiBold,
     )
+
+    if (category == JourneyCategory.MealPlanning && !mealPlanningProfile?.dislikedIngredients.isNullOrBlank()) {
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Avoid: ${mealPlanningProfile?.dislikedIngredients}",
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkMuted,
+        )
+    }
 }
 
 @Composable

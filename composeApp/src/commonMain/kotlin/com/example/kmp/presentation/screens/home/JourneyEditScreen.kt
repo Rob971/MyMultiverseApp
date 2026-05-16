@@ -54,6 +54,9 @@ data class JourneyEditScreen(
         var seedText by remember { mutableStateOf("") }
         var selectedTasks by remember { mutableStateOf<List<String>>(emptyList()) }
         var selectedCategory by remember { mutableStateOf(existingJourney?.category ?: JourneyCategory.LongTermProjects) }
+        var mealCookingFor by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.cookingFor ?: "3-4") }
+        var mealDietaryRestrictions by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.dietaryRestrictions ?: emptyList()) }
+        var mealDislikedIngredients by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.dislikedIngredients ?: "") }
 
         // Sync local state with AI proposal
         LaunchedEffect(architectState) {
@@ -117,7 +120,16 @@ data class JourneyEditScreen(
                                     achievablePlan = achievable,
                                     relevanceToFamily = relevant,
                                     timeBoundDeadline = timeBound,
-                                    colorHex = selectedCategory.defaultColorHex
+                                    colorHex = selectedCategory.defaultColorHex,
+                                    mealPlanningProfile = if (selectedCategory == JourneyCategory.MealPlanning) {
+                                        MealPlanningProfile(
+                                            cookingFor = mealCookingFor,
+                                            dietaryRestrictions = mealDietaryRestrictions,
+                                            dislikedIngredients = mealDislikedIngredients
+                                        )
+                                    } else {
+                                        null
+                                    }
                                 )
                                 
                                 screenModel.addJourney(newJourney)
@@ -173,6 +185,12 @@ data class JourneyEditScreen(
                                     subtitle = subtitle, onSubtitleChange = { subtitle = it },
                                     selectedCategory = selectedCategory,
                                     onCategorySelected = { selectedCategory = it },
+                                    mealCookingFor = mealCookingFor,
+                                    onMealCookingForChange = { mealCookingFor = it },
+                                    mealDietaryRestrictions = mealDietaryRestrictions,
+                                    onMealDietaryRestrictionsChange = { mealDietaryRestrictions = it },
+                                    mealDislikedIngredients = mealDislikedIngredients,
+                                    onMealDislikedIngredientsChange = { mealDislikedIngredients = it },
                                     specific = specific, onSpecificChange = { specific = it },
                                     measurable = measurable, onMeasurableChange = { measurable = it },
                                     achievable = achievable, onAchievableChange = { achievable = it },
@@ -281,6 +299,9 @@ data class JourneyEditScreen(
         title: String, onTitleChange: (String) -> Unit,
         subtitle: String, onSubtitleChange: (String) -> Unit,
         selectedCategory: JourneyCategory, onCategorySelected: (JourneyCategory) -> Unit,
+        mealCookingFor: String, onMealCookingForChange: (String) -> Unit,
+        mealDietaryRestrictions: List<String>, onMealDietaryRestrictionsChange: (List<String>) -> Unit,
+        mealDislikedIngredients: String, onMealDislikedIngredientsChange: (String) -> Unit,
         specific: String, onSpecificChange: (String) -> Unit,
         measurable: String, onMeasurableChange: (String) -> Unit,
         achievable: String, onAchievableChange: (String) -> Unit,
@@ -315,6 +336,18 @@ data class JourneyEditScreen(
                     selectedCategory = selectedCategory,
                     onCategorySelected = onCategorySelected
                 )
+            }
+            if (selectedCategory == JourneyCategory.MealPlanning) {
+                item {
+                    MealPlanningQuestionnaire(
+                        cookingFor = mealCookingFor,
+                        onCookingForChange = onMealCookingForChange,
+                        dietaryRestrictions = mealDietaryRestrictions,
+                        onDietaryRestrictionsChange = onMealDietaryRestrictionsChange,
+                        dislikedIngredients = mealDislikedIngredients,
+                        onDislikedIngredientsChange = onMealDislikedIngredientsChange
+                    )
+                }
             }
 
             item {
@@ -449,6 +482,113 @@ data class JourneyEditScreen(
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun MealPlanningQuestionnaire(
+        cookingFor: String,
+        onCookingForChange: (String) -> Unit,
+        dietaryRestrictions: List<String>,
+        onDietaryRestrictionsChange: (List<String>) -> Unit,
+        dislikedIngredients: String,
+        onDislikedIngredientsChange: (String) -> Unit,
+    ) {
+        val partySizeOptions = listOf("1", "2", "3-4", "5+")
+        val dietaryOptions = listOf("Vegetarian", "Vegan", "Gluten-Free", "Keto", "Nut Allergy", "None")
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(SharedJourneyColors.GlassWhite, RoundedCornerShape(20.dp))
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                "Meal Planning Essentials",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                "These answers define what the AI can safely suggest for recipes, portions and weekly prep.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted
+            )
+
+            QuestionBlock(
+                title = "How many people are we cooking for?",
+                description = "Scales ingredient quantities and portion sizes."
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    partySizeOptions.forEach { option ->
+                        FilterChip(
+                            selected = cookingFor == option,
+                            onClick = { onCookingForChange(option) },
+                            label = { Text(option) }
+                        )
+                    }
+                }
+            }
+
+            QuestionBlock(
+                title = "Are there any dietary restrictions or allergies?",
+                description = "Acts as a hard filter for restricted foods and allergens."
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    dietaryOptions.forEach { option ->
+                        val isSelected = dietaryRestrictions.contains(option)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = isSelected,
+                                onCheckedChange = { checked ->
+                                    val next = when {
+                                        option == "None" && checked -> listOf("None")
+                                        option == "None" -> dietaryRestrictions - option
+                                        checked -> (dietaryRestrictions - "None") + option
+                                        else -> dietaryRestrictions - option
+                                    }
+                                    onDietaryRestrictionsChange(next)
+                                },
+                                colors = CheckboxDefaults.colors(checkedColor = SharedJourneyColors.MediterraneanTeal)
+                            )
+                            Text(option, style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkDeep)
+                        }
+                    }
+                }
+            }
+
+            QuestionBlock(
+                title = "Are there any ingredients you absolutely hate?",
+                description = "Keeps meal plans away from foods the household dislikes."
+            ) {
+                TextField(
+                    value = dislikedIngredients,
+                    onValueChange = onDislikedIngredientsChange,
+                    placeholder = { Text("Example: cilantro, mushrooms, olives") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                        unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                        focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun QuestionBlock(
+        title: String,
+        description: String,
+        content: @Composable () -> Unit
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(title, style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkDeep, fontWeight = FontWeight.Bold)
+            Text(description, style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.InkMuted)
+            content()
         }
     }
 
