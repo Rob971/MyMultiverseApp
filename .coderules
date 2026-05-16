@@ -1,0 +1,75 @@
+# KmpVoyagerCleanArchitecture Code Rules
+
+These rules apply to this Kotlin Multiplatform app unless a more specific rule says otherwise.
+
+## Architecture
+
+- Keep shared business logic in `commonMain`; use `androidMain` and `iosMain` only for platform drivers, platform services, or unavoidable native APIs.
+- Preserve the existing clean architecture direction: presentation -> domain -> data. Domain models and use cases must not depend on Compose, SQLDelight, Ktor, Android, or iOS APIs.
+- Prefer small, explicit models over loosely typed strings. When a value has a fixed set of meanings, use an enum or sealed type and persist a stable storage key.
+- Avoid compatibility shims for unshipped branch work. Replace in-progress code cleanly when the behavior is changing.
+
+## Kotlin Multiplatform
+
+- Prefer multiplatform libraries before adding `expect`/`actual`; only introduce platform-specific code when there is no clean shared alternative.
+- Use `kotlinx.coroutines` for concurrency. Do not use platform threads, timers, or blocking sleeps in shared code.
+- Use `kotlinx.datetime` for dates and times in shared code.
+- Keep suspend work inside repositories, use cases, services, or `ScreenModel` scopes. Do not launch unstructured coroutines from composables.
+
+## Compose Multiplatform UI
+
+- Use Compose Multiplatform APIs and Material 3 components for UI. Do not introduce Android XML views for shared UI.
+- Keep composables stateless where practical. Hoist state to screen-level composables or `ScreenModel` when it affects navigation, persistence, or business behavior.
+- Use `remember` only for local UI state. Use `collectAsState()` for observable app state from `StateFlow`.
+- Keep UI components category-aware through domain data, not hard-coded journey IDs or seed-card names.
+- Prefer small private composables over long nested UI blocks when a section has its own behavior or repeated structure.
+
+## Navigation And State
+
+- Use Voyager `Screen` types for navigation and pass stable IDs when data can be reloaded from state. Passing full models is acceptable only for read-only display flows.
+- Use Voyager `ScreenModel` for screen state and side effects. Keep repository calls behind domain use cases.
+- Reset transient screen state, such as AI proposal state, when leaving or restarting a flow.
+
+## Dependency Injection
+
+- Register app services, repositories, use cases, and screen models through Koin modules.
+- Do not instantiate repositories, databases, network clients, or services directly inside composables.
+- Keep platform dependencies behind injected abstractions where shared code needs them.
+
+## Persistence With SQLDelight
+
+- Every schema change must update the `.sq` schema and include a numbered `.sqm` migration for existing installs.
+- Store enum values using stable storage keys, not display labels.
+- Keep SQLDelight entities mapped to domain models inside repository code. Do not leak generated database types outside the data layer.
+- Preserve existing user-created data during migrations. Only delete known legacy seed data when intentionally removing predefined content.
+
+## Networking And Serialization
+
+- Use Ktor client APIs for network calls and `kotlinx.serialization` for JSON.
+- Keep network DTOs separate from domain models when API shapes differ from app behavior.
+- Return explicit success/failure results from services that cross IO boundaries; do not swallow exceptions silently.
+
+## Resources And Localization
+
+- Use the Compose Resources `Res` API for strings and assets. Do not use platform-specific resource IDs in shared UI.
+- Add or update all supported locale files when introducing user-facing strings that need localization.
+- Keep hard-coded user-facing strings temporary only during active prototyping; convert them to resources before release.
+
+## Category-Based Cards
+
+- User cards must be user-created, not seeded as predefined concrete cards.
+- Category behavior should be driven by `JourneyCategory` or category-specific profile models.
+- Add category-specific fields as typed optional profile data on `Journey` only when the category needs durable answers.
+- Keep AI input constraints, such as allergies and disliked ingredients, persisted so future AI calls can use them as hard filters.
+
+## Testing And Verification
+
+- For shared Kotlin or schema changes, run `./gradlew :composeApp:assembleDebug` at minimum.
+- After database migrations, install and launch on an existing emulator/device to verify runtime migration.
+- Treat IDE generated-resource or SQLDelight diagnostics as stale until confirmed by Gradle, but fix any Gradle compile failure before finishing.
+
+## Git Workflow
+
+- Work on feature branches for product changes; keep `main` stable unless explicitly asked to commit there.
+- Commit only relevant files. Do not include local secrets, generated build outputs, or unrelated user changes.
+- Use concise commit messages that match the repo style, usually `feat: ...` or `fix: ...`.
