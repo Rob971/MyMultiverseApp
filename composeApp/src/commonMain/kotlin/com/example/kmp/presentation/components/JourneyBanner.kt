@@ -3,19 +3,14 @@ package com.example.kmp.presentation.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.stringResource
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import com.example.kmp.presentation.theme.SharedJourneyColors
 
 /**
@@ -26,7 +21,6 @@ fun JourneyBanner(
     headline: String,
     supportingLine: String?,
     description: String? = null,
-    onCalendarClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(32.dp)
@@ -92,22 +86,6 @@ fun JourneyBanner(
                         }
                     }
 
-                    Spacer(Modifier.height(4.dp))
-
-                    Button(
-                    onClick = onCalendarClick,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = SharedJourneyColors.MediterraneanTeal,
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(16.dp),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(12.dp))
-                    Text(stringResource(Res.string.calendar_global_title), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
-                }
             }
         }
     }

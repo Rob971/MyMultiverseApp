@@ -63,9 +63,6 @@ object HomeScreen : Screen {
                 onRefreshClick = {
                     screenModel.refresh()
                 },
-                onGlobalCalendarClick = {
-                    navigator.push(CalendarScreen(CalendarScope.Global))
-                },
                 onTaskToggle = { jId, tId -> screenModel.toggleTask(jId, tId) },
                 onTaskAdd = { jId, task -> screenModel.addTask(jId, task) },
                 onTaskUpdate = { task -> screenModel.updateTask(task) },
@@ -87,7 +84,6 @@ fun HomeContent(
     onEditJourneyClick: (String) -> Unit,
     onDeleteJourneyClick: (String) -> Unit,
     onRefreshClick: () -> Unit,
-    onGlobalCalendarClick: () -> Unit,
     onTaskToggle: (String, String) -> Unit,
     onTaskAdd: (String, com.example.kmp.domain.model.JourneyTask) -> Unit,
     onTaskUpdate: (com.example.kmp.domain.model.JourneyTask) -> Unit,
@@ -164,8 +160,7 @@ fun HomeContent(
                             null -> stringResource(Res.string.home_banner_loading)
                             else -> greeting.text
                         },
-                    description = stringResource(Res.string.home_banner_description),
-                    onCalendarClick = onGlobalCalendarClick
+                    description = stringResource(Res.string.home_banner_description)
                 )
             }
 
