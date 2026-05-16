@@ -1,9 +1,7 @@
 package com.example.kmp.presentation.theme
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.materialIcon
-import androidx.compose.material.icons.materialPath
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
 object AppIcons {
@@ -13,8 +11,14 @@ object AppIcons {
             if (_chevronLeft != null) {
                 return _chevronLeft!!
             }
-            _chevronLeft = materialIcon(name = "Filled.ChevronLeft") {
-                materialPath {
+            _chevronLeft = ImageVector.Builder(
+                name = "Filled.ChevronLeft",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
                     moveTo(15.41f, 7.41f)
                     lineTo(14.0f, 6.0f)
                     lineTo(8.0f, 12.0f)
@@ -23,7 +27,7 @@ object AppIcons {
                     lineTo(10.83f, 12.0f)
                     close()
                 }
-            }
+            }.build()
             return _chevronLeft!!
         }
     private var _chevronLeft: ImageVector? = null
@@ -33,8 +37,14 @@ object AppIcons {
             if (_chevronRight != null) {
                 return _chevronRight!!
             }
-            _chevronRight = materialIcon(name = "Filled.ChevronRight") {
-                materialPath {
+            _chevronRight = ImageVector.Builder(
+                name = "Filled.ChevronRight",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
                     moveTo(10.0f, 6.0f)
                     lineTo(8.59f, 7.41f)
                     lineTo(13.17f, 12.0f)
@@ -43,7 +53,7 @@ object AppIcons {
                     lineTo(16.0f, 12.0f)
                     close()
                 }
-            }
+            }.build()
             return _chevronRight!!
         }
     private var _chevronRight: ImageVector? = null
@@ -53,8 +63,15 @@ object AppIcons {
             if (_arrowBack != null) {
                 return _arrowBack!!
             }
-            _arrowBack = materialIcon(name = "AutoMirrored.Filled.ArrowBack", autoMirror = true) {
-                materialPath {
+            _arrowBack = ImageVector.Builder(
+                name = "AutoMirrored.Filled.ArrowBack",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+                autoMirror = true,
+            ).apply {
+                path {
                     moveTo(20.0f, 11.0f)
                     horizontalLineTo(7.83f)
                     lineToRelative(5.59f, -5.59f)
@@ -67,7 +84,7 @@ object AppIcons {
                     verticalLineToRelative(-2.0f)
                     close()
                 }
-            }
+            }.build()
             return _arrowBack!!
         }
     private var _arrowBack: ImageVector? = null
@@ -77,8 +94,14 @@ object AppIcons {
             if (_add != null) {
                 return _add!!
             }
-            _add = materialIcon(name = "Filled.Add") {
-                materialPath {
+            _add = ImageVector.Builder(
+                name = "Filled.Add",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
                     moveTo(19.0f, 13.0f)
                     horizontalLineToRelative(-6.0f)
                     verticalLineToRelative(6.0f)
@@ -94,7 +117,7 @@ object AppIcons {
                     verticalLineToRelative(2.0f)
                     close()
                 }
-            }
+            }.build()
             return _add!!
         }
     private var _add: ImageVector? = null
@@ -104,8 +127,14 @@ object AppIcons {
             if (_delete != null) {
                 return _delete!!
             }
-            _delete = materialIcon(name = "Filled.Delete") {
-                materialPath {
+            _delete = ImageVector.Builder(
+                name = "Filled.Delete",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
                     moveTo(6.0f, 19.0f)
                     curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f)
                     horizontalLineToRelative(8.0f)
@@ -125,7 +154,7 @@ object AppIcons {
                     verticalLineTo(4.0f)
                     close()
                 }
-            }
+            }.build()
             return _delete!!
         }
     private var _delete: ImageVector? = null
@@ -135,8 +164,14 @@ object AppIcons {
             if (_edit != null) {
                 return _edit!!
             }
-            _edit = materialIcon(name = "Filled.Edit") {
-                materialPath {
+            _edit = ImageVector.Builder(
+                name = "Filled.Edit",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
                     moveTo(3.0f, 17.25f)
                     verticalLineTo(21.0f)
                     horizontalLineToRelative(3.75f)
@@ -153,7 +188,7 @@ object AppIcons {
                     lineTo(20.71f, 7.04f)
                     close()
                 }
-            }
+            }.build()
             return _edit!!
         }
     private var _edit: ImageVector? = null
@@ -163,8 +198,14 @@ object AppIcons {
             if (_checkCircle != null) {
                 return _checkCircle!!
             }
-            _checkCircle = materialIcon(name = "Filled.CheckCircle") {
-                materialPath {
+            _checkCircle = ImageVector.Builder(
+                name = "Filled.CheckCircle",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
                     moveTo(12.0f, 2.0f)
                     curveTo(6.48f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
                     reflectiveCurveTo(4.48f, 10.0f, 10.0f, 10.0f)
@@ -180,7 +221,7 @@ object AppIcons {
                     lineToRelative(-9.0f, 9.0f)
                     close()
                 }
-            }
+            }.build()
             return _checkCircle!!
         }
     private var _checkCircle: ImageVector? = null
@@ -190,8 +231,14 @@ object AppIcons {
             if (_radioButtonUnchecked != null) {
                 return _radioButtonUnchecked!!
             }
-            _radioButtonUnchecked = materialIcon(name = "Filled.RadioButtonUnchecked") {
-                materialPath {
+            _radioButtonUnchecked = ImageVector.Builder(
+                name = "Filled.RadioButtonUnchecked",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
                     moveTo(12.0f, 2.0f)
                     curveTo(6.48f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
                     reflectiveCurveTo(4.48f, 10.0f, 10.0f, 10.0f)
@@ -205,7 +252,7 @@ object AppIcons {
                     reflectiveCurveToRelative(-3.58f, 8.0f, -8.0f, 8.0f)
                     close()
                 }
-            }
+            }.build()
             return _radioButtonUnchecked!!
         }
     private var _radioButtonUnchecked: ImageVector? = null
@@ -215,8 +262,14 @@ object AppIcons {
             if (_notifications != null) {
                 return _notifications!!
             }
-            _notifications = materialIcon(name = "Filled.Notifications") {
-                materialPath {
+            _notifications = ImageVector.Builder(
+                name = "Filled.Notifications",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
                     moveTo(12.0f, 22.0f)
                     curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
                     horizontalLineToRelative(-4.0f)
@@ -238,7 +291,7 @@ object AppIcons {
                     lineToRelative(-2.0f, -2.0f)
                     close()
                 }
-            }
+            }.build()
             return _notifications!!
         }
     private var _notifications: ImageVector? = null
@@ -248,8 +301,14 @@ object AppIcons {
             if (_sparkles != null) {
                 return _sparkles!!
             }
-            _sparkles = materialIcon(name = "Filled.Sparkles") {
-                materialPath {
+            _sparkles = ImageVector.Builder(
+                name = "Filled.Sparkles",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
                     moveTo(19.0f, 9.0f)
                     lineTo(20.25f, 6.25f)
                     lineTo(23.0f, 5.0f)
@@ -281,7 +340,7 @@ object AppIcons {
                     lineTo(19.0f, 15.0f)
                     close()
                 }
-            }
+            }.build()
             return _sparkles!!
         }
     private var _sparkles: ImageVector? = null

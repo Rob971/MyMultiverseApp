@@ -104,6 +104,45 @@ data class JourneyEditScreen(
         var longTermBudgetStyle by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.budgetStyle ?: "Moderate (Some DIY, hiring pros for the big stuff)") }
         var longTermSuccessDefinition by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.successDefinition ?: "") }
         var hasStartedDreamCard by remember { mutableStateOf(journeyId != null) }
+        val categoryOutcomes = JourneyCategory.entries.associateWith { category ->
+            stringResource(category.experienceResources.outcome)
+        }
+        val suggestedTaskCopy = SuggestedTaskCopy(
+            grocery = stringResource(Res.string.task_label_grocery),
+            prep = stringResource(Res.string.task_label_prep),
+            lunch = stringResource(Res.string.task_label_lunch),
+            menu = stringResource(Res.string.task_label_menu),
+            splitRule = stringResource(Res.string.task_label_split_rule),
+            settle = stringResource(Res.string.task_label_settle),
+            goal = stringResource(Res.string.task_label_goal),
+            ledger = stringResource(Res.string.task_label_ledger),
+            deEscalator = stringResource(Res.string.task_label_de_escalator),
+            dateNight = stringResource(Res.string.task_label_date_night),
+            checkIn = stringResource(Res.string.task_label_check_in),
+            care = stringResource(Res.string.task_label_care),
+            plan = stringResource(Res.string.task_label_plan),
+            budget = stringResource(Res.string.task_label_budget),
+            friction = stringResource(Res.string.task_label_friction),
+            roles = stringResource(Res.string.task_label_roles),
+            followUp = stringResource(Res.string.task_label_follow_up),
+            nextAction = stringResource(Res.string.task_label_next_action),
+            groceryPlanning = stringResource(Res.string.task_planning_grocery),
+            prepPlanning = stringResource(Res.string.task_planning_prep),
+            menuPlanning = stringResource(Res.string.task_planning_menu),
+            splitRulePlanning = stringResource(Res.string.task_planning_split_rule),
+            settlePlanning = stringResource(Res.string.task_planning_settle),
+            ledgerPlanning = stringResource(Res.string.task_planning_ledger),
+            deEscalatorPlanning = stringResource(Res.string.task_planning_de_escalator),
+            dateNightPlanning = stringResource(Res.string.task_planning_date_night),
+            checkInPlanning = stringResource(Res.string.task_planning_check_in),
+            categoryDefaultPlanning = stringResource(Res.string.task_planning_category_default),
+            longTermNextActionPlanning = stringResource(Res.string.task_planning_long_term_next_action),
+            longTermBudgetPlanning = stringResource(Res.string.task_planning_long_term_budget),
+            longTermFrictionPlanning = stringResource(Res.string.task_planning_long_term_friction),
+            longTermRolesPlanning = stringResource(Res.string.task_planning_long_term_roles),
+            longTermFollowUpPlanning = stringResource(Res.string.task_planning_long_term_follow_up),
+            longTermPlanPlanning = stringResource(Res.string.task_planning_long_term_plan),
+        )
 
         // Sync local state with AI proposal
         LaunchedEffect(architectState) {
@@ -123,7 +162,7 @@ data class JourneyEditScreen(
 
         fun selectCategory(category: JourneyCategory) {
             selectedCategory = category
-            subtitle = category.experience.outcome
+            subtitle = categoryOutcomes.getValue(category)
             selectedTasks = emptyList()
             planItems = emptyList()
         }
@@ -261,9 +300,9 @@ data class JourneyEditScreen(
                                         id = Clock.System.now().toEpochMilliseconds().toString() + taskTitle.hashCode(),
                                         journeyId = finalJourneyId,
                                         title = taskTitle,
-                                        planning = suggestedTaskPlanning(selectedCategory, taskTitle),
+                                        planning = suggestedTaskPlanning(selectedCategory, taskTitle, suggestedTaskCopy),
                                         isCompleted = false,
-                                        label = suggestedTaskLabel(selectedCategory, taskTitle),
+                                        label = suggestedTaskLabel(selectedCategory, taskTitle, suggestedTaskCopy),
                                         scheduledDays = listOf(1, 2, 3, 4, 5, 6, 7)
                                     ))
                                 }
@@ -310,7 +349,7 @@ data class JourneyEditScreen(
                                     onContinue = {
                                         val dream = seedText.trim()
                                         title = dream
-                                        subtitle = selectedCategory.experience.outcome
+                                        subtitle = categoryOutcomes.getValue(selectedCategory)
                                         specific = dream
                                         measurable = ""
                                         achievable = ""
@@ -544,6 +583,7 @@ data class JourneyEditScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            val selectedExperience = selectedCategory.experienceResources
             item {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Surface(
@@ -551,7 +591,7 @@ data class JourneyEditScreen(
                         shape = RoundedCornerShape(20.dp),
                     ) {
                         Text(
-                            "Step 1 of 3 · Dream Card",
+                            stringResource(Res.string.dream_card_step_label),
                             style = MaterialTheme.typography.labelMedium,
                             color = SharedJourneyColors.MediterraneanTeal,
                             fontWeight = FontWeight.Black,
@@ -560,7 +600,7 @@ data class JourneyEditScreen(
                     }
                     Spacer(Modifier.height(18.dp))
                     Text(
-                        "What are we trying to improve together?",
+                        stringResource(Res.string.dream_card_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Black,
                         color = SharedJourneyColors.MediterraneanTeal,
@@ -568,7 +608,7 @@ data class JourneyEditScreen(
                     )
                     Spacer(Modifier.height(10.dp))
                     Text(
-                        "Start with the couple's intent, choose the best category, then answer only the questions that matter for that category.",
+                        stringResource(Res.string.dream_card_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = SharedJourneyColors.InkMuted,
                         textAlign = TextAlign.Center
@@ -580,7 +620,7 @@ data class JourneyEditScreen(
                 TextField(
                     value = value,
                     onValueChange = onValueChange,
-                    placeholder = { Text("Example: Make weeknight dinners easier without wasting groceries") },
+                    placeholder = { Text(stringResource(Res.string.dream_card_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3,
                     colors = TextFieldDefaults.colors(
@@ -608,19 +648,19 @@ data class JourneyEditScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            "What this category will produce",
+                            stringResource(Res.string.dream_card_category_output_title),
                             style = MaterialTheme.typography.labelMedium,
                             color = SharedJourneyColors.MediterraneanTeal,
                             fontWeight = FontWeight.Black,
                         )
                         Text(
-                            selectedCategory.experience.outcome,
+                            stringResource(selectedExperience.outcome),
                             style = MaterialTheme.typography.bodyMedium,
                             color = SharedJourneyColors.InkDeep,
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            selectedCategory.experience.dreamPrompt,
+                            stringResource(selectedExperience.dreamPrompt),
                             style = MaterialTheme.typography.bodySmall,
                             color = SharedJourneyColors.InkMuted,
                         )
@@ -638,7 +678,7 @@ data class JourneyEditScreen(
                 ) {
                     Icon(AppIcons.Sparkles, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(12.dp))
-                    Text("Continue to smart questions", fontWeight = FontWeight.Bold)
+                    Text(stringResource(Res.string.dream_card_continue), fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -740,6 +780,7 @@ data class JourneyEditScreen(
             contentPadding = PaddingValues(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            val selectedExperience = selectedCategory.experienceResources
             item {
                 Surface(
                     color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.1f),
@@ -750,9 +791,15 @@ data class JourneyEditScreen(
                         Spacer(Modifier.width(8.dp))
                         Text(
                             if (showAiReview) {
-                                "Step 3 of 3 · Review ${selectedCategory.experience.planReviewTitle}"
+                                stringResource(
+                                    Res.string.dream_card_review_step,
+                                    stringResource(selectedExperience.planReviewTitle),
+                                )
                             } else {
-                                "Step 2 of 3 · Answer ${selectedCategory.displayName} questions"
+                                stringResource(
+                                    Res.string.dream_card_questions_step,
+                                    stringResource(selectedExperience.displayName),
+                                )
                             },
                             style = MaterialTheme.typography.labelSmall,
                             color = SharedJourneyColors.MediterraneanTeal,
@@ -778,16 +825,16 @@ data class JourneyEditScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
-                            selectedCategory.experience.planReviewTitle,
+                            stringResource(selectedExperience.planReviewTitle),
                             style = MaterialTheme.typography.titleSmall,
                             color = SharedJourneyColors.InkDeep,
                             fontWeight = FontWeight.Black,
                         )
                         Text(
                             if (showAiReview) {
-                                "Review the AI structure below, edit anything that feels off, then save the plan as a category-specific Dream Card."
+                                stringResource(Res.string.dream_card_review_guidance)
                             } else {
-                                selectedCategory.experience.questionsIntro
+                                stringResource(selectedExperience.questionsIntro)
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = SharedJourneyColors.InkMuted,
@@ -923,7 +970,7 @@ data class JourneyEditScreen(
             if (showAiReview) {
                 item {
                     Text(
-                        "AI Understanding",
+                        stringResource(Res.string.dream_card_ai_understanding),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = SharedJourneyColors.MediterraneanTeal,
@@ -931,17 +978,17 @@ data class JourneyEditScreen(
                     )
                 }
 
-                item { EditField("What the AI understood", specific, onSpecificChange) }
-                item { EditField("How success will be measured", measurable, onMeasurableChange) }
-                item { EditField("Why this plan is realistic", achievable, onAchievableChange) }
-                item { EditField("Why it matters for the household", relevant, onRelevantChange) }
-                item { EditField("Time horizon", timeBound, onTimeBoundChange) }
+                item { EditField(stringResource(Res.string.dream_card_ai_understood_field), specific, onSpecificChange) }
+                item { EditField(stringResource(Res.string.dream_card_success_field), measurable, onMeasurableChange) }
+                item { EditField(stringResource(Res.string.dream_card_realistic_field), achievable, onAchievableChange) }
+                item { EditField(stringResource(Res.string.dream_card_household_relevance_field), relevant, onRelevantChange) }
+                item { EditField(stringResource(Res.string.dream_card_time_horizon_field), timeBound, onTimeBoundChange) }
             }
 
             if (planItems.isNotEmpty()) {
                 item {
                     Text(
-                        selectedCategory.experience.planReviewTitle,
+                        stringResource(selectedExperience.planReviewTitle),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = SharedJourneyColors.MediterraneanTeal,
@@ -1045,10 +1092,11 @@ data class JourneyEditScreen(
         onCategorySelected: (JourneyCategory) -> Unit
     ) {
         var expanded by remember { mutableStateOf(false) }
+        val selectedExperience = selectedCategory.experienceResources
 
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                "Category",
+                stringResource(Res.string.journey_category_label),
                 style = MaterialTheme.typography.labelSmall,
                 color = SharedJourneyColors.InkMuted,
                 fontWeight = FontWeight.Bold,
@@ -1065,9 +1113,9 @@ data class JourneyEditScreen(
                     )
                 ) {
                     Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
-                        Text(selectedCategory.displayName, fontWeight = FontWeight.Bold)
+                        Text(stringResource(selectedExperience.displayName), fontWeight = FontWeight.Bold)
                         Text(
-                            selectedCategory.description,
+                            stringResource(selectedExperience.description),
                             style = MaterialTheme.typography.labelSmall,
                             color = SharedJourneyColors.InkMuted
                         )
@@ -1079,12 +1127,13 @@ data class JourneyEditScreen(
                     modifier = Modifier.background(SharedJourneyColors.SunDrenchedWhite)
                 ) {
                     JourneyCategory.entries.filter { it.isCreationReady }.forEach { category ->
+                        val experience = category.experienceResources
                         DropdownMenuItem(
                             text = {
                                 Column {
-                                    Text(category.displayName, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(experience.displayName), fontWeight = FontWeight.Bold)
                                     Text(
-                                        category.description,
+                                        stringResource(experience.description),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = SharedJourneyColors.InkMuted
                                     )
@@ -2207,48 +2256,6 @@ data class JourneyEditScreen(
     }
 }
 
-private fun suggestedTaskLabel(category: JourneyCategory, taskTitle: String): String {
-    if (category != JourneyCategory.LongTermProjects) {
-        return when (category) {
-            JourneyCategory.MealPlanning -> when {
-                taskTitle.contains("grocery", ignoreCase = true) -> "Grocery"
-                taskTitle.contains("prep", ignoreCase = true) ||
-                    taskTitle.contains("batch", ignoreCase = true) -> "Prep"
-                taskTitle.contains("lunch", ignoreCase = true) -> "Lunch"
-                else -> "Menu"
-            }
-            JourneyCategory.HouseholdFinance -> when {
-                taskTitle.contains("split", ignoreCase = true) -> "Split Rule"
-                taskTitle.contains("settle", ignoreCase = true) ||
-                    taskTitle.contains("reminder", ignoreCase = true) -> "Settle"
-                taskTitle.contains("goal", ignoreCase = true) -> "Goal"
-                else -> "Ledger"
-            }
-            JourneyCategory.HealthWellness -> when {
-                taskTitle.contains("message", ignoreCase = true) ||
-                    taskTitle.contains("de-escalated", ignoreCase = true) -> "De-escalator"
-                taskTitle.contains("date", ignoreCase = true) -> "Date Night"
-                taskTitle.contains("check", ignoreCase = true) -> "Check-In"
-                else -> "Care"
-            }
-            else -> "Plan"
-        }
-    }
-
-    return when {
-        taskTitle.contains("Today", ignoreCase = true) -> "Next Action"
-        taskTitle.contains("budget", ignoreCase = true) -> "Budget"
-        taskTitle.contains("roadblock", ignoreCase = true) -> "Friction"
-        taskTitle.contains("owner", ignoreCase = true) ||
-            taskTitle.contains("Assign", ignoreCase = true) -> "Roles"
-        taskTitle.contains("check-in", ignoreCase = true) ||
-            taskTitle.contains("cadence", ignoreCase = true) -> "Follow-up"
-        taskTitle.contains("board", ignoreCase = true) ||
-            taskTitle.contains("micro-task", ignoreCase = true) -> "Plan"
-        else -> "Plan"
-    }
-}
-
 private val JourneyCategory.isCreationReady: Boolean
     get() = when (this) {
         JourneyCategory.MealPlanning,
@@ -2258,32 +2265,6 @@ private val JourneyCategory.isCreationReady: Boolean
         JourneyCategory.CalendarLogistics,
         JourneyCategory.HouseholdManagement -> false
     }
-
-private fun suggestedTaskPlanning(category: JourneyCategory, taskTitle: String): String {
-    if (category != JourneyCategory.LongTermProjects) {
-        return when (suggestedTaskLabel(category, taskTitle)) {
-            "Grocery" -> "Turns the meal plan into a focused shopping action."
-            "Prep" -> "Reduces weekday friction before the household gets busy."
-            "Menu" -> "Keeps the week's meals visible and realistic."
-            "Split Rule" -> "Clarifies the shared money agreement before bills are tracked."
-            "Settle" -> "Prevents repeated reminders and back-and-forth payments."
-            "Ledger" -> "Creates one shared source of truth for household bills."
-            "De-escalator" -> "Helps the couple start from team language instead of blame."
-            "Date Night" -> "Protects connection with a concrete, low-friction plan."
-            "Check-In" -> "Creates the review loop that keeps the plan alive."
-            else -> "Suggested by the category AI plan."
-        }
-    }
-
-    return when (suggestedTaskLabel(category, taskTitle)) {
-        "Next Action" -> "Do this first to create momentum today."
-        "Budget" -> "Keeps the project realistic before decisions become expensive."
-        "Friction" -> "Names the main source of delay so the follow-up plan can remove it."
-        "Roles" -> "Clarifies ownership so the project does not depend on one person remembering everything."
-        "Follow-up" -> "Creates the recurring review loop for progress and accountability."
-        else -> "Breaks the milestone into visible, trackable project parts."
-    }
-}
 
 private fun String.toAmountValue(): Double {
     return filter { it.isDigit() || it == '.' }

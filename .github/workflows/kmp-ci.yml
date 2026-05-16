@@ -1,0 +1,91 @@
+name: KMP CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+      - "feature/**"
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - "feature/**"
+
+concurrency:
+  group: kmp-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  android-validation:
+    name: Android Build And Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Ensure Gradle wrapper is executable
+        run: chmod +x ./gradlew
+
+      - name: Generate database and Compose resources
+        run: ./gradlew :composeApp:generateCommonMainAppDatabaseInterface :composeApp:generateResourceAccessorsForCommonMain
+
+      - name: Run Android unit tests
+        run: ./gradlew :composeApp:testDebugUnitTest
+
+      - name: Compile Android debug Kotlin
+        run: ./gradlew :composeApp:compileDebugKotlinAndroid
+
+      - name: Assemble Android debug APK
+        run: ./gradlew :composeApp:assembleDebug
+
+      - name: Upload debug APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: composeApp-debug-apk
+          path: composeApp/build/outputs/apk/debug/*.apk
+          if-no-files-found: ignore
+
+  ios-compatibility:
+    name: iOS Compatibility Signal
+    runs-on: macos-15
+    timeout-minutes: 25
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Ensure Gradle wrapper is executable
+        run: chmod +x ./gradlew
+
+      - name: Compile iOS simulator Kotlin
+        run: ./gradlew :composeApp:compileKotlinIosSimulatorArm64
