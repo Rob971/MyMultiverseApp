@@ -101,6 +101,28 @@ class AiServiceImpl : AiService {
                 profile.rightNowGoal.contains("grocery", ignoreCase = true) -> "Grocery logistics"
                 else -> "Batch planning"
             }
+            val planItems = listOf(
+                JourneyPlanItem(
+                    type = "weekly_menu",
+                    title = "5-Night Dinner Rhythm",
+                    content = "Monday pantry pasta, Tuesday one-pan protein and vegetables, Wednesday fridge-clearance bowl, Thursday simple soup or stew, Friday flexible family favorite.",
+                ),
+                JourneyPlanItem(
+                    type = "grocery_list",
+                    title = "Focused Grocery List",
+                    content = "Buy local produce, two proteins, pantry staples, lunch extras, and one backup meal from $location while respecting $restrictions.",
+                ),
+                JourneyPlanItem(
+                    type = "prep_block",
+                    title = "Weekend Prep Block",
+                    content = "Wash and chop produce, batch-cook two base ingredients, and double dinner portions when lunch leftovers are useful.",
+                ),
+                JourneyPlanItem(
+                    type = "constraints",
+                    title = "Cooking Guardrails",
+                    content = "Keep weeknight cooking within ${profile.busyWeeknightCookTime.ifBlank { "the available time" }}, avoid ${profile.dislikedIngredients.ifBlank { "listed dislikes" }}, and match ${profile.cookingSkillLevel.ifBlank { "the household skill level" }}.",
+                ),
+            )
 
             Result.success(
                 SmartGoalProposal(
@@ -119,7 +141,8 @@ class AiServiceImpl : AiService {
                         "Friday: flexible family favorite that respects $restrictions",
                         "Weekend prep: wash, chop, and batch-cook two base ingredients",
                         "Grocery list: buy local produce, proteins, pantry staples, and lunch extras from $location"
-                    )
+                    ),
+                    planItems = planItems,
                 )
             )
         } catch (e: Exception) {
@@ -212,6 +235,33 @@ class AiServiceImpl : AiService {
             } else {
                 "Keep the irregular-expense fund visible and review it during check-ins."
             }
+            val planItems = listOf(
+                JourneyPlanItem(
+                    type = "split_rule",
+                    title = "Shared Split Rule",
+                    content = "Use $fairSplit for recurring and variable household bills unless a bill is explicitly assigned to one partner.",
+                ),
+                JourneyPlanItem(
+                    type = "bill_rhythm",
+                    title = "Bill Operating Rhythm",
+                    content = "Track $recurringBillSummary in one shared ledger, confirm due dates once, and preview the net balance before the monthly settle-up.",
+                ),
+                JourneyPlanItem(
+                    type = "spending_snapshot",
+                    title = "Monthly Spending Snapshot",
+                    content = "$monthlyBreakdown. Reported total: ${monthlyTotal.toCurrencyText()}. Largest category: ${largestCategory ?: "not enough data yet"}.",
+                ),
+                JourneyPlanItem(
+                    type = "settle_workflow",
+                    title = "Smart Settle Workflow",
+                    content = "$settlePlan $irregularPlan",
+                ),
+                JourneyPlanItem(
+                    type = "north_star",
+                    title = "Financial North Star",
+                    content = "${profile.primaryGoal.ifBlank { "Gain peace of mind" }}: $goalPlan.",
+                ),
+            )
 
             Result.success(
                 SmartGoalProposal(
@@ -231,7 +281,8 @@ class AiServiceImpl : AiService {
                         "Enable receipt text-to-split for variable bills like utilities",
                         irregularPlan,
                         "Track the primary goal alongside bills: ${profile.primaryGoal.ifBlank { "peace of mind" }}"
-                    )
+                    ),
+                    planItems = planItems,
                 )
             )
         } catch (e: Exception) {
@@ -371,6 +422,33 @@ class AiServiceImpl : AiService {
                 profile.roadblock.contains("Accountability", ignoreCase = true) -> "One partner owns the checklist, the other owns reminders and follow-through."
                 else -> "Partner A owns logistics, Partner B owns research, and both approve cost or style decisions."
             }
+            val planItems = listOf(
+                JourneyPlanItem(
+                    type = "finish_line",
+                    title = "Finish Line",
+                    content = finishLine,
+                ),
+                JourneyPlanItem(
+                    type = "cadence",
+                    title = "Progress Cadence",
+                    content = "Use $cadence and keep the visible plan to the next 3 decisions plus the next 2 actions.",
+                ),
+                JourneyPlanItem(
+                    type = "budget_guardrail",
+                    title = "Budget Guardrail",
+                    content = budgetGuardrail,
+                ),
+                JourneyPlanItem(
+                    type = "friction_strategy",
+                    title = "Friction Strategy",
+                    content = frictionPlan,
+                ),
+                JourneyPlanItem(
+                    type = "role_split",
+                    title = "Role Split",
+                    content = roleDelegation,
+                ),
+            )
 
             Result.success(
                 SmartGoalProposal(
@@ -390,7 +468,8 @@ class AiServiceImpl : AiService {
                         "Assign owners: $roleDelegation",
                         "Schedule the first 15-minute check-in",
                         "Review progress cadence: $cadence"
-                    )
+                    ),
+                    planItems = planItems,
                 )
             )
         } catch (e: Exception) {

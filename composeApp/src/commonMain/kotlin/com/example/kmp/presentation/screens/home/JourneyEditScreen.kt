@@ -103,6 +103,7 @@ data class JourneyEditScreen(
         var longTermTimeline by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.timeline ?: "Medium-term (1-6 months)") }
         var longTermBudgetStyle by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.budgetStyle ?: "Moderate (Some DIY, hiring pros for the big stuff)") }
         var longTermSuccessDefinition by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.successDefinition ?: "") }
+        var hasStartedDreamCard by remember { mutableStateOf(journeyId != null) }
 
         // Sync local state with AI proposal
         LaunchedEffect(architectState) {
@@ -119,6 +120,15 @@ data class JourneyEditScreen(
                 planItems = proposal.planItems
             }
         }
+
+        fun selectCategory(category: JourneyCategory) {
+            selectedCategory = category
+            subtitle = category.experience.outcome
+            selectedTasks = emptyList()
+            planItems = emptyList()
+        }
+
+        val hasGeneratedAiPlan = selectedTasks.isNotEmpty() || planItems.isNotEmpty() || journeyId != null
 
         NapolitanBackground {
             Scaffold(
@@ -147,7 +157,7 @@ data class JourneyEditScreen(
                 },
                 containerColor = Color.Transparent,
                 floatingActionButton = {
-                    if (architectState is ArchitectState.Proposed || journeyId != null) {
+                    if (hasGeneratedAiPlan) {
                         FloatingActionButton(
                             onClick = {
                                 val finalJourneyId = journeyId ?: Clock.System.now().toEpochMilliseconds().toString()
@@ -271,20 +281,45 @@ data class JourneyEditScreen(
                 }
             ) { padding ->
                 Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+                    val contentState = when {
+                        journeyId != null -> ArchitectState.Proposed(
+                            SmartGoalProposal(title, subtitle, specific, measurable, achievable, relevant, timeBound, emptyList(), planItems)
+                        )
+                        architectState is ArchitectState.Refining ||
+                            architectState is ArchitectState.Error ||
+                            architectState is ArchitectState.Proposed -> architectState
+                        hasStartedDreamCard -> ArchitectState.Proposed(
+                            SmartGoalProposal(title, subtitle, specific, measurable, achievable, relevant, timeBound, emptyList(), planItems)
+                        )
+                        else -> ArchitectState.Idle
+                    }
+
                     AnimatedContent(
-                        targetState = if (journeyId != null) ArchitectState.Proposed(
-                            SmartGoalProposal(title, subtitle, specific, measurable, achievable, relevant, timeBound, emptyList())
-                        ) else architectState,
+                        targetState = contentState,
                         transitionSpec = {
                             fadeIn() togetherWith fadeOut()
                         }
                     ) { state ->
                         when (state) {
                             is ArchitectState.Idle -> {
-                                SeedInputSection(
+                                DreamCardIntakeSection(
                                     value = seedText,
                                     onValueChange = { seedText = it },
-                                    onRefine = { screenModel.refineDream(seedText) }
+                                    selectedCategory = selectedCategory,
+                                    onCategorySelected = { selectCategory(it) },
+                                    onContinue = {
+                                        val dream = seedText.trim()
+                                        title = dream
+                                        subtitle = selectedCategory.experience.outcome
+                                        specific = dream
+                                        measurable = ""
+                                        achievable = ""
+                                        relevant = ""
+                                        timeBound = ""
+                                        selectedTasks = emptyList()
+                                        planItems = emptyList()
+                                        hasStartedDreamCard = true
+                                    }
                                 )
                             }
                             is ArchitectState.Refining -> {
@@ -295,7 +330,7 @@ data class JourneyEditScreen(
                                     title = title, onTitleChange = { title = it },
                                     subtitle = subtitle, onSubtitleChange = { subtitle = it },
                                     selectedCategory = selectedCategory,
-                                    onCategorySelected = { selectedCategory = it },
+                                    onCategorySelected = { selectCategory(it) },
                                     mealCookingFor = mealCookingFor,
                                     onMealCookingForChange = { mealCookingFor = it },
                                     mealDietaryRestrictions = mealDietaryRestrictions,
@@ -470,6 +505,7 @@ data class JourneyEditScreen(
                                     relevant = relevant, onRelevantChange = { relevant = it },
                                     timeBound = timeBound, onTimeBoundChange = { timeBound = it },
                                     planItems = planItems,
+                                    showAiReview = hasGeneratedAiPlan,
                                     suggestedTasks = selectedTasks,
                                     onToggleTask = { task ->
                                         selectedTasks = if (selectedTasks.contains(task)) {
@@ -478,7 +514,10 @@ data class JourneyEditScreen(
                                             selectedTasks + task
                                         }
                                     },
-                                    onRegenerate = { screenModel.resetArchitect() }
+                                    onRegenerate = {
+                                        screenModel.resetArchitect()
+                                        hasStartedDreamCard = false
+                                    }
                                 )
                             }
                             is ArchitectState.Error -> {
@@ -492,55 +531,115 @@ data class JourneyEditScreen(
     }
 
     @Composable
-    private fun SeedInputSection(
+    private fun DreamCardIntakeSection(
         value: String,
         onValueChange: (String) -> Unit,
-        onRefine: () -> Unit
+        selectedCategory: JourneyCategory,
+        onCategorySelected: (JourneyCategory) -> Unit,
+        onContinue: () -> Unit
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(24.dp),
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(24.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                stringResource(Res.string.edit_dream_seed_title),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Black,
-                color = SharedJourneyColors.MediterraneanTeal,
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(12.dp))
-            Text(
-                stringResource(Res.string.edit_dream_seed_description),
-                style = MaterialTheme.typography.bodyMedium,
-                color = SharedJourneyColors.InkMuted,
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(32.dp))
-            TextField(
-                value = value,
-                onValueChange = onValueChange,
-                placeholder = { Text(stringResource(Res.string.edit_dream_seed_placeholder)) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = SharedJourneyColors.GlassWhite,
-                    unfocusedContainerColor = SharedJourneyColors.GlassWhite,
-                    focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                shape = RoundedCornerShape(20.dp)
-            )
-            Spacer(Modifier.height(24.dp))
-            Button(
-                onClick = onRefine,
-                enabled = value.isNotBlank(),
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)
-            ) {
-                Icon(AppIcons.Sparkles, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(12.dp))
-                Text(stringResource(Res.string.edit_dream_seed_button), fontWeight = FontWeight.Bold)
+            item {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Surface(
+                        color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(20.dp),
+                    ) {
+                        Text(
+                            "Step 1 of 3 · Dream Card",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = SharedJourneyColors.MediterraneanTeal,
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                        )
+                    }
+                    Spacer(Modifier.height(18.dp))
+                    Text(
+                        "What are we trying to improve together?",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Black,
+                        color = SharedJourneyColors.MediterraneanTeal,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        "Start with the couple's intent, choose the best category, then answer only the questions that matter for that category.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = SharedJourneyColors.InkMuted,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
+            item {
+                TextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    placeholder = { Text("Example: Make weeknight dinners easier without wasting groceries") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = SharedJourneyColors.GlassWhite,
+                        unfocusedContainerColor = SharedJourneyColors.GlassWhite,
+                        focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(20.dp)
+                )
+            }
+
+            item {
+                CategorySelector(
+                    selectedCategory = selectedCategory,
+                    onCategorySelected = onCategorySelected
+                )
+            }
+
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = SharedJourneyColors.GlassWhite,
+                    shape = RoundedCornerShape(20.dp),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            "What this category will produce",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = SharedJourneyColors.MediterraneanTeal,
+                            fontWeight = FontWeight.Black,
+                        )
+                        Text(
+                            selectedCategory.experience.outcome,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = SharedJourneyColors.InkDeep,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            selectedCategory.experience.dreamPrompt,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = SharedJourneyColors.InkMuted,
+                        )
+                    }
+                }
+            }
+
+            item {
+                Button(
+                    onClick = onContinue,
+                    enabled = value.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)
+                ) {
+                    Icon(AppIcons.Sparkles, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Text("Continue to smart questions", fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
@@ -631,6 +730,7 @@ data class JourneyEditScreen(
         relevant: String, onRelevantChange: (String) -> Unit,
         timeBound: String, onTimeBoundChange: (String) -> Unit,
         planItems: List<JourneyPlanItem>,
+        showAiReview: Boolean,
         suggestedTasks: List<String>,
         onToggleTask: (String) -> Unit,
         onRegenerate: () -> Unit
@@ -648,7 +748,16 @@ data class JourneyEditScreen(
                     Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(AppIcons.Sparkles, contentDescription = null, tint = SharedJourneyColors.MediterraneanTeal, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text(stringResource(Res.string.edit_dream_proposal_badge), style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.MediterraneanTeal, fontWeight = FontWeight.Bold)
+                        Text(
+                            if (showAiReview) {
+                                "Step 3 of 3 · Review ${selectedCategory.experience.planReviewTitle}"
+                            } else {
+                                "Step 2 of 3 · Answer ${selectedCategory.displayName} questions"
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = SharedJourneyColors.MediterraneanTeal,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }
@@ -660,6 +769,31 @@ data class JourneyEditScreen(
                     selectedCategory = selectedCategory,
                     onCategorySelected = onCategorySelected
                 )
+            }
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = SharedJourneyColors.GlassWhite,
+                    shape = RoundedCornerShape(18.dp),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            selectedCategory.experience.planReviewTitle,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = SharedJourneyColors.InkDeep,
+                            fontWeight = FontWeight.Black,
+                        )
+                        Text(
+                            if (showAiReview) {
+                                "Review the AI structure below, edit anything that feels off, then save the plan as a category-specific Dream Card."
+                            } else {
+                                selectedCategory.experience.questionsIntro
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = SharedJourneyColors.InkMuted,
+                        )
+                    }
+                }
             }
             if (selectedCategory == JourneyCategory.MealPlanning) {
                 item {
@@ -786,26 +920,28 @@ data class JourneyEditScreen(
                 }
             }
 
-            item {
-                Text(
-                    stringResource(Res.string.edit_dream_smart_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = SharedJourneyColors.MediterraneanTeal,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-            }
+            if (showAiReview) {
+                item {
+                    Text(
+                        "AI Understanding",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = SharedJourneyColors.MediterraneanTeal,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                }
 
-            item { EditField(stringResource(Res.string.edit_dream_field_specific), specific, onSpecificChange) }
-            item { EditField(stringResource(Res.string.edit_dream_field_measurable), measurable, onMeasurableChange) }
-            item { EditField(stringResource(Res.string.edit_dream_field_achievable), achievable, onAchievableChange) }
-            item { EditField(stringResource(Res.string.edit_dream_field_relevant), relevant, onRelevantChange) }
-            item { EditField(stringResource(Res.string.edit_dream_field_timebound), timeBound, onTimeBoundChange) }
+                item { EditField("What the AI understood", specific, onSpecificChange) }
+                item { EditField("How success will be measured", measurable, onMeasurableChange) }
+                item { EditField("Why this plan is realistic", achievable, onAchievableChange) }
+                item { EditField("Why it matters for the household", relevant, onRelevantChange) }
+                item { EditField("Time horizon", timeBound, onTimeBoundChange) }
+            }
 
             if (planItems.isNotEmpty()) {
                 item {
                     Text(
-                        "Structured AI Plan",
+                        selectedCategory.experience.planReviewTitle,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = SharedJourneyColors.MediterraneanTeal,
@@ -865,6 +1001,12 @@ data class JourneyEditScreen(
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    item.type.replace("_", " ").uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SharedJourneyColors.MediterraneanTeal,
+                    fontWeight = FontWeight.Black
+                )
                 Text(
                     item.title,
                     style = MaterialTheme.typography.bodyMedium,
@@ -936,7 +1078,7 @@ data class JourneyEditScreen(
                     onDismissRequest = { expanded = false },
                     modifier = Modifier.background(SharedJourneyColors.SunDrenchedWhite)
                 ) {
-                    JourneyCategory.entries.forEach { category ->
+                    JourneyCategory.entries.filter { it.isCreationReady }.forEach { category ->
                         DropdownMenuItem(
                             text = {
                                 Column {
@@ -2066,7 +2208,32 @@ data class JourneyEditScreen(
 }
 
 private fun suggestedTaskLabel(category: JourneyCategory, taskTitle: String): String {
-    if (category != JourneyCategory.LongTermProjects) return "AI"
+    if (category != JourneyCategory.LongTermProjects) {
+        return when (category) {
+            JourneyCategory.MealPlanning -> when {
+                taskTitle.contains("grocery", ignoreCase = true) -> "Grocery"
+                taskTitle.contains("prep", ignoreCase = true) ||
+                    taskTitle.contains("batch", ignoreCase = true) -> "Prep"
+                taskTitle.contains("lunch", ignoreCase = true) -> "Lunch"
+                else -> "Menu"
+            }
+            JourneyCategory.HouseholdFinance -> when {
+                taskTitle.contains("split", ignoreCase = true) -> "Split Rule"
+                taskTitle.contains("settle", ignoreCase = true) ||
+                    taskTitle.contains("reminder", ignoreCase = true) -> "Settle"
+                taskTitle.contains("goal", ignoreCase = true) -> "Goal"
+                else -> "Ledger"
+            }
+            JourneyCategory.HealthWellness -> when {
+                taskTitle.contains("message", ignoreCase = true) ||
+                    taskTitle.contains("de-escalated", ignoreCase = true) -> "De-escalator"
+                taskTitle.contains("date", ignoreCase = true) -> "Date Night"
+                taskTitle.contains("check", ignoreCase = true) -> "Check-In"
+                else -> "Care"
+            }
+            else -> "Plan"
+        }
+    }
 
     return when {
         taskTitle.contains("Today", ignoreCase = true) -> "Next Action"
@@ -2082,8 +2249,31 @@ private fun suggestedTaskLabel(category: JourneyCategory, taskTitle: String): St
     }
 }
 
+private val JourneyCategory.isCreationReady: Boolean
+    get() = when (this) {
+        JourneyCategory.MealPlanning,
+        JourneyCategory.HouseholdFinance,
+        JourneyCategory.HealthWellness,
+        JourneyCategory.LongTermProjects -> true
+        JourneyCategory.CalendarLogistics,
+        JourneyCategory.HouseholdManagement -> false
+    }
+
 private fun suggestedTaskPlanning(category: JourneyCategory, taskTitle: String): String {
-    if (category != JourneyCategory.LongTermProjects) return "Suggested by AI Architect"
+    if (category != JourneyCategory.LongTermProjects) {
+        return when (suggestedTaskLabel(category, taskTitle)) {
+            "Grocery" -> "Turns the meal plan into a focused shopping action."
+            "Prep" -> "Reduces weekday friction before the household gets busy."
+            "Menu" -> "Keeps the week's meals visible and realistic."
+            "Split Rule" -> "Clarifies the shared money agreement before bills are tracked."
+            "Settle" -> "Prevents repeated reminders and back-and-forth payments."
+            "Ledger" -> "Creates one shared source of truth for household bills."
+            "De-escalator" -> "Helps the couple start from team language instead of blame."
+            "Date Night" -> "Protects connection with a concrete, low-friction plan."
+            "Check-In" -> "Creates the review loop that keeps the plan alive."
+            else -> "Suggested by the category AI plan."
+        }
+    }
 
     return when (suggestedTaskLabel(category, taskTitle)) {
         "Next Action" -> "Do this first to create momentum today."
