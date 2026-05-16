@@ -81,6 +81,13 @@ class JourneyRepositoryImpl(
                             partnerAIncome = entity.financePartnerAIncome.orEmpty(),
                             partnerBIncome = entity.financePartnerBIncome.orEmpty(),
                             customSplitPercentages = entity.financeCustomSplitPercentages.orEmpty(),
+                            monthlyHousingSpend = entity.financeMonthlyHousingSpend.orEmpty(),
+                            monthlyUtilitiesSpend = entity.financeMonthlyUtilitiesSpend.orEmpty(),
+                            monthlyConnectivitySpend = entity.financeMonthlyConnectivitySpend.orEmpty(),
+                            monthlySubscriptionsSpend = entity.financeMonthlySubscriptionsSpend.orEmpty(),
+                            monthlyInsuranceSpend = entity.financeMonthlyInsuranceSpend.orEmpty(),
+                            monthlyKidsPetsSpend = entity.financeMonthlyKidsPetsSpend.orEmpty(),
+                            monthlyOtherSpend = entity.financeMonthlyOtherSpend.orEmpty(),
                         ).takeIf { it.hasAnswers },
                         tasks = tasks
                     )
@@ -126,7 +133,14 @@ class JourneyRepositoryImpl(
             financeBillPainPoint = journey.financeProfile?.billPainPoint,
             financePartnerAIncome = journey.financeProfile?.partnerAIncome,
             financePartnerBIncome = journey.financeProfile?.partnerBIncome,
-            financeCustomSplitPercentages = journey.financeProfile?.customSplitPercentages
+            financeCustomSplitPercentages = journey.financeProfile?.customSplitPercentages,
+            financeMonthlyHousingSpend = journey.financeProfile?.monthlyHousingSpend,
+            financeMonthlyUtilitiesSpend = journey.financeProfile?.monthlyUtilitiesSpend,
+            financeMonthlyConnectivitySpend = journey.financeProfile?.monthlyConnectivitySpend,
+            financeMonthlySubscriptionsSpend = journey.financeProfile?.monthlySubscriptionsSpend,
+            financeMonthlyInsuranceSpend = journey.financeProfile?.monthlyInsuranceSpend,
+            financeMonthlyKidsPetsSpend = journey.financeProfile?.monthlyKidsPetsSpend,
+            financeMonthlyOtherSpend = journey.financeProfile?.monthlyOtherSpend
         )
         // Also insert/update tasks
         journey.tasks.forEach { task ->
@@ -247,7 +261,14 @@ class JourneyRepositoryImpl(
             financeBillPainPoint = j.financeBillPainPoint,
             financePartnerAIncome = j.financePartnerAIncome,
             financePartnerBIncome = j.financePartnerBIncome,
-            financeCustomSplitPercentages = j.financeCustomSplitPercentages
+            financeCustomSplitPercentages = j.financeCustomSplitPercentages,
+            financeMonthlyHousingSpend = j.financeMonthlyHousingSpend,
+            financeMonthlyUtilitiesSpend = j.financeMonthlyUtilitiesSpend,
+            financeMonthlyConnectivitySpend = j.financeMonthlyConnectivitySpend,
+            financeMonthlySubscriptionsSpend = j.financeMonthlySubscriptionsSpend,
+            financeMonthlyInsuranceSpend = j.financeMonthlyInsuranceSpend,
+            financeMonthlyKidsPetsSpend = j.financeMonthlyKidsPetsSpend,
+            financeMonthlyOtherSpend = j.financeMonthlyOtherSpend
         )
     }
 }

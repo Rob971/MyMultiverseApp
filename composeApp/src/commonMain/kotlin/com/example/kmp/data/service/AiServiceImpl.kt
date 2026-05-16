@@ -133,6 +133,12 @@ class AiServiceImpl : AiService {
                 .takeIf { it.isNotEmpty() }
                 ?.joinToString(", ")
                 ?: "shared recurring bills"
+            val monthlyTotal = profile.monthlyReportedSpendTotal
+            val monthlyBreakdown = profile.monthlySpendingBreakdown
+                .takeIf { it.isNotEmpty() }
+                ?.joinToString(", ") { (category, amount) -> "$category ${amount.toCurrencyText()}" }
+                ?: "no reported monthly spend yet"
+            val largestCategory = profile.monthlySpendingBreakdown.maxByOrNull { it.second }?.first
             val partnerAIncome = profile.partnerAIncome.toAmountOrNull()
             val partnerBIncome = profile.partnerBIncome.toAmountOrNull()
             val totalIncome = (partnerAIncome ?: 0.0) + (partnerBIncome ?: 0.0)
@@ -209,13 +215,14 @@ class AiServiceImpl : AiService {
                     title = "Custom Household Ledger",
                     subtitle = "Bill tracking and smart splitting for $recurringBillSummary",
                     specific = "Diagnosis: You have $dynamic, $mentalLoad, and the ledger should use $fairSplit.",
-                    measurable = "Quick win: Start with $featureFocus and track ${profile.recurringBills.size.coerceAtLeast(1)} recurring bill groups in one shared ledger.",
+                    measurable = "Quick win: Start with $featureFocus and track ${profile.recurringBills.size.coerceAtLeast(1)} recurring bill groups in one shared ledger. Reported monthly spend: ${monthlyTotal.toCurrencyText()}.",
                     achievable = "Smart Settle: $settlePlan. Receipt text-to-split can log variable bills, apply $fairSplit, and update the balance automatically.",
-                    relevant = "North Star: ${profile.primaryGoal.ifBlank { "Gain peace of mind" }}. $goalPlan.",
+                    relevant = "Monthly Spending Snapshot: $monthlyBreakdown. Largest category: ${largestCategory ?: "not enough reported data"}. North Star: ${profile.primaryGoal.ifBlank { "Gain peace of mind" }}. $goalPlan.",
                     timeBound = "Build the ledger this week, confirm due dates once, then review the net balance monthly.",
                     suggestedTasks = listOf(
                         "Create ledger categories for: $recurringBillSummary",
                         "Apply split rule: $fairSplit",
+                        "Review monthly reported spending: ${monthlyTotal.toCurrencyText()}",
                         "Add placeholder due dates for selected recurring bills",
                         "Send one smart-settle reminder on the 28th of each month",
                         "Enable receipt text-to-split for variable bills like utilities",
@@ -234,4 +241,9 @@ private fun String.toAmountOrNull(): Double? {
     return filter { it.isDigit() || it == '.' }
         .takeIf { it.isNotBlank() }
         ?.toDoubleOrNull()
+}
+
+private fun Double.toCurrencyText(): String {
+    val wholeAmount = toInt()
+    return "\$$wholeAmount/mo"
 }

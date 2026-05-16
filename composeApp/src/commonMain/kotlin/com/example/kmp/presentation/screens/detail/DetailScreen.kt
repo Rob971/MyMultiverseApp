@@ -36,7 +36,9 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.kmp.domain.model.FinanceProfile
 import com.example.kmp.domain.model.Journey
+import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
 import com.example.kmp.presentation.components.FriendlyProgressRing
 import com.example.kmp.presentation.components.NapolitanBackground
@@ -226,6 +228,12 @@ fun DetailContent(
 
             item {
                 SmartPrincipleSection(journey)
+            }
+
+            if (journey.category == JourneyCategory.HouseholdFinance && journey.financeProfile != null) {
+                item {
+                    MonthlySpendingSection(journey.financeProfile)
+                }
             }
 
             item {
@@ -525,6 +533,77 @@ fun SmartItem(label: String, value: String?) {
             color = SharedJourneyColors.InkDeep
         )
     }
+}
+
+@Composable
+fun MonthlySpendingSection(profile: FinanceProfile) {
+    val total = profile.monthlyReportedSpendTotal
+    val breakdown = profile.monthlySpendingBreakdown
+    if (total <= 0.0 || breakdown.isEmpty()) return
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = SharedJourneyColors.GlassWhite),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Text(
+                text = "Monthly Spending Snapshot",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                text = "Reported total: ${total.toCurrencyText()}",
+                style = MaterialTheme.typography.titleLarge,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                text = "These are the amounts reported during setup. Receipt import or manual bill entries can refine this month by month.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted
+            )
+            breakdown.forEach { (category, amount) ->
+                MonthlySpendRow(
+                    category = category,
+                    amount = amount,
+                    share = (amount / total).toFloat()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MonthlySpendRow(
+    category: String,
+    amount: Double,
+    share: Float,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(category, style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkDeep, fontWeight = FontWeight.Bold)
+            Text(amount.toCurrencyText(), style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkMuted, fontWeight = FontWeight.Bold)
+        }
+        LinearProgressIndicator(
+            progress = { share.coerceIn(0f, 1f) },
+            modifier = Modifier.fillMaxWidth().height(8.dp),
+            color = SharedJourneyColors.MediterraneanTeal,
+            trackColor = SharedJourneyColors.ParchmentWarm,
+        )
+    }
+}
+
+private fun Double.toCurrencyText(): String {
+    return "\$${toInt()}/mo"
 }
 
 @Composable

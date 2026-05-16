@@ -78,6 +78,13 @@ data class JourneyEditScreen(
         var financePartnerAIncome by remember { mutableStateOf(existingJourney?.financeProfile?.partnerAIncome ?: "") }
         var financePartnerBIncome by remember { mutableStateOf(existingJourney?.financeProfile?.partnerBIncome ?: "") }
         var financeCustomSplitPercentages by remember { mutableStateOf(existingJourney?.financeProfile?.customSplitPercentages ?: "") }
+        var financeMonthlyHousingSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyHousingSpend ?: "") }
+        var financeMonthlyUtilitiesSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyUtilitiesSpend ?: "") }
+        var financeMonthlyConnectivitySpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyConnectivitySpend ?: "") }
+        var financeMonthlySubscriptionsSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlySubscriptionsSpend ?: "") }
+        var financeMonthlyInsuranceSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyInsuranceSpend ?: "") }
+        var financeMonthlyKidsPetsSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyKidsPetsSpend ?: "") }
+        var financeMonthlyOtherSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyOtherSpend ?: "") }
 
         // Sync local state with AI proposal
         LaunchedEffect(architectState) {
@@ -173,7 +180,14 @@ data class JourneyEditScreen(
                                             billPainPoint = financeBillPainPoint,
                                             partnerAIncome = financePartnerAIncome,
                                             partnerBIncome = financePartnerBIncome,
-                                            customSplitPercentages = financeCustomSplitPercentages
+                                            customSplitPercentages = financeCustomSplitPercentages,
+                                            monthlyHousingSpend = financeMonthlyHousingSpend,
+                                            monthlyUtilitiesSpend = financeMonthlyUtilitiesSpend,
+                                            monthlyConnectivitySpend = financeMonthlyConnectivitySpend,
+                                            monthlySubscriptionsSpend = financeMonthlySubscriptionsSpend,
+                                            monthlyInsuranceSpend = financeMonthlyInsuranceSpend,
+                                            monthlyKidsPetsSpend = financeMonthlyKidsPetsSpend,
+                                            monthlyOtherSpend = financeMonthlyOtherSpend
                                         )
                                     } else {
                                         null
@@ -296,6 +310,20 @@ data class JourneyEditScreen(
                                     onFinancePartnerBIncomeChange = { financePartnerBIncome = it },
                                     financeCustomSplitPercentages = financeCustomSplitPercentages,
                                     onFinanceCustomSplitPercentagesChange = { financeCustomSplitPercentages = it },
+                                    financeMonthlyHousingSpend = financeMonthlyHousingSpend,
+                                    onFinanceMonthlyHousingSpendChange = { financeMonthlyHousingSpend = it },
+                                    financeMonthlyUtilitiesSpend = financeMonthlyUtilitiesSpend,
+                                    onFinanceMonthlyUtilitiesSpendChange = { financeMonthlyUtilitiesSpend = it },
+                                    financeMonthlyConnectivitySpend = financeMonthlyConnectivitySpend,
+                                    onFinanceMonthlyConnectivitySpendChange = { financeMonthlyConnectivitySpend = it },
+                                    financeMonthlySubscriptionsSpend = financeMonthlySubscriptionsSpend,
+                                    onFinanceMonthlySubscriptionsSpendChange = { financeMonthlySubscriptionsSpend = it },
+                                    financeMonthlyInsuranceSpend = financeMonthlyInsuranceSpend,
+                                    onFinanceMonthlyInsuranceSpendChange = { financeMonthlyInsuranceSpend = it },
+                                    financeMonthlyKidsPetsSpend = financeMonthlyKidsPetsSpend,
+                                    onFinanceMonthlyKidsPetsSpendChange = { financeMonthlyKidsPetsSpend = it },
+                                    financeMonthlyOtherSpend = financeMonthlyOtherSpend,
+                                    onFinanceMonthlyOtherSpendChange = { financeMonthlyOtherSpend = it },
                                     onGenerateFinancialBlueprint = {
                                         screenModel.generateFinancialBlueprint(
                                             FinanceProfile(
@@ -313,7 +341,14 @@ data class JourneyEditScreen(
                                                 billPainPoint = financeBillPainPoint,
                                                 partnerAIncome = financePartnerAIncome,
                                                 partnerBIncome = financePartnerBIncome,
-                                                customSplitPercentages = financeCustomSplitPercentages
+                                                customSplitPercentages = financeCustomSplitPercentages,
+                                                monthlyHousingSpend = financeMonthlyHousingSpend,
+                                                monthlyUtilitiesSpend = financeMonthlyUtilitiesSpend,
+                                                monthlyConnectivitySpend = financeMonthlyConnectivitySpend,
+                                                monthlySubscriptionsSpend = financeMonthlySubscriptionsSpend,
+                                                monthlyInsuranceSpend = financeMonthlyInsuranceSpend,
+                                                monthlyKidsPetsSpend = financeMonthlyKidsPetsSpend,
+                                                monthlyOtherSpend = financeMonthlyOtherSpend
                                             )
                                         )
                                     },
@@ -450,6 +485,13 @@ data class JourneyEditScreen(
         financePartnerAIncome: String, onFinancePartnerAIncomeChange: (String) -> Unit,
         financePartnerBIncome: String, onFinancePartnerBIncomeChange: (String) -> Unit,
         financeCustomSplitPercentages: String, onFinanceCustomSplitPercentagesChange: (String) -> Unit,
+        financeMonthlyHousingSpend: String, onFinanceMonthlyHousingSpendChange: (String) -> Unit,
+        financeMonthlyUtilitiesSpend: String, onFinanceMonthlyUtilitiesSpendChange: (String) -> Unit,
+        financeMonthlyConnectivitySpend: String, onFinanceMonthlyConnectivitySpendChange: (String) -> Unit,
+        financeMonthlySubscriptionsSpend: String, onFinanceMonthlySubscriptionsSpendChange: (String) -> Unit,
+        financeMonthlyInsuranceSpend: String, onFinanceMonthlyInsuranceSpendChange: (String) -> Unit,
+        financeMonthlyKidsPetsSpend: String, onFinanceMonthlyKidsPetsSpendChange: (String) -> Unit,
+        financeMonthlyOtherSpend: String, onFinanceMonthlyOtherSpendChange: (String) -> Unit,
         onGenerateFinancialBlueprint: () -> Unit,
         specific: String, onSpecificChange: (String) -> Unit,
         measurable: String, onMeasurableChange: (String) -> Unit,
@@ -544,6 +586,20 @@ data class JourneyEditScreen(
                         onPartnerBIncomeChange = onFinancePartnerBIncomeChange,
                         customSplitPercentages = financeCustomSplitPercentages,
                         onCustomSplitPercentagesChange = onFinanceCustomSplitPercentagesChange,
+                        monthlyHousingSpend = financeMonthlyHousingSpend,
+                        onMonthlyHousingSpendChange = onFinanceMonthlyHousingSpendChange,
+                        monthlyUtilitiesSpend = financeMonthlyUtilitiesSpend,
+                        onMonthlyUtilitiesSpendChange = onFinanceMonthlyUtilitiesSpendChange,
+                        monthlyConnectivitySpend = financeMonthlyConnectivitySpend,
+                        onMonthlyConnectivitySpendChange = onFinanceMonthlyConnectivitySpendChange,
+                        monthlySubscriptionsSpend = financeMonthlySubscriptionsSpend,
+                        onMonthlySubscriptionsSpendChange = onFinanceMonthlySubscriptionsSpendChange,
+                        monthlyInsuranceSpend = financeMonthlyInsuranceSpend,
+                        onMonthlyInsuranceSpendChange = onFinanceMonthlyInsuranceSpendChange,
+                        monthlyKidsPetsSpend = financeMonthlyKidsPetsSpend,
+                        onMonthlyKidsPetsSpendChange = onFinanceMonthlyKidsPetsSpendChange,
+                        monthlyOtherSpend = financeMonthlyOtherSpend,
+                        onMonthlyOtherSpendChange = onFinanceMonthlyOtherSpendChange,
                         onGenerateFinancialBlueprint = onGenerateFinancialBlueprint
                     )
                 }
@@ -981,6 +1037,20 @@ data class JourneyEditScreen(
         onPartnerBIncomeChange: (String) -> Unit,
         customSplitPercentages: String,
         onCustomSplitPercentagesChange: (String) -> Unit,
+        monthlyHousingSpend: String,
+        onMonthlyHousingSpendChange: (String) -> Unit,
+        monthlyUtilitiesSpend: String,
+        onMonthlyUtilitiesSpendChange: (String) -> Unit,
+        monthlyConnectivitySpend: String,
+        onMonthlyConnectivitySpendChange: (String) -> Unit,
+        monthlySubscriptionsSpend: String,
+        onMonthlySubscriptionsSpendChange: (String) -> Unit,
+        monthlyInsuranceSpend: String,
+        onMonthlyInsuranceSpendChange: (String) -> Unit,
+        monthlyKidsPetsSpend: String,
+        onMonthlyKidsPetsSpendChange: (String) -> Unit,
+        monthlyOtherSpend: String,
+        onMonthlyOtherSpendChange: (String) -> Unit,
         onGenerateFinancialBlueprint: () -> Unit,
     ) {
         val billSplitStrategyOptions = listOf(
@@ -1041,6 +1111,15 @@ data class JourneyEditScreen(
             "Yes, we save in advance",
             "No, we just handle them as they hit our credit cards"
         )
+        val monthlySpendTotal = listOf(
+            monthlyHousingSpend,
+            monthlyUtilitiesSpend,
+            monthlyConnectivitySpend,
+            monthlySubscriptionsSpend,
+            monthlyInsuranceSpend,
+            monthlyKidsPetsSpend,
+            monthlyOtherSpend
+        ).sumOf { it.toAmountValue() }
         val canGenerateBlueprint = billSplitStrategy.isNotBlank() &&
             settleWorkflow.isNotBlank() &&
             recurringBills.isNotEmpty() &&
@@ -1183,6 +1262,41 @@ data class JourneyEditScreen(
             HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
 
             Text(
+                "Monthly Spending Snapshot",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                "Add the monthly amounts you already know. The ledger will use this to show a clear per-month spending breakdown while receipts and variable bills improve it over time.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted
+            )
+            MonthlySpendField("Housing", monthlyHousingSpend, onMonthlyHousingSpendChange)
+            MonthlySpendField("Utilities", monthlyUtilitiesSpend, onMonthlyUtilitiesSpendChange)
+            MonthlySpendField("Connectivity", monthlyConnectivitySpend, onMonthlyConnectivitySpendChange)
+            MonthlySpendField("Subscriptions", monthlySubscriptionsSpend, onMonthlySubscriptionsSpendChange)
+            MonthlySpendField("Insurance", monthlyInsuranceSpend, onMonthlyInsuranceSpendChange)
+            MonthlySpendField("Kids & Pets", monthlyKidsPetsSpend, onMonthlyKidsPetsSpendChange)
+            MonthlySpendField("Other shared spending", monthlyOtherSpend, onMonthlyOtherSpendChange)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(
+                    "Reported monthly spend: ${monthlySpendTotal.toCurrencyText()}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = SharedJourneyColors.MediterraneanTeal,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.padding(14.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
+
+            Text(
                 "Relationship Context",
                 style = MaterialTheme.typography.titleMedium,
                 color = SharedJourneyColors.MediterraneanTeal,
@@ -1285,6 +1399,28 @@ data class JourneyEditScreen(
     }
 
     @Composable
+    private fun MonthlySpendField(
+        label: String,
+        value: String,
+        onValueChange: (String) -> Unit,
+    ) {
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text("$label per month") },
+            modifier = Modifier.fillMaxWidth(),
+            leadingIcon = { Text("\$") },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    @Composable
     private fun OptionChips(
         options: List<String>,
         selectedOption: String,
@@ -1338,6 +1474,17 @@ data class JourneyEditScreen(
             )
         }
     }
+}
+
+private fun String.toAmountValue(): Double {
+    return filter { it.isDigit() || it == '.' }
+        .takeIf { it.isNotBlank() }
+        ?.toDoubleOrNull()
+        ?: 0.0
+}
+
+private fun Double.toCurrencyText(): String {
+    return "\$${toInt()}/mo"
 }
 
 @org.jetbrains.compose.ui.tooling.preview.Preview

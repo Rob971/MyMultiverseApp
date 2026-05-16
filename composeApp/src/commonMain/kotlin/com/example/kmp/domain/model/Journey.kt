@@ -114,6 +114,13 @@ data class FinanceProfile(
     val partnerAIncome: String = "",
     val partnerBIncome: String = "",
     val customSplitPercentages: String = "",
+    val monthlyHousingSpend: String = "",
+    val monthlyUtilitiesSpend: String = "",
+    val monthlyConnectivitySpend: String = "",
+    val monthlySubscriptionsSpend: String = "",
+    val monthlyInsuranceSpend: String = "",
+    val monthlyKidsPetsSpend: String = "",
+    val monthlyOtherSpend: String = "",
 ) {
     val hasAnswers: Boolean
         get() = financeSplit.isNotBlank() ||
@@ -130,7 +137,29 @@ data class FinanceProfile(
             billPainPoint.isNotBlank() ||
             partnerAIncome.isNotBlank() ||
             partnerBIncome.isNotBlank() ||
-            customSplitPercentages.isNotBlank()
+            customSplitPercentages.isNotBlank() ||
+            monthlyReportedSpendTotal > 0.0
+
+    val monthlyReportedSpendTotal: Double
+        get() = monthlySpendingBreakdown.sumOf { it.second }
+
+    val monthlySpendingBreakdown: List<Pair<String, Double>>
+        get() = listOf(
+            "Housing" to monthlyHousingSpend.toAmountValue(),
+            "Utilities" to monthlyUtilitiesSpend.toAmountValue(),
+            "Connectivity" to monthlyConnectivitySpend.toAmountValue(),
+            "Subscriptions" to monthlySubscriptionsSpend.toAmountValue(),
+            "Insurance" to monthlyInsuranceSpend.toAmountValue(),
+            "Kids & Pets" to monthlyKidsPetsSpend.toAmountValue(),
+            "Other" to monthlyOtherSpend.toAmountValue(),
+        ).filter { it.second > 0.0 }
+}
+
+private fun String.toAmountValue(): Double {
+    return filter { it.isDigit() || it == '.' }
+        .takeIf { it.isNotBlank() }
+        ?.toDoubleOrNull()
+        ?: 0.0
 }
 
 @Serializable

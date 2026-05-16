@@ -346,7 +346,8 @@ private fun CategorySummary(
                 ?: financeProfile?.financeSplit?.takeIf { it.isNotBlank() }
                 ?: "No split rule"
             val billCount = financeProfile?.recurringBills?.size ?: 0
-            "$split - $billCount bill groups - $openTasks ledger actions"
+            val monthlySpend = financeProfile?.monthlyReportedSpendTotal ?: 0.0
+            "$split - $billCount bill groups - ${monthlySpend.toCurrencyText()} reported monthly"
         }
         JourneyCategory.HealthWellness -> "$completedCount habits completed - $familyStreak day streak - $totalCheers cheers"
         JourneyCategory.LongTermProjects -> "${tasks.size} milestones - ${timeBoundDeadline ?: "No deadline set"}"
@@ -414,6 +415,19 @@ private fun CategorySummary(
             color = SharedJourneyColors.InkMuted,
         )
     }
+    if (category == JourneyCategory.HouseholdFinance && finance != null && finance.monthlySpendingBreakdown.isNotEmpty()) {
+        Spacer(Modifier.height(4.dp))
+        val topCategory = finance.monthlySpendingBreakdown.maxByOrNull { it.second }
+        Text(
+            text = "Top monthly spend: ${topCategory?.first} ${topCategory?.second?.toCurrencyText()}",
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkMuted,
+        )
+    }
+}
+
+private fun Double.toCurrencyText(): String {
+    return "\$${toInt()}/mo"
 }
 
 @Composable
