@@ -41,6 +41,7 @@ import com.example.kmp.domain.model.FinanceProfile
 import com.example.kmp.domain.model.HealthWellnessProfile
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
+import com.example.kmp.domain.model.JourneyPlanItem
 import com.example.kmp.domain.model.JourneyTask
 import com.example.kmp.presentation.components.FriendlyProgressRing
 import com.example.kmp.presentation.components.NapolitanBackground
@@ -257,7 +258,10 @@ fun DetailContent(
 
             if (journey.category == JourneyCategory.HealthWellness && journey.healthWellnessProfile != null) {
                 item {
-                    HealthWellnessInsightSection(journey.healthWellnessProfile)
+                    HealthWellnessInsightSection(
+                        profile = journey.healthWellnessProfile,
+                        planItems = journey.planItems
+                    )
                 }
             }
 
@@ -572,7 +576,10 @@ fun SmartItem(label: String, value: String?) {
 }
 
 @Composable
-fun HealthWellnessInsightSection(profile: HealthWellnessProfile) {
+fun HealthWellnessInsightSection(
+    profile: HealthWellnessProfile,
+    planItems: List<JourneyPlanItem>,
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -598,18 +605,48 @@ fun HealthWellnessInsightSection(profile: HealthWellnessProfile) {
                 WellnessContextChip("Stress", profile.stressLevel, Modifier.weight(1f))
                 WellnessContextChip("Connection", profile.connectionLevel, Modifier.weight(1f))
             }
-            if (profile.conflictTopic.isNotBlank()) {
-                WellnessLine("De-escalator", profile.conflictTopic)
+            if (planItems.isNotEmpty()) {
+                planItems.forEach { item ->
+                    WellnessPlanItemCard(item)
+                }
+            } else {
+                if (profile.conflictTopic.isNotBlank()) {
+                    WellnessLine("De-escalator", profile.conflictTopic)
+                }
+                if (profile.partnerLoveLanguage.isNotBlank()) {
+                    WellnessLine("Appreciation", "${profile.partnerLoveLanguage} - ${profile.availableTime.ifBlank { "quick action" }} - ${profile.budget.ifBlank { "no budget" }}")
+                }
+                if (profile.weeklyDrain.isNotBlank()) {
+                    WellnessLine("Weekly drain", profile.weeklyDrain)
+                }
+                if (profile.dateNightLikes.isNotBlank()) {
+                    WellnessLine("Date night", "${profile.dateNightDuration.ifBlank { "Tonight" }} around ${profile.dateNightLikes}")
+                }
             }
-            if (profile.partnerLoveLanguage.isNotBlank()) {
-                WellnessLine("Appreciation", "${profile.partnerLoveLanguage} - ${profile.availableTime.ifBlank { "quick action" }} - ${profile.budget.ifBlank { "no budget" }}")
-            }
-            if (profile.weeklyDrain.isNotBlank()) {
-                WellnessLine("Weekly drain", profile.weeklyDrain)
-            }
-            if (profile.dateNightLikes.isNotBlank()) {
-                WellnessLine("Date night", "${profile.dateNightDuration.ifBlank { "Tonight" }} around ${profile.dateNightLikes}")
-            }
+        }
+    }
+}
+
+@Composable
+private fun WellnessPlanItemCard(item: JourneyPlanItem) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = SharedJourneyColors.SunDrenchedWhite,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                item.title.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                item.content,
+                style = MaterialTheme.typography.bodyMedium,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

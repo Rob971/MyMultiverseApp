@@ -22,6 +22,7 @@ data class Journey(
     val financeProfile: FinanceProfile? = null,
     val healthWellnessProfile: HealthWellnessProfile? = null,
     val longTermProjectProfile: LongTermProjectProfile? = null,
+    val planItems: List<JourneyPlanItem> = emptyList(),
     val financeBillEntries: List<FinanceBillEntry> = emptyList(),
 )
 
@@ -229,6 +230,13 @@ data class FinanceBillEntry(
 )
 
 @Serializable
+data class JourneyPlanItem(
+    val type: String,
+    val title: String,
+    val content: String,
+)
+
+@Serializable
 data class JourneyTask(
     val id: String,
     val journeyId: String,
@@ -251,7 +259,8 @@ data class SmartGoalProposal(
     val achievable: String,
     val relevant: String,
     val timeBound: String,
-    val suggestedTasks: List<String>
+    val suggestedTasks: List<String>,
+    val planItems: List<JourneyPlanItem> = emptyList(),
 )
 
 sealed class ArchitectState {

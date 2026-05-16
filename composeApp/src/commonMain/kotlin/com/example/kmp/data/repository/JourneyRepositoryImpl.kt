@@ -6,6 +6,7 @@ import com.example.kmp.domain.model.FinanceBillEntry
 import com.example.kmp.domain.model.HealthWellnessProfile
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
+import com.example.kmp.domain.model.JourneyPlanItem
 import com.example.kmp.domain.model.JourneyTask
 import com.example.kmp.domain.model.LongTermProjectProfile
 import com.example.kmp.domain.model.MealPlanningProfile
@@ -16,6 +17,18 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
+
+private val journeyJson = Json {
+    ignoreUnknownKeys = true
+}
 
 class JourneyRepositoryImpl(
     private val database: AppDatabase
@@ -74,6 +87,7 @@ class JourneyRepositoryImpl(
                         relevanceToFamily = entity.relevanceToFamily,
                         timeBoundDeadline = entity.timeBoundDeadline,
                         colorHex = entity.colorHex,
+                        planItems = entity.planItems.toPlanItems(),
                         mealPlanningProfile = MealPlanningProfile(
                             cookingFor = entity.mealCookingFor.orEmpty(),
                             dietaryRestrictions = entity.mealDietaryRestrictions.toListValue(),
@@ -152,6 +166,7 @@ class JourneyRepositoryImpl(
             relevanceToFamily = journey.relevanceToFamily,
             timeBoundDeadline = journey.timeBoundDeadline,
             colorHex = journey.colorHex,
+            planItems = journey.planItems.toPlanItemsStorage(),
             mealCookingFor = journey.mealPlanningProfile?.cookingFor,
             mealDietaryRestrictions = journey.mealPlanningProfile?.dietaryRestrictions?.joinToString(","),
             mealDislikedIngredients = journey.mealPlanningProfile?.dislikedIngredients,
@@ -332,6 +347,7 @@ class JourneyRepositoryImpl(
             relevanceToFamily = j.relevanceToFamily,
             timeBoundDeadline = j.timeBoundDeadline,
             colorHex = j.colorHex,
+            planItems = j.planItems,
             mealCookingFor = j.mealCookingFor,
             mealDietaryRestrictions = j.mealDietaryRestrictions,
             mealDislikedIngredients = j.mealDislikedIngredients,
@@ -389,4 +405,42 @@ private fun String?.toListValue(): List<String> {
         .split(",")
         .map { it.trim() }
         .filter { it.isNotEmpty() }
+}
+
+private fun String?.toPlanItems(): List<JourneyPlanItem> {
+    val value = orEmpty()
+    if (value.isBlank()) return emptyList()
+    return runCatching {
+        journeyJson.parseToJsonElement(value).jsonArray.mapNotNull { element ->
+            val item = element.jsonObject
+            val type = item["type"]?.jsonPrimitive?.contentOrNull.orEmpty()
+            val title = item["title"]?.jsonPrimitive?.contentOrNull.orEmpty()
+            val content = item["content"]?.jsonPrimitive?.contentOrNull.orEmpty()
+            if (type.isBlank() || title.isBlank() || content.isBlank()) {
+                null
+            } else {
+                JourneyPlanItem(
+                    type = type,
+                    title = title,
+                    content = content,
+                )
+            }
+        }
+    }.getOrDefault(emptyList())
+}
+
+private fun List<JourneyPlanItem>.toPlanItemsStorage(): String? {
+    if (isEmpty()) return null
+    val value = buildJsonArray {
+        this@toPlanItemsStorage.forEach { item ->
+            add(
+                buildJsonObject {
+                    put("type", item.type)
+                    put("title", item.title)
+                    put("content", item.content)
+                }
+            )
+        }
+    }
+    return value.toString()
 }

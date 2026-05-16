@@ -2,6 +2,7 @@ package com.example.kmp.data.service
 
 import com.example.kmp.domain.model.FinanceProfile
 import com.example.kmp.domain.model.HealthWellnessProfile
+import com.example.kmp.domain.model.JourneyPlanItem
 import com.example.kmp.domain.model.LongTermProjectProfile
 import com.example.kmp.domain.model.MealPlanningProfile
 import com.example.kmp.domain.model.SmartGoalProposal
@@ -280,6 +281,38 @@ class AiServiceImpl : AiService {
                 }
             }
             val datePlan = "Create a $dateDuration at-home date around $dateLikes, while avoiding $dateAvoids. Make it frictionless: one setup task, one shared activity, and one conversation card."
+            val planItems = listOf(
+                JourneyPlanItem(
+                    type = "de_escalator",
+                    title = "The Translation",
+                    content = translation,
+                ),
+                JourneyPlanItem(
+                    type = "hidden_insight",
+                    title = "Why This Works",
+                    content = "This phrasing lowers defensiveness because it names your feeling, the shared problem, and a small next step without making your partner the villain.",
+                ),
+                JourneyPlanItem(
+                    type = "appreciation_action",
+                    title = "Make Them Feel Seen",
+                    content = appreciationPlan,
+                ),
+                JourneyPlanItem(
+                    type = "weekly_radar",
+                    title = "The Radar",
+                    content = "Energy $energy/10, Stress $stress/10, Connection $connection/10. Main drain: $weeklyDrain.",
+                ),
+                JourneyPlanItem(
+                    type = "game_plan",
+                    title = "The Gameplan",
+                    content = temperaturePlan,
+                ),
+                JourneyPlanItem(
+                    type = "date_night",
+                    title = "Date Night Plan",
+                    content = datePlan,
+                ),
+            )
 
             Result.success(
                 SmartGoalProposal(
@@ -297,7 +330,8 @@ class AiServiceImpl : AiService {
                         "Schedule one solo decompression block for each partner",
                         "Plan the at-home date: $datePlan",
                         "Run the three-slider temperature check again next week"
-                    )
+                    ),
+                    planItems = planItems,
                 )
             )
         } catch (e: Exception) {

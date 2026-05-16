@@ -53,6 +53,7 @@ data class JourneyEditScreen(
         var timeBound by remember { mutableStateOf(existingJourney?.timeBoundDeadline ?: "") }
         var seedText by remember { mutableStateOf("") }
         var selectedTasks by remember { mutableStateOf<List<String>>(emptyList()) }
+        var planItems by remember { mutableStateOf(existingJourney?.planItems ?: emptyList()) }
         var selectedCategory by remember { mutableStateOf(existingJourney?.category ?: JourneyCategory.LongTermProjects) }
         var mealCookingFor by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.cookingFor ?: "3-4") }
         var mealDietaryRestrictions by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.dietaryRestrictions ?: emptyList()) }
@@ -115,6 +116,7 @@ data class JourneyEditScreen(
                 relevant = proposal.relevant
                 timeBound = proposal.timeBound
                 selectedTasks = proposal.suggestedTasks
+                planItems = proposal.planItems
             }
         }
 
@@ -166,6 +168,7 @@ data class JourneyEditScreen(
                                     relevanceToFamily = relevant,
                                     timeBoundDeadline = timeBound,
                                     colorHex = selectedCategory.defaultColorHex,
+                                    planItems = planItems,
                                     mealPlanningProfile = if (selectedCategory == JourneyCategory.MealPlanning) {
                                         MealPlanningProfile(
                                             cookingFor = mealCookingFor,
@@ -466,6 +469,7 @@ data class JourneyEditScreen(
                                     achievable = achievable, onAchievableChange = { achievable = it },
                                     relevant = relevant, onRelevantChange = { relevant = it },
                                     timeBound = timeBound, onTimeBoundChange = { timeBound = it },
+                                    planItems = planItems,
                                     suggestedTasks = selectedTasks,
                                     onToggleTask = { task ->
                                         selectedTasks = if (selectedTasks.contains(task)) {
@@ -626,6 +630,7 @@ data class JourneyEditScreen(
         achievable: String, onAchievableChange: (String) -> Unit,
         relevant: String, onRelevantChange: (String) -> Unit,
         timeBound: String, onTimeBoundChange: (String) -> Unit,
+        planItems: List<JourneyPlanItem>,
         suggestedTasks: List<String>,
         onToggleTask: (String) -> Unit,
         onRegenerate: () -> Unit
@@ -797,6 +802,21 @@ data class JourneyEditScreen(
             item { EditField(stringResource(Res.string.edit_dream_field_relevant), relevant, onRelevantChange) }
             item { EditField(stringResource(Res.string.edit_dream_field_timebound), timeBound, onTimeBoundChange) }
 
+            if (planItems.isNotEmpty()) {
+                item {
+                    Text(
+                        "Structured AI Plan",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = SharedJourneyColors.MediterraneanTeal,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                }
+                items(planItems) { item ->
+                    PlanItemPreview(item)
+                }
+            }
+
             if (suggestedTasks.isNotEmpty()) {
                 item {
                     Text(
@@ -833,6 +853,29 @@ data class JourneyEditScreen(
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(Res.string.edit_dream_regenerate))
                 }
+            }
+        }
+    }
+
+    @Composable
+    private fun PlanItemPreview(item: JourneyPlanItem) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = SharedJourneyColors.GlassWhite,
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    item.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = SharedJourneyColors.InkDeep,
+                    fontWeight = FontWeight.Black
+                )
+                Text(
+                    item.content,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SharedJourneyColors.InkMuted
+                )
             }
         }
     }
