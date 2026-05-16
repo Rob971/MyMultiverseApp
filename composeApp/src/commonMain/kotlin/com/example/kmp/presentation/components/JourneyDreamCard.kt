@@ -24,6 +24,7 @@ import org.jetbrains.compose.resources.stringResource
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import androidx.compose.ui.unit.sp
 import com.example.kmp.domain.model.FinanceProfile
+import com.example.kmp.domain.model.HealthWellnessProfile
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
@@ -63,7 +64,6 @@ fun JourneyDreamCard(
     modifier: Modifier = Modifier,
     progressColor: Color = SharedJourneyColors.TerracottaOrange,
 ) {
-    val totalCheers = dream.tasks.sumOf { it.cheersCount }
     val openTasks = dream.tasks.count { !it.isCompleted }
     var showMenu by remember { mutableStateOf(false) }
     var isExpanded by remember { mutableStateOf(false) }
@@ -179,11 +179,10 @@ fun JourneyDreamCard(
                             category = dream.category,
                             tasks = dream.tasks,
                             openTasks = openTasks,
-                            totalCheers = totalCheers,
-                            familyStreak = dream.familyStreak,
                             timeBoundDeadline = dream.timeBoundDeadline,
                             mealPlanningProfile = dream.mealPlanningProfile,
                             financeProfile = dream.financeProfile,
+                            healthWellnessProfile = dream.healthWellnessProfile,
                             longTermProjectProfile = dream.longTermProjectProfile,
                         )
 
@@ -322,16 +321,14 @@ private fun CategorySummary(
     category: JourneyCategory,
     tasks: List<JourneyTask>,
     openTasks: Int,
-    totalCheers: Int,
-    familyStreak: Int,
     timeBoundDeadline: String?,
     mealPlanningProfile: MealPlanningProfile?,
     financeProfile: FinanceProfile?,
+    healthWellnessProfile: HealthWellnessProfile?,
     longTermProjectProfile: LongTermProjectProfile?,
 ) {
     val reminderCount = tasks.count { it.reminderTime != null }
     val scheduledCount = tasks.count { it.scheduledDays.isNotEmpty() }
-    val completedCount = tasks.count { it.isCompleted }
     val text = when (category) {
         JourneyCategory.CalendarLogistics -> "$scheduledCount scheduled items - $reminderCount reminders"
         JourneyCategory.HouseholdManagement -> "$openTasks open upkeep tasks - ${tasks.size} total routines"
@@ -352,7 +349,12 @@ private fun CategorySummary(
             val monthlySpend = financeProfile?.monthlyReportedSpendTotal ?: 0.0
             "$split - $billCount bill groups - ${monthlySpend.toCurrencyText()} reported monthly"
         }
-        JourneyCategory.HealthWellness -> "$completedCount habits completed - $familyStreak day streak - $totalCheers cheers"
+        JourneyCategory.HealthWellness -> {
+            val stress = healthWellnessProfile?.stressLevel?.takeIf { it.isNotBlank() } ?: "?"
+            val connection = healthWellnessProfile?.connectionLevel?.takeIf { it.isNotBlank() } ?: "?"
+            val drain = healthWellnessProfile?.weeklyDrain?.takeIf { it.isNotBlank() } ?: "No drain logged"
+            "Stress $stress/10 - Connection $connection/10 - $drain"
+        }
         JourneyCategory.LongTermProjects -> {
             val milestone = longTermProjectProfile?.milestoneType?.takeIf { it.isNotBlank() } ?: "${tasks.size} milestones"
             val timeline = longTermProjectProfile?.timeline?.takeIf { it.isNotBlank() } ?: timeBoundDeadline ?: "No deadline set"
@@ -427,6 +429,31 @@ private fun CategorySummary(
         val topCategory = finance.monthlySpendingBreakdown.maxByOrNull { it.second }
         Text(
             text = "Top monthly spend: ${topCategory?.first} ${topCategory?.second?.toCurrencyText()}",
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkMuted,
+        )
+    }
+    val health = healthWellnessProfile
+    if (category == JourneyCategory.HealthWellness && health != null && health.conflictTopic.isNotBlank()) {
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "De-escalate: ${health.conflictTopic}",
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkMuted,
+        )
+    }
+    if (category == JourneyCategory.HealthWellness && health != null && health.partnerLoveLanguage.isNotBlank()) {
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Care signal: ${health.partnerLoveLanguage} in ${health.availableTime.ifBlank { "a few minutes" }}",
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkMuted,
+        )
+    }
+    if (category == JourneyCategory.HealthWellness && health != null && health.dateNightLikes.isNotBlank()) {
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Date idea seed: ${health.dateNightDuration.ifBlank { "Tonight" }} - ${health.dateNightLikes}",
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )

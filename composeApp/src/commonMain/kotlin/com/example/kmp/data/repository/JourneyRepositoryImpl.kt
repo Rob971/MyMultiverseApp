@@ -3,6 +3,7 @@ package com.example.kmp.data.repository
 import com.example.kmp.database.AppDatabase
 import com.example.kmp.domain.model.FinanceProfile
 import com.example.kmp.domain.model.FinanceBillEntry
+import com.example.kmp.domain.model.HealthWellnessProfile
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
@@ -108,6 +109,20 @@ class JourneyRepositoryImpl(
                             monthlyKidsPetsSpend = entity.financeMonthlyKidsPetsSpend.orEmpty(),
                             monthlyOtherSpend = entity.financeMonthlyOtherSpend.orEmpty(),
                         ).takeIf { it.hasAnswers },
+                        healthWellnessProfile = HealthWellnessProfile(
+                            conflictTopic = entity.healthConflictTopic.orEmpty(),
+                            conflictDraft = entity.healthConflictDraft.orEmpty(),
+                            partnerLoveLanguage = entity.healthPartnerLoveLanguage.orEmpty(),
+                            availableTime = entity.healthAvailableTime.orEmpty(),
+                            budget = entity.healthBudget.orEmpty(),
+                            energyLevel = entity.healthEnergyLevel.orEmpty(),
+                            stressLevel = entity.healthStressLevel.orEmpty(),
+                            connectionLevel = entity.healthConnectionLevel.orEmpty(),
+                            weeklyDrain = entity.healthWeeklyDrain.orEmpty(),
+                            dateNightDuration = entity.healthDateNightDuration.orEmpty(),
+                            dateNightLikes = entity.healthDateNightLikes.orEmpty(),
+                            dateNightAvoids = entity.healthDateNightAvoids.orEmpty(),
+                        ).takeIf { it.hasAnswers },
                         longTermProjectProfile = LongTermProjectProfile(
                             milestoneType = entity.longTermMilestoneType.orEmpty(),
                             roadblock = entity.longTermRoadblock.orEmpty(),
@@ -168,6 +183,18 @@ class JourneyRepositoryImpl(
             financeMonthlyInsuranceSpend = journey.financeProfile?.monthlyInsuranceSpend,
             financeMonthlyKidsPetsSpend = journey.financeProfile?.monthlyKidsPetsSpend,
             financeMonthlyOtherSpend = journey.financeProfile?.monthlyOtherSpend,
+            healthConflictTopic = journey.healthWellnessProfile?.conflictTopic,
+            healthConflictDraft = journey.healthWellnessProfile?.conflictDraft,
+            healthPartnerLoveLanguage = journey.healthWellnessProfile?.partnerLoveLanguage,
+            healthAvailableTime = journey.healthWellnessProfile?.availableTime,
+            healthBudget = journey.healthWellnessProfile?.budget,
+            healthEnergyLevel = journey.healthWellnessProfile?.energyLevel,
+            healthStressLevel = journey.healthWellnessProfile?.stressLevel,
+            healthConnectionLevel = journey.healthWellnessProfile?.connectionLevel,
+            healthWeeklyDrain = journey.healthWellnessProfile?.weeklyDrain,
+            healthDateNightDuration = journey.healthWellnessProfile?.dateNightDuration,
+            healthDateNightLikes = journey.healthWellnessProfile?.dateNightLikes,
+            healthDateNightAvoids = journey.healthWellnessProfile?.dateNightAvoids,
             longTermMilestoneType = journey.longTermProjectProfile?.milestoneType,
             longTermRoadblock = journey.longTermProjectProfile?.roadblock,
             longTermTimeline = journey.longTermProjectProfile?.timeline,
@@ -336,6 +363,18 @@ class JourneyRepositoryImpl(
             financeMonthlyInsuranceSpend = j.financeMonthlyInsuranceSpend,
             financeMonthlyKidsPetsSpend = j.financeMonthlyKidsPetsSpend,
             financeMonthlyOtherSpend = j.financeMonthlyOtherSpend,
+            healthConflictTopic = j.healthConflictTopic,
+            healthConflictDraft = j.healthConflictDraft,
+            healthPartnerLoveLanguage = j.healthPartnerLoveLanguage,
+            healthAvailableTime = j.healthAvailableTime,
+            healthBudget = j.healthBudget,
+            healthEnergyLevel = j.healthEnergyLevel,
+            healthStressLevel = j.healthStressLevel,
+            healthConnectionLevel = j.healthConnectionLevel,
+            healthWeeklyDrain = j.healthWeeklyDrain,
+            healthDateNightDuration = j.healthDateNightDuration,
+            healthDateNightLikes = j.healthDateNightLikes,
+            healthDateNightAvoids = j.healthDateNightAvoids,
             longTermMilestoneType = j.longTermMilestoneType,
             longTermRoadblock = j.longTermRoadblock,
             longTermTimeline = j.longTermTimeline,

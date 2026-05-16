@@ -1,0 +1,12 @@
+ALTER TABLE JourneyEntity ADD COLUMN healthConflictTopic TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN healthConflictDraft TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN healthPartnerLoveLanguage TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN healthAvailableTime TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN healthBudget TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN healthEnergyLevel TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN healthStressLevel TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN healthConnectionLevel TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN healthWeeklyDrain TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN healthDateNightDuration TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN healthDateNightLikes TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN healthDateNightAvoids TEXT;

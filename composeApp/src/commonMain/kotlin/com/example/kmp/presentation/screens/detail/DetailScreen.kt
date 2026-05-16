@@ -38,6 +38,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.kmp.domain.model.FinanceBillEntry
 import com.example.kmp.domain.model.FinanceProfile
+import com.example.kmp.domain.model.HealthWellnessProfile
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
@@ -251,6 +252,12 @@ fun DetailContent(
                         profile = journey.financeProfile,
                         onLogBillClick = { showFinanceBillDialog = true }
                     )
+                }
+            }
+
+            if (journey.category == JourneyCategory.HealthWellness && journey.healthWellnessProfile != null) {
+                item {
+                    HealthWellnessInsightSection(journey.healthWellnessProfile)
                 }
             }
 
@@ -561,6 +568,87 @@ fun SmartItem(label: String, value: String?) {
             style = MaterialTheme.typography.bodyMedium,
             color = SharedJourneyColors.InkDeep
         )
+    }
+}
+
+@Composable
+fun HealthWellnessInsightSection(profile: HealthWellnessProfile) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = SharedJourneyColors.GlassWhite),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Text(
+                text = "Couples Wellness Radar",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                text = "You + Them vs. The Problem. Use this card to translate tension into a shared next step.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                WellnessContextChip("Energy", profile.energyLevel, Modifier.weight(1f))
+                WellnessContextChip("Stress", profile.stressLevel, Modifier.weight(1f))
+                WellnessContextChip("Connection", profile.connectionLevel, Modifier.weight(1f))
+            }
+            if (profile.conflictTopic.isNotBlank()) {
+                WellnessLine("De-escalator", profile.conflictTopic)
+            }
+            if (profile.partnerLoveLanguage.isNotBlank()) {
+                WellnessLine("Appreciation", "${profile.partnerLoveLanguage} - ${profile.availableTime.ifBlank { "quick action" }} - ${profile.budget.ifBlank { "no budget" }}")
+            }
+            if (profile.weeklyDrain.isNotBlank()) {
+                WellnessLine("Weekly drain", profile.weeklyDrain)
+            }
+            if (profile.dateNightLikes.isNotBlank()) {
+                WellnessLine("Date night", "${profile.dateNightDuration.ifBlank { "Tonight" }} around ${profile.dateNightLikes}")
+            }
+        }
+    }
+}
+
+@Composable
+private fun WellnessContextChip(label: String, value: String, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier,
+        color = SharedJourneyColors.SunDrenchedWhite,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = label.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                text = "${value.ifBlank { "?" }}/10",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.Black
+            )
+        }
+    }
+}
+
+@Composable
+private fun WellnessLine(label: String, value: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = SharedJourneyColors.SunDrenchedWhite,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.MediterraneanTeal, fontWeight = FontWeight.Black)
+            Text(value, style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkDeep, fontWeight = FontWeight.Bold)
+        }
     }
 }
 

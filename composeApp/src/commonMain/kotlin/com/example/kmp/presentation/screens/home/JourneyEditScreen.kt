@@ -85,6 +85,18 @@ data class JourneyEditScreen(
         var financeMonthlyInsuranceSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyInsuranceSpend ?: "") }
         var financeMonthlyKidsPetsSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyKidsPetsSpend ?: "") }
         var financeMonthlyOtherSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyOtherSpend ?: "") }
+        var healthConflictTopic by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.conflictTopic ?: "") }
+        var healthConflictDraft by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.conflictDraft ?: "") }
+        var healthPartnerLoveLanguage by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.partnerLoveLanguage ?: "Acts of Service") }
+        var healthAvailableTime by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.availableTime ?: "15 minutes") }
+        var healthBudget by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.budget ?: "\$10") }
+        var healthEnergyLevel by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.energyLevel ?: "5") }
+        var healthStressLevel by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.stressLevel ?: "5") }
+        var healthConnectionLevel by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.connectionLevel ?: "5") }
+        var healthWeeklyDrain by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.weeklyDrain ?: "Work") }
+        var healthDateNightDuration by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.dateNightDuration ?: "2 hours") }
+        var healthDateNightLikes by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.dateNightLikes ?: "") }
+        var healthDateNightAvoids by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.dateNightAvoids ?: "Watching a movie") }
         var longTermMilestoneType by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.milestoneType ?: "Moving to a new home") }
         var longTermRoadblock by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.roadblock ?: "Overwhelmed: We don't know the correct order of steps to take.") }
         var longTermTimeline by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.timeline ?: "Medium-term (1-6 months)") }
@@ -193,6 +205,24 @@ data class JourneyEditScreen(
                                             monthlyInsuranceSpend = financeMonthlyInsuranceSpend,
                                             monthlyKidsPetsSpend = financeMonthlyKidsPetsSpend,
                                             monthlyOtherSpend = financeMonthlyOtherSpend
+                                        )
+                                    } else {
+                                        null
+                                    },
+                                    healthWellnessProfile = if (selectedCategory == JourneyCategory.HealthWellness) {
+                                        HealthWellnessProfile(
+                                            conflictTopic = healthConflictTopic,
+                                            conflictDraft = healthConflictDraft,
+                                            partnerLoveLanguage = healthPartnerLoveLanguage,
+                                            availableTime = healthAvailableTime,
+                                            budget = healthBudget,
+                                            energyLevel = healthEnergyLevel,
+                                            stressLevel = healthStressLevel,
+                                            connectionLevel = healthConnectionLevel,
+                                            weeklyDrain = healthWeeklyDrain,
+                                            dateNightDuration = healthDateNightDuration,
+                                            dateNightLikes = healthDateNightLikes,
+                                            dateNightAvoids = healthDateNightAvoids
                                         )
                                     } else {
                                         null
@@ -368,6 +398,48 @@ data class JourneyEditScreen(
                                             )
                                         )
                                     },
+                                    healthConflictTopic = healthConflictTopic,
+                                    onHealthConflictTopicChange = { healthConflictTopic = it },
+                                    healthConflictDraft = healthConflictDraft,
+                                    onHealthConflictDraftChange = { healthConflictDraft = it },
+                                    healthPartnerLoveLanguage = healthPartnerLoveLanguage,
+                                    onHealthPartnerLoveLanguageChange = { healthPartnerLoveLanguage = it },
+                                    healthAvailableTime = healthAvailableTime,
+                                    onHealthAvailableTimeChange = { healthAvailableTime = it },
+                                    healthBudget = healthBudget,
+                                    onHealthBudgetChange = { healthBudget = it },
+                                    healthEnergyLevel = healthEnergyLevel,
+                                    onHealthEnergyLevelChange = { healthEnergyLevel = it },
+                                    healthStressLevel = healthStressLevel,
+                                    onHealthStressLevelChange = { healthStressLevel = it },
+                                    healthConnectionLevel = healthConnectionLevel,
+                                    onHealthConnectionLevelChange = { healthConnectionLevel = it },
+                                    healthWeeklyDrain = healthWeeklyDrain,
+                                    onHealthWeeklyDrainChange = { healthWeeklyDrain = it },
+                                    healthDateNightDuration = healthDateNightDuration,
+                                    onHealthDateNightDurationChange = { healthDateNightDuration = it },
+                                    healthDateNightLikes = healthDateNightLikes,
+                                    onHealthDateNightLikesChange = { healthDateNightLikes = it },
+                                    healthDateNightAvoids = healthDateNightAvoids,
+                                    onHealthDateNightAvoidsChange = { healthDateNightAvoids = it },
+                                    onGenerateCouplesWellnessPlan = {
+                                        screenModel.generateCouplesWellnessPlan(
+                                            HealthWellnessProfile(
+                                                conflictTopic = healthConflictTopic,
+                                                conflictDraft = healthConflictDraft,
+                                                partnerLoveLanguage = healthPartnerLoveLanguage,
+                                                availableTime = healthAvailableTime,
+                                                budget = healthBudget,
+                                                energyLevel = healthEnergyLevel,
+                                                stressLevel = healthStressLevel,
+                                                connectionLevel = healthConnectionLevel,
+                                                weeklyDrain = healthWeeklyDrain,
+                                                dateNightDuration = healthDateNightDuration,
+                                                dateNightLikes = healthDateNightLikes,
+                                                dateNightAvoids = healthDateNightAvoids
+                                            )
+                                        )
+                                    },
                                     longTermMilestoneType = longTermMilestoneType,
                                     onLongTermMilestoneTypeChange = { longTermMilestoneType = it },
                                     longTermRoadblock = longTermRoadblock,
@@ -530,6 +602,19 @@ data class JourneyEditScreen(
         financeMonthlyKidsPetsSpend: String, onFinanceMonthlyKidsPetsSpendChange: (String) -> Unit,
         financeMonthlyOtherSpend: String, onFinanceMonthlyOtherSpendChange: (String) -> Unit,
         onGenerateFinancialBlueprint: () -> Unit,
+        healthConflictTopic: String, onHealthConflictTopicChange: (String) -> Unit,
+        healthConflictDraft: String, onHealthConflictDraftChange: (String) -> Unit,
+        healthPartnerLoveLanguage: String, onHealthPartnerLoveLanguageChange: (String) -> Unit,
+        healthAvailableTime: String, onHealthAvailableTimeChange: (String) -> Unit,
+        healthBudget: String, onHealthBudgetChange: (String) -> Unit,
+        healthEnergyLevel: String, onHealthEnergyLevelChange: (String) -> Unit,
+        healthStressLevel: String, onHealthStressLevelChange: (String) -> Unit,
+        healthConnectionLevel: String, onHealthConnectionLevelChange: (String) -> Unit,
+        healthWeeklyDrain: String, onHealthWeeklyDrainChange: (String) -> Unit,
+        healthDateNightDuration: String, onHealthDateNightDurationChange: (String) -> Unit,
+        healthDateNightLikes: String, onHealthDateNightLikesChange: (String) -> Unit,
+        healthDateNightAvoids: String, onHealthDateNightAvoidsChange: (String) -> Unit,
+        onGenerateCouplesWellnessPlan: () -> Unit,
         longTermMilestoneType: String, onLongTermMilestoneTypeChange: (String) -> Unit,
         longTermRoadblock: String, onLongTermRoadblockChange: (String) -> Unit,
         longTermTimeline: String, onLongTermTimelineChange: (String) -> Unit,
@@ -644,6 +729,37 @@ data class JourneyEditScreen(
                         monthlyOtherSpend = financeMonthlyOtherSpend,
                         onMonthlyOtherSpendChange = onFinanceMonthlyOtherSpendChange,
                         onGenerateFinancialBlueprint = onGenerateFinancialBlueprint
+                    )
+                }
+            }
+            if (selectedCategory == JourneyCategory.HealthWellness) {
+                item {
+                    HealthWellnessQuestionnaire(
+                        conflictTopic = healthConflictTopic,
+                        onConflictTopicChange = onHealthConflictTopicChange,
+                        conflictDraft = healthConflictDraft,
+                        onConflictDraftChange = onHealthConflictDraftChange,
+                        partnerLoveLanguage = healthPartnerLoveLanguage,
+                        onPartnerLoveLanguageChange = onHealthPartnerLoveLanguageChange,
+                        availableTime = healthAvailableTime,
+                        onAvailableTimeChange = onHealthAvailableTimeChange,
+                        budget = healthBudget,
+                        onBudgetChange = onHealthBudgetChange,
+                        energyLevel = healthEnergyLevel,
+                        onEnergyLevelChange = onHealthEnergyLevelChange,
+                        stressLevel = healthStressLevel,
+                        onStressLevelChange = onHealthStressLevelChange,
+                        connectionLevel = healthConnectionLevel,
+                        onConnectionLevelChange = onHealthConnectionLevelChange,
+                        weeklyDrain = healthWeeklyDrain,
+                        onWeeklyDrainChange = onHealthWeeklyDrainChange,
+                        dateNightDuration = healthDateNightDuration,
+                        onDateNightDurationChange = onHealthDateNightDurationChange,
+                        dateNightLikes = healthDateNightLikes,
+                        onDateNightLikesChange = onHealthDateNightLikesChange,
+                        dateNightAvoids = healthDateNightAvoids,
+                        onDateNightAvoidsChange = onHealthDateNightAvoidsChange,
+                        onGenerateCouplesWellnessPlan = onGenerateCouplesWellnessPlan
                     )
                 }
             }
@@ -1062,6 +1178,234 @@ data class JourneyEditScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+        }
+    }
+
+    @Composable
+    private fun HealthWellnessQuestionnaire(
+        conflictTopic: String,
+        onConflictTopicChange: (String) -> Unit,
+        conflictDraft: String,
+        onConflictDraftChange: (String) -> Unit,
+        partnerLoveLanguage: String,
+        onPartnerLoveLanguageChange: (String) -> Unit,
+        availableTime: String,
+        onAvailableTimeChange: (String) -> Unit,
+        budget: String,
+        onBudgetChange: (String) -> Unit,
+        energyLevel: String,
+        onEnergyLevelChange: (String) -> Unit,
+        stressLevel: String,
+        onStressLevelChange: (String) -> Unit,
+        connectionLevel: String,
+        onConnectionLevelChange: (String) -> Unit,
+        weeklyDrain: String,
+        onWeeklyDrainChange: (String) -> Unit,
+        dateNightDuration: String,
+        onDateNightDurationChange: (String) -> Unit,
+        dateNightLikes: String,
+        onDateNightLikesChange: (String) -> Unit,
+        dateNightAvoids: String,
+        onDateNightAvoidsChange: (String) -> Unit,
+        onGenerateCouplesWellnessPlan: () -> Unit,
+    ) {
+        val loveLanguageOptions = listOf(
+            "Acts of Service",
+            "Words of Affirmation",
+            "Quality Time",
+            "Physical Touch",
+            "Receiving Gifts"
+        )
+        val timeOptions = listOf("5 minutes", "15 minutes", "30 minutes", "1 hour")
+        val budgetOptions = listOf("\$0", "\$10", "\$25", "\$50")
+        val drainOptions = listOf("Work", "Kids", "Chores", "Health", "Money", "Family")
+        val durationOptions = listOf("30 minutes", "1 hour", "2 hours", "All evening")
+        val canGeneratePlan = listOf(
+            conflictTopic,
+            conflictDraft,
+            partnerLoveLanguage,
+            availableTime,
+            budget,
+            energyLevel,
+            stressLevel,
+            connectionLevel,
+            weeklyDrain,
+            dateNightDuration,
+            dateNightLikes,
+            dateNightAvoids
+        ).any { it.isNotBlank() }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(SharedJourneyColors.GlassWhite, RoundedCornerShape(20.dp))
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                "Couples Wellness Check-In",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                "Capture tiny answers that help the AI mediate, translate and plan for the team without taking sides.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted
+            )
+
+            QuestionBlock(
+                title = "De-escalator: what are you fighting about?",
+                description = "The AI rewrites blame into a calmer 'I feel / I need / can we' message."
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextField(
+                        value = conflictTopic,
+                        onValueChange = onConflictTopicChange,
+                        placeholder = { Text("Example: dishes, money, bedtime, chores") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                            unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                            focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    TextField(
+                        value = conflictDraft,
+                        onValueChange = onConflictDraftChange,
+                        placeholder = { Text("Paste what you want to say before sending it") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                            unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                            focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                }
+            }
+
+            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
+
+            QuestionBlock(
+                title = "Love language translator",
+                description = "Pick quick constraints so the AI can suggest a tiny appreciation action that actually lands."
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OptionChips(loveLanguageOptions, partnerLoveLanguage, onPartnerLoveLanguageChange)
+                    OptionChips(timeOptions, availableTime, onAvailableTimeChange)
+                    OptionChips(budgetOptions, budget, onBudgetChange)
+                }
+            }
+
+            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
+
+            Text(
+                "Weekly Temperature Check",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            WellnessSlider("Energy Level", energyLevel, onEnergyLevelChange)
+            WellnessSlider("Stress Level", stressLevel, onStressLevelChange)
+            WellnessSlider("Connection Level", connectionLevel, onConnectionLevelChange)
+            QuestionBlock(
+                title = "What is draining you the most this week?",
+                description = "This gives the AI a prevention signal before the couple runs out of fuel."
+            ) {
+                OptionChips(drainOptions, weeklyDrain, onWeeklyDrainChange)
+            }
+
+            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
+
+            QuestionBlock(
+                title = "Date night decision maker",
+                description = "Capture constraints so the AI can remove the 'I don't know, what do you want to do?' loop."
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OptionChips(durationOptions, dateNightDuration, onDateNightDurationChange)
+                    TextField(
+                        value = dateNightLikes,
+                        onValueChange = onDateNightLikesChange,
+                        placeholder = { Text("We like sushi, cards, cooking, music...") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                            unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                            focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    TextField(
+                        value = dateNightAvoids,
+                        onValueChange = onDateNightAvoidsChange,
+                        placeholder = { Text("We do not want to watch a movie") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                            unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                            focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                }
+            }
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(
+                    "Golden rule: You + Them vs. The Problem. The AI should never judge who is right.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SharedJourneyColors.MediterraneanTeal,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(14.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Button(
+                onClick = onGenerateCouplesWellnessPlan,
+                enabled = canGeneratePlan,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)
+            ) {
+                Icon(AppIcons.Sparkles, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(10.dp))
+                Text("Generate couples wellness plan", fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+
+    @Composable
+    private fun WellnessSlider(
+        label: String,
+        value: String,
+        onValueChange: (String) -> Unit,
+    ) {
+        val sliderValue = value.toFloatOrNull()?.coerceIn(1f, 10f) ?: 5f
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                "$label: ${sliderValue.toInt()}/10",
+                style = MaterialTheme.typography.bodyMedium,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.Bold
+            )
+            Slider(
+                value = sliderValue,
+                onValueChange = { onValueChange(it.toInt().toString()) },
+                valueRange = 1f..10f,
+                steps = 8
+            )
         }
     }
 

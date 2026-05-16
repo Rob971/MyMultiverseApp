@@ -43,6 +43,18 @@ CREATE TABLE JourneyEntity (
     financeMonthlyInsuranceSpend TEXT,
     financeMonthlyKidsPetsSpend TEXT,
     financeMonthlyOtherSpend TEXT,
+    healthConflictTopic TEXT,
+    healthConflictDraft TEXT,
+    healthPartnerLoveLanguage TEXT,
+    healthAvailableTime TEXT,
+    healthBudget TEXT,
+    healthEnergyLevel TEXT,
+    healthStressLevel TEXT,
+    healthConnectionLevel TEXT,
+    healthWeeklyDrain TEXT,
+    healthDateNightDuration TEXT,
+    healthDateNightLikes TEXT,
+    healthDateNightAvoids TEXT,
     longTermMilestoneType TEXT,
     longTermRoadblock TEXT,
     longTermTimeline TEXT,
@@ -94,8 +106,8 @@ selectFinanceBillEntriesByJourneyId:
 SELECT * FROM FinanceBillEntryEntity WHERE journeyId = ?;
 
 insertJourney:
-INSERT OR REPLACE INTO JourneyEntity(id, title, subtitle, category, progress, participantInitials, familyStreak, specificGoal, measurableOutcome, achievablePlan, relevanceToFamily, timeBoundDeadline, colorHex, mealCookingFor, mealDietaryRestrictions, mealDislikedIngredients, mealBusyWeeknightCookTime, mealCookingSkillLevel, mealLunchPreference, mealRightNowGoal, mealLocationPreference, mealManualLocation, financeSplit, financeBillManager, financeDailyAnnoyance, financePartnerASpendingStyle, financePartnerBSpendingStyle, financeMoneyTalkFrequency, financePrimaryGoal, financeIrregularExpensePlan, financeBillSplitStrategy, financeSettleWorkflow, financeRecurringBills, financeBillPainPoint, financePartnerAIncome, financePartnerBIncome, financeCustomSplitPercentages, financeMonthlyHousingSpend, financeMonthlyUtilitiesSpend, financeMonthlyConnectivitySpend, financeMonthlySubscriptionsSpend, financeMonthlyInsuranceSpend, financeMonthlyKidsPetsSpend, financeMonthlyOtherSpend, longTermMilestoneType, longTermRoadblock, longTermTimeline, longTermBudgetStyle, longTermSuccessDefinition)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO JourneyEntity(id, title, subtitle, category, progress, participantInitials, familyStreak, specificGoal, measurableOutcome, achievablePlan, relevanceToFamily, timeBoundDeadline, colorHex, mealCookingFor, mealDietaryRestrictions, mealDislikedIngredients, mealBusyWeeknightCookTime, mealCookingSkillLevel, mealLunchPreference, mealRightNowGoal, mealLocationPreference, mealManualLocation, financeSplit, financeBillManager, financeDailyAnnoyance, financePartnerASpendingStyle, financePartnerBSpendingStyle, financeMoneyTalkFrequency, financePrimaryGoal, financeIrregularExpensePlan, financeBillSplitStrategy, financeSettleWorkflow, financeRecurringBills, financeBillPainPoint, financePartnerAIncome, financePartnerBIncome, financeCustomSplitPercentages, financeMonthlyHousingSpend, financeMonthlyUtilitiesSpend, financeMonthlyConnectivitySpend, financeMonthlySubscriptionsSpend, financeMonthlyInsuranceSpend, financeMonthlyKidsPetsSpend, financeMonthlyOtherSpend, healthConflictTopic, healthConflictDraft, healthPartnerLoveLanguage, healthAvailableTime, healthBudget, healthEnergyLevel, healthStressLevel, healthConnectionLevel, healthWeeklyDrain, healthDateNightDuration, healthDateNightLikes, healthDateNightAvoids, longTermMilestoneType, longTermRoadblock, longTermTimeline, longTermBudgetStyle, longTermSuccessDefinition)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 insertTask:
 INSERT OR REPLACE INTO TaskEntity(id, journeyId, title, planning, isCompleted, label, scheduledDays, reminderTime, claimedByInitials, cheersCount)

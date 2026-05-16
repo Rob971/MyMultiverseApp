@@ -20,6 +20,7 @@ data class Journey(
     val colorHex: String? = null,
     val mealPlanningProfile: MealPlanningProfile? = null,
     val financeProfile: FinanceProfile? = null,
+    val healthWellnessProfile: HealthWellnessProfile? = null,
     val longTermProjectProfile: LongTermProjectProfile? = null,
     val financeBillEntries: List<FinanceBillEntry> = emptyList(),
 )
@@ -171,6 +172,36 @@ data class LongTermProjectProfile(
             timeline.isNotBlank() ||
             budgetStyle.isNotBlank() ||
             successDefinition.isNotBlank()
+}
+
+@Serializable
+data class HealthWellnessProfile(
+    val conflictTopic: String = "",
+    val conflictDraft: String = "",
+    val partnerLoveLanguage: String = "",
+    val availableTime: String = "",
+    val budget: String = "",
+    val energyLevel: String = "",
+    val stressLevel: String = "",
+    val connectionLevel: String = "",
+    val weeklyDrain: String = "",
+    val dateNightDuration: String = "",
+    val dateNightLikes: String = "",
+    val dateNightAvoids: String = "",
+) {
+    val hasAnswers: Boolean
+        get() = conflictTopic.isNotBlank() ||
+            conflictDraft.isNotBlank() ||
+            partnerLoveLanguage.isNotBlank() ||
+            availableTime.isNotBlank() ||
+            budget.isNotBlank() ||
+            energyLevel.isNotBlank() ||
+            stressLevel.isNotBlank() ||
+            connectionLevel.isNotBlank() ||
+            weeklyDrain.isNotBlank() ||
+            dateNightDuration.isNotBlank() ||
+            dateNightLikes.isNotBlank() ||
+            dateNightAvoids.isNotBlank()
 }
 
 private fun String.toAmountValue(): Double {

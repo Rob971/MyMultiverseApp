@@ -1,6 +1,7 @@
 package com.example.kmp.data.service
 
 import com.example.kmp.domain.model.FinanceProfile
+import com.example.kmp.domain.model.HealthWellnessProfile
 import com.example.kmp.domain.model.LongTermProjectProfile
 import com.example.kmp.domain.model.MealPlanningProfile
 import com.example.kmp.domain.model.SmartGoalProposal
@@ -229,6 +230,73 @@ class AiServiceImpl : AiService {
                         "Enable receipt text-to-split for variable bills like utilities",
                         irregularPlan,
                         "Track the primary goal alongside bills: ${profile.primaryGoal.ifBlank { "peace of mind" }}"
+                    )
+                )
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun generateCouplesWellnessPlan(profile: HealthWellnessProfile): Result<SmartGoalProposal> {
+        return try {
+            delay(1500)
+
+            val conflictTopic = profile.conflictTopic.ifBlank { "the current friction point" }
+            val conflictDraft = profile.conflictDraft.ifBlank { "what you are tempted to say" }
+            val loveLanguage = profile.partnerLoveLanguage.ifBlank { "their preferred way of feeling appreciated" }
+            val availableTime = profile.availableTime.ifBlank { "15 minutes" }
+            val budget = profile.budget.ifBlank { "\$10" }
+            val weeklyDrain = profile.weeklyDrain.ifBlank { "the biggest drain this week" }
+            val dateDuration = profile.dateNightDuration.ifBlank { "2 hours" }
+            val dateLikes = profile.dateNightLikes.ifBlank { "something easy and cozy" }
+            val dateAvoids = profile.dateNightAvoids.ifBlank { "anything that feels like another chore" }
+            val energy = profile.energyLevel.ifBlank { "5" }
+            val stress = profile.stressLevel.ifBlank { "5" }
+            val connection = profile.connectionLevel.ifBlank { "5" }
+
+            val translation = buildString {
+                append("Instead of leading with '$conflictDraft', try: ")
+                append("'I am feeling stretched around $conflictTopic, and I want us to solve it as a team. ")
+                append("Could we take 10 minutes to decide the next fair step together?'")
+            }
+            val appreciationPlan = when {
+                loveLanguage.contains("Acts", ignoreCase = true) -> "Use $availableTime to remove one small task from their plate, then spend $budget on a practical comfort like coffee, tea, or a favorite snack."
+                loveLanguage.contains("Words", ignoreCase = true) -> "Write a specific three-line note naming what you noticed, why it mattered, and one thing you admire about them."
+                loveLanguage.contains("Time", ignoreCase = true) -> "Protect $availableTime of undistracted time, put phones away, and ask one real question without trying to fix anything."
+                loveLanguage.contains("Touch", ignoreCase = true) -> "Offer a long hug, shoulder rub, or hand-hold first, then ask what would feel good tonight."
+                loveLanguage.contains("Gifts", ignoreCase = true) -> "Spend $budget on a tiny, personal cue that says 'I know you', not a generic gift."
+                else -> "Use $availableTime and $budget for one tiny signal that matches what usually makes them feel seen."
+            }
+            val temperaturePlan = when {
+                stress.toIntOrNull()?.let { it >= 8 } == true || energy.toIntOrNull()?.let { it <= 3 } == true -> {
+                    "You are running low on fuel. Lower the bar this week: reduce one optional task, order or simplify one meal, and schedule one solo decompression block for each partner."
+                }
+                connection.toIntOrNull()?.let { it <= 4 } == true -> {
+                    "Connection needs a small deposit. Pick one 20-minute ritual with no screens and no logistics talk."
+                }
+                else -> {
+                    "The dashboard looks workable. Keep prevention simple with one weekly check-in and one visible appreciation gesture."
+                }
+            }
+            val datePlan = "Create a $dateDuration at-home date around $dateLikes, while avoiding $dateAvoids. Make it frictionless: one setup task, one shared activity, and one conversation card."
+
+            Result.success(
+                SmartGoalProposal(
+                    title = "Couples Wellness Check-In",
+                    subtitle = "Low-friction support for conflict, care, prevention and connection",
+                    specific = "Use the app as a neutral mediator: it translates blame into team language around $conflictTopic and never decides who is right.",
+                    measurable = "Track Energy $energy/10, Stress $stress/10, Connection $connection/10, plus the main weekly drain: $weeklyDrain.",
+                    achievable = "De-escalator: $translation Appreciation plan: $appreciationPlan",
+                    relevant = "Golden rule: it is not you vs. them; it is you + them vs. the problem. $temperaturePlan The AI should coach tone, timing and next actions without taking sides.",
+                    timeBound = "Run this check-in once this week, then review whether stress moved down or connection moved up within 7 days.",
+                    suggestedTasks = listOf(
+                        "Send the de-escalated message about $conflictTopic",
+                        "Do one $loveLanguage appreciation action within $availableTime",
+                        "Reduce one drain linked to $weeklyDrain this week",
+                        "Schedule one solo decompression block for each partner",
+                        "Plan the at-home date: $datePlan",
+                        "Run the three-slider temperature check again next week"
                     )
                 )
             )
