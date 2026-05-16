@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "37917280954",
+    "project_id": "mymultiverseapp",
+    "storage_bucket": "mymultiverseapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37917280954:android:dd5f7ef825481211f91083",
+        "android_client_info": {
+          "package_name": "com.mymultiverse.kmp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBr-F_bjipuvDM32gy0oa_9WAS7ZGEqHwg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

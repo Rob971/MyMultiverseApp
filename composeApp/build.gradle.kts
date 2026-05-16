@@ -68,10 +68,10 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.kmp"
+    namespace = "com.mymultiverse.kmp"
     compileSdk = 35
     defaultConfig {
-        applicationId = "com.example.kmp"
+        applicationId = "com.mymultiverse.kmp"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -96,7 +96,7 @@ android {
 sqldelight {
     databases {
         create("AppDatabase") {
-            packageName.set("com.example.kmp.database")
+            packageName.set("com.mymultiverse.kmp.database")
         }
     }
 }
