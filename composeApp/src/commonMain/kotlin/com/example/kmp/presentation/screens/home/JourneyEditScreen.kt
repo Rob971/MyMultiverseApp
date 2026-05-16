@@ -57,6 +57,12 @@ data class JourneyEditScreen(
         var mealCookingFor by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.cookingFor ?: "3-4") }
         var mealDietaryRestrictions by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.dietaryRestrictions ?: emptyList()) }
         var mealDislikedIngredients by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.dislikedIngredients ?: "") }
+        var mealBusyWeeknightCookTime by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.busyWeeknightCookTime ?: "15-30 mins") }
+        var mealCookingSkillLevel by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.cookingSkillLevel ?: "Average home cook") }
+        var mealLunchPreference by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.lunchPreference ?: "I love leftovers for lunch") }
+        var mealRightNowGoal by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.rightNowGoal ?: "Plan my entire week") }
+        var mealLocationPreference by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.locationPreference ?: "Use GPS location") }
+        var mealManualLocation by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.manualLocation ?: "") }
 
         // Sync local state with AI proposal
         LaunchedEffect(architectState) {
@@ -125,7 +131,13 @@ data class JourneyEditScreen(
                                         MealPlanningProfile(
                                             cookingFor = mealCookingFor,
                                             dietaryRestrictions = mealDietaryRestrictions,
-                                            dislikedIngredients = mealDislikedIngredients
+                                            dislikedIngredients = mealDislikedIngredients,
+                                            busyWeeknightCookTime = mealBusyWeeknightCookTime,
+                                            cookingSkillLevel = mealCookingSkillLevel,
+                                            lunchPreference = mealLunchPreference,
+                                            rightNowGoal = mealRightNowGoal,
+                                            locationPreference = mealLocationPreference,
+                                            manualLocation = mealManualLocation
                                         )
                                     } else {
                                         null
@@ -191,6 +203,18 @@ data class JourneyEditScreen(
                                     onMealDietaryRestrictionsChange = { mealDietaryRestrictions = it },
                                     mealDislikedIngredients = mealDislikedIngredients,
                                     onMealDislikedIngredientsChange = { mealDislikedIngredients = it },
+                                    mealBusyWeeknightCookTime = mealBusyWeeknightCookTime,
+                                    onMealBusyWeeknightCookTimeChange = { mealBusyWeeknightCookTime = it },
+                                    mealCookingSkillLevel = mealCookingSkillLevel,
+                                    onMealCookingSkillLevelChange = { mealCookingSkillLevel = it },
+                                    mealLunchPreference = mealLunchPreference,
+                                    onMealLunchPreferenceChange = { mealLunchPreference = it },
+                                    mealRightNowGoal = mealRightNowGoal,
+                                    onMealRightNowGoalChange = { mealRightNowGoal = it },
+                                    mealLocationPreference = mealLocationPreference,
+                                    onMealLocationPreferenceChange = { mealLocationPreference = it },
+                                    mealManualLocation = mealManualLocation,
+                                    onMealManualLocationChange = { mealManualLocation = it },
                                     specific = specific, onSpecificChange = { specific = it },
                                     measurable = measurable, onMeasurableChange = { measurable = it },
                                     achievable = achievable, onAchievableChange = { achievable = it },
@@ -302,6 +326,12 @@ data class JourneyEditScreen(
         mealCookingFor: String, onMealCookingForChange: (String) -> Unit,
         mealDietaryRestrictions: List<String>, onMealDietaryRestrictionsChange: (List<String>) -> Unit,
         mealDislikedIngredients: String, onMealDislikedIngredientsChange: (String) -> Unit,
+        mealBusyWeeknightCookTime: String, onMealBusyWeeknightCookTimeChange: (String) -> Unit,
+        mealCookingSkillLevel: String, onMealCookingSkillLevelChange: (String) -> Unit,
+        mealLunchPreference: String, onMealLunchPreferenceChange: (String) -> Unit,
+        mealRightNowGoal: String, onMealRightNowGoalChange: (String) -> Unit,
+        mealLocationPreference: String, onMealLocationPreferenceChange: (String) -> Unit,
+        mealManualLocation: String, onMealManualLocationChange: (String) -> Unit,
         specific: String, onSpecificChange: (String) -> Unit,
         measurable: String, onMeasurableChange: (String) -> Unit,
         achievable: String, onAchievableChange: (String) -> Unit,
@@ -345,7 +375,19 @@ data class JourneyEditScreen(
                         dietaryRestrictions = mealDietaryRestrictions,
                         onDietaryRestrictionsChange = onMealDietaryRestrictionsChange,
                         dislikedIngredients = mealDislikedIngredients,
-                        onDislikedIngredientsChange = onMealDislikedIngredientsChange
+                        onDislikedIngredientsChange = onMealDislikedIngredientsChange,
+                        busyWeeknightCookTime = mealBusyWeeknightCookTime,
+                        onBusyWeeknightCookTimeChange = onMealBusyWeeknightCookTimeChange,
+                        cookingSkillLevel = mealCookingSkillLevel,
+                        onCookingSkillLevelChange = onMealCookingSkillLevelChange,
+                        lunchPreference = mealLunchPreference,
+                        onLunchPreferenceChange = onMealLunchPreferenceChange,
+                        rightNowGoal = mealRightNowGoal,
+                        onRightNowGoalChange = onMealRightNowGoalChange,
+                        locationPreference = mealLocationPreference,
+                        onLocationPreferenceChange = onMealLocationPreferenceChange,
+                        manualLocation = mealManualLocation,
+                        onManualLocationChange = onMealManualLocationChange
                     )
                 }
             }
@@ -493,9 +535,30 @@ data class JourneyEditScreen(
         onDietaryRestrictionsChange: (List<String>) -> Unit,
         dislikedIngredients: String,
         onDislikedIngredientsChange: (String) -> Unit,
+        busyWeeknightCookTime: String,
+        onBusyWeeknightCookTimeChange: (String) -> Unit,
+        cookingSkillLevel: String,
+        onCookingSkillLevelChange: (String) -> Unit,
+        lunchPreference: String,
+        onLunchPreferenceChange: (String) -> Unit,
+        rightNowGoal: String,
+        onRightNowGoalChange: (String) -> Unit,
+        locationPreference: String,
+        onLocationPreferenceChange: (String) -> Unit,
+        manualLocation: String,
+        onManualLocationChange: (String) -> Unit,
     ) {
         val partySizeOptions = listOf("1", "2", "3-4", "5+")
         val dietaryOptions = listOf("Vegetarian", "Vegan", "Gluten-Free", "Keto", "Nut Allergy", "None")
+        val weeknightCookTimeOptions = listOf("Under 15 mins", "15-30 mins", "30-60 mins")
+        val skillLevelOptions = listOf("Keep it simple", "Average home cook", "I like a culinary challenge")
+        val lunchPreferenceOptions = listOf("I love leftovers for lunch", "I prefer to cook lunches fresh/separately")
+        val rightNowGoalOptions = listOf(
+            "📋 Plan my entire week",
+            "🧊 Tell me what to make with what's in my fridge right now",
+            "🛒 Just generate a quick grocery list"
+        )
+        val locationOptions = listOf("Use GPS location", "Provide location manually")
 
         Column(
             modifier = Modifier
@@ -574,6 +637,141 @@ data class JourneyEditScreen(
                         unfocusedIndicatorColor = Color.Transparent
                     ),
                     shape = RoundedCornerShape(16.dp)
+                )
+            }
+
+            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
+
+            Text(
+                "Lifestyle & Time Constraints",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                "These answers keep plans realistic for busy days and match the cooking effort you want.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted
+            )
+
+            QuestionBlock(
+                title = "On a busy weeknight, how much time do you realistically have to cook?",
+                description = "Filters recipes by prep and cook time."
+            ) {
+                OptionChips(
+                    options = weeknightCookTimeOptions,
+                    selectedOption = busyWeeknightCookTime,
+                    onOptionSelected = onBusyWeeknightCookTimeChange
+                )
+            }
+
+            QuestionBlock(
+                title = "What is your cooking style/skill level?",
+                description = "Keeps meal suggestions aligned with your preferred complexity."
+            ) {
+                OptionChips(
+                    options = skillLevelOptions,
+                    selectedOption = cookingSkillLevel,
+                    onOptionSelected = onCookingSkillLevelChange
+                )
+            }
+
+            QuestionBlock(
+                title = "How do you prefer to handle lunches?",
+                description = "Lets the AI decide whether to scale dinners for leftovers."
+            ) {
+                OptionChips(
+                    options = lunchPreferenceOptions,
+                    selectedOption = lunchPreference,
+                    onOptionSelected = onLunchPreferenceChange
+                )
+            }
+
+            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
+
+            Text(
+                "Right Now Friction Solver",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                "Use this when you open the app in a panic and need the AI to pick the right behavior mode immediately.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted
+            )
+
+            QuestionBlock(
+                title = "What's your goal today?",
+                description = "Sets the AI mode: batch planning, inventory clearance, or grocery logistics."
+            ) {
+                OptionChips(
+                    options = rightNowGoalOptions,
+                    selectedOption = rightNowGoal,
+                    onOptionSelected = onRightNowGoalChange
+                )
+            }
+
+            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
+
+            Text(
+                "Local Shopping Context",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                "Allow GPS geolocation or provide your location manually so meal plans and grocery lists can be tailored with nearby shops, seasonal local products, and realistic availability.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted
+            )
+
+            QuestionBlock(
+                title = "How should we localize grocery suggestions?",
+                description = "This helps tailor grocery lists to local shops and products."
+            ) {
+                OptionChips(
+                    options = locationOptions,
+                    selectedOption = locationPreference,
+                    onOptionSelected = onLocationPreferenceChange
+                )
+            }
+
+            if (locationPreference == "Provide location manually") {
+                QuestionBlock(
+                    title = "Where should we plan around?",
+                    description = "Add a city, neighborhood, postal code, or market area."
+                ) {
+                    TextField(
+                        value = manualLocation,
+                        onValueChange = onManualLocationChange,
+                        placeholder = { Text("Example: Portici, Naples or 80055") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                            unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                            focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun OptionChips(
+        options: List<String>,
+        selectedOption: String,
+        onOptionSelected: (String) -> Unit
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            options.forEach { option ->
+                FilterChip(
+                    selected = selectedOption == option,
+                    onClick = { onOptionSelected(option) },
+                    label = { Text(option) }
                 )
             }
         }

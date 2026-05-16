@@ -71,9 +71,23 @@ data class MealPlanningProfile(
     val cookingFor: String = "",
     val dietaryRestrictions: List<String> = emptyList(),
     val dislikedIngredients: String = "",
+    val busyWeeknightCookTime: String = "",
+    val cookingSkillLevel: String = "",
+    val lunchPreference: String = "",
+    val rightNowGoal: String = "",
+    val locationPreference: String = "",
+    val manualLocation: String = "",
 ) {
     val hasAnswers: Boolean
-        get() = cookingFor.isNotBlank() || dietaryRestrictions.isNotEmpty() || dislikedIngredients.isNotBlank()
+        get() = cookingFor.isNotBlank() ||
+            dietaryRestrictions.isNotEmpty() ||
+            dislikedIngredients.isNotBlank() ||
+            busyWeeknightCookTime.isNotBlank() ||
+            cookingSkillLevel.isNotBlank() ||
+            lunchPreference.isNotBlank() ||
+            rightNowGoal.isNotBlank() ||
+            locationPreference.isNotBlank() ||
+            manualLocation.isNotBlank()
 }
 
 @Serializable

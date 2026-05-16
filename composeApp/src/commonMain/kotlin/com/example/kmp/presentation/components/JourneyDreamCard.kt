@@ -331,11 +331,12 @@ private fun CategorySummary(
         JourneyCategory.HouseholdManagement -> "$openTasks open upkeep tasks - ${tasks.size} total routines"
         JourneyCategory.MealPlanning -> {
             val people = mealPlanningProfile?.cookingFor?.takeIf { it.isNotBlank() } ?: "No party size"
+            val cookTime = mealPlanningProfile?.busyWeeknightCookTime?.takeIf { it.isNotBlank() } ?: "No cook time"
             val restrictions = mealPlanningProfile?.dietaryRestrictions
                 ?.takeIf { it.isNotEmpty() }
                 ?.joinToString(", ")
                 ?: "No restrictions"
-            "Cooking for $people - $restrictions - $openTasks prep actions"
+            "Cooking for $people - $cookTime - $restrictions - $openTasks prep actions"
         }
         JourneyCategory.HealthWellness -> "$completedCount habits completed - $familyStreak day streak - $totalCheers cheers"
         JourneyCategory.LongTermProjects -> "${tasks.size} milestones - ${timeBoundDeadline ?: "No deadline set"}"
@@ -352,6 +353,36 @@ private fun CategorySummary(
         Spacer(Modifier.height(4.dp))
         Text(
             text = "Avoid: ${mealPlanningProfile?.dislikedIngredients}",
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkMuted,
+        )
+    }
+    if (category == JourneyCategory.MealPlanning && !mealPlanningProfile?.lunchPreference.isNullOrBlank()) {
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Lunch: ${mealPlanningProfile?.lunchPreference}",
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkMuted,
+        )
+    }
+    if (category == JourneyCategory.MealPlanning && !mealPlanningProfile?.rightNowGoal.isNullOrBlank()) {
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Today: ${mealPlanningProfile?.rightNowGoal}",
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkMuted,
+        )
+    }
+    if (category == JourneyCategory.MealPlanning && !mealPlanningProfile?.locationPreference.isNullOrBlank()) {
+        Spacer(Modifier.height(4.dp))
+        val profile = mealPlanningProfile
+        val locationText = if (profile.locationPreference == "Provide location manually" && profile.manualLocation.isNotBlank()) {
+            profile.manualLocation
+        } else {
+            profile.locationPreference
+        }
+        Text(
+            text = "Local shops: $locationText",
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )

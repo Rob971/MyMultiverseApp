@@ -56,7 +56,13 @@ class JourneyRepositoryImpl(
                         mealPlanningProfile = MealPlanningProfile(
                             cookingFor = entity.mealCookingFor.orEmpty(),
                             dietaryRestrictions = entity.mealDietaryRestrictions.toListValue(),
-                            dislikedIngredients = entity.mealDislikedIngredients.orEmpty()
+                            dislikedIngredients = entity.mealDislikedIngredients.orEmpty(),
+                            busyWeeknightCookTime = entity.mealBusyWeeknightCookTime.orEmpty(),
+                            cookingSkillLevel = entity.mealCookingSkillLevel.orEmpty(),
+                            lunchPreference = entity.mealLunchPreference.orEmpty(),
+                            rightNowGoal = entity.mealRightNowGoal.orEmpty(),
+                            locationPreference = entity.mealLocationPreference.orEmpty(),
+                            manualLocation = entity.mealManualLocation.orEmpty()
                         ).takeIf { it.hasAnswers },
                         tasks = tasks
                     )
@@ -81,7 +87,13 @@ class JourneyRepositoryImpl(
             colorHex = journey.colorHex,
             mealCookingFor = journey.mealPlanningProfile?.cookingFor,
             mealDietaryRestrictions = journey.mealPlanningProfile?.dietaryRestrictions?.joinToString(","),
-            mealDislikedIngredients = journey.mealPlanningProfile?.dislikedIngredients
+            mealDislikedIngredients = journey.mealPlanningProfile?.dislikedIngredients,
+            mealBusyWeeknightCookTime = journey.mealPlanningProfile?.busyWeeknightCookTime,
+            mealCookingSkillLevel = journey.mealPlanningProfile?.cookingSkillLevel,
+            mealLunchPreference = journey.mealPlanningProfile?.lunchPreference,
+            mealRightNowGoal = journey.mealPlanningProfile?.rightNowGoal,
+            mealLocationPreference = journey.mealPlanningProfile?.locationPreference,
+            mealManualLocation = journey.mealPlanningProfile?.manualLocation
         )
         // Also insert/update tasks
         journey.tasks.forEach { task ->
@@ -157,7 +169,7 @@ class JourneyRepositoryImpl(
     }
 
     override suspend fun refreshJourneys() {
-        removeLegacySeedJourneys()
+        // Journeys are created by users and loaded from persisted storage.
     }
 
     private fun updateJourneyProgress(journeyId: String) {
@@ -181,14 +193,14 @@ class JourneyRepositoryImpl(
             colorHex = j.colorHex,
             mealCookingFor = j.mealCookingFor,
             mealDietaryRestrictions = j.mealDietaryRestrictions,
-            mealDislikedIngredients = j.mealDislikedIngredients
+            mealDislikedIngredients = j.mealDislikedIngredients,
+            mealBusyWeeknightCookTime = j.mealBusyWeeknightCookTime,
+            mealCookingSkillLevel = j.mealCookingSkillLevel,
+            mealLunchPreference = j.mealLunchPreference,
+            mealRightNowGoal = j.mealRightNowGoal,
+            mealLocationPreference = j.mealLocationPreference,
+            mealManualLocation = j.mealManualLocation
         )
-    }
-
-    private fun removeLegacySeedJourneys() {
-        listOf("vesuvian-vitality", "financial-masterplan", "motore-unita").forEach { id ->
-            queries.deleteJourney(id)
-        }
     }
 }
 
