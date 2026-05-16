@@ -19,6 +19,7 @@ data class Journey(
     val timeBoundDeadline: String? = null,
     val colorHex: String? = null,
     val mealPlanningProfile: MealPlanningProfile? = null,
+    val financeProfile: FinanceProfile? = null,
 )
 
 @Serializable
@@ -45,6 +46,12 @@ enum class JourneyCategory(
         displayName = "Meal Planning & Kitchen Operations",
         description = "Menus, grocery planning, cooking prep and kitchen inventory.",
         defaultColorHex = "F4D03F",
+    ),
+    HouseholdFinance(
+        storageKey = "HOUSEHOLD_FINANCE",
+        displayName = "Household Finance",
+        description = "Shared budgets, bills, spending dynamics and financial goals.",
+        defaultColorHex = "2E7D6B",
     ),
     HealthWellness(
         storageKey = "HEALTH_WELLNESS",
@@ -88,6 +95,28 @@ data class MealPlanningProfile(
             rightNowGoal.isNotBlank() ||
             locationPreference.isNotBlank() ||
             manualLocation.isNotBlank()
+}
+
+@Serializable
+data class FinanceProfile(
+    val financeSplit: String = "",
+    val billManager: String = "",
+    val dailyAnnoyance: String = "",
+    val partnerASpendingStyle: String = "",
+    val partnerBSpendingStyle: String = "",
+    val moneyTalkFrequency: String = "",
+    val primaryGoal: String = "",
+    val irregularExpensePlan: String = "",
+) {
+    val hasAnswers: Boolean
+        get() = financeSplit.isNotBlank() ||
+            billManager.isNotBlank() ||
+            dailyAnnoyance.isNotBlank() ||
+            partnerASpendingStyle.isNotBlank() ||
+            partnerBSpendingStyle.isNotBlank() ||
+            moneyTalkFrequency.isNotBlank() ||
+            primaryGoal.isNotBlank() ||
+            irregularExpensePlan.isNotBlank()
 }
 
 @Serializable

@@ -1,5 +1,6 @@
 package com.example.kmp.data.service
 
+import com.example.kmp.domain.model.FinanceProfile
 import com.example.kmp.domain.model.MealPlanningProfile
 import com.example.kmp.domain.model.SmartGoalProposal
 import com.example.kmp.domain.service.AiService
@@ -115,6 +116,65 @@ class AiServiceImpl : AiService {
                         "Friday: flexible family favorite that respects $restrictions",
                         "Weekend prep: wash, chop, and batch-cook two base ingredients",
                         "Grocery list: buy local produce, proteins, pantry staples, and lunch extras from $location"
+                    )
+                )
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun generateFinancialBlueprint(profile: FinanceProfile): Result<SmartGoalProposal> {
+        return try {
+            delay(1500)
+
+            val saverSpenderDynamic = profile.partnerASpendingStyle != profile.partnerBSpendingStyle
+            val mentalLoad = when {
+                profile.billManager.contains("Partner A", ignoreCase = true) -> "Partner A is carrying most of the bill mental load"
+                profile.billManager.contains("Partner B", ignoreCase = true) -> "Partner B is carrying most of the bill mental load"
+                profile.billManager.contains("chaotic", ignoreCase = true) -> "bill ownership is unclear and creating avoidable stress"
+                else -> "you are already trying to manage bills together"
+            }
+            val dynamic = if (saverSpenderDynamic) {
+                "a saver-spender dynamic"
+            } else {
+                "a similar money personality pattern"
+            }
+            val featureFocus = when {
+                profile.dailyAnnoyance.contains("bills", ignoreCase = true) -> "automated bill tracking"
+                profile.dailyAnnoyance.contains("owes", ignoreCase = true) -> "expense splitting"
+                profile.dailyAnnoyance.contains("groceries", ignoreCase = true) ||
+                    profile.dailyAnnoyance.contains("dining", ignoreCase = true) -> "spending guardrails"
+                else -> "neutral spending insights"
+            }
+            val goalPlan = when {
+                profile.primaryGoal.contains("emergency", ignoreCase = true) -> "automate a weekly emergency-fund transfer before discretionary spending"
+                profile.primaryGoal.contains("debt", ignoreCase = true) -> "prioritize one high-interest balance and route extra cash there first"
+                profile.primaryGoal.contains("milestone", ignoreCase = true) -> "create a sinking fund with a weekly target for the milestone"
+                else -> "build a calm monthly rhythm with clear fun-money limits"
+            }
+            val irregularPlan = if (profile.irregularExpensePlan.contains("No", ignoreCase = true)) {
+                "Add a sinking fund for irregular expenses so surprises do not land on credit cards."
+            } else {
+                "Keep the irregular-expense fund visible and review it during check-ins."
+            }
+
+            Result.success(
+                SmartGoalProposal(
+                    title = "Household Financial Blueprint",
+                    subtitle = "A neutral AI plan for shared money decisions",
+                    specific = "Diagnosis: You have $dynamic, and $mentalLoad.",
+                    measurable = "Quick win: Start with $featureFocus and set up 3 shared alerts or rules this week.",
+                    achievable = "Use a monthly money check-in that turns spending data into a neutral conversation instead of a partner-versus-partner argument.",
+                    relevant = "North Star: ${profile.primaryGoal.ifBlank { "Gain peace of mind" }}. $goalPlan.",
+                    timeBound = "Review the blueprint every week for the next 30 days, then adjust the automation.",
+                    suggestedTasks = listOf(
+                        "Create a shared bill calendar with due dates and owners",
+                        "Set up 3 automated alerts for bills, spending, and goal progress",
+                        "Agree on a weekly fun-money limit for each partner",
+                        "Schedule a 20-minute monthly money check-in",
+                        irregularPlan,
+                        "Track the primary goal: ${profile.primaryGoal.ifBlank { "peace of mind" }}"
                     )
                 )
             )

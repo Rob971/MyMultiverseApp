@@ -63,6 +63,14 @@ data class JourneyEditScreen(
         var mealRightNowGoal by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.rightNowGoal ?: "📋 Plan my entire week") }
         var mealLocationPreference by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.locationPreference ?: "Use GPS location") }
         var mealManualLocation by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.manualLocation ?: "") }
+        var financeSplit by remember { mutableStateOf(existingJourney?.financeProfile?.financeSplit ?: "A mix (joint account for bills, separate for personal)") }
+        var financeBillManager by remember { mutableStateOf(existingJourney?.financeProfile?.billManager ?: "We try to do it together") }
+        var financeDailyAnnoyance by remember { mutableStateOf(existingJourney?.financeProfile?.dailyAnnoyance ?: "Forgetting when bills are due") }
+        var financePartnerASpendingStyle by remember { mutableStateOf(existingJourney?.financeProfile?.partnerASpendingStyle ?: "3") }
+        var financePartnerBSpendingStyle by remember { mutableStateOf(existingJourney?.financeProfile?.partnerBSpendingStyle ?: "3") }
+        var financeMoneyTalkFrequency by remember { mutableStateOf(existingJourney?.financeProfile?.moneyTalkFrequency ?: "Regularly (monthly/weekly check-ins)") }
+        var financePrimaryGoal by remember { mutableStateOf(existingJourney?.financeProfile?.primaryGoal ?: "Just gaining peace of mind") }
+        var financeIrregularExpensePlan by remember { mutableStateOf(existingJourney?.financeProfile?.irregularExpensePlan ?: "No, we just handle them as they hit our credit cards") }
 
         // Sync local state with AI proposal
         LaunchedEffect(architectState) {
@@ -138,6 +146,20 @@ data class JourneyEditScreen(
                                             rightNowGoal = mealRightNowGoal,
                                             locationPreference = mealLocationPreference,
                                             manualLocation = mealManualLocation
+                                        )
+                                    } else {
+                                        null
+                                    },
+                                    financeProfile = if (selectedCategory == JourneyCategory.HouseholdFinance) {
+                                        FinanceProfile(
+                                            financeSplit = financeSplit,
+                                            billManager = financeBillManager,
+                                            dailyAnnoyance = financeDailyAnnoyance,
+                                            partnerASpendingStyle = financePartnerASpendingStyle,
+                                            partnerBSpendingStyle = financePartnerBSpendingStyle,
+                                            moneyTalkFrequency = financeMoneyTalkFrequency,
+                                            primaryGoal = financePrimaryGoal,
+                                            irregularExpensePlan = financeIrregularExpensePlan
                                         )
                                     } else {
                                         null
@@ -227,6 +249,36 @@ data class JourneyEditScreen(
                                                 rightNowGoal = mealRightNowGoal,
                                                 locationPreference = mealLocationPreference,
                                                 manualLocation = mealManualLocation
+                                            )
+                                        )
+                                    },
+                                    financeSplit = financeSplit,
+                                    onFinanceSplitChange = { financeSplit = it },
+                                    financeBillManager = financeBillManager,
+                                    onFinanceBillManagerChange = { financeBillManager = it },
+                                    financeDailyAnnoyance = financeDailyAnnoyance,
+                                    onFinanceDailyAnnoyanceChange = { financeDailyAnnoyance = it },
+                                    financePartnerASpendingStyle = financePartnerASpendingStyle,
+                                    onFinancePartnerASpendingStyleChange = { financePartnerASpendingStyle = it },
+                                    financePartnerBSpendingStyle = financePartnerBSpendingStyle,
+                                    onFinancePartnerBSpendingStyleChange = { financePartnerBSpendingStyle = it },
+                                    financeMoneyTalkFrequency = financeMoneyTalkFrequency,
+                                    onFinanceMoneyTalkFrequencyChange = { financeMoneyTalkFrequency = it },
+                                    financePrimaryGoal = financePrimaryGoal,
+                                    onFinancePrimaryGoalChange = { financePrimaryGoal = it },
+                                    financeIrregularExpensePlan = financeIrregularExpensePlan,
+                                    onFinanceIrregularExpensePlanChange = { financeIrregularExpensePlan = it },
+                                    onGenerateFinancialBlueprint = {
+                                        screenModel.generateFinancialBlueprint(
+                                            FinanceProfile(
+                                                financeSplit = financeSplit,
+                                                billManager = financeBillManager,
+                                                dailyAnnoyance = financeDailyAnnoyance,
+                                                partnerASpendingStyle = financePartnerASpendingStyle,
+                                                partnerBSpendingStyle = financePartnerBSpendingStyle,
+                                                moneyTalkFrequency = financeMoneyTalkFrequency,
+                                                primaryGoal = financePrimaryGoal,
+                                                irregularExpensePlan = financeIrregularExpensePlan
                                             )
                                         )
                                     },
@@ -348,6 +400,15 @@ data class JourneyEditScreen(
         mealLocationPreference: String, onMealLocationPreferenceChange: (String) -> Unit,
         mealManualLocation: String, onMealManualLocationChange: (String) -> Unit,
         onGenerateWeeklyMealPlan: () -> Unit,
+        financeSplit: String, onFinanceSplitChange: (String) -> Unit,
+        financeBillManager: String, onFinanceBillManagerChange: (String) -> Unit,
+        financeDailyAnnoyance: String, onFinanceDailyAnnoyanceChange: (String) -> Unit,
+        financePartnerASpendingStyle: String, onFinancePartnerASpendingStyleChange: (String) -> Unit,
+        financePartnerBSpendingStyle: String, onFinancePartnerBSpendingStyleChange: (String) -> Unit,
+        financeMoneyTalkFrequency: String, onFinanceMoneyTalkFrequencyChange: (String) -> Unit,
+        financePrimaryGoal: String, onFinancePrimaryGoalChange: (String) -> Unit,
+        financeIrregularExpensePlan: String, onFinanceIrregularExpensePlanChange: (String) -> Unit,
+        onGenerateFinancialBlueprint: () -> Unit,
         specific: String, onSpecificChange: (String) -> Unit,
         measurable: String, onMeasurableChange: (String) -> Unit,
         achievable: String, onAchievableChange: (String) -> Unit,
@@ -405,6 +466,29 @@ data class JourneyEditScreen(
                         manualLocation = mealManualLocation,
                         onManualLocationChange = onMealManualLocationChange,
                         onGenerateWeeklyMealPlan = onGenerateWeeklyMealPlan
+                    )
+                }
+            }
+            if (selectedCategory == JourneyCategory.HouseholdFinance) {
+                item {
+                    FinanceQuestionnaire(
+                        financeSplit = financeSplit,
+                        onFinanceSplitChange = onFinanceSplitChange,
+                        billManager = financeBillManager,
+                        onBillManagerChange = onFinanceBillManagerChange,
+                        dailyAnnoyance = financeDailyAnnoyance,
+                        onDailyAnnoyanceChange = onFinanceDailyAnnoyanceChange,
+                        partnerASpendingStyle = financePartnerASpendingStyle,
+                        onPartnerASpendingStyleChange = onFinancePartnerASpendingStyleChange,
+                        partnerBSpendingStyle = financePartnerBSpendingStyle,
+                        onPartnerBSpendingStyleChange = onFinancePartnerBSpendingStyleChange,
+                        moneyTalkFrequency = financeMoneyTalkFrequency,
+                        onMoneyTalkFrequencyChange = onFinanceMoneyTalkFrequencyChange,
+                        primaryGoal = financePrimaryGoal,
+                        onPrimaryGoalChange = onFinancePrimaryGoalChange,
+                        irregularExpensePlan = financeIrregularExpensePlan,
+                        onIrregularExpensePlanChange = onFinanceIrregularExpensePlanChange,
+                        onGenerateFinancialBlueprint = onGenerateFinancialBlueprint
                     )
                 }
             }
@@ -800,6 +884,189 @@ data class JourneyEditScreen(
             if (!canGenerateWeeklyPlan) {
                 Text(
                     "Complete each Meal Planning answer first so the AI can build a realistic weekly plan.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SharedJourneyColors.InkMuted,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun FinanceQuestionnaire(
+        financeSplit: String,
+        onFinanceSplitChange: (String) -> Unit,
+        billManager: String,
+        onBillManagerChange: (String) -> Unit,
+        dailyAnnoyance: String,
+        onDailyAnnoyanceChange: (String) -> Unit,
+        partnerASpendingStyle: String,
+        onPartnerASpendingStyleChange: (String) -> Unit,
+        partnerBSpendingStyle: String,
+        onPartnerBSpendingStyleChange: (String) -> Unit,
+        moneyTalkFrequency: String,
+        onMoneyTalkFrequencyChange: (String) -> Unit,
+        primaryGoal: String,
+        onPrimaryGoalChange: (String) -> Unit,
+        irregularExpensePlan: String,
+        onIrregularExpensePlanChange: (String) -> Unit,
+        onGenerateFinancialBlueprint: () -> Unit,
+    ) {
+        val financeSplitOptions = listOf(
+            "Completely combined",
+            "Completely separate",
+            "A mix (joint account for bills, separate for personal)"
+        )
+        val billManagerOptions = listOf(
+            "Partner A does it all",
+            "Partner B does it all",
+            "We try to do it together",
+            "Honestly, it's a bit chaotic"
+        )
+        val annoyanceOptions = listOf(
+            "Forgetting when bills are due",
+            "Tracking who owes what",
+            "Overspending on groceries/dining out",
+            "Arguments over personal spending"
+        )
+        val spendingScaleOptions = listOf("1", "2", "3", "4", "5")
+        val moneyTalkOptions = listOf(
+            "Only when something goes wrong",
+            "Regularly (monthly/weekly check-ins)",
+            "Rarely/We avoid it"
+        )
+        val goalOptions = listOf(
+            "Building an emergency fund",
+            "Paying off high-interest debt",
+            "Saving for a big milestone (wedding, baby, house, vacation)",
+            "Just gaining peace of mind"
+        )
+        val irregularExpenseOptions = listOf(
+            "Yes, we save in advance",
+            "No, we just handle them as they hit our credit cards"
+        )
+        val canGenerateBlueprint = financeSplit.isNotBlank() &&
+            billManager.isNotBlank() &&
+            dailyAnnoyance.isNotBlank() &&
+            partnerASpendingStyle.isNotBlank() &&
+            partnerBSpendingStyle.isNotBlank() &&
+            moneyTalkFrequency.isNotBlank() &&
+            primaryGoal.isNotBlank() &&
+            irregularExpensePlan.isNotBlank()
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(SharedJourneyColors.GlassWhite, RoundedCornerShape(20.dp))
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                "Household Financial Assessment",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                "These answers help the AI understand logistics, money personalities and shared goals before it creates a neutral financial blueprint.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted
+            )
+
+            Text(
+                "Phase 1: The Current Setup",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            QuestionBlock(
+                title = "How do you currently split your finances?",
+                description = "Determines whether the app should emphasize joint pools, separate tracking, or expense splitting."
+            ) {
+                OptionChips(financeSplitOptions, financeSplit, onFinanceSplitChange)
+            }
+            QuestionBlock(
+                title = "Who currently manages the day-to-day household bills?",
+                description = "Identifies mental load and bill ownership."
+            ) {
+                OptionChips(billManagerOptions, billManager, onBillManagerChange)
+            }
+            QuestionBlock(
+                title = "What is your biggest daily financial annoyance right now?",
+                description = "Sets the first feature focus for the AI."
+            ) {
+                OptionChips(annoyanceOptions, dailyAnnoyance, onDailyAnnoyanceChange)
+            }
+
+            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
+
+            Text(
+                "Phase 2: Money Personalities",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                "Scale: 1 = Strict Saver, 5 = Spontaneous Spender. Each partner should answer individually.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted
+            )
+            QuestionBlock(
+                title = "Partner A: relationship with spending",
+                description = "Helps detect saver-spender dynamics without blaming either partner."
+            ) {
+                OptionChips(spendingScaleOptions, partnerASpendingStyle, onPartnerASpendingStyleChange)
+            }
+            QuestionBlock(
+                title = "Partner B: relationship with spending",
+                description = "Pairs with Partner A's answer so the AI can act as a neutral mediator."
+            ) {
+                OptionChips(spendingScaleOptions, partnerBSpendingStyle, onPartnerBSpendingStyleChange)
+            }
+            QuestionBlock(
+                title = "How often do you talk about money together?",
+                description = "Shapes the tone and cadence of AI insights."
+            ) {
+                OptionChips(moneyTalkOptions, moneyTalkFrequency, onMoneyTalkFrequencyChange)
+            }
+
+            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
+
+            Text(
+                "Phase 3: Future Goals",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            QuestionBlock(
+                title = "What is your primary financial goal for the next 12 months?",
+                description = "Gives the AI a North Star for budget and automation suggestions."
+            ) {
+                OptionChips(goalOptions, primaryGoal, onPrimaryGoalChange)
+            }
+            QuestionBlock(
+                title = "Do you have a plan for irregular expenses?",
+                description = "Shows whether the AI should recommend a sinking fund."
+            ) {
+                OptionChips(irregularExpenseOptions, irregularExpensePlan, onIrregularExpensePlanChange)
+            }
+
+            Button(
+                onClick = onGenerateFinancialBlueprint,
+                enabled = canGenerateBlueprint,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)
+            ) {
+                Icon(AppIcons.Sparkles, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(10.dp))
+                Text("Generate household financial blueprint", fontWeight = FontWeight.Bold)
+            }
+
+            if (!canGenerateBlueprint) {
+                Text(
+                    "Complete each finance answer first so the AI can build the diagnosis, quick win and North Star.",
                     style = MaterialTheme.typography.labelSmall,
                     color = SharedJourneyColors.InkMuted,
                     textAlign = TextAlign.Center,

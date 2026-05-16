@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import androidx.compose.ui.unit.sp
+import com.example.kmp.domain.model.FinanceProfile
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
@@ -181,6 +182,7 @@ fun JourneyDreamCard(
                             familyStreak = dream.familyStreak,
                             timeBoundDeadline = dream.timeBoundDeadline,
                             mealPlanningProfile = dream.mealPlanningProfile,
+                            financeProfile = dream.financeProfile,
                         )
 
                         Spacer(Modifier.height(16.dp))
@@ -322,6 +324,7 @@ private fun CategorySummary(
     familyStreak: Int,
     timeBoundDeadline: String?,
     mealPlanningProfile: MealPlanningProfile?,
+    financeProfile: FinanceProfile?,
 ) {
     val reminderCount = tasks.count { it.reminderTime != null }
     val scheduledCount = tasks.count { it.scheduledDays.isNotEmpty() }
@@ -337,6 +340,11 @@ private fun CategorySummary(
                 ?.joinToString(", ")
                 ?: "No restrictions"
             "Cooking for $people - $cookTime - $restrictions - $openTasks prep actions"
+        }
+        JourneyCategory.HouseholdFinance -> {
+            val split = financeProfile?.financeSplit?.takeIf { it.isNotBlank() } ?: "No setup"
+            val goal = financeProfile?.primaryGoal?.takeIf { it.isNotBlank() } ?: "No goal"
+            "$split - $goal - $openTasks finance actions"
         }
         JourneyCategory.HealthWellness -> "$completedCount habits completed - $familyStreak day streak - $totalCheers cheers"
         JourneyCategory.LongTermProjects -> "${tasks.size} milestones - ${timeBoundDeadline ?: "No deadline set"}"
@@ -373,16 +381,32 @@ private fun CategorySummary(
             color = SharedJourneyColors.InkMuted,
         )
     }
-    if (category == JourneyCategory.MealPlanning && !mealPlanningProfile?.locationPreference.isNullOrBlank()) {
+    val mealProfile = mealPlanningProfile
+    if (category == JourneyCategory.MealPlanning && mealProfile != null && mealProfile.locationPreference.isNotBlank()) {
         Spacer(Modifier.height(4.dp))
-        val profile = mealPlanningProfile
-        val locationText = if (profile.locationPreference == "Provide location manually" && profile.manualLocation.isNotBlank()) {
-            profile.manualLocation
+        val locationText = if (mealProfile.locationPreference == "Provide location manually" && mealProfile.manualLocation.isNotBlank()) {
+            mealProfile.manualLocation
         } else {
-            profile.locationPreference
+            mealProfile.locationPreference
         }
         Text(
             text = "Local shops: $locationText",
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkMuted,
+        )
+    }
+    if (category == JourneyCategory.HouseholdFinance && !financeProfile?.dailyAnnoyance.isNullOrBlank()) {
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Friction: ${financeProfile?.dailyAnnoyance}",
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkMuted,
+        )
+    }
+    if (category == JourneyCategory.HouseholdFinance && !financeProfile?.moneyTalkFrequency.isNullOrBlank()) {
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Money talks: ${financeProfile?.moneyTalkFrequency}",
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )

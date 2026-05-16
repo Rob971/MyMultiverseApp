@@ -1,6 +1,7 @@
 package com.example.kmp.data.repository
 
 import com.example.kmp.database.AppDatabase
+import com.example.kmp.domain.model.FinanceProfile
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
@@ -64,6 +65,16 @@ class JourneyRepositoryImpl(
                             locationPreference = entity.mealLocationPreference.orEmpty(),
                             manualLocation = entity.mealManualLocation.orEmpty()
                         ).takeIf { it.hasAnswers },
+                        financeProfile = FinanceProfile(
+                            financeSplit = entity.financeSplit.orEmpty(),
+                            billManager = entity.financeBillManager.orEmpty(),
+                            dailyAnnoyance = entity.financeDailyAnnoyance.orEmpty(),
+                            partnerASpendingStyle = entity.financePartnerASpendingStyle.orEmpty(),
+                            partnerBSpendingStyle = entity.financePartnerBSpendingStyle.orEmpty(),
+                            moneyTalkFrequency = entity.financeMoneyTalkFrequency.orEmpty(),
+                            primaryGoal = entity.financePrimaryGoal.orEmpty(),
+                            irregularExpensePlan = entity.financeIrregularExpensePlan.orEmpty(),
+                        ).takeIf { it.hasAnswers },
                         tasks = tasks
                     )
                 }
@@ -93,7 +104,15 @@ class JourneyRepositoryImpl(
             mealLunchPreference = journey.mealPlanningProfile?.lunchPreference,
             mealRightNowGoal = journey.mealPlanningProfile?.rightNowGoal,
             mealLocationPreference = journey.mealPlanningProfile?.locationPreference,
-            mealManualLocation = journey.mealPlanningProfile?.manualLocation
+            mealManualLocation = journey.mealPlanningProfile?.manualLocation,
+            financeSplit = journey.financeProfile?.financeSplit,
+            financeBillManager = journey.financeProfile?.billManager,
+            financeDailyAnnoyance = journey.financeProfile?.dailyAnnoyance,
+            financePartnerASpendingStyle = journey.financeProfile?.partnerASpendingStyle,
+            financePartnerBSpendingStyle = journey.financeProfile?.partnerBSpendingStyle,
+            financeMoneyTalkFrequency = journey.financeProfile?.moneyTalkFrequency,
+            financePrimaryGoal = journey.financeProfile?.primaryGoal,
+            financeIrregularExpensePlan = journey.financeProfile?.irregularExpensePlan
         )
         // Also insert/update tasks
         journey.tasks.forEach { task ->
@@ -199,7 +218,15 @@ class JourneyRepositoryImpl(
             mealLunchPreference = j.mealLunchPreference,
             mealRightNowGoal = j.mealRightNowGoal,
             mealLocationPreference = j.mealLocationPreference,
-            mealManualLocation = j.mealManualLocation
+            mealManualLocation = j.mealManualLocation,
+            financeSplit = j.financeSplit,
+            financeBillManager = j.financeBillManager,
+            financeDailyAnnoyance = j.financeDailyAnnoyance,
+            financePartnerASpendingStyle = j.financePartnerASpendingStyle,
+            financePartnerBSpendingStyle = j.financePartnerBSpendingStyle,
+            financeMoneyTalkFrequency = j.financeMoneyTalkFrequency,
+            financePrimaryGoal = j.financePrimaryGoal,
+            financeIrregularExpensePlan = j.financeIrregularExpensePlan
         )
     }
 }

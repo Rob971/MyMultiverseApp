@@ -76,6 +76,19 @@ class HomeScreenModel(
         }
     }
 
+    fun generateFinancialBlueprint(profile: FinanceProfile) {
+        screenModelScope.launch {
+            _architectState.value = ArchitectState.Refining
+            aiService.generateFinancialBlueprint(profile)
+                .onSuccess { proposal ->
+                    _architectState.value = ArchitectState.Proposed(proposal)
+                }
+                .onFailure { error ->
+                    _architectState.value = ArchitectState.Error(error.message ?: "Errore sconosciuto")
+                }
+        }
+    }
+
     fun resetArchitect() {
         _architectState.value = ArchitectState.Idle
     }

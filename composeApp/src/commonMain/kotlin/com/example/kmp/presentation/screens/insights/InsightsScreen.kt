@@ -86,6 +86,10 @@ data class InsightsScreen(val journey: Journey) : Screen {
                             item { InsightCard("Kitchen Plate", "A simple view of meal balance and prep.") { NutritionPlateChart() } }
                             item { InsightCard("Pantry Density", "How prepared the kitchen is for the week.") { NutrientRadarChart() } }
                         }
+                        JourneyCategory.HouseholdFinance -> {
+                            item { InsightCard("Money Flow", "How shared finances and spending patterns move together.") { FinanceAreaChart() } }
+                            item { InsightCard("Sinking Funds", "Coverage for irregular expenses and future goals.") { SinkingFundPieChart() } }
+                        }
                         JourneyCategory.HealthWellness -> {
                             item { InsightCard("Habit Consistency", "Small actions sustained over time.") { ConsistencyCurveChart() } }
                             item { InsightCard("Wellness Web", "Energy, rest, movement and self-care.") { NsvRadarChart() } }
