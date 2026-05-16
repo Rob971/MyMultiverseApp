@@ -60,7 +60,7 @@ data class JourneyEditScreen(
         var mealBusyWeeknightCookTime by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.busyWeeknightCookTime ?: "15-30 mins") }
         var mealCookingSkillLevel by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.cookingSkillLevel ?: "Average home cook") }
         var mealLunchPreference by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.lunchPreference ?: "I love leftovers for lunch") }
-        var mealRightNowGoal by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.rightNowGoal ?: "Plan my entire week") }
+        var mealRightNowGoal by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.rightNowGoal ?: "📋 Plan my entire week") }
         var mealLocationPreference by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.locationPreference ?: "Use GPS location") }
         var mealManualLocation by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.manualLocation ?: "") }
 
@@ -215,6 +215,21 @@ data class JourneyEditScreen(
                                     onMealLocationPreferenceChange = { mealLocationPreference = it },
                                     mealManualLocation = mealManualLocation,
                                     onMealManualLocationChange = { mealManualLocation = it },
+                                    onGenerateWeeklyMealPlan = {
+                                        screenModel.generateWeeklyMealPlan(
+                                            MealPlanningProfile(
+                                                cookingFor = mealCookingFor,
+                                                dietaryRestrictions = mealDietaryRestrictions,
+                                                dislikedIngredients = mealDislikedIngredients,
+                                                busyWeeknightCookTime = mealBusyWeeknightCookTime,
+                                                cookingSkillLevel = mealCookingSkillLevel,
+                                                lunchPreference = mealLunchPreference,
+                                                rightNowGoal = mealRightNowGoal,
+                                                locationPreference = mealLocationPreference,
+                                                manualLocation = mealManualLocation
+                                            )
+                                        )
+                                    },
                                     specific = specific, onSpecificChange = { specific = it },
                                     measurable = measurable, onMeasurableChange = { measurable = it },
                                     achievable = achievable, onAchievableChange = { achievable = it },
@@ -332,6 +347,7 @@ data class JourneyEditScreen(
         mealRightNowGoal: String, onMealRightNowGoalChange: (String) -> Unit,
         mealLocationPreference: String, onMealLocationPreferenceChange: (String) -> Unit,
         mealManualLocation: String, onMealManualLocationChange: (String) -> Unit,
+        onGenerateWeeklyMealPlan: () -> Unit,
         specific: String, onSpecificChange: (String) -> Unit,
         measurable: String, onMeasurableChange: (String) -> Unit,
         achievable: String, onAchievableChange: (String) -> Unit,
@@ -387,7 +403,8 @@ data class JourneyEditScreen(
                         locationPreference = mealLocationPreference,
                         onLocationPreferenceChange = onMealLocationPreferenceChange,
                         manualLocation = mealManualLocation,
-                        onManualLocationChange = onMealManualLocationChange
+                        onManualLocationChange = onMealManualLocationChange,
+                        onGenerateWeeklyMealPlan = onGenerateWeeklyMealPlan
                     )
                 }
             }
@@ -547,6 +564,7 @@ data class JourneyEditScreen(
         onLocationPreferenceChange: (String) -> Unit,
         manualLocation: String,
         onManualLocationChange: (String) -> Unit,
+        onGenerateWeeklyMealPlan: () -> Unit,
     ) {
         val partySizeOptions = listOf("1", "2", "3-4", "5+")
         val dietaryOptions = listOf("Vegetarian", "Vegan", "Gluten-Free", "Keto", "Nut Allergy", "None")
@@ -559,6 +577,15 @@ data class JourneyEditScreen(
             "🛒 Just generate a quick grocery list"
         )
         val locationOptions = listOf("Use GPS location", "Provide location manually")
+        val canGenerateWeeklyPlan = cookingFor.isNotBlank() &&
+            dietaryRestrictions.isNotEmpty() &&
+            dislikedIngredients.isNotBlank() &&
+            busyWeeknightCookTime.isNotBlank() &&
+            cookingSkillLevel.isNotBlank() &&
+            lunchPreference.isNotBlank() &&
+            rightNowGoal.isNotBlank() &&
+            locationPreference.isNotBlank() &&
+            (locationPreference != "Provide location manually" || manualLocation.isNotBlank())
 
         Column(
             modifier = Modifier
@@ -756,6 +783,28 @@ data class JourneyEditScreen(
                         shape = RoundedCornerShape(16.dp)
                     )
                 }
+            }
+
+            Button(
+                onClick = onGenerateWeeklyMealPlan,
+                enabled = canGenerateWeeklyPlan,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)
+            ) {
+                Icon(AppIcons.Sparkles, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(10.dp))
+                Text("Generate weekly meal plan with AI", fontWeight = FontWeight.Bold)
+            }
+
+            if (!canGenerateWeeklyPlan) {
+                Text(
+                    "Complete each Meal Planning answer first so the AI can build a realistic weekly plan.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SharedJourneyColors.InkMuted,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }

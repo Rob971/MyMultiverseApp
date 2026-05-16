@@ -1,5 +1,6 @@
 package com.example.kmp.data.service
 
+import com.example.kmp.domain.model.MealPlanningProfile
 import com.example.kmp.domain.model.SmartGoalProposal
 import com.example.kmp.domain.service.AiService
 import kotlinx.coroutines.delay
@@ -67,6 +68,56 @@ class AiServiceImpl : AiService {
                 }
             }
             Result.success(proposal)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun generateWeeklyMealPlan(profile: MealPlanningProfile): Result<SmartGoalProposal> {
+        return try {
+            delay(1500)
+
+            val restrictions = profile.dietaryRestrictions
+                .filterNot { it == "None" }
+                .takeIf { it.isNotEmpty() }
+                ?.joinToString(", ")
+                ?: "no dietary restrictions"
+            val location = when {
+                profile.locationPreference == "Provide location manually" && profile.manualLocation.isNotBlank() -> profile.manualLocation
+                profile.locationPreference.isNotBlank() -> "your local area"
+                else -> "nearby shops"
+            }
+            val lunchStrategy = if (profile.lunchPreference.contains("leftovers", ignoreCase = true)) {
+                "double dinner portions so tomorrow's lunch is covered"
+            } else {
+                "keep lunches separate and quick to prepare fresh"
+            }
+            val mode = when {
+                profile.rightNowGoal.contains("fridge", ignoreCase = true) -> "Inventory clearance"
+                profile.rightNowGoal.contains("grocery", ignoreCase = true) -> "Grocery logistics"
+                else -> "Batch planning"
+            }
+
+            Result.success(
+                SmartGoalProposal(
+                    title = "Weekly Meal Plan",
+                    subtitle = "$mode for ${profile.cookingFor.ifBlank { "the household" }} people",
+                    specific = "Create a realistic weekly meal plan using $restrictions, avoiding ${profile.dislikedIngredients.ifBlank { "no disliked ingredients listed" }}.",
+                    measurable = "Cover 5 weeknight dinners, $lunchStrategy, and one focused grocery list tailored to $location.",
+                    achievable = "Keep weeknight cooking within ${profile.busyWeeknightCookTime.ifBlank { "the available time" }} and match the style: ${profile.cookingSkillLevel.ifBlank { "average home cook" }}.",
+                    relevant = "Use local shops and available products so the plan is easier to buy, cook, and repeat.",
+                    timeBound = "Plan the next 7 days, with the first grocery run prepared today.",
+                    suggestedTasks = listOf(
+                        "Monday: quick pantry pasta with seasonal vegetables",
+                        "Tuesday: one-pan protein and vegetables within ${profile.busyWeeknightCookTime.ifBlank { "30 minutes" }}",
+                        "Wednesday: fridge-clearance bowl using open ingredients first",
+                        "Thursday: simple soup or stew with enough portions to support lunch",
+                        "Friday: flexible family favorite that respects $restrictions",
+                        "Weekend prep: wash, chop, and batch-cook two base ingredients",
+                        "Grocery list: buy local produce, proteins, pantry staples, and lunch extras from $location"
+                    )
+                )
+            )
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -63,6 +63,19 @@ class HomeScreenModel(
         }
     }
 
+    fun generateWeeklyMealPlan(profile: MealPlanningProfile) {
+        screenModelScope.launch {
+            _architectState.value = ArchitectState.Refining
+            aiService.generateWeeklyMealPlan(profile)
+                .onSuccess { proposal ->
+                    _architectState.value = ArchitectState.Proposed(proposal)
+                }
+                .onFailure { error ->
+                    _architectState.value = ArchitectState.Error(error.message ?: "Errore sconosciuto")
+                }
+        }
+    }
+
     fun resetArchitect() {
         _architectState.value = ArchitectState.Idle
     }
