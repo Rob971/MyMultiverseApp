@@ -6,6 +6,7 @@ import com.example.kmp.domain.model.FinanceBillEntry
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
+import com.example.kmp.domain.model.LongTermProjectProfile
 import com.example.kmp.domain.model.MealPlanningProfile
 import com.example.kmp.domain.repository.JourneyRepository
 import kotlinx.coroutines.flow.Flow
@@ -107,6 +108,13 @@ class JourneyRepositoryImpl(
                             monthlyKidsPetsSpend = entity.financeMonthlyKidsPetsSpend.orEmpty(),
                             monthlyOtherSpend = entity.financeMonthlyOtherSpend.orEmpty(),
                         ).takeIf { it.hasAnswers },
+                        longTermProjectProfile = LongTermProjectProfile(
+                            milestoneType = entity.longTermMilestoneType.orEmpty(),
+                            roadblock = entity.longTermRoadblock.orEmpty(),
+                            timeline = entity.longTermTimeline.orEmpty(),
+                            budgetStyle = entity.longTermBudgetStyle.orEmpty(),
+                            successDefinition = entity.longTermSuccessDefinition.orEmpty(),
+                        ).takeIf { it.hasAnswers },
                         tasks = tasks,
                         financeBillEntries = financeBillEntries,
                     )
@@ -159,7 +167,12 @@ class JourneyRepositoryImpl(
             financeMonthlySubscriptionsSpend = journey.financeProfile?.monthlySubscriptionsSpend,
             financeMonthlyInsuranceSpend = journey.financeProfile?.monthlyInsuranceSpend,
             financeMonthlyKidsPetsSpend = journey.financeProfile?.monthlyKidsPetsSpend,
-            financeMonthlyOtherSpend = journey.financeProfile?.monthlyOtherSpend
+            financeMonthlyOtherSpend = journey.financeProfile?.monthlyOtherSpend,
+            longTermMilestoneType = journey.longTermProjectProfile?.milestoneType,
+            longTermRoadblock = journey.longTermProjectProfile?.roadblock,
+            longTermTimeline = journey.longTermProjectProfile?.timeline,
+            longTermBudgetStyle = journey.longTermProjectProfile?.budgetStyle,
+            longTermSuccessDefinition = journey.longTermProjectProfile?.successDefinition
         )
         // Also insert/update tasks
         journey.tasks.forEach { task ->
@@ -322,7 +335,12 @@ class JourneyRepositoryImpl(
             financeMonthlySubscriptionsSpend = j.financeMonthlySubscriptionsSpend,
             financeMonthlyInsuranceSpend = j.financeMonthlyInsuranceSpend,
             financeMonthlyKidsPetsSpend = j.financeMonthlyKidsPetsSpend,
-            financeMonthlyOtherSpend = j.financeMonthlyOtherSpend
+            financeMonthlyOtherSpend = j.financeMonthlyOtherSpend,
+            longTermMilestoneType = j.longTermMilestoneType,
+            longTermRoadblock = j.longTermRoadblock,
+            longTermTimeline = j.longTermTimeline,
+            longTermBudgetStyle = j.longTermBudgetStyle,
+            longTermSuccessDefinition = j.longTermSuccessDefinition
         )
     }
 }

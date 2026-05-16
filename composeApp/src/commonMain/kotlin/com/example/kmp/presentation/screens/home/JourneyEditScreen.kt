@@ -85,6 +85,11 @@ data class JourneyEditScreen(
         var financeMonthlyInsuranceSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyInsuranceSpend ?: "") }
         var financeMonthlyKidsPetsSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyKidsPetsSpend ?: "") }
         var financeMonthlyOtherSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyOtherSpend ?: "") }
+        var longTermMilestoneType by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.milestoneType ?: "Moving to a new home") }
+        var longTermRoadblock by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.roadblock ?: "Overwhelmed: We don't know the correct order of steps to take.") }
+        var longTermTimeline by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.timeline ?: "Medium-term (1-6 months)") }
+        var longTermBudgetStyle by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.budgetStyle ?: "Moderate (Some DIY, hiring pros for the big stuff)") }
+        var longTermSuccessDefinition by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.successDefinition ?: "") }
 
         // Sync local state with AI proposal
         LaunchedEffect(architectState) {
@@ -191,6 +196,17 @@ data class JourneyEditScreen(
                                         )
                                     } else {
                                         null
+                                    },
+                                    longTermProjectProfile = if (selectedCategory == JourneyCategory.LongTermProjects) {
+                                        LongTermProjectProfile(
+                                            milestoneType = longTermMilestoneType,
+                                            roadblock = longTermRoadblock,
+                                            timeline = longTermTimeline,
+                                            budgetStyle = longTermBudgetStyle,
+                                            successDefinition = longTermSuccessDefinition
+                                        )
+                                    } else {
+                                        null
                                     }
                                 )
                                 
@@ -202,9 +218,9 @@ data class JourneyEditScreen(
                                         id = Clock.System.now().toEpochMilliseconds().toString() + taskTitle.hashCode(),
                                         journeyId = finalJourneyId,
                                         title = taskTitle,
-                                        planning = "Suggested by AI Architect",
+                                        planning = suggestedTaskPlanning(selectedCategory, taskTitle),
                                         isCompleted = false,
-                                        label = "AI",
+                                        label = suggestedTaskLabel(selectedCategory, taskTitle),
                                         scheduledDays = listOf(1, 2, 3, 4, 5, 6, 7)
                                     ))
                                 }
@@ -352,6 +368,27 @@ data class JourneyEditScreen(
                                             )
                                         )
                                     },
+                                    longTermMilestoneType = longTermMilestoneType,
+                                    onLongTermMilestoneTypeChange = { longTermMilestoneType = it },
+                                    longTermRoadblock = longTermRoadblock,
+                                    onLongTermRoadblockChange = { longTermRoadblock = it },
+                                    longTermTimeline = longTermTimeline,
+                                    onLongTermTimelineChange = { longTermTimeline = it },
+                                    longTermBudgetStyle = longTermBudgetStyle,
+                                    onLongTermBudgetStyleChange = { longTermBudgetStyle = it },
+                                    longTermSuccessDefinition = longTermSuccessDefinition,
+                                    onLongTermSuccessDefinitionChange = { longTermSuccessDefinition = it },
+                                    onGenerateLongTermProjectBlueprint = {
+                                        screenModel.generateLongTermProjectBlueprint(
+                                            LongTermProjectProfile(
+                                                milestoneType = longTermMilestoneType,
+                                                roadblock = longTermRoadblock,
+                                                timeline = longTermTimeline,
+                                                budgetStyle = longTermBudgetStyle,
+                                                successDefinition = longTermSuccessDefinition
+                                            )
+                                        )
+                                    },
                                     specific = specific, onSpecificChange = { specific = it },
                                     measurable = measurable, onMeasurableChange = { measurable = it },
                                     achievable = achievable, onAchievableChange = { achievable = it },
@@ -493,6 +530,12 @@ data class JourneyEditScreen(
         financeMonthlyKidsPetsSpend: String, onFinanceMonthlyKidsPetsSpendChange: (String) -> Unit,
         financeMonthlyOtherSpend: String, onFinanceMonthlyOtherSpendChange: (String) -> Unit,
         onGenerateFinancialBlueprint: () -> Unit,
+        longTermMilestoneType: String, onLongTermMilestoneTypeChange: (String) -> Unit,
+        longTermRoadblock: String, onLongTermRoadblockChange: (String) -> Unit,
+        longTermTimeline: String, onLongTermTimelineChange: (String) -> Unit,
+        longTermBudgetStyle: String, onLongTermBudgetStyleChange: (String) -> Unit,
+        longTermSuccessDefinition: String, onLongTermSuccessDefinitionChange: (String) -> Unit,
+        onGenerateLongTermProjectBlueprint: () -> Unit,
         specific: String, onSpecificChange: (String) -> Unit,
         measurable: String, onMeasurableChange: (String) -> Unit,
         achievable: String, onAchievableChange: (String) -> Unit,
@@ -601,6 +644,23 @@ data class JourneyEditScreen(
                         monthlyOtherSpend = financeMonthlyOtherSpend,
                         onMonthlyOtherSpendChange = onFinanceMonthlyOtherSpendChange,
                         onGenerateFinancialBlueprint = onGenerateFinancialBlueprint
+                    )
+                }
+            }
+            if (selectedCategory == JourneyCategory.LongTermProjects) {
+                item {
+                    LongTermProjectQuestionnaire(
+                        milestoneType = longTermMilestoneType,
+                        onMilestoneTypeChange = onLongTermMilestoneTypeChange,
+                        roadblock = longTermRoadblock,
+                        onRoadblockChange = onLongTermRoadblockChange,
+                        timeline = longTermTimeline,
+                        onTimelineChange = onLongTermTimelineChange,
+                        budgetStyle = longTermBudgetStyle,
+                        onBudgetStyleChange = onLongTermBudgetStyleChange,
+                        successDefinition = longTermSuccessDefinition,
+                        onSuccessDefinitionChange = onLongTermSuccessDefinitionChange,
+                        onGenerateBlueprint = onGenerateLongTermProjectBlueprint
                     )
                 }
             }
@@ -996,6 +1056,148 @@ data class JourneyEditScreen(
             if (!canGenerateWeeklyPlan) {
                 Text(
                     "Complete each Meal Planning answer first so the AI can build a realistic weekly plan.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SharedJourneyColors.InkMuted,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun LongTermProjectQuestionnaire(
+        milestoneType: String,
+        onMilestoneTypeChange: (String) -> Unit,
+        roadblock: String,
+        onRoadblockChange: (String) -> Unit,
+        timeline: String,
+        onTimelineChange: (String) -> Unit,
+        budgetStyle: String,
+        onBudgetStyleChange: (String) -> Unit,
+        successDefinition: String,
+        onSuccessDefinitionChange: (String) -> Unit,
+        onGenerateBlueprint: () -> Unit,
+    ) {
+        val milestoneOptions = listOf(
+            "Moving to a new home",
+            "Renovation / Home Improvement",
+            "Big Event (Wedding, milestone party, baby shower)",
+            "Major life transition (New baby, career change, kids starting school)",
+            "Decluttering / Deep Organization (Garage, attic, etc.)"
+        )
+        val roadblockOptions = listOf(
+            "Time: We are too busy with daily life to focus on it.",
+            "Alignment: We aren't on the same page about the budget, style, or plan.",
+            "Overwhelmed: We don't know the correct order of steps to take.",
+            "Accountability: We start, but things keep getting pushed to the back burner."
+        )
+        val timelineOptions = listOf(
+            "ASAP (Less than a month)",
+            "Medium-term (1-6 months)",
+            "Long-term (6+ months / No rush)"
+        )
+        val budgetOptions = listOf(
+            "Tight / Bootstrapping (DIY all the way)",
+            "Moderate (Some DIY, hiring pros for the big stuff)",
+            "Full Service (We want to hire vendors/professionals)"
+        )
+        val canGenerateBlueprint = milestoneType.isNotBlank() &&
+            roadblock.isNotBlank() &&
+            timeline.isNotBlank() &&
+            budgetStyle.isNotBlank() &&
+            successDefinition.isNotBlank()
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(SharedJourneyColors.GlassWhite, RoundedCornerShape(20.dp))
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                "Long-Term Project Blueprint",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                "Answer four quick prompts and one sentence so the AI can build the project plan for you.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted
+            )
+
+            QuestionBlock(
+                title = "What big milestone are you tackling next?",
+                description = "This tells the AI what kind of project mountain it is planning around."
+            ) {
+                OptionChips(milestoneOptions, milestoneType, onMilestoneTypeChange)
+            }
+
+            QuestionBlock(
+                title = "What's the biggest roadblock keeping you from finishing or starting this?",
+                description = "This changes whether the AI emphasizes steps, alignment, ownership or momentum."
+            ) {
+                OptionChips(roadblockOptions, roadblock, onRoadblockChange)
+            }
+
+            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
+
+            Text(
+                "Boundaries",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            QuestionBlock(
+                title = "What is your realistic timeline for this?",
+                description = "Sets the size and cadence of the micro-step checklist."
+            ) {
+                OptionChips(timelineOptions, timeline, onTimelineChange)
+            }
+            QuestionBlock(
+                title = "How would you describe your budget for this?",
+                description = "Helps the AI choose between DIY steps, vendor work and quote tracking."
+            ) {
+                OptionChips(budgetOptions, budgetStyle, onBudgetStyleChange)
+            }
+
+            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
+
+            QuestionBlock(
+                title = "In one sentence, what does a successful finish look like to you?",
+                description = "Example: A completely organized garage where we can actually park both cars by summer."
+            ) {
+                TextField(
+                    value = successDefinition,
+                    onValueChange = onSuccessDefinitionChange,
+                    placeholder = { Text("Example: Moving into our new house without losing our minds or overspending on movers.") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                        unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                        focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                )
+            }
+
+            Button(
+                onClick = onGenerateBlueprint,
+                enabled = canGenerateBlueprint,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)
+            ) {
+                Icon(AppIcons.Sparkles, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(10.dp))
+                Text("Generate household action blueprint", fontWeight = FontWeight.Bold)
+            }
+
+            if (!canGenerateBlueprint) {
+                Text(
+                    "Complete the milestone, roadblock, timeline, budget and success sentence so the AI can build the roadmap.",
                     style = MaterialTheme.typography.labelSmall,
                     color = SharedJourneyColors.InkMuted,
                     textAlign = TextAlign.Center,
@@ -1473,6 +1675,36 @@ data class JourneyEditScreen(
                 shape = RoundedCornerShape(16.dp)
             )
         }
+    }
+}
+
+private fun suggestedTaskLabel(category: JourneyCategory, taskTitle: String): String {
+    if (category != JourneyCategory.LongTermProjects) return "AI"
+
+    return when {
+        taskTitle.contains("Today", ignoreCase = true) -> "Next Action"
+        taskTitle.contains("budget", ignoreCase = true) -> "Budget"
+        taskTitle.contains("roadblock", ignoreCase = true) -> "Friction"
+        taskTitle.contains("owner", ignoreCase = true) ||
+            taskTitle.contains("Assign", ignoreCase = true) -> "Roles"
+        taskTitle.contains("check-in", ignoreCase = true) ||
+            taskTitle.contains("cadence", ignoreCase = true) -> "Follow-up"
+        taskTitle.contains("board", ignoreCase = true) ||
+            taskTitle.contains("micro-task", ignoreCase = true) -> "Plan"
+        else -> "Plan"
+    }
+}
+
+private fun suggestedTaskPlanning(category: JourneyCategory, taskTitle: String): String {
+    if (category != JourneyCategory.LongTermProjects) return "Suggested by AI Architect"
+
+    return when (suggestedTaskLabel(category, taskTitle)) {
+        "Next Action" -> "Do this first to create momentum today."
+        "Budget" -> "Keeps the project realistic before decisions become expensive."
+        "Friction" -> "Names the main source of delay so the follow-up plan can remove it."
+        "Roles" -> "Clarifies ownership so the project does not depend on one person remembering everything."
+        "Follow-up" -> "Creates the recurring review loop for progress and accountability."
+        else -> "Breaks the milestone into visible, trackable project parts."
     }
 }
 

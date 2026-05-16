@@ -235,6 +235,12 @@ fun DetailContent(
                 SmartPrincipleSection(journey)
             }
 
+            if (journey.category == JourneyCategory.LongTermProjects && journey.longTermProjectProfile != null) {
+                item {
+                    LongTermActionBlueprintSection(journey)
+                }
+            }
+
             if (journey.category == JourneyCategory.HouseholdFinance && journey.financeProfile != null) {
                 item {
                     MonthlySpendingSection(journey.financeProfile)
@@ -325,7 +331,6 @@ fun DetailContent(
 
             items(journey.tasks) { task ->
                 TaskBlockItem(
-                    journey = journey,
                     task = task, 
                     onScheduleClick = { onTaskScheduleClick(task.id) },
                     onCheerClick = { onCheerClick(task.id) },
@@ -556,6 +561,166 @@ fun SmartItem(label: String, value: String?) {
             style = MaterialTheme.typography.bodyMedium,
             color = SharedJourneyColors.InkDeep
         )
+    }
+}
+
+@Composable
+fun LongTermActionBlueprintSection(journey: Journey) {
+    val profile = journey.longTermProjectProfile ?: return
+    val tasks = journey.tasks
+    val nextTask = tasks.firstOrNull { !it.isCompleted }
+    val groupedTasks = tasks
+        .groupBy { it.label.ifBlank { "Plan" } }
+        .toSortedMap(compareBy { label -> longTermSectionOrder(label) })
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = SharedJourneyColors.GlassWhite),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text(
+                text = "Household Action Blueprint",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                text = profile.successDefinition.ifBlank { journey.subtitle },
+                style = MaterialTheme.typography.bodyMedium,
+                color = SharedJourneyColors.InkMuted
+            )
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                LongTermContextChip("Milestone", profile.milestoneType, Modifier.weight(1f))
+                LongTermContextChip("Timeline", profile.timeline, Modifier.weight(1f))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                LongTermContextChip("Budget", profile.budgetStyle, Modifier.weight(1f))
+                LongTermContextChip("Roadblock", profile.roadblock, Modifier.weight(1f))
+            }
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(18.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = "Next best action",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = SharedJourneyColors.MediterraneanTeal,
+                        fontWeight = FontWeight.Black
+                    )
+                    Text(
+                        text = nextTask?.title ?: "All generated plan steps are complete. Add the next follow-up task when the milestone moves into a new phase.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = SharedJourneyColors.InkDeep,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Text(
+                text = "Progress by part",
+                style = MaterialTheme.typography.titleSmall,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.Black
+            )
+
+            if (groupedTasks.isEmpty()) {
+                Text(
+                    text = "No plan steps yet. Add tasks below to start tracking this milestone.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SharedJourneyColors.InkMuted
+                )
+            } else {
+                groupedTasks.forEach { (label, sectionTasks) ->
+                    LongTermProgressPart(label, sectionTasks)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LongTermContextChip(label: String, value: String, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier,
+        color = SharedJourneyColors.SunDrenchedWhite,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = label.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                text = value.ifBlank { "Not set" },
+                style = MaterialTheme.typography.labelMedium,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun LongTermProgressPart(label: String, tasks: List<JourneyTask>) {
+    val completed = tasks.count { it.isCompleted }
+    val progress = if (tasks.isEmpty()) 0f else completed.toFloat() / tasks.size
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = SharedJourneyColors.SunDrenchedWhite,
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = SharedJourneyColors.InkDeep,
+                    fontWeight = FontWeight.Black
+                )
+                Text(
+                    text = "$completed/${tasks.size}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = SharedJourneyColors.InkMuted,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier.fillMaxWidth().height(8.dp),
+                color = SharedJourneyColors.MediterraneanTeal,
+                trackColor = SharedJourneyColors.ParchmentWarm,
+            )
+            tasks.take(3).forEach { task ->
+                Text(
+                    text = if (task.isCompleted) "Done: ${task.title}" else "Open: ${task.title}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SharedJourneyColors.InkMuted
+                )
+            }
+        }
+    }
+}
+
+private fun longTermSectionOrder(label: String): Int {
+    return when (label) {
+        "Next Action" -> 0
+        "Plan" -> 1
+        "Budget" -> 2
+        "Friction" -> 3
+        "Roles" -> 4
+        "Follow-up" -> 5
+        else -> 6
     }
 }
 
@@ -967,7 +1132,6 @@ private fun Double.toCurrencyText(period: SpendingPeriod): String {
 
 @Composable
 private fun TaskBlockItem(
-    journey: Journey,
     task: JourneyTask, 
     onScheduleClick: () -> Unit,
     onCheerClick: () -> Unit,

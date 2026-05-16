@@ -20,6 +20,7 @@ data class Journey(
     val colorHex: String? = null,
     val mealPlanningProfile: MealPlanningProfile? = null,
     val financeProfile: FinanceProfile? = null,
+    val longTermProjectProfile: LongTermProjectProfile? = null,
     val financeBillEntries: List<FinanceBillEntry> = emptyList(),
 )
 
@@ -154,6 +155,22 @@ data class FinanceProfile(
             "Kids & Pets" to monthlyKidsPetsSpend.toAmountValue(),
             "Other" to monthlyOtherSpend.toAmountValue(),
         ).filter { it.second > 0.0 }
+}
+
+@Serializable
+data class LongTermProjectProfile(
+    val milestoneType: String = "",
+    val roadblock: String = "",
+    val timeline: String = "",
+    val budgetStyle: String = "",
+    val successDefinition: String = "",
+) {
+    val hasAnswers: Boolean
+        get() = milestoneType.isNotBlank() ||
+            roadblock.isNotBlank() ||
+            timeline.isNotBlank() ||
+            budgetStyle.isNotBlank() ||
+            successDefinition.isNotBlank()
 }
 
 private fun String.toAmountValue(): Double {

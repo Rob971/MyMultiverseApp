@@ -90,6 +90,19 @@ class HomeScreenModel(
         }
     }
 
+    fun generateLongTermProjectBlueprint(profile: LongTermProjectProfile) {
+        screenModelScope.launch {
+            _architectState.value = ArchitectState.Refining
+            aiService.generateLongTermProjectBlueprint(profile)
+                .onSuccess { proposal ->
+                    _architectState.value = ArchitectState.Proposed(proposal)
+                }
+                .onFailure { error ->
+                    _architectState.value = ArchitectState.Error(error.message ?: "Errore sconosciuto")
+                }
+        }
+    }
+
     fun resetArchitect() {
         _architectState.value = ArchitectState.Idle
     }

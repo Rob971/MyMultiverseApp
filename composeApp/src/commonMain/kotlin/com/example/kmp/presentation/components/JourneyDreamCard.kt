@@ -27,6 +27,7 @@ import com.example.kmp.domain.model.FinanceProfile
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
+import com.example.kmp.domain.model.LongTermProjectProfile
 import com.example.kmp.domain.model.MealPlanningProfile
 import com.example.kmp.presentation.theme.SharedJourneyColors
 
@@ -183,6 +184,7 @@ fun JourneyDreamCard(
                             timeBoundDeadline = dream.timeBoundDeadline,
                             mealPlanningProfile = dream.mealPlanningProfile,
                             financeProfile = dream.financeProfile,
+                            longTermProjectProfile = dream.longTermProjectProfile,
                         )
 
                         Spacer(Modifier.height(16.dp))
@@ -325,6 +327,7 @@ private fun CategorySummary(
     timeBoundDeadline: String?,
     mealPlanningProfile: MealPlanningProfile?,
     financeProfile: FinanceProfile?,
+    longTermProjectProfile: LongTermProjectProfile?,
 ) {
     val reminderCount = tasks.count { it.reminderTime != null }
     val scheduledCount = tasks.count { it.scheduledDays.isNotEmpty() }
@@ -350,7 +353,11 @@ private fun CategorySummary(
             "$split - $billCount bill groups - ${monthlySpend.toCurrencyText()} reported monthly"
         }
         JourneyCategory.HealthWellness -> "$completedCount habits completed - $familyStreak day streak - $totalCheers cheers"
-        JourneyCategory.LongTermProjects -> "${tasks.size} milestones - ${timeBoundDeadline ?: "No deadline set"}"
+        JourneyCategory.LongTermProjects -> {
+            val milestone = longTermProjectProfile?.milestoneType?.takeIf { it.isNotBlank() } ?: "${tasks.size} milestones"
+            val timeline = longTermProjectProfile?.timeline?.takeIf { it.isNotBlank() } ?: timeBoundDeadline ?: "No deadline set"
+            "$milestone - $timeline"
+        }
     }
 
     Text(
@@ -420,6 +427,23 @@ private fun CategorySummary(
         val topCategory = finance.monthlySpendingBreakdown.maxByOrNull { it.second }
         Text(
             text = "Top monthly spend: ${topCategory?.first} ${topCategory?.second?.toCurrencyText()}",
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkMuted,
+        )
+    }
+    val longTerm = longTermProjectProfile
+    if (category == JourneyCategory.LongTermProjects && longTerm != null && longTerm.roadblock.isNotBlank()) {
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Roadblock: ${longTerm.roadblock}",
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkMuted,
+        )
+    }
+    if (category == JourneyCategory.LongTermProjects && longTerm != null && longTerm.successDefinition.isNotBlank()) {
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Finish line: ${longTerm.successDefinition}",
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )

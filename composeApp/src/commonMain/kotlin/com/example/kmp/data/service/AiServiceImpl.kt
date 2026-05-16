@@ -1,6 +1,7 @@
 package com.example.kmp.data.service
 
 import com.example.kmp.domain.model.FinanceProfile
+import com.example.kmp.domain.model.LongTermProjectProfile
 import com.example.kmp.domain.model.MealPlanningProfile
 import com.example.kmp.domain.model.SmartGoalProposal
 import com.example.kmp.domain.service.AiService
@@ -228,6 +229,65 @@ class AiServiceImpl : AiService {
                         "Enable receipt text-to-split for variable bills like utilities",
                         irregularPlan,
                         "Track the primary goal alongside bills: ${profile.primaryGoal.ifBlank { "peace of mind" }}"
+                    )
+                )
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun generateLongTermProjectBlueprint(profile: LongTermProjectProfile): Result<SmartGoalProposal> {
+        return try {
+            delay(1500)
+
+            val milestone = profile.milestoneType.ifBlank { "long-term milestone" }
+            val finishLine = profile.successDefinition.ifBlank { "a finished project that feels calm, clear and shared" }
+            val cadence = when {
+                profile.timeline.contains("ASAP", ignoreCase = true) -> "daily 20-minute sprints for the next two weeks"
+                profile.timeline.contains("1-6", ignoreCase = true) ||
+                    profile.timeline.contains("Medium", ignoreCase = true) -> "two micro-tasks per week"
+                else -> "one focused planning block per week"
+            }
+            val budgetGuardrail = when {
+                profile.budgetStyle.contains("Tight", ignoreCase = true) ||
+                    profile.budgetStyle.contains("Bootstrapping", ignoreCase = true) -> "DIY-first decisions and a simple must-have versus nice-to-have list"
+                profile.budgetStyle.contains("Full", ignoreCase = true) ||
+                    profile.budgetStyle.contains("Service", ignoreCase = true) -> "vendor shortlists, quote comparisons and clear handoff checklists"
+                else -> "DIY for low-risk work and professional help for expensive or specialized tasks"
+            }
+            val frictionPlan = when {
+                profile.roadblock.contains("Time", ignoreCase = true) -> "protect tiny calendar blocks so daily life does not swallow the project"
+                profile.roadblock.contains("Alignment", ignoreCase = true) -> "run a short decision meeting with budget, style and priority votes before any spending"
+                profile.roadblock.contains("Overwhelmed", ignoreCase = true) -> "follow the steps in strict order and hide later decisions until the current one is done"
+                profile.roadblock.contains("Accountability", ignoreCase = true) -> "assign one owner per task and review progress every Sunday"
+                else -> "choose the next visible action and keep the plan small enough to maintain"
+            }
+            val roleDelegation = when {
+                profile.roadblock.contains("Alignment", ignoreCase = true) -> "Partner A gathers options, Partner B scores trade-offs, then both choose from the same shortlist."
+                profile.roadblock.contains("Time", ignoreCase = true) -> "One partner owns scheduling, the other owns prep work, with tasks capped at 20 minutes."
+                profile.roadblock.contains("Accountability", ignoreCase = true) -> "One partner owns the checklist, the other owns reminders and follow-through."
+                else -> "Partner A owns logistics, Partner B owns research, and both approve cost or style decisions."
+            }
+
+            Result.success(
+                SmartGoalProposal(
+                    title = "$milestone Blueprint",
+                    subtitle = "A lightweight roadmap for: $finishLine",
+                    specific = "Define the finish line as: $finishLine.",
+                    measurable = "Track progress with $cadence and keep the visible plan to the next 3 decisions plus the next 2 actions.",
+                    achievable = "Use $budgetGuardrail. Roadblock strategy: $frictionPlan.",
+                    relevant = "Role split: $roleDelegation This keeps the milestone moving without asking the household to build a giant spreadsheet first.",
+                    timeBound = profile.timeline.ifBlank { "Set a realistic target date during the first planning check-in." },
+                    suggestedTasks = listOf(
+                        "Today: write the one-sentence finish line somewhere shared",
+                        "Create a three-column board: Decide, Do, Waiting",
+                        "Pick the next 2 micro-tasks for this week",
+                        "Set the budget guardrail: ${profile.budgetStyle.ifBlank { "choose tight, moderate or full service" }}",
+                        "Name the current roadblock: ${profile.roadblock.ifBlank { "time, alignment, overwhelm or accountability" }}",
+                        "Assign owners: $roleDelegation",
+                        "Schedule the first 15-minute check-in",
+                        "Review progress cadence: $cadence"
                     )
                 )
             )
