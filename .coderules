@@ -24,6 +24,24 @@ These rules apply to this Kotlin Multiplatform app unless a more specific rule s
 - Keep UI components category-aware through domain data, not hard-coded journey IDs or seed-card names.
 - Prefer small private composables over long nested UI blocks when a section has its own behavior or repeated structure.
 
+## UX Best Practices
+
+- Start from the user's immediate job-to-be-done. Each screen should make the next useful action obvious without requiring the user to understand the app architecture.
+- Design for glanceability on mobile: use clear hierarchy, short labels, meaningful grouping, and one primary action per section.
+- Use progressive disclosure for complex workflows. Ask only for the minimum information needed now, and reveal advanced options when the user chooses a path that requires them.
+- Preserve user confidence with visible feedback for loading, saving, errors, empty states, and successful actions. Never leave a tap without a perceivable response.
+- Prefer recognition over recall: show examples, selected values, summaries, and defaults instead of expecting users to remember prior answers.
+- Make AI features explainable. Show what inputs the AI used, what it inferred, and what the user can edit before anything is persisted or acted on.
+- Treat AI output as a draft, not an authority. Keep human review, undo/edit paths, and clear ownership for generated tasks, plans, bills, and recommendations.
+- Prioritize accessibility by default: support dynamic text sizes, sufficient color contrast, large touch targets, semantic labels, and layouts that do not rely on color alone.
+- Respect privacy in sensitive domains such as finance, health, location, and family data. Ask for only the data needed, explain why it is needed, and provide a manual alternative when possible.
+- Use plain, concrete language. Avoid jargon in user-facing copy, especially for money, health, legal, or AI-driven decisions.
+- Keep destructive actions explicit and reversible where possible. Confirm deletes, distinguish cancel from save, and avoid hidden side effects.
+- Design empty states as onboarding moments: explain what the feature does, show an example, and provide a clear first action.
+- Keep cross-platform behavior consistent, but respect platform expectations for permissions, back navigation, keyboard handling, and sharing/import flows.
+- For visual analytics, show the headline insight first, then the chart, then supporting detail. Users should understand the takeaway without interpreting raw data.
+- For forms and onboarding, validate inline, keep errors close to the field, preserve entered data after errors, and avoid blocking submission for optional fields.
+
 ## Navigation And State
 
 - Use Voyager `Screen` types for navigation and pass stable IDs when data can be reloaded from state. Passing full models is acceptable only for read-only display flows.
