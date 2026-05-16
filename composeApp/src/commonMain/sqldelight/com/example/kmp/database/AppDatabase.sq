@@ -28,7 +28,14 @@ CREATE TABLE JourneyEntity (
     financePartnerBSpendingStyle TEXT,
     financeMoneyTalkFrequency TEXT,
     financePrimaryGoal TEXT,
-    financeIrregularExpensePlan TEXT
+    financeIrregularExpensePlan TEXT,
+    financeBillSplitStrategy TEXT,
+    financeSettleWorkflow TEXT,
+    financeRecurringBills TEXT,
+    financeBillPainPoint TEXT,
+    financePartnerAIncome TEXT,
+    financePartnerBIncome TEXT,
+    financeCustomSplitPercentages TEXT
 );
 
 CREATE TABLE TaskEntity (
@@ -55,8 +62,8 @@ selectTasksByJourneyId:
 SELECT * FROM TaskEntity WHERE journeyId = ?;
 
 insertJourney:
-INSERT OR REPLACE INTO JourneyEntity(id, title, subtitle, category, progress, participantInitials, familyStreak, specificGoal, measurableOutcome, achievablePlan, relevanceToFamily, timeBoundDeadline, colorHex, mealCookingFor, mealDietaryRestrictions, mealDislikedIngredients, mealBusyWeeknightCookTime, mealCookingSkillLevel, mealLunchPreference, mealRightNowGoal, mealLocationPreference, mealManualLocation, financeSplit, financeBillManager, financeDailyAnnoyance, financePartnerASpendingStyle, financePartnerBSpendingStyle, financeMoneyTalkFrequency, financePrimaryGoal, financeIrregularExpensePlan)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO JourneyEntity(id, title, subtitle, category, progress, participantInitials, familyStreak, specificGoal, measurableOutcome, achievablePlan, relevanceToFamily, timeBoundDeadline, colorHex, mealCookingFor, mealDietaryRestrictions, mealDislikedIngredients, mealBusyWeeknightCookTime, mealCookingSkillLevel, mealLunchPreference, mealRightNowGoal, mealLocationPreference, mealManualLocation, financeSplit, financeBillManager, financeDailyAnnoyance, financePartnerASpendingStyle, financePartnerBSpendingStyle, financeMoneyTalkFrequency, financePrimaryGoal, financeIrregularExpensePlan, financeBillSplitStrategy, financeSettleWorkflow, financeRecurringBills, financeBillPainPoint, financePartnerAIncome, financePartnerBIncome, financeCustomSplitPercentages)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 insertTask:
 INSERT OR REPLACE INTO TaskEntity(id, journeyId, title, planning, isCompleted, label, scheduledDays, reminderTime, claimedByInitials, cheersCount)

@@ -74,6 +74,13 @@ class JourneyRepositoryImpl(
                             moneyTalkFrequency = entity.financeMoneyTalkFrequency.orEmpty(),
                             primaryGoal = entity.financePrimaryGoal.orEmpty(),
                             irregularExpensePlan = entity.financeIrregularExpensePlan.orEmpty(),
+                            billSplitStrategy = entity.financeBillSplitStrategy.orEmpty(),
+                            settleWorkflow = entity.financeSettleWorkflow.orEmpty(),
+                            recurringBills = entity.financeRecurringBills.toListValue(),
+                            billPainPoint = entity.financeBillPainPoint.orEmpty(),
+                            partnerAIncome = entity.financePartnerAIncome.orEmpty(),
+                            partnerBIncome = entity.financePartnerBIncome.orEmpty(),
+                            customSplitPercentages = entity.financeCustomSplitPercentages.orEmpty(),
                         ).takeIf { it.hasAnswers },
                         tasks = tasks
                     )
@@ -112,7 +119,14 @@ class JourneyRepositoryImpl(
             financePartnerBSpendingStyle = journey.financeProfile?.partnerBSpendingStyle,
             financeMoneyTalkFrequency = journey.financeProfile?.moneyTalkFrequency,
             financePrimaryGoal = journey.financeProfile?.primaryGoal,
-            financeIrregularExpensePlan = journey.financeProfile?.irregularExpensePlan
+            financeIrregularExpensePlan = journey.financeProfile?.irregularExpensePlan,
+            financeBillSplitStrategy = journey.financeProfile?.billSplitStrategy,
+            financeSettleWorkflow = journey.financeProfile?.settleWorkflow,
+            financeRecurringBills = journey.financeProfile?.recurringBills?.joinToString(","),
+            financeBillPainPoint = journey.financeProfile?.billPainPoint,
+            financePartnerAIncome = journey.financeProfile?.partnerAIncome,
+            financePartnerBIncome = journey.financeProfile?.partnerBIncome,
+            financeCustomSplitPercentages = journey.financeProfile?.customSplitPercentages
         )
         // Also insert/update tasks
         journey.tasks.forEach { task ->
@@ -226,7 +240,14 @@ class JourneyRepositoryImpl(
             financePartnerBSpendingStyle = j.financePartnerBSpendingStyle,
             financeMoneyTalkFrequency = j.financeMoneyTalkFrequency,
             financePrimaryGoal = j.financePrimaryGoal,
-            financeIrregularExpensePlan = j.financeIrregularExpensePlan
+            financeIrregularExpensePlan = j.financeIrregularExpensePlan,
+            financeBillSplitStrategy = j.financeBillSplitStrategy,
+            financeSettleWorkflow = j.financeSettleWorkflow,
+            financeRecurringBills = j.financeRecurringBills,
+            financeBillPainPoint = j.financeBillPainPoint,
+            financePartnerAIncome = j.financePartnerAIncome,
+            financePartnerBIncome = j.financePartnerBIncome,
+            financeCustomSplitPercentages = j.financeCustomSplitPercentages
         )
     }
 }

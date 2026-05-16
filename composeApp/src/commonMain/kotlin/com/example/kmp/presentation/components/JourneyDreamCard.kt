@@ -342,9 +342,11 @@ private fun CategorySummary(
             "Cooking for $people - $cookTime - $restrictions - $openTasks prep actions"
         }
         JourneyCategory.HouseholdFinance -> {
-            val split = financeProfile?.financeSplit?.takeIf { it.isNotBlank() } ?: "No setup"
-            val goal = financeProfile?.primaryGoal?.takeIf { it.isNotBlank() } ?: "No goal"
-            "$split - $goal - $openTasks finance actions"
+            val split = financeProfile?.billSplitStrategy?.takeIf { it.isNotBlank() }
+                ?: financeProfile?.financeSplit?.takeIf { it.isNotBlank() }
+                ?: "No split rule"
+            val billCount = financeProfile?.recurringBills?.size ?: 0
+            "$split - $billCount bill groups - $openTasks ledger actions"
         }
         JourneyCategory.HealthWellness -> "$completedCount habits completed - $familyStreak day streak - $totalCheers cheers"
         JourneyCategory.LongTermProjects -> "${tasks.size} milestones - ${timeBoundDeadline ?: "No deadline set"}"
@@ -395,18 +397,19 @@ private fun CategorySummary(
             color = SharedJourneyColors.InkMuted,
         )
     }
-    if (category == JourneyCategory.HouseholdFinance && !financeProfile?.dailyAnnoyance.isNullOrBlank()) {
+    val finance = financeProfile
+    if (category == JourneyCategory.HouseholdFinance && finance != null && (finance.billPainPoint.isNotBlank() || finance.dailyAnnoyance.isNotBlank())) {
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Friction: ${financeProfile?.dailyAnnoyance}",
+            text = "Friction: ${finance.billPainPoint.ifBlank { finance.dailyAnnoyance }}",
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )
     }
-    if (category == JourneyCategory.HouseholdFinance && !financeProfile?.moneyTalkFrequency.isNullOrBlank()) {
+    if (category == JourneyCategory.HouseholdFinance && finance != null && finance.settleWorkflow.isNotBlank()) {
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Money talks: ${financeProfile?.moneyTalkFrequency}",
+            text = "Settle-up: ${finance.settleWorkflow}",
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )

@@ -71,6 +71,13 @@ data class JourneyEditScreen(
         var financeMoneyTalkFrequency by remember { mutableStateOf(existingJourney?.financeProfile?.moneyTalkFrequency ?: "Regularly (monthly/weekly check-ins)") }
         var financePrimaryGoal by remember { mutableStateOf(existingJourney?.financeProfile?.primaryGoal ?: "Just gaining peace of mind") }
         var financeIrregularExpensePlan by remember { mutableStateOf(existingJourney?.financeProfile?.irregularExpensePlan ?: "No, we just handle them as they hit our credit cards") }
+        var financeBillSplitStrategy by remember { mutableStateOf(existingJourney?.financeProfile?.billSplitStrategy ?: "50/50 (Right down the middle)") }
+        var financeSettleWorkflow by remember { mutableStateOf(existingJourney?.financeProfile?.settleWorkflow ?: "We send Venmos/Zelles back and forth constantly") }
+        var financeRecurringBills by remember { mutableStateOf(existingJourney?.financeProfile?.recurringBills ?: emptyList()) }
+        var financeBillPainPoint by remember { mutableStateOf(existingJourney?.financeProfile?.billPainPoint ?: "Forgetting when a bill is due (Late fees)") }
+        var financePartnerAIncome by remember { mutableStateOf(existingJourney?.financeProfile?.partnerAIncome ?: "") }
+        var financePartnerBIncome by remember { mutableStateOf(existingJourney?.financeProfile?.partnerBIncome ?: "") }
+        var financeCustomSplitPercentages by remember { mutableStateOf(existingJourney?.financeProfile?.customSplitPercentages ?: "") }
 
         // Sync local state with AI proposal
         LaunchedEffect(architectState) {
@@ -159,7 +166,14 @@ data class JourneyEditScreen(
                                             partnerBSpendingStyle = financePartnerBSpendingStyle,
                                             moneyTalkFrequency = financeMoneyTalkFrequency,
                                             primaryGoal = financePrimaryGoal,
-                                            irregularExpensePlan = financeIrregularExpensePlan
+                                            irregularExpensePlan = financeIrregularExpensePlan,
+                                            billSplitStrategy = financeBillSplitStrategy,
+                                            settleWorkflow = financeSettleWorkflow,
+                                            recurringBills = financeRecurringBills,
+                                            billPainPoint = financeBillPainPoint,
+                                            partnerAIncome = financePartnerAIncome,
+                                            partnerBIncome = financePartnerBIncome,
+                                            customSplitPercentages = financeCustomSplitPercentages
                                         )
                                     } else {
                                         null
@@ -268,6 +282,20 @@ data class JourneyEditScreen(
                                     onFinancePrimaryGoalChange = { financePrimaryGoal = it },
                                     financeIrregularExpensePlan = financeIrregularExpensePlan,
                                     onFinanceIrregularExpensePlanChange = { financeIrregularExpensePlan = it },
+                                    financeBillSplitStrategy = financeBillSplitStrategy,
+                                    onFinanceBillSplitStrategyChange = { financeBillSplitStrategy = it },
+                                    financeSettleWorkflow = financeSettleWorkflow,
+                                    onFinanceSettleWorkflowChange = { financeSettleWorkflow = it },
+                                    financeRecurringBills = financeRecurringBills,
+                                    onFinanceRecurringBillsChange = { financeRecurringBills = it },
+                                    financeBillPainPoint = financeBillPainPoint,
+                                    onFinanceBillPainPointChange = { financeBillPainPoint = it },
+                                    financePartnerAIncome = financePartnerAIncome,
+                                    onFinancePartnerAIncomeChange = { financePartnerAIncome = it },
+                                    financePartnerBIncome = financePartnerBIncome,
+                                    onFinancePartnerBIncomeChange = { financePartnerBIncome = it },
+                                    financeCustomSplitPercentages = financeCustomSplitPercentages,
+                                    onFinanceCustomSplitPercentagesChange = { financeCustomSplitPercentages = it },
                                     onGenerateFinancialBlueprint = {
                                         screenModel.generateFinancialBlueprint(
                                             FinanceProfile(
@@ -278,7 +306,14 @@ data class JourneyEditScreen(
                                                 partnerBSpendingStyle = financePartnerBSpendingStyle,
                                                 moneyTalkFrequency = financeMoneyTalkFrequency,
                                                 primaryGoal = financePrimaryGoal,
-                                                irregularExpensePlan = financeIrregularExpensePlan
+                                                irregularExpensePlan = financeIrregularExpensePlan,
+                                                billSplitStrategy = financeBillSplitStrategy,
+                                                settleWorkflow = financeSettleWorkflow,
+                                                recurringBills = financeRecurringBills,
+                                                billPainPoint = financeBillPainPoint,
+                                                partnerAIncome = financePartnerAIncome,
+                                                partnerBIncome = financePartnerBIncome,
+                                                customSplitPercentages = financeCustomSplitPercentages
                                             )
                                         )
                                     },
@@ -408,6 +443,13 @@ data class JourneyEditScreen(
         financeMoneyTalkFrequency: String, onFinanceMoneyTalkFrequencyChange: (String) -> Unit,
         financePrimaryGoal: String, onFinancePrimaryGoalChange: (String) -> Unit,
         financeIrregularExpensePlan: String, onFinanceIrregularExpensePlanChange: (String) -> Unit,
+        financeBillSplitStrategy: String, onFinanceBillSplitStrategyChange: (String) -> Unit,
+        financeSettleWorkflow: String, onFinanceSettleWorkflowChange: (String) -> Unit,
+        financeRecurringBills: List<String>, onFinanceRecurringBillsChange: (List<String>) -> Unit,
+        financeBillPainPoint: String, onFinanceBillPainPointChange: (String) -> Unit,
+        financePartnerAIncome: String, onFinancePartnerAIncomeChange: (String) -> Unit,
+        financePartnerBIncome: String, onFinancePartnerBIncomeChange: (String) -> Unit,
+        financeCustomSplitPercentages: String, onFinanceCustomSplitPercentagesChange: (String) -> Unit,
         onGenerateFinancialBlueprint: () -> Unit,
         specific: String, onSpecificChange: (String) -> Unit,
         measurable: String, onMeasurableChange: (String) -> Unit,
@@ -488,6 +530,20 @@ data class JourneyEditScreen(
                         onPrimaryGoalChange = onFinancePrimaryGoalChange,
                         irregularExpensePlan = financeIrregularExpensePlan,
                         onIrregularExpensePlanChange = onFinanceIrregularExpensePlanChange,
+                        billSplitStrategy = financeBillSplitStrategy,
+                        onBillSplitStrategyChange = onFinanceBillSplitStrategyChange,
+                        settleWorkflow = financeSettleWorkflow,
+                        onSettleWorkflowChange = onFinanceSettleWorkflowChange,
+                        recurringBills = financeRecurringBills,
+                        onRecurringBillsChange = onFinanceRecurringBillsChange,
+                        billPainPoint = financeBillPainPoint,
+                        onBillPainPointChange = onFinanceBillPainPointChange,
+                        partnerAIncome = financePartnerAIncome,
+                        onPartnerAIncomeChange = onFinancePartnerAIncomeChange,
+                        partnerBIncome = financePartnerBIncome,
+                        onPartnerBIncomeChange = onFinancePartnerBIncomeChange,
+                        customSplitPercentages = financeCustomSplitPercentages,
+                        onCustomSplitPercentagesChange = onFinanceCustomSplitPercentagesChange,
                         onGenerateFinancialBlueprint = onGenerateFinancialBlueprint
                     )
                 }
@@ -911,8 +967,47 @@ data class JourneyEditScreen(
         onPrimaryGoalChange: (String) -> Unit,
         irregularExpensePlan: String,
         onIrregularExpensePlanChange: (String) -> Unit,
+        billSplitStrategy: String,
+        onBillSplitStrategyChange: (String) -> Unit,
+        settleWorkflow: String,
+        onSettleWorkflowChange: (String) -> Unit,
+        recurringBills: List<String>,
+        onRecurringBillsChange: (List<String>) -> Unit,
+        billPainPoint: String,
+        onBillPainPointChange: (String) -> Unit,
+        partnerAIncome: String,
+        onPartnerAIncomeChange: (String) -> Unit,
+        partnerBIncome: String,
+        onPartnerBIncomeChange: (String) -> Unit,
+        customSplitPercentages: String,
+        onCustomSplitPercentagesChange: (String) -> Unit,
         onGenerateFinancialBlueprint: () -> Unit,
     ) {
+        val billSplitStrategyOptions = listOf(
+            "50/50 (Right down the middle)",
+            "Proportional to income",
+            "Custom fixed percentages",
+            "Assign specific bills to specific people"
+        )
+        val settleWorkflowOptions = listOf(
+            "We send Venmos/Zelles back and forth constantly",
+            "One person pays everything, and we calculate a lump sum at the end of the month",
+            "We have a shared joint account that we both fund, and bills auto-pay from there"
+        )
+        val recurringBillOptions = listOf(
+            "Housing (Rent / Mortgage)",
+            "Utilities (Electric, Water, Gas, Trash)",
+            "Connectivity (Internet, Mobile/Cell plans)",
+            "Subscriptions (Netflix, Spotify, Gym, Costco, etc.)",
+            "Insurance (Car, Health, Home/Renter's)",
+            "Kids & Pets (Daycare, Tuition, Pet Insurance)"
+        )
+        val billPainPointOptions = listOf(
+            "Forgetting when a bill is due (Late fees)",
+            "The awkwardness of nagging my partner to send their half",
+            "Calculating who owes what when bills fluctuate (like electric/gas)",
+            "Feeling like the Project Manager who has to log into 10 different sites"
+        )
         val financeSplitOptions = listOf(
             "Completely combined",
             "Completely separate",
@@ -946,7 +1041,13 @@ data class JourneyEditScreen(
             "Yes, we save in advance",
             "No, we just handle them as they hit our credit cards"
         )
-        val canGenerateBlueprint = financeSplit.isNotBlank() &&
+        val canGenerateBlueprint = billSplitStrategy.isNotBlank() &&
+            settleWorkflow.isNotBlank() &&
+            recurringBills.isNotEmpty() &&
+            billPainPoint.isNotBlank() &&
+            (!billSplitStrategy.contains("Proportional", ignoreCase = true) || (partnerAIncome.isNotBlank() && partnerBIncome.isNotBlank())) &&
+            (!billSplitStrategy.contains("Custom", ignoreCase = true) || customSplitPercentages.isNotBlank()) &&
+            financeSplit.isNotBlank() &&
             billManager.isNotBlank() &&
             dailyAnnoyance.isNotBlank() &&
             partnerASpendingStyle.isNotBlank() &&
@@ -969,13 +1070,120 @@ data class JourneyEditScreen(
                 fontWeight = FontWeight.Black
             )
             Text(
-                "These answers help the AI understand logistics, money personalities and shared goals before it creates a neutral financial blueprint.",
+                "These answers let the AI create a custom household ledger for bill tracking, smart splitting and one clean settle-up rhythm.",
                 style = MaterialTheme.typography.bodySmall,
                 color = SharedJourneyColors.InkMuted
             )
 
             Text(
-                "Phase 1: The Current Setup",
+                "Bill Tracking & Splitting",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Black
+            )
+            QuestionBlock(
+                title = "How do you prefer to split your shared household expenses?",
+                description = "This becomes the default math rule for each bill in the ledger."
+            ) {
+                OptionChips(billSplitStrategyOptions, billSplitStrategy, onBillSplitStrategyChange)
+            }
+            if (billSplitStrategy.contains("Proportional", ignoreCase = true)) {
+                QuestionBlock(
+                    title = "What are the approximate partner incomes?",
+                    description = "Optional in a real app, but useful here so the AI can calculate a fair-share split."
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextField(
+                            value = partnerAIncome,
+                            onValueChange = onPartnerAIncomeChange,
+                            placeholder = { Text("Partner A income, e.g. 60000") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                                unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                                focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        TextField(
+                            value = partnerBIncome,
+                            onValueChange = onPartnerBIncomeChange,
+                            placeholder = { Text("Partner B income, e.g. 40000") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                                unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                                focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                    }
+                }
+            }
+            if (billSplitStrategy.contains("Custom", ignoreCase = true)) {
+                QuestionBlock(
+                    title = "What fixed split should we use?",
+                    description = "Example: 60/40, 70/30, or Partner A 60% / Partner B 40%."
+                ) {
+                    TextField(
+                        value = customSplitPercentages,
+                        onValueChange = onCustomSplitPercentagesChange,
+                        placeholder = { Text("Example: 60/40") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                            unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                            focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                }
+            }
+            QuestionBlock(
+                title = "How do you settle up right now?",
+                description = "Lets the AI decide whether to create smart settle, lump-sum previews or joint-account reminders."
+            ) {
+                OptionChips(settleWorkflowOptions, settleWorkflow, onSettleWorkflowChange)
+            }
+            QuestionBlock(
+                title = "Which recurring shared bills do you manage?",
+                description = "Select all that apply. These become starter ledger categories and calendar placeholders."
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    recurringBillOptions.forEach { option ->
+                        val isSelected = recurringBills.contains(option)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = isSelected,
+                                onCheckedChange = { checked ->
+                                    val next = if (checked) {
+                                        recurringBills + option
+                                    } else {
+                                        recurringBills - option
+                                    }
+                                    onRecurringBillsChange(next)
+                                },
+                                colors = CheckboxDefaults.colors(checkedColor = SharedJourneyColors.MediterraneanTeal)
+                            )
+                            Text(option, style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkDeep)
+                        }
+                    }
+                }
+            }
+            QuestionBlock(
+                title = "What is the biggest headache with bills right now?",
+                description = "This chooses the first automation the AI should emphasize."
+            ) {
+                OptionChips(billPainPointOptions, billPainPoint, onBillPainPointChange)
+            }
+
+            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
+
+            Text(
+                "Relationship Context",
                 style = MaterialTheme.typography.titleMedium,
                 color = SharedJourneyColors.MediterraneanTeal,
                 fontWeight = FontWeight.Black
@@ -1066,7 +1274,7 @@ data class JourneyEditScreen(
 
             if (!canGenerateBlueprint) {
                 Text(
-                    "Complete each finance answer first so the AI can build the diagnosis, quick win and North Star.",
+                    "Complete the bill split, settle-up flow, recurring bill list and finance context first so the AI can build the household ledger.",
                     style = MaterialTheme.typography.labelSmall,
                     color = SharedJourneyColors.InkMuted,
                     textAlign = TextAlign.Center,

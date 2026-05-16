@@ -107,6 +107,13 @@ data class FinanceProfile(
     val moneyTalkFrequency: String = "",
     val primaryGoal: String = "",
     val irregularExpensePlan: String = "",
+    val billSplitStrategy: String = "",
+    val settleWorkflow: String = "",
+    val recurringBills: List<String> = emptyList(),
+    val billPainPoint: String = "",
+    val partnerAIncome: String = "",
+    val partnerBIncome: String = "",
+    val customSplitPercentages: String = "",
 ) {
     val hasAnswers: Boolean
         get() = financeSplit.isNotBlank() ||
@@ -116,7 +123,14 @@ data class FinanceProfile(
             partnerBSpendingStyle.isNotBlank() ||
             moneyTalkFrequency.isNotBlank() ||
             primaryGoal.isNotBlank() ||
-            irregularExpensePlan.isNotBlank()
+            irregularExpensePlan.isNotBlank() ||
+            billSplitStrategy.isNotBlank() ||
+            settleWorkflow.isNotBlank() ||
+            recurringBills.isNotEmpty() ||
+            billPainPoint.isNotBlank() ||
+            partnerAIncome.isNotBlank() ||
+            partnerBIncome.isNotBlank() ||
+            customSplitPercentages.isNotBlank()
 }
 
 @Serializable

@@ -129,6 +129,34 @@ class AiServiceImpl : AiService {
             delay(1500)
 
             val saverSpenderDynamic = profile.partnerASpendingStyle != profile.partnerBSpendingStyle
+            val recurringBillSummary = profile.recurringBills
+                .takeIf { it.isNotEmpty() }
+                ?.joinToString(", ")
+                ?: "shared recurring bills"
+            val partnerAIncome = profile.partnerAIncome.toAmountOrNull()
+            val partnerBIncome = profile.partnerBIncome.toAmountOrNull()
+            val totalIncome = (partnerAIncome ?: 0.0) + (partnerBIncome ?: 0.0)
+            val fairSplit = if (
+                profile.billSplitStrategy.contains("Proportional", ignoreCase = true) &&
+                partnerAIncome != null &&
+                partnerBIncome != null &&
+                totalIncome > 0.0
+            ) {
+                val partnerAPercent = (partnerAIncome / totalIncome * 100).toInt()
+                val partnerBPercent = 100 - partnerAPercent
+                "$partnerAPercent% Partner A / $partnerBPercent% Partner B"
+            } else if (
+                profile.billSplitStrategy.contains("Custom", ignoreCase = true) &&
+                profile.customSplitPercentages.isNotBlank()
+            ) {
+                profile.customSplitPercentages
+            } else if (profile.billSplitStrategy.contains("50/50", ignoreCase = true)) {
+                "50% Partner A / 50% Partner B"
+            } else if (profile.billSplitStrategy.contains("assign", ignoreCase = true)) {
+                "assign each bill to a specific owner"
+            } else {
+                profile.billSplitStrategy.ifBlank { "confirm the split rule" }
+            }
             val mentalLoad = when {
                 profile.billManager.contains("Partner A", ignoreCase = true) -> "Partner A is carrying most of the bill mental load"
                 profile.billManager.contains("Partner B", ignoreCase = true) -> "Partner B is carrying most of the bill mental load"
@@ -141,11 +169,28 @@ class AiServiceImpl : AiService {
                 "a similar money personality pattern"
             }
             val featureFocus = when {
+                profile.billPainPoint.contains("due", ignoreCase = true) -> "proactive bill calendar reminders"
+                profile.billPainPoint.contains("nagging", ignoreCase = true) -> "one monthly smart-settle notification"
+                profile.billPainPoint.contains("fluctuate", ignoreCase = true) -> "variable bill math"
+                profile.billPainPoint.contains("Project Manager", ignoreCase = true) -> "automatic bill inventory tracking"
                 profile.dailyAnnoyance.contains("bills", ignoreCase = true) -> "automated bill tracking"
                 profile.dailyAnnoyance.contains("owes", ignoreCase = true) -> "expense splitting"
                 profile.dailyAnnoyance.contains("groceries", ignoreCase = true) ||
                     profile.dailyAnnoyance.contains("dining", ignoreCase = true) -> "spending guardrails"
                 else -> "neutral spending insights"
+            }
+            val settlePlan = when {
+                profile.settleWorkflow.contains("Venmos", ignoreCase = true) ||
+                    profile.settleWorkflow.contains("Zelles", ignoreCase = true) -> {
+                    "replace back-and-forth payments with one net balance notification on the 28th"
+                }
+                profile.settleWorkflow.contains("lump sum", ignoreCase = true) -> {
+                    "keep a running ledger and preview the end-of-month lump sum before it surprises anyone"
+                }
+                profile.settleWorkflow.contains("joint account", ignoreCase = true) -> {
+                    "turn the joint account into a bill runway with funding reminders before autopay"
+                }
+                else -> "use one shared ledger so both partners see the same numbers"
             }
             val goalPlan = when {
                 profile.primaryGoal.contains("emergency", ignoreCase = true) -> "automate a weekly emergency-fund transfer before discretionary spending"
@@ -161,20 +206,21 @@ class AiServiceImpl : AiService {
 
             Result.success(
                 SmartGoalProposal(
-                    title = "Household Financial Blueprint",
-                    subtitle = "A neutral AI plan for shared money decisions",
-                    specific = "Diagnosis: You have $dynamic, and $mentalLoad.",
-                    measurable = "Quick win: Start with $featureFocus and set up 3 shared alerts or rules this week.",
-                    achievable = "Use a monthly money check-in that turns spending data into a neutral conversation instead of a partner-versus-partner argument.",
+                    title = "Custom Household Ledger",
+                    subtitle = "Bill tracking and smart splitting for $recurringBillSummary",
+                    specific = "Diagnosis: You have $dynamic, $mentalLoad, and the ledger should use $fairSplit.",
+                    measurable = "Quick win: Start with $featureFocus and track ${profile.recurringBills.size.coerceAtLeast(1)} recurring bill groups in one shared ledger.",
+                    achievable = "Smart Settle: $settlePlan. Receipt text-to-split can log variable bills, apply $fairSplit, and update the balance automatically.",
                     relevant = "North Star: ${profile.primaryGoal.ifBlank { "Gain peace of mind" }}. $goalPlan.",
-                    timeBound = "Review the blueprint every week for the next 30 days, then adjust the automation.",
+                    timeBound = "Build the ledger this week, confirm due dates once, then review the net balance monthly.",
                     suggestedTasks = listOf(
-                        "Create a shared bill calendar with due dates and owners",
-                        "Set up 3 automated alerts for bills, spending, and goal progress",
-                        "Agree on a weekly fun-money limit for each partner",
-                        "Schedule a 20-minute monthly money check-in",
+                        "Create ledger categories for: $recurringBillSummary",
+                        "Apply split rule: $fairSplit",
+                        "Add placeholder due dates for selected recurring bills",
+                        "Send one smart-settle reminder on the 28th of each month",
+                        "Enable receipt text-to-split for variable bills like utilities",
                         irregularPlan,
-                        "Track the primary goal: ${profile.primaryGoal.ifBlank { "peace of mind" }}"
+                        "Track the primary goal alongside bills: ${profile.primaryGoal.ifBlank { "peace of mind" }}"
                     )
                 )
             )
@@ -182,4 +228,10 @@ class AiServiceImpl : AiService {
             Result.failure(e)
         }
     }
+}
+
+private fun String.toAmountOrNull(): Double? {
+    return filter { it.isDigit() || it == '.' }
+        .takeIf { it.isNotBlank() }
+        ?.toDoubleOrNull()
 }
