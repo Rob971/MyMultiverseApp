@@ -537,9 +537,19 @@ fun SmartItem(label: String, value: String?) {
 
 @Composable
 fun MonthlySpendingSection(profile: FinanceProfile) {
-    val total = profile.monthlyReportedSpendTotal
+    var selectedPeriod by remember { mutableStateOf(SpendingPeriod.Month) }
+    val monthlyTotal = profile.monthlyReportedSpendTotal
     val breakdown = profile.monthlySpendingBreakdown
-    if (total <= 0.0 || breakdown.isEmpty()) return
+    if (monthlyTotal <= 0.0 || breakdown.isEmpty()) return
+
+    val periodTotal = monthlyTotal * selectedPeriod.monthMultiplier
+    val scaledBreakdown = breakdown.map { (category, amount) ->
+        category to amount * selectedPeriod.monthMultiplier
+    }
+    val topCategory = scaledBreakdown.maxByOrNull { it.second }
+    val topShare = topCategory?.let { (_, amount) ->
+        ((amount / periodTotal) * 100).toInt()
+    } ?: 0
 
     Card(
         modifier = Modifier
@@ -551,27 +561,44 @@ fun MonthlySpendingSection(profile: FinanceProfile) {
     ) {
         Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text(
-                text = "Monthly Spending Snapshot",
+                text = "Spending Explorer",
                 style = MaterialTheme.typography.titleMedium,
                 color = SharedJourneyColors.InkDeep,
                 fontWeight = FontWeight.Black
             )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SpendingPeriod.entries.forEach { period ->
+                    FilterChip(
+                        selected = selectedPeriod == period,
+                        onClick = { selectedPeriod = period },
+                        label = { Text(period.label) }
+                    )
+                }
+            }
             Text(
-                text = "Reported total: ${total.toCurrencyText()}",
+                text = "${selectedPeriod.label} reported spend: ${periodTotal.toCurrencyText(selectedPeriod)}",
                 style = MaterialTheme.typography.titleLarge,
                 color = SharedJourneyColors.MediterraneanTeal,
                 fontWeight = FontWeight.Black
             )
             Text(
-                text = "These are the amounts reported during setup. Receipt import or manual bill entries can refine this month by month.",
+                text = "Top category: ${topCategory?.first ?: "Not enough data"}" +
+                    if (topCategory != null) " (${topShare}% of reported ${selectedPeriod.label.lowercase()} spend)." else ".",
+                style = MaterialTheme.typography.bodyMedium,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = "These values are derived from the monthly amounts reported during setup. Receipt import or manual bill entries can refine the history over time.",
                 style = MaterialTheme.typography.bodySmall,
                 color = SharedJourneyColors.InkMuted
             )
-            breakdown.forEach { (category, amount) ->
+            scaledBreakdown.forEach { (category, amount) ->
                 MonthlySpendRow(
                     category = category,
                     amount = amount,
-                    share = (amount / total).toFloat()
+                    period = selectedPeriod,
+                    share = (amount / periodTotal).toFloat()
                 )
             }
         }
@@ -582,6 +609,7 @@ fun MonthlySpendingSection(profile: FinanceProfile) {
 private fun MonthlySpendRow(
     category: String,
     amount: Double,
+    period: SpendingPeriod,
     share: Float,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -591,7 +619,7 @@ private fun MonthlySpendRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(category, style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkDeep, fontWeight = FontWeight.Bold)
-            Text(amount.toCurrencyText(), style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkMuted, fontWeight = FontWeight.Bold)
+            Text(amount.toCurrencyText(period), style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkMuted, fontWeight = FontWeight.Bold)
         }
         LinearProgressIndicator(
             progress = { share.coerceIn(0f, 1f) },
@@ -602,8 +630,19 @@ private fun MonthlySpendRow(
     }
 }
 
-private fun Double.toCurrencyText(): String {
-    return "\$${toInt()}/mo"
+private enum class SpendingPeriod(
+    val label: String,
+    val suffix: String,
+    val monthMultiplier: Double,
+) {
+    Day("Day", "day", 1.0 / 30.0),
+    Week("Week", "wk", 1.0 / 4.33),
+    Month("Month", "mo", 1.0),
+    Quarter("Quarter", "qtr", 3.0),
+}
+
+private fun Double.toCurrencyText(period: SpendingPeriod): String {
+    return "\$${toInt()}/${period.suffix}"
 }
 
 @Composable
