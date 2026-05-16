@@ -53,6 +53,7 @@ data class JourneyEditScreen(
         var timeBound by remember { mutableStateOf(existingJourney?.timeBoundDeadline ?: "") }
         var seedText by remember { mutableStateOf("") }
         var selectedTasks by remember { mutableStateOf<List<String>>(emptyList()) }
+        var selectedCategory by remember { mutableStateOf(existingJourney?.category ?: JourneyCategory.LongTermProjects) }
 
         // Sync local state with AI proposal
         LaunchedEffect(architectState) {
@@ -104,17 +105,19 @@ data class JourneyEditScreen(
                                     id = finalJourneyId,
                                     title = title,
                                     subtitle = subtitle,
+                                    category = selectedCategory,
                                     progress = 0f,
                                     participantInitials = listOf("S", "A")
                                 )).copy(
                                     title = title,
                                     subtitle = subtitle,
+                                    category = selectedCategory,
                                     specificGoal = specific,
                                     measurableOutcome = measurable,
                                     achievablePlan = achievable,
                                     relevanceToFamily = relevant,
                                     timeBoundDeadline = timeBound,
-                                    colorHex = existingJourney?.colorHex ?: "E2725B"
+                                    colorHex = selectedCategory.defaultColorHex
                                 )
                                 
                                 screenModel.addJourney(newJourney)
@@ -168,6 +171,8 @@ data class JourneyEditScreen(
                                 ProposalReviewSection(
                                     title = title, onTitleChange = { title = it },
                                     subtitle = subtitle, onSubtitleChange = { subtitle = it },
+                                    selectedCategory = selectedCategory,
+                                    onCategorySelected = { selectedCategory = it },
                                     specific = specific, onSpecificChange = { specific = it },
                                     measurable = measurable, onMeasurableChange = { measurable = it },
                                     achievable = achievable, onAchievableChange = { achievable = it },
@@ -275,6 +280,7 @@ data class JourneyEditScreen(
     private fun ProposalReviewSection(
         title: String, onTitleChange: (String) -> Unit,
         subtitle: String, onSubtitleChange: (String) -> Unit,
+        selectedCategory: JourneyCategory, onCategorySelected: (JourneyCategory) -> Unit,
         specific: String, onSpecificChange: (String) -> Unit,
         measurable: String, onMeasurableChange: (String) -> Unit,
         achievable: String, onAchievableChange: (String) -> Unit,
@@ -304,6 +310,12 @@ data class JourneyEditScreen(
 
             item { EditField(stringResource(Res.string.edit_dream_field_title), title, onTitleChange) }
             item { EditField(stringResource(Res.string.edit_dream_field_subtitle), subtitle, onSubtitleChange) }
+            item {
+                CategorySelector(
+                    selectedCategory = selectedCategory,
+                    onCategorySelected = onCategorySelected
+                )
+            }
 
             item {
                 Text(
@@ -374,6 +386,68 @@ data class JourneyEditScreen(
             Spacer(Modifier.height(24.dp))
             Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)) {
                 Text(stringResource(Res.string.edit_dream_error_back))
+            }
+        }
+    }
+
+    @Composable
+    private fun CategorySelector(
+        selectedCategory: JourneyCategory,
+        onCategorySelected: (JourneyCategory) -> Unit
+    ) {
+        var expanded by remember { mutableStateOf(false) }
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                "Category",
+                style = MaterialTheme.typography.labelSmall,
+                color = SharedJourneyColors.InkMuted,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
+            )
+            Box {
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = SharedJourneyColors.GlassWhite,
+                        contentColor = SharedJourneyColors.InkDeep
+                    )
+                ) {
+                    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
+                        Text(selectedCategory.displayName, fontWeight = FontWeight.Bold)
+                        Text(
+                            selectedCategory.description,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = SharedJourneyColors.InkMuted
+                        )
+                    }
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.background(SharedJourneyColors.SunDrenchedWhite)
+                ) {
+                    JourneyCategory.entries.forEach { category ->
+                        DropdownMenuItem(
+                            text = {
+                                Column {
+                                    Text(category.displayName, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        category.description,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = SharedJourneyColors.InkMuted
+                                    )
+                                }
+                            },
+                            onClick = {
+                                onCategorySelected(category)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
             }
         }
     }

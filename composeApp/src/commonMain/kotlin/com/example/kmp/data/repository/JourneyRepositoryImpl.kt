@@ -2,6 +2,7 @@ package com.example.kmp.data.repository
 
 import com.example.kmp.database.AppDatabase
 import com.example.kmp.domain.model.Journey
+import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
 import com.example.kmp.domain.repository.JourneyRepository
 import kotlinx.coroutines.flow.Flow
@@ -41,6 +42,7 @@ class JourneyRepositoryImpl(
                         id = entity.id,
                         title = entity.title,
                         subtitle = entity.subtitle,
+                        category = JourneyCategory.fromStorageKey(entity.category),
                         progress = entity.progress.toFloat(),
                         participantInitials = entity.participantInitials.split(","),
                         familyStreak = entity.familyStreak.toInt(),
@@ -61,6 +63,7 @@ class JourneyRepositoryImpl(
             id = journey.id,
             title = journey.title,
             subtitle = journey.subtitle,
+            category = journey.category.storageKey,
             progress = journey.progress.toDouble(),
             participantInitials = journey.participantInitials.joinToString(","),
             familyStreak = journey.familyStreak.toLong(),
@@ -145,9 +148,7 @@ class JourneyRepositoryImpl(
     }
 
     override suspend fun refreshJourneys() {
-        if (queries.selectAllJourneys().executeAsList().isEmpty()) {
-            seedDatabase()
-        }
+        removeLegacySeedJourneys()
     }
 
     private fun updateJourneyProgress(journeyId: String) {
@@ -159,6 +160,7 @@ class JourneyRepositoryImpl(
             id = j.id,
             title = j.title,
             subtitle = j.subtitle,
+            category = j.category,
             progress = progress.toDouble(),
             participantInitials = j.participantInitials,
             familyStreak = j.familyStreak,
@@ -171,50 +173,9 @@ class JourneyRepositoryImpl(
         )
     }
 
-    private fun seedDatabase() {
-        // Vesuvian Vitality - TerracottaOrange (E2725B)
-        queries.insertJourney(
-            "vesuvian-vitality", "Vesuvian Vitality", "Piano Nutrizionale Salvatore & Anna", 0.35, "S,A", 12,
-            "Trasforma la nutrizione quotidiana usando il framework 'Italia Portici'.", 
-            "5 abitudini core tracciate settimanalmente.", 
-            "Cambiamenti graduali: espresso senza zucchero in 7 giorni.", 
-            "Garantire salute e benessere a lungo termine per la nostra famiglia.", 
-            "Fase iniziale di 90 giorni", "E2725B"
-        )
-        queries.insertTask("v-1", "vesuvian-vitality", "La Spesa", "Mercato di Portici ogni sabato mattina.", 1, "Weekly", "6", "09:00", "S", 24)
-        queries.insertTask("v-2", "vesuvian-vitality", "Daily Ratios", "50% verdure, 25% proteine, 25% carboidrati.", 0, "Daily", "1,2,3,4,5,6,7", "19:00", "A", 2)
-        queries.insertTask("v-3", "vesuvian-vitality", "Dolce Vita", "Pizza Marinara settimanale. Sfogliatella la domenica.", 1, "Mixed", "5,7", "20:30", null, 12)
-        queries.insertTask("v-4", "vesuvian-vitality", "Porticese Lifestyle", "Passeggiata al tramonto alla Reggia di Portici.", 0, "Daily", "1,2,3,4,5,6,7", "18:00", "S", 4)
-        queries.insertTask("v-5", "vesuvian-vitality", "Logistics & Prep", "Batch-cooking di legumi e pasta integrale.", 0, "Weekly", "7", "10:30", null, 1)
-
-        // Financial Masterplan - LemonZestYellow (F4D03F)
-        queries.insertJourney(
-            "financial-masterplan", "Financial Masterplan", "Costruiamo il Nostro Futuro Qui (Napoli)", 0.20, "S,A", 5,
-            "Assicurare 10k per il deposito casa e gestire le categorie di spesa core.", 
-            "Revisioni mensili e tracciamento 'log-as-you-go'.", 
-            "Modello 50/50 o percentuale proporzionale al reddito.", 
-            "Trasparenza, benessere familiare e decisioni basate sui valori.", 
-            "Roadmap annuale con date assegnate", "F4D03F"
-        )
-        queries.insertTask("f-1", "financial-masterplan", "Monthly Check-in", "Definiamo gli obiettivi per i prossimi 30 giorni.", 1, "Monthly", "1", "18:00", "S", 34)
-        queries.insertTask("f-2", "financial-masterplan", "Log as You Go", "Categorizza le spese quotidiane (Cibo, Utenze, Attività).", 0, "Daily", "1,2,3,4,5,6,7", "21:00", "A", 8)
-        queries.insertTask("f-3", "financial-masterplan", "Secure Transfer", "Trasferimento mensile al fondo deposito casa.", 0, "Monthly", "5", "10:00", null, 15)
-        queries.insertTask("f-4", "financial-masterplan", "Sinking Funds", "Revisione fondi: Vacanze, Regali, Assicurazioni.", 1, "Weekly", "7", "11:00", null, 2)
-        queries.insertTask("f-5", "financial-masterplan", "Transparency Talk", "Discussione settimanale per fiducia e trasparenza.", 0, "Weekly", "4", "20:00", "S", 6)
-
-        // Il Motore dell'Unità - MediterraneanTeal (005F6B)
-        queries.insertJourney(
-            "motore-unita", "Il Motore dell'Unità", "Forza e Salute: Maria & Antonio", 0.50, "M,A", 8,
-            "Costruire forza funzionale e salute del cuore tramite attività stagionali.", 
-            "Obiettivi trimestrali (Forza, Mare, Resistenza, Equilibrio).", 
-            "Regola dell'80% (va bene!): costanza sulla perfezione.", 
-            "Rafforzare l'unione tramite il movimento condiviso.", 
-            "Roadmap Stagionale 2025 (Target Kayak Gaiola)", "005F6B"
-        )
-        queries.insertTask("m-1", "motore-unita", "Primavera: Forza", "3x forza funzionale in palestra o Crossfit.", 1, "Weekly", "1,3,5", "07:30", "A", 59)
-        queries.insertTask("m-2", "motore-unita", "Estate: Energia", "Nuoto a Posillipo e corsa sul Lungomare.", 0, "Daily", "2,4,6,7", "08:00", null, 20)
-        queries.insertTask("m-3", "motore-unita", "Autunno: Cuore", "Hiking sul Vesuvio e Sentiero degli Dei.", 0, "Weekly", "6,7", "09:00", "M", 8)
-        queries.insertTask("m-4", "motore-unita", "Inverno: Equilibrio", "Mercati freschi e colazioni culturali.", 1, "Daily", "1,2,3,4,5,6,7", "08:30", null, 4)
-        queries.insertTask("m-5", "motore-unita", "Emulazione Supporto", "Check-in quotidiano di supporto reciproco.", 1, "Daily", "1,2,3,4,5,6,7", "21:30", "A", 15)
+    private fun removeLegacySeedJourneys() {
+        listOf("vesuvian-vitality", "financial-masterplan", "motore-unita").forEach { id ->
+            queries.deleteJourney(id)
+        }
     }
 }

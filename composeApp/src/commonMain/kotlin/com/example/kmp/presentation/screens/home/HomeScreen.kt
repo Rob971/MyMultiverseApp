@@ -194,12 +194,7 @@ fun HomeContent(
             itemsIndexed(journeys) { _, dream ->
                 JourneyDreamCard(
                     dream = dream,
-                    progressColor = when (dream.id) {
-                        "vesuvian-vitality" -> SharedJourneyColors.TerracottaOrange
-                        "financial-masterplan" -> SharedJourneyColors.LemonZestYellow
-                        "motore-unita" -> SharedJourneyColors.MediterraneanTeal
-                        else -> SharedJourneyColors.TerracottaOrange
-                    },
+                    progressColor = parseJourneyColor(dream.colorHex ?: dream.category.defaultColorHex),
                     onClick = { onJourneyClick(dream) },
                     onEditClick = { onEditJourneyClick(dream.id) },
                     onDeleteClick = { onDeleteJourneyClick(dream.id) },
@@ -228,5 +223,14 @@ fun HomeContent(
                 }
             }
         }
+    }
+}
+
+private fun parseJourneyColor(hex: String?): Color {
+    return try {
+        if (hex == null) SharedJourneyColors.TerracottaOrange
+        else Color(("FF" + hex).toLong(16))
+    } catch (_: Exception) {
+        SharedJourneyColors.TerracottaOrange
     }
 }

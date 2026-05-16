@@ -2,6 +2,7 @@ CREATE TABLE JourneyEntity (
     id TEXT NOT NULL PRIMARY KEY,
     title TEXT NOT NULL,
     subtitle TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'LONG_TERM_PROJECTS',
     progress REAL NOT NULL,
     participantInitials TEXT NOT NULL,
     familyStreak INTEGER NOT NULL DEFAULT 0,
@@ -37,8 +38,8 @@ selectTasksByJourneyId:
 SELECT * FROM TaskEntity WHERE journeyId = ?;
 
 insertJourney:
-INSERT OR REPLACE INTO JourneyEntity(id, title, subtitle, progress, participantInitials, familyStreak, specificGoal, measurableOutcome, achievablePlan, relevanceToFamily, timeBoundDeadline, colorHex)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO JourneyEntity(id, title, subtitle, category, progress, participantInitials, familyStreak, specificGoal, measurableOutcome, achievablePlan, relevanceToFamily, timeBoundDeadline, colorHex)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 insertTask:
 INSERT OR REPLACE INTO TaskEntity(id, journeyId, title, planning, isCompleted, label, scheduledDays, reminderTime, claimedByInitials, cheersCount)

@@ -24,6 +24,7 @@ import org.jetbrains.compose.resources.stringResource
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import androidx.compose.ui.unit.sp
 import com.example.kmp.domain.model.Journey
+import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
 import com.example.kmp.presentation.theme.SharedJourneyColors
 
@@ -60,6 +61,7 @@ fun JourneyDreamCard(
     progressColor: Color = SharedJourneyColors.TerracottaOrange,
 ) {
     val totalCheers = dream.tasks.sumOf { it.cheersCount }
+    val openTasks = dream.tasks.count { !it.isCompleted }
     var showMenu by remember { mutableStateOf(false) }
     var isExpanded by remember { mutableStateOf(false) }
     var showAddTaskDialog by remember { mutableStateOf(false) }
@@ -128,6 +130,11 @@ fun JourneyDreamCard(
                                     color = SharedJourneyColors.InkMuted,
                                     maxLines = 1
                                 )
+                                Spacer(Modifier.height(8.dp))
+                                CategoryBadge(
+                                    category = dream.category,
+                                    color = progressColor,
+                                )
                             }
                             
                             Box {
@@ -164,32 +171,15 @@ fun JourneyDreamCard(
                             }
                         }
 
-                        if (totalCheers > 0) {
-                            Spacer(Modifier.height(4.dp))
-                            Surface(
-                                color = SharedJourneyColors.LemonZestYellow.copy(alpha = 0.2f),
-                                shape = CircleShape
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        Icons.Default.Favorite,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(10.dp),
-                                        tint = SharedJourneyColors.TerracottaOrange
-                                    )
-                                    Spacer(Modifier.width(4.dp))
-                                    Text(
-                                        text = totalCheers.toString(),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = SharedJourneyColors.InkDeep,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                        }
+                        Spacer(Modifier.height(12.dp))
+                        CategorySummary(
+                            category = dream.category,
+                            tasks = dream.tasks,
+                            openTasks = openTasks,
+                            totalCheers = totalCheers,
+                            familyStreak = dream.familyStreak,
+                            timeBoundDeadline = dream.timeBoundDeadline,
+                        )
 
                         Spacer(Modifier.height(16.dp))
 
@@ -300,6 +290,53 @@ fun JourneyDreamCard(
             }
         )
     }
+}
+
+@Composable
+private fun CategoryBadge(
+    category: JourneyCategory,
+    color: Color,
+) {
+    Surface(
+        color = color.copy(alpha = 0.12f),
+        shape = CircleShape,
+    ) {
+        Text(
+            text = category.displayName,
+            style = MaterialTheme.typography.labelSmall,
+            color = SharedJourneyColors.InkDeep,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+        )
+    }
+}
+
+@Composable
+private fun CategorySummary(
+    category: JourneyCategory,
+    tasks: List<JourneyTask>,
+    openTasks: Int,
+    totalCheers: Int,
+    familyStreak: Int,
+    timeBoundDeadline: String?,
+) {
+    val reminderCount = tasks.count { it.reminderTime != null }
+    val scheduledCount = tasks.count { it.scheduledDays.isNotEmpty() }
+    val completedCount = tasks.count { it.isCompleted }
+    val text = when (category) {
+        JourneyCategory.CalendarLogistics -> "$scheduledCount scheduled items - $reminderCount reminders"
+        JourneyCategory.HouseholdManagement -> "$openTasks open upkeep tasks - ${tasks.size} total routines"
+        JourneyCategory.MealPlanning -> "$scheduledCount planned kitchen blocks - $openTasks prep actions"
+        JourneyCategory.HealthWellness -> "$completedCount habits completed - $familyStreak day streak - $totalCheers cheers"
+        JourneyCategory.LongTermProjects -> "${tasks.size} milestones - ${timeBoundDeadline ?: "No deadline set"}"
+    }
+
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = SharedJourneyColors.InkMuted,
+        fontWeight = FontWeight.SemiBold,
+    )
 }
 
 @Composable

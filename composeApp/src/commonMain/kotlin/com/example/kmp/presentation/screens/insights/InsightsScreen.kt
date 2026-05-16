@@ -27,6 +27,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.kmp.domain.model.Journey
+import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.presentation.components.NapolitanBackground
 import com.example.kmp.presentation.theme.SharedJourneyColors
 import kotlin.math.PI
@@ -72,21 +73,26 @@ data class InsightsScreen(val journey: Journey) : Screen {
                         )
                     }
 
-                    when (journey.id) {
-                        "vesuvian-vitality" -> {
-                            item { InsightCard("Il Piatto 'Quarto, Quarto, Metà'", "Visualizza il tuo nutrimento quotidiano.") { NutritionPlateChart() } }
-                            item { InsightCard("Radar di Densità Nutrizionale", "Pomodorini del Piennolo vs. Industriale") { NutrientRadarChart() } }
-                            item { InsightCard("Piramide di Idratazione ed Energia", "Equilibrio Mediterraneo") { EnergyPyramidChart() } }
+                    when (journey.category) {
+                        JourneyCategory.CalendarLogistics -> {
+                            item { InsightCard("Schedule Load", "How much coordination is planned.") { FinanceAreaChart() } }
+                            item { InsightCard("Reminder Coverage", "Balance scheduled and unscheduled commitments.") { SinkingFundPieChart() } }
                         }
-                        "financial-masterplan" -> {
-                            item { InsightCard("Entrate vs. Contributo", "Equità e Trasparenza.") { FinanceStackedBarChart() } }
-                            item { InsightCard("Trend di Spesa Mensile", "Costi Fissi vs. Variabili") { FinanceAreaChart() } }
-                            item { InsightCard("Progresso Fondi Accantonamento", "Casa, Vacanze, Regali") { SinkingFundPieChart() } }
+                        JourneyCategory.HouseholdManagement -> {
+                            item { InsightCard("Upkeep Backlog", "Open maintenance and routine work.") { OverloadStaircaseChart() } }
+                            item { InsightCard("Home Rhythm", "Consistency across recurring household tasks.") { ConsistencyCurveChart() } }
                         }
-                        "motore-unita" -> {
-                            item { InsightCard("Costanza vs. Intensità", "Strategia a Lungo Termine") { ConsistencyCurveChart() } }
-                            item { InsightCard("Sovraccarico Progressivo", "I Nostri Prossimi Passi") { OverloadStaircaseChart() } }
-                            item { InsightCard("Vittorie Non Sulla Bilancia (NSV)", "Web del Benessere") { NsvRadarChart() } }
+                        JourneyCategory.MealPlanning -> {
+                            item { InsightCard("Kitchen Plate", "A simple view of meal balance and prep.") { NutritionPlateChart() } }
+                            item { InsightCard("Pantry Density", "How prepared the kitchen is for the week.") { NutrientRadarChart() } }
+                        }
+                        JourneyCategory.HealthWellness -> {
+                            item { InsightCard("Habit Consistency", "Small actions sustained over time.") { ConsistencyCurveChart() } }
+                            item { InsightCard("Wellness Web", "Energy, rest, movement and self-care.") { NsvRadarChart() } }
+                        }
+                        JourneyCategory.LongTermProjects -> {
+                            item { InsightCard("Milestone Roadmap", "Progress through the larger plan.") { OverloadStaircaseChart() } }
+                            item { InsightCard("Momentum Trend", "How the project is moving over time.") { FinanceAreaChart() } }
                         }
                     }
                     
