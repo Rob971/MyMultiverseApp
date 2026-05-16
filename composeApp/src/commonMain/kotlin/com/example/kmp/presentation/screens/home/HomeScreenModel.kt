@@ -19,6 +19,7 @@ class HomeScreenModel(
     private val addTaskUseCase: AddTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
+    private val addFinanceBillEntryUseCase: AddFinanceBillEntryUseCase,
     private val refreshJourneysUseCase: RefreshJourneysUseCase,
     private val aiService: AiService,
     private val languageManager: LanguageManager,
@@ -132,6 +133,12 @@ class HomeScreenModel(
     fun deleteTask(journeyId: String, taskId: String) {
         screenModelScope.launch {
             deleteTaskUseCase(journeyId, taskId)
+        }
+    }
+
+    fun addFinanceBillEntry(journeyId: String, entry: FinanceBillEntry) {
+        screenModelScope.launch {
+            addFinanceBillEntryUseCase(journeyId, entry)
         }
     }
 }

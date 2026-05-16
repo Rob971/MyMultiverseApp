@@ -1,6 +1,7 @@
 package com.example.kmp.domain.usecase
 
 import com.example.kmp.domain.model.Journey
+import com.example.kmp.domain.model.FinanceBillEntry
 import com.example.kmp.domain.repository.JourneyRepository
 import kotlinx.coroutines.flow.Flow
 
@@ -39,6 +40,11 @@ class UpdateTaskUseCase(private val repository: JourneyRepository) {
 class DeleteTaskUseCase(private val repository: JourneyRepository) {
     suspend operator fun invoke(journeyId: String, taskId: String) = 
         repository.deleteTask(journeyId, taskId)
+}
+
+class AddFinanceBillEntryUseCase(private val repository: JourneyRepository) {
+    suspend operator fun invoke(journeyId: String, entry: FinanceBillEntry) =
+        repository.addFinanceBillEntry(journeyId, entry)
 }
 
 class RefreshJourneysUseCase(private val repository: JourneyRepository) {

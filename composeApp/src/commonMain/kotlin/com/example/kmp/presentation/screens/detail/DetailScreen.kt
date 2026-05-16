@@ -36,6 +36,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.kmp.domain.model.FinanceBillEntry
 import com.example.kmp.domain.model.FinanceProfile
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
@@ -49,6 +50,7 @@ import com.example.kmp.presentation.screens.home.HomeScreenModel
 import com.example.kmp.presentation.screens.insights.InsightsScreen
 import com.example.kmp.presentation.theme.SharedJourneyColors
 import kotlinx.coroutines.delay
+import kotlinx.datetime.Clock
 
 data class DetailScreen(
     private val journeyId: String,
@@ -85,6 +87,7 @@ data class DetailScreen(
                         navigator.push(CalendarScreen(CalendarScope.Task(journeyId, taskId))) 
                     },
                     onCheerClick = { taskId -> screenModel.cheerTask(journeyId, taskId) },
+                    onFinanceBillEntryAdd = { entry -> screenModel.addFinanceBillEntry(journeyId, entry) },
                     onToggleTask = { taskId, isNowCompleted ->
                         screenModel.toggleTask(journeyId, taskId)
                         if (isNowCompleted) {
@@ -143,9 +146,11 @@ fun DetailContent(
     onTaskAdd: (String, JourneyTask) -> Unit,
     onTaskUpdate: (JourneyTask) -> Unit,
     onTaskDelete: (String, String) -> Unit,
+    onFinanceBillEntryAdd: (FinanceBillEntry) -> Unit,
 ) {
     var showAddTaskDialog by remember { mutableStateOf(false) }
     var editingTask by remember { mutableStateOf<JourneyTask?>(null) }
+    var showFinanceBillDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -233,6 +238,13 @@ fun DetailContent(
             if (journey.category == JourneyCategory.HouseholdFinance && journey.financeProfile != null) {
                 item {
                     MonthlySpendingSection(journey.financeProfile)
+                }
+                item {
+                    FinanceBillLedgerSection(
+                        journey = journey,
+                        profile = journey.financeProfile,
+                        onLogBillClick = { showFinanceBillDialog = true }
+                    )
                 }
             }
 
@@ -362,6 +374,18 @@ fun DetailContent(
             onConfirm = {
                 onTaskUpdate(it)
                 editingTask = null
+            }
+        )
+    }
+
+    if (showFinanceBillDialog && journey.financeProfile != null) {
+        FinanceBillEntryDialog(
+            journeyId = journey.id,
+            profile = journey.financeProfile,
+            onDismiss = { showFinanceBillDialog = false },
+            onConfirm = {
+                onFinanceBillEntryAdd(it)
+                showFinanceBillDialog = false
             }
         )
     }
@@ -536,6 +560,197 @@ fun SmartItem(label: String, value: String?) {
 }
 
 @Composable
+fun FinanceBillLedgerSection(
+    journey: Journey,
+    profile: FinanceProfile,
+    onLogBillClick: () -> Unit,
+) {
+    val entries = journey.financeBillEntries
+    val partnerAOwes = entries.filter { it.owedBy == "Partner A" }.sumOf { it.owedAmount }
+    val partnerBOwes = entries.filter { it.owedBy == "Partner B" }.sumOf { it.owedAmount }
+    val netBalance = partnerAOwes - partnerBOwes
+    val balanceText = when {
+        netBalance > 0.0 -> "Partner A owes Partner B ${netBalance.toMoneyText()}"
+        netBalance < 0.0 -> "Partner B owes Partner A ${(-netBalance).toMoneyText()}"
+        else -> "All logged variable bills are balanced"
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = SharedJourneyColors.GlassWhite),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Text(
+                text = "Variable Bill Tracker",
+                style = MaterialTheme.typography.titleMedium,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                text = "Receipt text-to-split MVP: paste receipt text or enter the bill manually, then the app applies ${profile.billSplitStrategy.ifBlank { "the saved split rule" }}.",
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted
+            )
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(
+                    text = balanceText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = SharedJourneyColors.MediterraneanTeal,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.padding(14.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+            Button(
+                onClick = onLogBillClick,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)
+            ) {
+                Text("Log variable bill", fontWeight = FontWeight.Bold)
+            }
+            entries.takeLast(4).reversed().forEach { entry ->
+                FinanceBillEntryRow(entry)
+            }
+        }
+    }
+}
+
+@Composable
+private fun FinanceBillEntryRow(entry: FinanceBillEntry) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = SharedJourneyColors.SunDrenchedWhite,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(entry.merchant, style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkDeep, fontWeight = FontWeight.Bold)
+                Text(entry.amount.toMoneyText(), style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkDeep, fontWeight = FontWeight.Bold)
+            }
+            Text("${entry.category} • ${entry.billDate} • paid by ${entry.paidBy}", style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.InkMuted)
+            Text("${entry.owedBy} owes ${entry.owedTo} ${entry.owedAmount.toMoneyText()}", style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.MediterraneanTeal, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun FinanceBillEntryDialog(
+    journeyId: String,
+    profile: FinanceProfile,
+    onDismiss: () -> Unit,
+    onConfirm: (FinanceBillEntry) -> Unit,
+) {
+    var receiptText by remember { mutableStateOf("") }
+    var merchant by remember { mutableStateOf("") }
+    var billDate by remember { mutableStateOf("") }
+    var amountText by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf(profile.recurringBills.firstOrNull()?.substringBefore(" (") ?: "Utilities") }
+    var paidBy by remember { mutableStateOf("Partner A") }
+
+    val amount = amountText.toAmountValue()
+    val shares = calculateFinanceShares(amount, paidBy, profile)
+    val canSave = merchant.isNotBlank() && billDate.isNotBlank() && amount > 0.0 && category.isNotBlank()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Log variable bill", fontWeight = FontWeight.Black) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    "Paste receipt text or enter the fields manually. Camera OCR and email forwarding can feed this same parser later.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SharedJourneyColors.InkMuted
+                )
+                TextField(
+                    value = receiptText,
+                    onValueChange = { receiptText = it },
+                    placeholder = { Text("Paste receipt text, e.g. ENEL Energia 2026-05-16 Total \$143.20") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                        unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
+                        focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                )
+                OutlinedButton(
+                    onClick = {
+                        merchant = receiptText.extractMerchant().ifBlank { merchant }
+                        billDate = receiptText.extractDate().ifBlank { billDate }
+                        amountText = receiptText.extractAmount().ifBlank { amountText }
+                    },
+                    enabled = receiptText.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Extract from receipt text")
+                }
+                TextField(value = merchant, onValueChange = { merchant = it }, placeholder = { Text("Merchant") }, modifier = Modifier.fillMaxWidth())
+                TextField(value = billDate, onValueChange = { billDate = it }, placeholder = { Text("Date, e.g. 2026-05-16") }, modifier = Modifier.fillMaxWidth())
+                TextField(value = amountText, onValueChange = { amountText = it }, placeholder = { Text("Amount, e.g. 143.20") }, modifier = Modifier.fillMaxWidth())
+                TextField(value = category, onValueChange = { category = it }, placeholder = { Text("Category") }, modifier = Modifier.fillMaxWidth())
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("Partner A", "Partner B").forEach { partner ->
+                        FilterChip(
+                            selected = paidBy == partner,
+                            onClick = { paidBy = partner },
+                            label = { Text("Paid by $partner") }
+                        )
+                    }
+                }
+                Text(
+                    "${shares.owedBy} owes ${shares.owedTo} ${shares.owedAmount.toMoneyText()} (${shares.partnerAShare.toMoneyText()} A / ${shares.partnerBShare.toMoneyText()} B)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SharedJourneyColors.MediterraneanTeal,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onConfirm(
+                        FinanceBillEntry(
+                            id = Clock.System.now().toEpochMilliseconds().toString(),
+                            journeyId = journeyId,
+                            merchant = merchant,
+                            billDate = billDate,
+                            amount = amount,
+                            category = category,
+                            paidBy = paidBy,
+                            partnerAShare = shares.partnerAShare,
+                            partnerBShare = shares.partnerBShare,
+                            owedBy = shares.owedBy,
+                            owedTo = shares.owedTo,
+                            owedAmount = shares.owedAmount,
+                            sourceText = receiptText,
+                        )
+                    )
+                },
+                enabled = canSave
+            ) {
+                Text("Save bill")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
 fun MonthlySpendingSection(profile: FinanceProfile) {
     var selectedPeriod by remember { mutableStateOf(SpendingPeriod.Month) }
     val monthlyTotal = profile.monthlyReportedSpendTotal
@@ -639,6 +854,111 @@ private enum class SpendingPeriod(
     Week("Week", "wk", 1.0 / 4.33),
     Month("Month", "mo", 1.0),
     Quarter("Quarter", "qtr", 3.0),
+}
+
+private data class FinanceSplitShares(
+    val partnerAShare: Double,
+    val partnerBShare: Double,
+    val owedBy: String,
+    val owedTo: String,
+    val owedAmount: Double,
+)
+
+private fun calculateFinanceShares(
+    amount: Double,
+    paidBy: String,
+    profile: FinanceProfile,
+): FinanceSplitShares {
+    val (partnerAPercent, partnerBPercent) = when {
+        profile.billSplitStrategy.contains("Proportional", ignoreCase = true) -> {
+            val partnerAIncome = profile.partnerAIncome.toAmountValue()
+            val partnerBIncome = profile.partnerBIncome.toAmountValue()
+            val totalIncome = partnerAIncome + partnerBIncome
+            if (totalIncome > 0.0) {
+                partnerAIncome / totalIncome to partnerBIncome / totalIncome
+            } else {
+                0.5 to 0.5
+            }
+        }
+        profile.billSplitStrategy.contains("Custom", ignoreCase = true) -> {
+            parseCustomSplit(profile.customSplitPercentages) ?: (0.5 to 0.5)
+        }
+        profile.billSplitStrategy.contains("assign", ignoreCase = true) -> {
+            if (paidBy == "Partner A") 1.0 to 0.0 else 0.0 to 1.0
+        }
+        else -> 0.5 to 0.5
+    }
+    val partnerAShare = amount * partnerAPercent
+    val partnerBShare = amount * partnerBPercent
+    val owedAmount = if (paidBy == "Partner A") partnerBShare else partnerAShare
+    val owedBy = when {
+        owedAmount <= 0.0 -> "No one"
+        paidBy == "Partner A" -> "Partner B"
+        else -> "Partner A"
+    }
+    val owedTo = when {
+        owedAmount <= 0.0 -> "No one"
+        paidBy == "Partner A" -> "Partner A"
+        else -> "Partner B"
+    }
+    return FinanceSplitShares(
+        partnerAShare = partnerAShare,
+        partnerBShare = partnerBShare,
+        owedBy = owedBy,
+        owedTo = owedTo,
+        owedAmount = owedAmount,
+    )
+}
+
+private fun parseCustomSplit(value: String): Pair<Double, Double>? {
+    val numbers = Regex("""\d+(\.\d+)?""")
+        .findAll(value)
+        .mapNotNull { it.value.toDoubleOrNull() }
+        .toList()
+    if (numbers.size < 2) return null
+    val total = numbers[0] + numbers[1]
+    if (total <= 0.0) return null
+    return numbers[0] / total to numbers[1] / total
+}
+
+private fun String.extractAmount(): String {
+    return Regex("""(?:total|amount|due)?\s*\$?\s*(\d+[.,]\d{2})""", RegexOption.IGNORE_CASE)
+        .findAll(this)
+        .lastOrNull()
+        ?.groupValues
+        ?.getOrNull(1)
+        ?.replace(",", ".")
+        .orEmpty()
+}
+
+private fun String.extractDate(): String {
+    return Regex("""\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}/\d{2,4}""")
+        .find(this)
+        ?.value
+        .orEmpty()
+}
+
+private fun String.extractMerchant(): String {
+    return lines()
+        .map { it.trim() }
+        .firstOrNull { line ->
+            line.isNotBlank() &&
+                !line.contains(Regex("""\d+[.,]\d{2}""")) &&
+                !line.contains(Regex("""\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}/\d{2,4}"""))
+        }
+        .orEmpty()
+}
+
+private fun String.toAmountValue(): Double {
+    return filter { it.isDigit() || it == '.' || it == ',' }
+        .replace(",", ".")
+        .takeIf { it.isNotBlank() }
+        ?.toDoubleOrNull()
+        ?: 0.0
+}
+
+private fun Double.toMoneyText(): String {
+    return "\$${toInt()}"
 }
 
 private fun Double.toCurrencyText(period: SpendingPeriod): String {

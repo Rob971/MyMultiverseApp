@@ -20,6 +20,7 @@ data class Journey(
     val colorHex: String? = null,
     val mealPlanningProfile: MealPlanningProfile? = null,
     val financeProfile: FinanceProfile? = null,
+    val financeBillEntries: List<FinanceBillEntry> = emptyList(),
 )
 
 @Serializable
@@ -161,6 +162,23 @@ private fun String.toAmountValue(): Double {
         ?.toDoubleOrNull()
         ?: 0.0
 }
+
+@Serializable
+data class FinanceBillEntry(
+    val id: String,
+    val journeyId: String,
+    val merchant: String,
+    val billDate: String,
+    val amount: Double,
+    val category: String,
+    val paidBy: String,
+    val partnerAShare: Double,
+    val partnerBShare: Double,
+    val owedBy: String,
+    val owedTo: String,
+    val owedAmount: Double,
+    val sourceText: String = "",
+)
 
 @Serializable
 data class JourneyTask(

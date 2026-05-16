@@ -2,6 +2,7 @@ package com.example.kmp.data.repository
 
 import com.example.kmp.database.AppDatabase
 import com.example.kmp.domain.model.FinanceProfile
+import com.example.kmp.domain.model.FinanceBillEntry
 import com.example.kmp.domain.model.Journey
 import com.example.kmp.domain.model.JourneyCategory
 import com.example.kmp.domain.model.JourneyTask
@@ -38,6 +39,23 @@ class JourneyRepositoryImpl(
                             reminderTime = taskEntity.reminderTime,
                             claimedByInitials = taskEntity.claimedByInitials,
                             cheersCount = taskEntity.cheersCount.toInt()
+                        )
+                    }
+                    val financeBillEntries = queries.selectFinanceBillEntriesByJourneyId(entity.id).executeAsList().map { billEntity ->
+                        FinanceBillEntry(
+                            id = billEntity.id,
+                            journeyId = billEntity.journeyId,
+                            merchant = billEntity.merchant,
+                            billDate = billEntity.billDate,
+                            amount = billEntity.amount,
+                            category = billEntity.category,
+                            paidBy = billEntity.paidBy,
+                            partnerAShare = billEntity.partnerAShare,
+                            partnerBShare = billEntity.partnerBShare,
+                            owedBy = billEntity.owedBy,
+                            owedTo = billEntity.owedTo,
+                            owedAmount = billEntity.owedAmount,
+                            sourceText = billEntity.sourceText,
                         )
                     }
                     Journey(
@@ -89,7 +107,8 @@ class JourneyRepositoryImpl(
                             monthlyKidsPetsSpend = entity.financeMonthlyKidsPetsSpend.orEmpty(),
                             monthlyOtherSpend = entity.financeMonthlyOtherSpend.orEmpty(),
                         ).takeIf { it.hasAnswers },
-                        tasks = tasks
+                        tasks = tasks,
+                        financeBillEntries = financeBillEntries,
                     )
                 }
             }
@@ -157,6 +176,9 @@ class JourneyRepositoryImpl(
                 cheersCount = task.cheersCount.toLong()
             )
         }
+        journey.financeBillEntries.forEach { entry ->
+            insertFinanceBillEntry(entry)
+        }
     }
 
     override suspend fun deleteJourney(id: String) {
@@ -215,8 +237,36 @@ class JourneyRepositoryImpl(
         updateJourneyProgress(journeyId)
     }
 
+    override suspend fun addFinanceBillEntry(journeyId: String, entry: FinanceBillEntry) {
+        insertFinanceBillEntry(entry)
+        touchJourney(journeyId)
+    }
+
     override suspend fun refreshJourneys() {
         // Journeys are created by users and loaded from persisted storage.
+    }
+
+    private fun insertFinanceBillEntry(entry: FinanceBillEntry) {
+        queries.insertFinanceBillEntry(
+            id = entry.id,
+            journeyId = entry.journeyId,
+            merchant = entry.merchant,
+            billDate = entry.billDate,
+            amount = entry.amount,
+            category = entry.category,
+            paidBy = entry.paidBy,
+            partnerAShare = entry.partnerAShare,
+            partnerBShare = entry.partnerBShare,
+            owedBy = entry.owedBy,
+            owedTo = entry.owedTo,
+            owedAmount = entry.owedAmount,
+            sourceText = entry.sourceText,
+        )
+    }
+
+    private fun touchJourney(journeyId: String) {
+        val j = queries.selectAllJourneys().executeAsList().find { it.id == journeyId } ?: return
+        upsertJourneyEntity(j, j.progress)
     }
 
     private fun updateJourneyProgress(journeyId: String) {
@@ -224,12 +274,16 @@ class JourneyRepositoryImpl(
         val completedCount = tasks.count { it.isCompleted == 1L }
         val progress = if (tasks.isEmpty()) 0f else completedCount.toFloat() / tasks.size
         val j = queries.selectAllJourneys().executeAsList().find { it.id == journeyId } ?: return
+        upsertJourneyEntity(j, progress.toDouble())
+    }
+
+    private fun upsertJourneyEntity(j: com.example.kmp.database.JourneyEntity, progress: Double) {
         queries.insertJourney(
             id = j.id,
             title = j.title,
             subtitle = j.subtitle,
             category = j.category,
-            progress = progress.toDouble(),
+            progress = progress,
             participantInitials = j.participantInitials,
             familyStreak = j.familyStreak,
             specificGoal = j.specificGoal,

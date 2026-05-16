@@ -23,6 +23,7 @@ private val domainModule = module {
     factoryOf(::AddTaskUseCase)
     factoryOf(::UpdateTaskUseCase)
     factoryOf(::DeleteTaskUseCase)
+    factoryOf(::AddFinanceBillEntryUseCase)
     factoryOf(::RefreshJourneysUseCase)
 }
 
