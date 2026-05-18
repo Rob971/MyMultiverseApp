@@ -68,6 +68,17 @@ kotlin {
     }
 }
 
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "androidx.compose.material" &&
+            requested.name in setOf("material-icons-core", "material-icons-extended")
+        ) {
+            useVersion("1.7.6")
+            because("AndroidX Material Icons 1.8.0 is not published; Compose Multiplatform resolves icons through 1.7.6.")
+        }
+    }
+}
+
 android {
     namespace = "app.mymultiverse.kmp"
     compileSdk = 35
