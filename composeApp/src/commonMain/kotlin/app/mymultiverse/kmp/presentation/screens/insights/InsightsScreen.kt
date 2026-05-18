@@ -101,7 +101,7 @@ data class InsightsScreen(val journey: Journey) : Screen {
                     
                     item {
                         Text(
-                            text = "Questi modelli sono progettati per rafforzare la psicologia della costanza rispetto alla perfezione. Ogni piccola azione costruisce il futuro della nostra famiglia.",
+                            text = stringResource(Res.string.insights_footer),
                             style = MaterialTheme.typography.bodySmall,
                             color = SharedJourneyColors.InkMuted,
                             textAlign = TextAlign.Center,

@@ -116,7 +116,7 @@ fun CelebrationOverlay() {
                 color = SharedJourneyColors.LemonZestYellow
             )
             Text(
-                text = "Un cuore solo, una sola famiglia.",
+                text = stringResource(Res.string.detail_celebration_subtitle),
                 fontSize = 18.sp,
                 color = Color.White,
                 textAlign = TextAlign.Center,
@@ -325,7 +325,7 @@ fun DetailContent(
                         ) {
                             Icon(AppIcons.DateRange, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Schedule", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                            Text(stringResource(Res.string.detail_schedule), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -529,7 +529,11 @@ fun SmartPrincipleSection(journey: Journey) {
                 )
                 Spacer(Modifier.weight(1f))
                 Text(
-                    text = if (expanded) "Nascondi" else "Vedi Strategia",
+                    text = if (expanded) {
+                        stringResource(Res.string.detail_hide_strategy)
+                    } else {
+                        stringResource(Res.string.detail_show_strategy)
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = SharedJourneyColors.MediterraneanTeal,
                     fontWeight = FontWeight.Bold
@@ -581,20 +585,20 @@ fun HealthWellnessInsightSection(
     ) {
         Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text(
-                text = "Couples Wellness Radar",
+                text = stringResource(Res.string.detail_wellness_radar_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = SharedJourneyColors.InkDeep,
                 fontWeight = FontWeight.Black
             )
             Text(
-                text = "You + Them vs. The Problem. Use this card to translate tension into a shared next step.",
+                text = stringResource(Res.string.detail_wellness_radar_subtitle),
                 style = MaterialTheme.typography.bodySmall,
                 color = SharedJourneyColors.InkMuted
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                WellnessContextChip("Energy", profile.energyLevel, Modifier.weight(1f))
-                WellnessContextChip("Stress", profile.stressLevel, Modifier.weight(1f))
-                WellnessContextChip("Connection", profile.connectionLevel, Modifier.weight(1f))
+                WellnessContextChip(stringResource(Res.string.detail_energy), profile.energyLevel, Modifier.weight(1f))
+                WellnessContextChip(stringResource(Res.string.detail_stress), profile.stressLevel, Modifier.weight(1f))
+                WellnessContextChip(stringResource(Res.string.detail_connection), profile.connectionLevel, Modifier.weight(1f))
             }
             if (planItems.isNotEmpty()) {
                 planItems.forEach { item ->

@@ -157,7 +157,7 @@ fun HomeContent(
                     supportingLine =
                         when (greeting) {
                             null -> stringResource(Res.string.home_banner_loading)
-                            else -> greeting.text
+                            else -> stringResource(Res.string.home_greeting)
                         },
                     description = stringResource(Res.string.home_banner_description)
                 )

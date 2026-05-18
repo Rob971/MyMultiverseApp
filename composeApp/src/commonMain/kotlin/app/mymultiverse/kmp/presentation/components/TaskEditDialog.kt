@@ -30,7 +30,15 @@ fun TaskEditDialog(
     var scheduledDays by remember { mutableStateOf(task?.scheduledDays ?: emptyList<Int>()) }
     var reminderTime by remember { mutableStateOf(task?.reminderTime ?: "") }
 
-    val daysOfWeek = listOf("Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom")
+    val daysOfWeek = listOf(
+        stringResource(Res.string.calendar_weekday_mon),
+        stringResource(Res.string.calendar_weekday_tue),
+        stringResource(Res.string.calendar_weekday_wed),
+        stringResource(Res.string.calendar_weekday_thu),
+        stringResource(Res.string.calendar_weekday_fri),
+        stringResource(Res.string.calendar_weekday_sat),
+        stringResource(Res.string.calendar_weekday_sun),
+    )
 
     AlertDialog(
         onDismissRequest = onDismiss,

@@ -141,7 +141,7 @@ fun JourneyDreamCard(
                             
                             Box {
                                 IconButton(onClick = { showMenu = true }) {
-                                    Icon(AppIcons.MoreVert, contentDescription = "Menu", tint = SharedJourneyColors.InkMuted)
+                                    Icon(AppIcons.MoreVert, contentDescription = stringResource(Res.string.dream_card_menu), tint = SharedJourneyColors.InkMuted)
                                 }
                                 DropdownMenu(
                                     expanded = showMenu,
@@ -149,7 +149,7 @@ fun JourneyDreamCard(
                                     modifier = Modifier.background(SharedJourneyColors.SunDrenchedWhite)
                                 ) {
                                     DropdownMenuItem(
-                                        text = { Text("Apri Dettaglio") },
+                                        text = { Text(stringResource(Res.string.dream_card_open_detail)) },
                                         onClick = { 
                                             showMenu = false
                                             onClick() 
@@ -213,7 +213,7 @@ fun JourneyDreamCard(
                                     )
                                     Spacer(Modifier.width(4.dp))
                                     Text(
-                                        text = "${dream.familyStreak} days",
+                                        text = stringResource(Res.string.dream_card_streak_days, dream.familyStreak),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = SharedJourneyColors.TerracottaOrange,
                                         fontWeight = FontWeight.ExtraBold
@@ -222,7 +222,11 @@ fun JourneyDreamCard(
                                 }
                                 Icon(
                                     if (isExpanded) AppIcons.KeyboardArrowUp else AppIcons.KeyboardArrowDown,
-                                    contentDescription = if (isExpanded) "Collassa attività" else "Espandi attività",
+                                    contentDescription = if (isExpanded) {
+                                        stringResource(Res.string.dream_card_collapse_tasks)
+                                    } else {
+                                        stringResource(Res.string.dream_card_expand_tasks)
+                                    },
                                     tint = SharedJourneyColors.InkMuted,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -332,18 +336,20 @@ private fun CategorySummary(
         JourneyCategory.CalendarLogistics -> "$scheduledCount scheduled items - $reminderCount reminders"
         JourneyCategory.HouseholdManagement -> "$openTasks open upkeep tasks - ${tasks.size} total routines"
         JourneyCategory.MealPlanning -> {
-            val people = mealPlanningProfile?.cookingFor?.takeIf { it.isNotBlank() } ?: "No party size"
-            val cookTime = mealPlanningProfile?.busyWeeknightCookTime?.takeIf { it.isNotBlank() } ?: "No cook time"
+            val people = mealPlanningProfile?.cookingFor?.takeIf { it.isNotBlank() }
+                ?: stringResource(Res.string.dream_card_no_party_size)
+            val cookTime = mealPlanningProfile?.busyWeeknightCookTime?.takeIf { it.isNotBlank() }
+                ?: stringResource(Res.string.dream_card_no_cook_time)
             val restrictions = mealPlanningProfile?.dietaryRestrictions
                 ?.takeIf { it.isNotEmpty() }
                 ?.joinToString(", ")
-                ?: "No restrictions"
-            "Cooking for $people - $cookTime - $restrictions - $openTasks prep actions"
+                ?: stringResource(Res.string.dream_card_no_restrictions)
+            stringResource(Res.string.dream_card_cooking_summary, people, cookTime, restrictions, openTasks)
         }
         JourneyCategory.HouseholdFinance -> {
             val split = financeProfile?.billSplitStrategy?.takeIf { it.isNotBlank() }
                 ?: financeProfile?.financeSplit?.takeIf { it.isNotBlank() }
-                ?: "No split rule"
+                ?: stringResource(Res.string.dream_card_no_split_rule)
             val billCount = financeProfile?.recurringBills?.size ?: 0
             val monthlySpend = financeProfile?.monthlyReportedSpendTotal ?: 0.0
             "$split - $billCount bill groups - ${monthlySpend.toCurrencyText()} reported monthly"
@@ -351,12 +357,15 @@ private fun CategorySummary(
         JourneyCategory.HealthWellness -> {
             val stress = healthWellnessProfile?.stressLevel?.takeIf { it.isNotBlank() } ?: "?"
             val connection = healthWellnessProfile?.connectionLevel?.takeIf { it.isNotBlank() } ?: "?"
-            val drain = healthWellnessProfile?.weeklyDrain?.takeIf { it.isNotBlank() } ?: "No drain logged"
-            "Stress $stress/10 - Connection $connection/10 - $drain"
+            val drain = healthWellnessProfile?.weeklyDrain?.takeIf { it.isNotBlank() }
+                ?: stringResource(Res.string.dream_card_no_drain)
+            stringResource(Res.string.dream_card_stress_connection, stress, connection, drain)
         }
         JourneyCategory.LongTermProjects -> {
             val milestone = longTermProjectProfile?.milestoneType?.takeIf { it.isNotBlank() } ?: "${tasks.size} milestones"
-            val timeline = longTermProjectProfile?.timeline?.takeIf { it.isNotBlank() } ?: timeBoundDeadline ?: "No deadline set"
+            val timeline = longTermProjectProfile?.timeline?.takeIf { it.isNotBlank() }
+                ?: timeBoundDeadline
+                ?: stringResource(Res.string.dream_card_no_deadline)
             "$milestone - $timeline"
         }
     }
@@ -371,7 +380,7 @@ private fun CategorySummary(
     if (category == JourneyCategory.MealPlanning && !mealPlanningProfile?.dislikedIngredients.isNullOrBlank()) {
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Avoid: ${mealPlanningProfile?.dislikedIngredients}",
+            text = stringResource(Res.string.dream_card_avoid, mealPlanningProfile?.dislikedIngredients.orEmpty()),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )
@@ -379,7 +388,7 @@ private fun CategorySummary(
     if (category == JourneyCategory.MealPlanning && !mealPlanningProfile?.lunchPreference.isNullOrBlank()) {
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Lunch: ${mealPlanningProfile?.lunchPreference}",
+            text = stringResource(Res.string.dream_card_lunch, mealPlanningProfile?.lunchPreference.orEmpty()),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )
@@ -387,7 +396,7 @@ private fun CategorySummary(
     if (category == JourneyCategory.MealPlanning && !mealPlanningProfile?.rightNowGoal.isNullOrBlank()) {
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Today: ${mealPlanningProfile?.rightNowGoal}",
+            text = stringResource(Res.string.dream_card_today_goal, mealPlanningProfile?.rightNowGoal.orEmpty()),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )
@@ -401,7 +410,7 @@ private fun CategorySummary(
             mealProfile.locationPreference
         }
         Text(
-            text = "Local shops: $locationText",
+            text = stringResource(Res.string.dream_card_local_shops, locationText),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )
@@ -410,7 +419,7 @@ private fun CategorySummary(
     if (category == JourneyCategory.HouseholdFinance && finance != null && (finance.billPainPoint.isNotBlank() || finance.dailyAnnoyance.isNotBlank())) {
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Friction: ${finance.billPainPoint.ifBlank { finance.dailyAnnoyance }}",
+            text = stringResource(Res.string.dream_card_friction, finance.billPainPoint.ifBlank { finance.dailyAnnoyance }),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )
@@ -418,7 +427,7 @@ private fun CategorySummary(
     if (category == JourneyCategory.HouseholdFinance && finance != null && finance.settleWorkflow.isNotBlank()) {
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Settle-up: ${finance.settleWorkflow}",
+            text = stringResource(Res.string.dream_card_settle_up, finance.settleWorkflow),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )
@@ -427,7 +436,11 @@ private fun CategorySummary(
         Spacer(Modifier.height(4.dp))
         val topCategory = finance.monthlySpendingBreakdown.maxByOrNull { it.second }
         Text(
-            text = "Top monthly spend: ${topCategory?.first} ${topCategory?.second?.toCurrencyText()}",
+            text = stringResource(
+                Res.string.dream_card_top_spend,
+                topCategory?.first.orEmpty(),
+                topCategory?.second?.toCurrencyText().orEmpty(),
+            ),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )
@@ -436,7 +449,7 @@ private fun CategorySummary(
     if (category == JourneyCategory.HealthWellness && health != null && health.conflictTopic.isNotBlank()) {
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "De-escalate: ${health.conflictTopic}",
+            text = stringResource(Res.string.dream_card_de_escalate, health.conflictTopic),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )
@@ -444,7 +457,11 @@ private fun CategorySummary(
     if (category == JourneyCategory.HealthWellness && health != null && health.partnerLoveLanguage.isNotBlank()) {
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Care signal: ${health.partnerLoveLanguage} in ${health.availableTime.ifBlank { "a few minutes" }}",
+            text = stringResource(
+                Res.string.dream_card_care_signal,
+                health.partnerLoveLanguage,
+                health.availableTime.ifBlank { stringResource(Res.string.dream_card_a_few_minutes) },
+            ),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )
@@ -452,7 +469,11 @@ private fun CategorySummary(
     if (category == JourneyCategory.HealthWellness && health != null && health.dateNightLikes.isNotBlank()) {
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Date idea seed: ${health.dateNightDuration.ifBlank { "Tonight" }} - ${health.dateNightLikes}",
+            text = stringResource(
+                Res.string.dream_card_date_idea,
+                health.dateNightDuration.ifBlank { stringResource(Res.string.dream_card_tonight) },
+                health.dateNightLikes,
+            ),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )
@@ -461,7 +482,7 @@ private fun CategorySummary(
     if (category == JourneyCategory.LongTermProjects && longTerm != null && longTerm.roadblock.isNotBlank()) {
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Roadblock: ${longTerm.roadblock}",
+            text = stringResource(Res.string.dream_card_roadblock, longTerm.roadblock),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )
@@ -469,7 +490,7 @@ private fun CategorySummary(
     if (category == JourneyCategory.LongTermProjects && longTerm != null && longTerm.successDefinition.isNotBlank()) {
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Finish line: ${longTerm.successDefinition}",
+            text = stringResource(Res.string.dream_card_finish_line, longTerm.successDefinition),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkMuted,
         )

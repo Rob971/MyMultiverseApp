@@ -63,7 +63,15 @@ data class CalendarScreen(
         var viewMode by remember { mutableStateOf(CalendarViewMode.WEEK) }
         var currentDate by remember { mutableStateOf(Clock.System.todayIn(TimeZone.currentSystemDefault())) }
         var selectedDate by remember { mutableStateOf(Clock.System.todayIn(TimeZone.currentSystemDefault())) }
-        val daysOfWeek = listOf("Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom")
+        val daysOfWeek = listOf(
+            stringResource(Res.string.calendar_weekday_mon),
+            stringResource(Res.string.calendar_weekday_tue),
+            stringResource(Res.string.calendar_weekday_wed),
+            stringResource(Res.string.calendar_weekday_thu),
+            stringResource(Res.string.calendar_weekday_fri),
+            stringResource(Res.string.calendar_weekday_sat),
+            stringResource(Res.string.calendar_weekday_sun),
+        )
 
         var showAddTaskDialog by remember { mutableStateOf(false) }
         var editingTask by remember { mutableStateOf<JourneyTask?>(null) }
@@ -236,7 +244,10 @@ data class CalendarScreen(
                         item {
                             Text(
                                 text = if (selectedDate == Clock.System.todayIn(TimeZone.currentSystemDefault())) stringResource(Res.string.calendar_today_agenda) 
-                                       else stringResource(Res.string.calendar_date_agenda, "${selectedDate.dayOfMonth} ${selectedDate.month.name.lowercase()}"),
+                                       else stringResource(
+                                           Res.string.calendar_date_agenda,
+                                           "${selectedDate.dayOfMonth} ${localizedMonthName(selectedDate.month)}",
+                                       ),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = SharedJourneyColors.InkDeep,
                                 fontWeight = FontWeight.Black,
@@ -365,7 +376,7 @@ data class CalendarScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onDatePrev) {
-                Icon(AppIcons.ChevronLeft, contentDescription = "Previous")
+                Icon(AppIcons.ChevronLeft, contentDescription = stringResource(Res.string.calendar_nav_previous))
             }
             Text(
                 text = formatDate(mode, currentDate),
@@ -374,29 +385,58 @@ data class CalendarScreen(
                 fontWeight = FontWeight.Black
             )
             IconButton(onClick = onDateNext) {
-                Icon(AppIcons.ChevronRight, contentDescription = "Next")
+                Icon(AppIcons.ChevronRight, contentDescription = stringResource(Res.string.calendar_nav_next))
             }
         }
     }
 
     @Composable
+    private fun localizedMonthName(month: kotlinx.datetime.Month): String = when (month) {
+        kotlinx.datetime.Month.JANUARY -> stringResource(Res.string.month_january)
+        kotlinx.datetime.Month.FEBRUARY -> stringResource(Res.string.month_february)
+        kotlinx.datetime.Month.MARCH -> stringResource(Res.string.month_march)
+        kotlinx.datetime.Month.APRIL -> stringResource(Res.string.month_april)
+        kotlinx.datetime.Month.MAY -> stringResource(Res.string.month_may)
+        kotlinx.datetime.Month.JUNE -> stringResource(Res.string.month_june)
+        kotlinx.datetime.Month.JULY -> stringResource(Res.string.month_july)
+        kotlinx.datetime.Month.AUGUST -> stringResource(Res.string.month_august)
+        kotlinx.datetime.Month.SEPTEMBER -> stringResource(Res.string.month_september)
+        kotlinx.datetime.Month.OCTOBER -> stringResource(Res.string.month_october)
+        kotlinx.datetime.Month.NOVEMBER -> stringResource(Res.string.month_november)
+        kotlinx.datetime.Month.DECEMBER -> stringResource(Res.string.month_december)
+    }
+
+    @Composable
     private fun formatDate(mode: CalendarViewMode, date: LocalDate): String {
-        val month = date.month.name.lowercase().replaceFirstChar { it.uppercase() }
+        val month = localizedMonthName(date.month)
         return when (mode) {
-            CalendarViewMode.DAY -> "Oggi, ${date.dayOfMonth} $month"
+            CalendarViewMode.DAY -> stringResource(Res.string.calendar_header_today, date.dayOfMonth, month)
             CalendarViewMode.WEEK -> {
                 val startOfWeek = date.minus(DatePeriod(days = date.dayOfWeek.ordinal))
                 val endOfWeek = startOfWeek.plus(DatePeriod(days = 6))
-                val startMonth = startOfWeek.month.name.lowercase().replaceFirstChar { it.uppercase() }
-                val endMonth = endOfWeek.month.name.lowercase().replaceFirstChar { it.uppercase() }
+                val startMonth = localizedMonthName(startOfWeek.month)
+                val endMonth = localizedMonthName(endOfWeek.month)
 
                 if (startMonth == endMonth) {
-                    "${startOfWeek.dayOfMonth} - ${endOfWeek.dayOfMonth} $startMonth, ${date.year}"
+                    stringResource(
+                        Res.string.calendar_header_week_same_month,
+                        startOfWeek.dayOfMonth,
+                        endOfWeek.dayOfMonth,
+                        startMonth,
+                        date.year,
+                    )
                 } else {
-                    "${startOfWeek.dayOfMonth} $startMonth - ${endOfWeek.dayOfMonth} $endMonth, ${date.year}"
+                    stringResource(
+                        Res.string.calendar_header_week_diff_month,
+                        startOfWeek.dayOfMonth,
+                        startMonth,
+                        endOfWeek.dayOfMonth,
+                        endMonth,
+                        date.year,
+                    )
                 }
             }
-            CalendarViewMode.MONTH -> "$month ${date.year}"
+            CalendarViewMode.MONTH -> stringResource(Res.string.calendar_header_month, month, date.year)
             CalendarViewMode.QUARTER -> {
                 val quarter = (date.monthNumber - 1) / 3 + 1
                 stringResource(Res.string.calendar_quarter_q, "$quarter, ${date.year}")
@@ -709,7 +749,7 @@ data class CalendarScreen(
             Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 for (m in 0..2) {
                     val monthDate = LocalDate(currentDate.year, firstMonth + m, 1)
-                    val monthName = monthDate.month.name.lowercase().replaceFirstChar { it.uppercase() }
+                    val monthName = localizedMonthName(monthDate.month)
                     
                     Surface(
                         color = SharedJourneyColors.SunDrenchedWhite.copy(alpha = 0.5f),
