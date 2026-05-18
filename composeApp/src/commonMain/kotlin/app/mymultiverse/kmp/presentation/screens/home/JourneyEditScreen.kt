@@ -54,11 +54,11 @@ data class JourneyEditScreen(
         var mealCookingFor by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.cookingFor ?: "3-4") }
         var mealDietaryRestrictions by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.dietaryRestrictions ?: emptyList()) }
         var mealDislikedIngredients by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.dislikedIngredients ?: "") }
-        var mealBusyWeeknightCookTime by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.busyWeeknightCookTime ?: "15-30 mins") }
-        var mealCookingSkillLevel by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.cookingSkillLevel ?: "Average home cook") }
-        var mealLunchPreference by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.lunchPreference ?: "I love leftovers for lunch") }
-        var mealRightNowGoal by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.rightNowGoal ?: "📋 Plan my entire week") }
-        var mealLocationPreference by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.locationPreference ?: "Use GPS location") }
+        var mealBusyWeeknightCookTime by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.busyWeeknightCookTime ?: MealQuestionnaireValues.TIME_15_30) }
+        var mealCookingSkillLevel by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.cookingSkillLevel ?: MealQuestionnaireValues.SKILL_AVERAGE) }
+        var mealLunchPreference by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.lunchPreference ?: MealQuestionnaireValues.LUNCH_LEFTOVERS) }
+        var mealRightNowGoal by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.rightNowGoal ?: MealQuestionnaireValues.GOAL_WEEK) }
+        var mealLocationPreference by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.locationPreference ?: MealQuestionnaireValues.LOCATION_GPS) }
         var mealManualLocation by remember { mutableStateOf(existingJourney?.mealPlanningProfile?.manualLocation ?: "") }
         var financeSplit by remember { mutableStateOf(existingJourney?.financeProfile?.financeSplit ?: "A mix (joint account for bills, separate for personal)") }
         var financeBillManager by remember { mutableStateOf(existingJourney?.financeProfile?.billManager ?: "We try to do it together") }
@@ -1168,17 +1168,13 @@ data class JourneyEditScreen(
         onManualLocationChange: (String) -> Unit,
         onGenerateWeeklyMealPlan: () -> Unit,
     ) {
-        val partySizeOptions = listOf("1", "2", "3-4", "5+")
-        val dietaryOptions = listOf("Vegetarian", "Vegan", "Gluten-Free", "Keto", "Nut Allergy", "None")
-        val weeknightCookTimeOptions = listOf("Under 15 mins", "15-30 mins", "30-60 mins")
-        val skillLevelOptions = listOf("Keep it simple", "Average home cook", "I like a culinary challenge")
-        val lunchPreferenceOptions = listOf("I love leftovers for lunch", "I prefer to cook lunches fresh/separately")
-        val rightNowGoalOptions = listOf(
-            "📋 Plan my entire week",
-            "🧊 Tell me what to make with what's in my fridge right now",
-            "🛒 Just generate a quick grocery list"
-        )
-        val locationOptions = listOf("Use GPS location", "Provide location manually")
+        val partySizeOptions = mealPartySizeOptions()
+        val dietaryOptions = mealDietaryOptions()
+        val weeknightCookTimeOptions = mealWeeknightTimeOptions()
+        val skillLevelOptions = mealSkillOptions()
+        val lunchPreferenceOptions = mealLunchOptions()
+        val rightNowGoalOptions = mealRightNowGoalOptions()
+        val locationOptions = mealLocationOptions()
         val canGenerateWeeklyPlan = cookingFor.isNotBlank() &&
             dietaryRestrictions.isNotEmpty() &&
             dislikedIngredients.isNotBlank() &&
@@ -1187,7 +1183,7 @@ data class JourneyEditScreen(
             lunchPreference.isNotBlank() &&
             rightNowGoal.isNotBlank() &&
             locationPreference.isNotBlank() &&
-            (locationPreference != "Provide location manually" || manualLocation.isNotBlank())
+            (locationPreference != MealQuestionnaireValues.LOCATION_MANUAL || manualLocation.isNotBlank())
 
         Column(
             modifier = Modifier
@@ -1197,67 +1193,67 @@ data class JourneyEditScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                "Meal Planning Essentials",
+                stringResource(Res.string.meal_q_essentials_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = SharedJourneyColors.MediterraneanTeal,
                 fontWeight = FontWeight.Black
             )
             Text(
-                "These answers define what the AI can safely suggest for recipes, portions and weekly prep.",
+                stringResource(Res.string.meal_q_essentials_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = SharedJourneyColors.InkMuted
             )
 
-            QuestionBlock(
-                title = "How many people are we cooking for?",
-                description = "Scales ingredient quantities and portion sizes."
+            LocalizedQuestionBlock(
+                title = Res.string.meal_q_cooking_for_title,
+                description = Res.string.meal_q_cooking_for_desc,
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    partySizeOptions.forEach { option ->
-                        FilterChip(
-                            selected = cookingFor == option,
-                            onClick = { onCookingForChange(option) },
-                            label = { Text(option) }
-                        )
-                    }
-                }
+                LocalizedPartySizeChips(
+                    options = partySizeOptions,
+                    selectedValue = cookingFor,
+                    onSelected = onCookingForChange,
+                )
             }
 
-            QuestionBlock(
-                title = "Are there any dietary restrictions or allergies?",
-                description = "Acts as a hard filter for restricted foods and allergens."
+            LocalizedQuestionBlock(
+                title = Res.string.meal_q_dietary_title,
+                description = Res.string.meal_q_dietary_desc,
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     dietaryOptions.forEach { option ->
-                        val isSelected = dietaryRestrictions.contains(option)
+                        val isSelected = dietaryRestrictions.contains(option.storedValue)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(
                                 checked = isSelected,
                                 onCheckedChange = { checked ->
                                     val next = when {
-                                        option == "None" && checked -> listOf("None")
-                                        option == "None" -> dietaryRestrictions - option
-                                        checked -> (dietaryRestrictions - "None") + option
-                                        else -> dietaryRestrictions - option
+                                        option.storedValue == MealQuestionnaireValues.DIETARY_NONE && checked -> listOf(MealQuestionnaireValues.DIETARY_NONE)
+                                        option.storedValue == MealQuestionnaireValues.DIETARY_NONE -> dietaryRestrictions - option.storedValue
+                                        checked -> (dietaryRestrictions - MealQuestionnaireValues.DIETARY_NONE) + option.storedValue
+                                        else -> dietaryRestrictions - option.storedValue
                                     }
                                     onDietaryRestrictionsChange(next)
                                 },
                                 colors = CheckboxDefaults.colors(checkedColor = SharedJourneyColors.MediterraneanTeal)
                             )
-                            Text(option, style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkDeep)
+                            Text(
+                                stringResource(option.label),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = SharedJourneyColors.InkDeep,
+                            )
                         }
                     }
                 }
             }
 
-            QuestionBlock(
-                title = "Are there any ingredients you absolutely hate?",
-                description = "Keeps meal plans away from foods the household dislikes."
+            LocalizedQuestionBlock(
+                title = Res.string.meal_q_disliked_title,
+                description = Res.string.meal_q_disliked_desc,
             ) {
                 TextField(
                     value = dislikedIngredients,
                     onValueChange = onDislikedIngredientsChange,
-                    placeholder = { Text("Example: cilantro, mushrooms, olives") },
+                    placeholder = { Text(stringResource(Res.string.meal_q_disliked_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
@@ -1272,109 +1268,109 @@ data class JourneyEditScreen(
             HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
 
             Text(
-                "Lifestyle & Time Constraints",
+                stringResource(Res.string.meal_q_lifestyle_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = SharedJourneyColors.MediterraneanTeal,
                 fontWeight = FontWeight.Black
             )
             Text(
-                "These answers keep plans realistic for busy days and match the cooking effort you want.",
+                stringResource(Res.string.meal_q_lifestyle_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = SharedJourneyColors.InkMuted
             )
 
-            QuestionBlock(
-                title = "On a busy weeknight, how much time do you realistically have to cook?",
-                description = "Filters recipes by prep and cook time."
+            LocalizedQuestionBlock(
+                title = Res.string.meal_q_weeknight_time_title,
+                description = Res.string.meal_q_weeknight_time_desc,
             ) {
-                OptionChips(
+                LocalizedOptionChips(
                     options = weeknightCookTimeOptions,
-                    selectedOption = busyWeeknightCookTime,
-                    onOptionSelected = onBusyWeeknightCookTimeChange
+                    selectedValue = busyWeeknightCookTime,
+                    onSelected = onBusyWeeknightCookTimeChange,
                 )
             }
 
-            QuestionBlock(
-                title = "What is your cooking style/skill level?",
-                description = "Keeps meal suggestions aligned with your preferred complexity."
+            LocalizedQuestionBlock(
+                title = Res.string.meal_q_skill_title,
+                description = Res.string.meal_q_skill_desc,
             ) {
-                OptionChips(
+                LocalizedOptionChips(
                     options = skillLevelOptions,
-                    selectedOption = cookingSkillLevel,
-                    onOptionSelected = onCookingSkillLevelChange
+                    selectedValue = cookingSkillLevel,
+                    onSelected = onCookingSkillLevelChange,
                 )
             }
 
-            QuestionBlock(
-                title = "How do you prefer to handle lunches?",
-                description = "Lets the AI decide whether to scale dinners for leftovers."
+            LocalizedQuestionBlock(
+                title = Res.string.meal_q_lunch_title,
+                description = Res.string.meal_q_lunch_desc,
             ) {
-                OptionChips(
+                LocalizedOptionChips(
                     options = lunchPreferenceOptions,
-                    selectedOption = lunchPreference,
-                    onOptionSelected = onLunchPreferenceChange
+                    selectedValue = lunchPreference,
+                    onSelected = onLunchPreferenceChange,
                 )
             }
 
             HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
 
             Text(
-                "Right Now Friction Solver",
+                stringResource(Res.string.meal_q_friction_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = SharedJourneyColors.MediterraneanTeal,
                 fontWeight = FontWeight.Black
             )
             Text(
-                "Use this when you open the app in a panic and need the AI to pick the right behavior mode immediately.",
+                stringResource(Res.string.meal_q_friction_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = SharedJourneyColors.InkMuted
             )
 
-            QuestionBlock(
-                title = "What's your goal today?",
-                description = "Sets the AI mode: batch planning, inventory clearance, or grocery logistics."
+            LocalizedQuestionBlock(
+                title = Res.string.meal_q_goal_today_title,
+                description = Res.string.meal_q_goal_today_desc,
             ) {
-                OptionChips(
+                LocalizedOptionChips(
                     options = rightNowGoalOptions,
-                    selectedOption = rightNowGoal,
-                    onOptionSelected = onRightNowGoalChange
+                    selectedValue = rightNowGoal,
+                    onSelected = onRightNowGoalChange,
                 )
             }
 
             HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
 
             Text(
-                "Local Shopping Context",
+                stringResource(Res.string.meal_q_local_context_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = SharedJourneyColors.MediterraneanTeal,
                 fontWeight = FontWeight.Black
             )
             Text(
-                "Allow GPS geolocation or provide your location manually so meal plans and grocery lists can be tailored with nearby shops, seasonal local products, and realistic availability.",
+                stringResource(Res.string.meal_q_local_context_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = SharedJourneyColors.InkMuted
             )
 
-            QuestionBlock(
-                title = "How should we localize grocery suggestions?",
-                description = "This helps tailor grocery lists to local shops and products."
+            LocalizedQuestionBlock(
+                title = Res.string.meal_q_localize_grocery_title,
+                description = Res.string.meal_q_localize_grocery_desc,
             ) {
-                OptionChips(
+                LocalizedOptionChips(
                     options = locationOptions,
-                    selectedOption = locationPreference,
-                    onOptionSelected = onLocationPreferenceChange
+                    selectedValue = locationPreference,
+                    onSelected = onLocationPreferenceChange,
                 )
             }
 
-            if (locationPreference == "Provide location manually") {
-                QuestionBlock(
-                    title = "Where should we plan around?",
-                    description = "Add a city, neighborhood, postal code, or market area."
+            if (locationPreference == MealQuestionnaireValues.LOCATION_MANUAL) {
+                LocalizedQuestionBlock(
+                    title = Res.string.meal_q_manual_location_title,
+                    description = Res.string.meal_q_manual_location_desc,
                 ) {
                     TextField(
                         value = manualLocation,
                         onValueChange = onManualLocationChange,
-                        placeholder = { Text("Example: Portici, Naples or 80055") },
+                        placeholder = { Text(stringResource(Res.string.meal_q_manual_location_placeholder)) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
@@ -1396,12 +1392,12 @@ data class JourneyEditScreen(
             ) {
                 Icon(AppIcons.Sparkles, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(10.dp))
-                Text("Generate weekly meal plan with AI", fontWeight = FontWeight.Bold)
+                Text(stringResource(Res.string.meal_q_generate_button), fontWeight = FontWeight.Bold)
             }
 
             if (!canGenerateWeeklyPlan) {
                 Text(
-                    "Complete each Meal Planning answer first so the AI can build a realistic weekly plan.",
+                    stringResource(Res.string.meal_q_complete_hint),
                     style = MaterialTheme.typography.labelSmall,
                     color = SharedJourneyColors.InkMuted,
                     textAlign = TextAlign.Center,
