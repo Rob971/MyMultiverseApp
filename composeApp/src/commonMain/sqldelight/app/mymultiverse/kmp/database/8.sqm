@@ -1,0 +1,7 @@
+ALTER TABLE JourneyEntity ADD COLUMN financeBillSplitStrategy TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN financeSettleWorkflow TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN financeRecurringBills TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN financeBillPainPoint TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN financePartnerAIncome TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN financePartnerBIncome TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN financeCustomSplitPercentages TEXT;

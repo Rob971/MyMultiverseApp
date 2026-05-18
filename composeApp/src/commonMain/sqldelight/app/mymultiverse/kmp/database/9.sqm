@@ -1,0 +1,7 @@
+ALTER TABLE JourneyEntity ADD COLUMN financeMonthlyHousingSpend TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN financeMonthlyUtilitiesSpend TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN financeMonthlyConnectivitySpend TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN financeMonthlySubscriptionsSpend TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN financeMonthlyInsuranceSpend TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN financeMonthlyKidsPetsSpend TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN financeMonthlyOtherSpend TEXT;

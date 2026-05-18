@@ -1,0 +1,198 @@
+tests:
+  - displayName: app launch and home dashboard smoke test
+    id: app-launch-and-home-dashboard-smoke-test
+    steps:
+      - goal: Open the app and wait for the home dashboard to finish loading.
+        finalScreenAssertion: >-
+          The home screen is visible with the WELCOME HOME banner or Our Dreams
+          section, and no crash, error dialog, or blank screen is shown.
+      - goal: Tap the Add Dream action to start creating a new shared dream card.
+        finalScreenAssertion: >-
+          The Dream Architect flow opens and shows the dream description input
+          and category selection.
+  - displayName: calendar and insights navigation happy path
+    id: calendar-and-insights-navigation-happy-path
+    steps:
+      - goal: Open the Family Calendar from the app navigation.
+        finalScreenAssertion: >-
+          The Family Calendar screen loads and shows calendar controls such as
+          Day, Week, Month, Quarter, Year, or Today's Agenda.
+      - goal: Switch between Week and Month views.
+        finalScreenAssertion: The selected calendar view changes and the app remains responsive.
+      - goal: Open the Insights screen from the app navigation.
+        finalScreenAssertion: >-
+          The Insights screen loads and shows progress metrics such as Weekly
+          Progress, Tasks Completed, Time Spent, or Focus Score.
+  - displayName: calendar logistics dream card happy path
+    id: calendar-logistics-dream-card-happy-path
+    steps:
+      - goal: >-
+          Create a new dream card for coordinating a busy week with
+          appointments, errands, and shared reminders, then choose Calendar &
+          Logistics.
+        finalScreenAssertion: >-
+          The Calendar & Logistics category is selected and coordination
+          questions are shown.
+      - goal: >-
+          Provide realistic logistics details such as owners, important dates,
+          reminders, and dependencies.
+        finalScreenAssertion: >-
+          The logistics answers are accepted and the Generate logistics plan
+          action is available.
+      - goal: Generate the logistics plan and review the result.
+        finalScreenAssertion: >-
+          The review step shows a Calendar Coordination Plan with owners,
+          reminders, schedule decisions, or next coordination actions.
+      - goal: Save the logistics dream card.
+        finalScreenAssertion: >-
+          The app returns to the home dashboard and the logistics dream card is
+          visible without errors.
+  - displayName: couples wellness dream card happy path
+    id: couples-wellness-dream-card-happy-path
+    steps:
+      - goal: >-
+          Create a new dream card for protecting connection during a stressful
+          week, then choose Health, Wellness & Self-Care.
+        finalScreenAssertion: >-
+          The Health, Wellness & Self-Care category is selected and wellness
+          questions are shown.
+      - goal: >-
+          Answer the wellness questions with realistic context: limited evening
+          time, moderate stress, low-cost date-night preference, and a desire
+          for a calmer check-in.
+        finalScreenAssertion: >-
+          The wellness answers are accepted and the Generate couples wellness
+          plan action is available.
+      - goal: Generate the couples wellness plan and review the result.
+        finalScreenAssertion: >-
+          The review step shows a Couples Wellness Plan with category-relevant
+          care, date-night, check-in, or de-escalation actions.
+      - goal: Save the wellness dream card.
+        finalScreenAssertion: >-
+          The app returns to the home dashboard and the wellness dream card is
+          visible without errors.
+  - displayName: detail screen task edit happy path
+    id: detail-screen-task-edit-happy-path
+    steps:
+      - goal: Open an existing dream card from the Our Dreams list.
+        finalScreenAssertion: >-
+          The detail screen opens with Journey Progress, Participants, SMART
+          Goals, and Timeline sections visible.
+      - goal: >-
+          Add a new action to the journey with a clear task title and short
+          planning note.
+        finalScreenAssertion: >-
+          The Add Action dialog accepts the title and planning note and the new
+          action appears in the journey timeline or action list.
+      - goal: Edit the newly added action and save the change.
+        finalScreenAssertion: >-
+          The updated action text is visible on the detail screen and no
+          duplicate or crash is shown.
+  - displayName: household finance dream card happy path
+    id: household-finance-dream-card-happy-path
+    steps:
+      - goal: >-
+          Create a new dream card for reducing monthly bill stress, then choose
+          Household Finance.
+        finalScreenAssertion: >-
+          The Household Finance category is selected and finance-specific
+          questions are shown.
+      - goal: >-
+          Fill the finance questions with a realistic household setup: shared
+          bills, one partner usually pays first, both want a fair split, housing
+          and utilities are recurring costs, and the couple wants a monthly
+          settle-up workflow.
+        finalScreenAssertion: >-
+          The finance answers are accepted and the Generate financial blueprint
+          action is available.
+      - goal: Generate the financial blueprint and review the plan.
+        finalScreenAssertion: >-
+          The review step shows a Financial Blueprint with bill, split-rule,
+          ledger, or settle-up items instead of a generic meal or wellness plan.
+      - goal: Save the finance dream card.
+        finalScreenAssertion: >-
+          The app returns to the home dashboard and the finance dream card is
+          visible without errors.
+  - displayName: household operations dream card happy path
+    id: household-operations-dream-card-happy-path
+    steps:
+      - goal: >-
+          Create a new dream card for resetting the cleaning and maintenance
+          routine, then choose Household Management & Maintenance.
+        finalScreenAssertion: >-
+          The Household Management & Maintenance category is selected and home
+          operations questions are shown.
+      - goal: >-
+          Provide realistic home context such as recurring chores, maintenance
+          backlog, supplies, effort balance, and who owns each routine.
+        finalScreenAssertion: >-
+          The household answers are accepted and the Generate household
+          operations plan action is available.
+      - goal: Generate the household operations plan and review the result.
+        finalScreenAssertion: >-
+          The review step shows a Household Operations Plan with routines,
+          ownership, recurring actions, or supply-related tasks.
+      - goal: Save the household operations dream card.
+        finalScreenAssertion: >-
+          The app returns to the home dashboard and the household operations
+          dream card is visible without errors.
+  - displayName: long-term milestone dream card happy path
+    id: long-term-milestone-dream-card-happy-path
+    steps:
+      - goal: >-
+          Create a new dream card for planning a move to a larger apartment,
+          then choose Long-Term Projects & Life Milestones.
+        finalScreenAssertion: >-
+          The Long-Term Projects & Life Milestones category is selected and
+          milestone questions are shown.
+      - goal: >-
+          Fill the milestone questions with a realistic timeline, budget
+          guardrail, current roadblock, and definition of success.
+        finalScreenAssertion: >-
+          The milestone answers are accepted and the Generate milestone
+          blueprint action is available.
+      - goal: Generate the milestone blueprint and review the roadmap.
+        finalScreenAssertion: >-
+          The review step shows a Milestone Blueprint with plan, budget, roles,
+          friction, follow-up, or next-action items.
+      - goal: Save the milestone dream card.
+        finalScreenAssertion: >-
+          The app returns to the home dashboard and the milestone dream card is
+          visible without errors.
+  - displayName: meal planning dream card happy path
+    id: meal-planning-dream-card-happy-path
+    steps:
+      - goal: >-
+          Create a new dream card for making weeknight dinners easier without
+          wasting groceries, then choose Meal Planning & Kitchen Operations.
+        finalScreenAssertion: >-
+          The Meal Planning category is selected and its category-specific
+          questions are shown.
+      - goal: >-
+          Answer the meal planning questions with realistic constraints: cooking
+          for two, vegetarian-friendly, thirty-minute weeknight meals, simple
+          cooking skill, lunches from leftovers, and a weekly grocery plan.
+        finalScreenAssertion: >-
+          The answers remain visible and the Generate weekly meal plan action is
+          available.
+      - goal: Generate the weekly meal plan and review the proposed plan.
+        finalScreenAssertion: >-
+          The review step shows AI Understanding and a Meal Plan with practical
+          category-relevant items such as menu, grocery, prep, or lunch actions.
+      - goal: Save the dream card.
+        finalScreenAssertion: >-
+          The app returns to the home dashboard and the new meal planning dream
+          card is visible in Our Dreams.
+  - displayName: create a dream card smoke test
+    id: create-a-dream-card-smoke-test
+    steps:
+      - goal: Open the app and wait for the home dashboard to finish loading.
+        finalScreenAssertion: >-
+          The home dashboard is visible and no crash, error dialog, or blank
+          screen is shown.
+      - goal: >-
+          Start creating a new dream card for a realistic user goal, such as
+          planning a healthier weekly meal routine.
+        finalScreenAssertion: >-
+          The dream card creation screen is visible with a category selection or
+          dream description input available.

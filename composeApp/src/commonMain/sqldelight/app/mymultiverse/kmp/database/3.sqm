@@ -1,0 +1,3 @@
+ALTER TABLE JourneyEntity ADD COLUMN mealBusyWeeknightCookTime TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN mealCookingSkillLevel TEXT;
+ALTER TABLE JourneyEntity ADD COLUMN mealLunchPreference TEXT;

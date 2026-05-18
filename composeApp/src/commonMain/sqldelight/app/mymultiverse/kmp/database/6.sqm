@@ -1,0 +1,2 @@
+DELETE FROM JourneyEntity
+WHERE id IN ('vesuvian-vitality', 'financial-masterplan', 'motore-unita');

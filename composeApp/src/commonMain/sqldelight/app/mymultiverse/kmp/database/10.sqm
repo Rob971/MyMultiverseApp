@@ -1,0 +1,16 @@
+CREATE TABLE FinanceBillEntryEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    journeyId TEXT NOT NULL,
+    merchant TEXT NOT NULL,
+    billDate TEXT NOT NULL,
+    amount REAL NOT NULL,
+    category TEXT NOT NULL,
+    paidBy TEXT NOT NULL,
+    partnerAShare REAL NOT NULL,
+    partnerBShare REAL NOT NULL,
+    owedBy TEXT NOT NULL,
+    owedTo TEXT NOT NULL,
+    owedAmount REAL NOT NULL,
+    sourceText TEXT NOT NULL,
+    FOREIGN KEY (journeyId) REFERENCES JourneyEntity(id) ON DELETE CASCADE
+);

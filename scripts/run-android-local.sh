@@ -23,4 +23,4 @@ echo
 echo "Installing on connected device/emulator..."
 ./gradlew :composeApp:installDebug
 
-echo "Done. Launch the app (com.example.kmp) from the launcher."
+echo "Done. Launch the app (app.mymultiverse.kmp) from the launcher."
