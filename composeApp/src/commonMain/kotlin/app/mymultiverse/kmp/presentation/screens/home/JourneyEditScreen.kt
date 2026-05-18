@@ -21,6 +21,7 @@ import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import app.mymultiverse.kmp.domain.model.*
+import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
@@ -232,6 +233,9 @@ data class JourneyEditScreen(
                             }) {
                                 Icon(AppIcons.ArrowBack, contentDescription = stringResource(Res.string.action_back))
                             }
+                        },
+                        actions = {
+                            LanguagePicker()
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = Color.Transparent,

@@ -26,6 +26,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import app.mymultiverse.kmp.domain.model.Journey
 import app.mymultiverse.kmp.domain.model.JourneyTask
+import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
 import app.mymultiverse.kmp.presentation.components.TaskEditDialog
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
@@ -132,6 +133,7 @@ data class CalendarScreen(
                                     }
                                 }
                             }
+                            LanguagePicker()
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = Color.Transparent,

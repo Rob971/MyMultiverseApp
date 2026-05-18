@@ -4,13 +4,30 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Path
+import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import org.koin.compose.koinInject
 
 @Composable
 fun NapolitanBackground(
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
+) {
+    val languageManager = koinInject<LanguageManager>()
+    val currentLanguage by languageManager.currentLanguage.collectAsState()
+
+    key(currentLanguage) {
+        NapolitanBackgroundLayer(content = content)
+    }
+}
+
+@Composable
+private fun NapolitanBackgroundLayer(
+    content: @Composable () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Canvas(modifier = Modifier.fillMaxSize()) {

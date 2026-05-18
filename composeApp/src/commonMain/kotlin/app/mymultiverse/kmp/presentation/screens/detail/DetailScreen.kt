@@ -34,6 +34,7 @@ import app.mymultiverse.kmp.domain.model.JourneyCategory
 import app.mymultiverse.kmp.domain.model.JourneyPlanItem
 import app.mymultiverse.kmp.domain.model.JourneyTask
 import app.mymultiverse.kmp.presentation.components.FriendlyProgressRing
+import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
 import app.mymultiverse.kmp.presentation.components.TaskEditDialog
 import app.mymultiverse.kmp.presentation.screens.calendar.CalendarScreen
@@ -159,6 +160,9 @@ fun DetailContent(
                     IconButton(onClick = onBackClick) {
                         Icon(AppIcons.ArrowBack, contentDescription = stringResource(Res.string.action_back))
                     }
+                },
+                actions = {
+                    LanguagePicker()
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,

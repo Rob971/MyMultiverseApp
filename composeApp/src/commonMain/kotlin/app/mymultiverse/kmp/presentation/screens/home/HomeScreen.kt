@@ -8,8 +8,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.foundation.background
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +24,7 @@ import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.model.Journey
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.JourneyDreamCard
+import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
 import app.mymultiverse.kmp.presentation.screens.calendar.CalendarScreen
 import app.mymultiverse.kmp.presentation.screens.calendar.CalendarScope
@@ -41,7 +40,6 @@ object HomeScreen : Screen {
 
         val greeting by screenModel.greeting.collectAsState()
         val journeys by screenModel.journeys.collectAsState()
-        val currentLanguage by screenModel.currentLanguage.collectAsState()
 
         NapolitanBackground {
             HomeContent(
@@ -67,8 +65,6 @@ object HomeScreen : Screen {
                 onTaskUpdate = { task -> screenModel.updateTask(task) },
                 onTaskDelete = { jId, tId -> screenModel.deleteTask(jId, tId) },
                 onTaskClick = { jId, tId -> navigator.push(CalendarScreen(CalendarScope.Task(jId, tId))) },
-                currentLanguage = currentLanguage,
-                onLanguageSelected = { lang -> screenModel.changeLanguage(lang) }
             )
         }
     }
@@ -88,47 +84,16 @@ fun HomeContent(
     onTaskUpdate: (app.mymultiverse.kmp.domain.model.JourneyTask) -> Unit,
     onTaskDelete: (String, String) -> Unit,
     onTaskClick: (String, String) -> Unit,
-    currentLanguage: String,
-    onLanguageSelected: (String) -> Unit
 ) {
     Scaffold(
         topBar = {
-            var expanded by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
             @OptIn(ExperimentalMaterial3Api::class)
             TopAppBar(
                 title = { },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 actions = {
-                    Box {
-                        TextButton(onClick = { expanded = true }) {
-                            Text(currentLanguage.uppercase(), fontWeight = FontWeight.Bold, color = SharedJourneyColors.MediterraneanTeal)
-                        }
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.background(SharedJourneyColors.SunDrenchedWhite)
-                        ) {
-                            val languages = listOf(
-                                "ar-rSA" to "العربية",
-                                "de" to "Deutsch",
-                                "en" to "English",
-                                "es" to "Español",
-                                "fr" to "Français",
-                                "it" to "Italiano",
-                                "nap" to "Napulitano"
-                            )
-                            languages.forEach { (code, name) ->
-                                DropdownMenuItem(
-                                    text = { Text(name, color = if (code == currentLanguage) SharedJourneyColors.MediterraneanTeal else SharedJourneyColors.InkDeep) },
-                                    onClick = {
-                                        onLanguageSelected(code)
-                                        expanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
+                    LanguagePicker()
+                },
             )
         },
         containerColor = Color.Transparent,
