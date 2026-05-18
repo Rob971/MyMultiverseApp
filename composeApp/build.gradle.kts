@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.sqlDelight)
-    id("com.google.gms.google-services") version "4.4.4"
 }
 
 kotlin {
@@ -31,13 +30,6 @@ kotlin {
             implementation(libs.ktor.client.android)
             implementation(libs.koin.android)
             implementation(libs.androidx.appcompat)
-            implementation(project.dependencies.platform("com.google.firebase:firebase-bom:34.13.0"))
-            implementation("com.google.firebase:firebase-analytics")
-            implementation("com.google.firebase:firebase-auth")
-            implementation("com.google.firebase:firebase-firestore")
-            implementation("com.google.firebase:firebase-storage")
-            implementation("com.google.firebase:firebase-messaging")
-            implementation("com.google.firebase:firebase-crashlytics")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
