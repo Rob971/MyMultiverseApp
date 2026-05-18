@@ -2,6 +2,7 @@
 """Append missing string resources to locale files."""
 from __future__ import annotations
 
+import html
 import re
 from pathlib import Path
 
@@ -9,7 +10,7 @@ RES_DIR = Path(__file__).resolve().parents[1] / "composeApp/src/commonMain/compo
 DEFAULT = RES_DIR / "values/strings.xml"
 
 # Translations for the 92 keys missing from locale files (key -> locale -> text)
-# Uses &amp; for & in XML text content.
+# Translation values use plain text (e.g. "&"); xml_escape() writes valid XML entities.
 T: dict[str, dict[str, str]] = {
     "es": {
         "dream_card_step_label": "Paso 1 de 3 · Tarjeta de sueño",
@@ -119,6 +120,8 @@ def parse_strings(path: Path) -> dict[str, str]:
 
 
 def xml_escape(value: str) -> str:
+    # Normalize any pre-escaped entities so "&amp;" does not become "&amp;amp;".
+    value = html.unescape(value)
     return (
         value.replace("&", "&amp;")
         .replace("<", "&lt;")
@@ -169,21 +172,21 @@ if __name__ == "__main__":
         "dream_card_household_relevance_field": "Warum es für den Haushalt wichtig ist",
         "dream_card_time_horizon_field": "Zeithorizont",
         "journey_category_label": "Kategorie",
-        "category_calendar_title": "Kalender &amp; Logistik",
+        "category_calendar_title": "Kalender & Logistik",
         "category_calendar_description": "Zeitpläne, Termine, Events, Besorgungen und Koordination.",
         "category_calendar_dream_prompt": "Eine Woche, ein Event, einen Terminrhythmus oder Besorgungen koordinieren, ohne dass eine Person den gesamten Kalender trägt.",
         "category_calendar_outcome": "Ein gemeinsamer Logistikplan mit Verantwortlichen, Erinnerungen und der nächsten Terminentscheidung.",
         "category_calendar_questions_intro": "Beantwortet die Koordinationsfragen, damit die KI Daten, Verantwortliche, Erinnerungen und Abhängigkeiten trennt.",
         "category_calendar_ai_action": "Logistikplan erstellen",
         "category_calendar_plan_title": "Kalender-Koordinationsplan",
-        "category_home_title": "Haushaltsführung &amp; Wartung",
+        "category_home_title": "Haushaltsführung & Wartung",
         "category_home_description": "Reinigung, Reparaturen, Haushaltsroutinen, Vorräte und wiederkehrende Instandhaltung.",
         "category_home_dream_prompt": "Eine Haushaltsroutine, Wartungsrückstand, Reinigungsrhythmus oder Vorratsystem neu starten.",
         "category_home_outcome": "Ein praktischer Haushaltsbetriebsplan mit wiederkehrenden Routinen und fairer Zuständigkeit.",
         "category_home_questions_intro": "Beantwortet die Haushaltsfragen, damit die KI Aufwand, Kadenz und Verantwortung ausgleicht.",
         "category_home_ai_action": "Haushaltsbetriebsplan erstellen",
         "category_home_plan_title": "Haushaltsbetriebsplan",
-        "category_meal_title": "Essensplanung &amp; Küche",
+        "category_meal_title": "Essensplanung & Küche",
         "category_meal_description": "Menüs, Einkäufe, Vorbereitung und Kücheninventar.",
         "category_meal_dream_prompt": "Mahlzeiten, Einkäufe, Prep-Blöcke oder Kühlschrank-Ideen nach realen Haushaltsgrenzen planen.",
         "category_meal_outcome": "Ein Wochenessensplan mit Einkaufsführung, Prep-Blöcken und realistischen Kochgrenzen.",
@@ -197,14 +200,14 @@ if __name__ == "__main__":
         "category_finance_questions_intro": "Beantwortet die Finanzfragen, damit die KI ein neutrales Ledger baut, kein generisches Budget.",
         "category_finance_ai_action": "Finanzplan erstellen",
         "category_finance_plan_title": "Finanzplan",
-        "category_health_title": "Gesundheit, Wohlbefinden &amp; Selbstfürsorge",
+        "category_health_title": "Gesundheit, Wohlbefinden & Selbstfürsorge",
         "category_health_description": "Gewohnheiten, Termine, Bewegung, Ruhe und persönliche Pflege.",
         "category_health_dream_prompt": "Verbindung stärken, Konflikte übersetzen, Fürsorgegesten planen oder Energie als Paar schützen.",
         "category_health_outcome": "Ein Paar-Wohlbefindensplan mit Deeskalationsskript, Fürsorgeaktion, Radar und nächstem Check-in.",
         "category_health_questions_intro": "Beantwortet die Wohlbefindensfragen, damit die KI Ton, Timing und Unterstützung ohne Parteinahme coacht.",
         "category_health_ai_action": "Paar-Wohlbefindensplan erstellen",
         "category_health_plan_title": "Paar-Wohlbefindensplan",
-        "category_long_term_title": "Langfristige Projekte &amp; Lebensmeilensteine",
+        "category_long_term_title": "Langfristige Projekte & Lebensmeilensteine",
         "category_long_term_description": "Große Ziele, Meilensteine, Pläne und langfristige Projekte.",
         "category_long_term_dream_prompt": "Einen großen Lebensmeilenstein voranbringen ohne Überforderung, unklare Rollen oder Entscheidungsmüdigkeit.",
         "category_long_term_outcome": "Eine Meilenstein-Roadmap mit Entscheidungen, Verantwortlichen, Budget-Leitplanken und nächsten Aktionen.",
@@ -286,7 +289,7 @@ if __name__ == "__main__":
         "category_meal_ai_action": "Genera piano pasti settimanale",
         "category_meal_plan_title": "Piano pasti",
         "category_finance_title": "Finanze domestiche",
-        "category_finance_description": "Budget conmotione, bollette, dinamica di spesa e obiettivi finanziari.",
+        "category_finance_description": "Budget condivisi, bollette, dinamica di spesa e obiettivi finanziari.",
         "category_finance_dream_prompt": "Riduci lo stress del denaro, chiarisci le bollette, dividi i costi equamente o crea un ritmo di spesa condiviso.",
         "category_finance_outcome": "Un piano finanziario domestico con regole di divisione, cadenza bollette, fotografia spese e workflow di saldo.",
         "category_finance_questions_intro": "Rispondi alle domande finanziarie così l'IA costruisce un registro neutro, non un budget generico.",
@@ -327,7 +330,7 @@ if __name__ == "__main__":
         "task_planning_grocery": "Trasforma il piano pasti in un'azione di spesa mirata.",
         "task_planning_prep": "Riduce l'attrito infrasettimanale prima che la famiglia si affretti.",
         "task_planning_menu": "Mantiene i pasti della settimana visibili e realistici.",
-        "task_planning_split_rule": "Chiarisce l'accordo di denaro conmotione prima del tracciamento bollette.",
+        "task_planning_split_rule": "Chiarisce l'accordo di denaro condiviso prima del tracciamento bollette.",
         "task_planning_settle": "Evita promemoria ripetuti e pagamenti avanti e indietro.",
         "task_planning_ledger": "Crea un'unica fonte di verità per le bollette domestiche.",
         "task_planning_de_escalator": "Aiuta la coppia a partire con linguaggio di squadra invece che colpa.",
