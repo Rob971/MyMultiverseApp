@@ -264,7 +264,7 @@
     <string name="detail_finance_balance_b_owes_a">Le partenaire B doit %1$s au partenaire A</string>
     <string name="detail_finance_all_balanced">Toutes les factures variables enregistrées sont équilibrées</string>
     <string name="detail_bill_entry_meta">%1$s • %2$s • payé par %3$s</string>
-    <string name="detail_bill_entry_owes">%1$s doit %3$s à %2$s</string>
+    <string name="detail_bill_entry_owes">%1$s doit à %2$s %3$s</string>
     <string name="detail_finance_dialog_desc">Collez le texte du reçu ou saisissez les champs manuellement. La reconnaissance OCR par caméra et le transfert par e-mail pourront alimenter ce même analyseur plus tard.</string>
     <string name="detail_finance_receipt_placeholder">Collez le texte du reçu, ex. ENEL Energia 2026-05-16 Total 143,20 €</string>
     <string name="detail_finance_extract_receipt">Extraire du texte du reçu</string>
@@ -273,7 +273,7 @@
     <string name="detail_finance_amount_placeholder">Montant, ex. 143,20</string>
     <string name="detail_finance_category">Catégorie</string>
     <string name="detail_finance_paid_by">Payé par %1$s</string>
-    <string name="detail_finance_split_preview">%1$s doit %3$s à %2$s (%4$s A / %5$s B)</string>
+    <string name="detail_finance_split_preview">%1$s doit à %2$s %3$s (%4$s A / %5$s B)</string>
     <string name="detail_finance_save_bill">Enregistrer la facture</string>
     <string name="detail_spending_explorer">Explorateur de dépenses</string>
     <string name="detail_spending_period_day">Jour</string>
