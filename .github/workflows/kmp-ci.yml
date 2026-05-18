@@ -6,9 +6,21 @@ on:
       - main
       - master
       - "feature/**"
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which pipeline section should run?"
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - android
+          - ios
+          - firebase
 
 concurrency:
-  group: kmp-ci-${{ github.ref }}
+  group: kmp-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -19,6 +31,11 @@ jobs:
     name: Android Build And Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    if: >-
+      ${{ github.event_name == 'push' ||
+          github.event.inputs.target == 'all' ||
+          github.event.inputs.target == 'android' ||
+          github.event.inputs.target == 'firebase' }}
 
     steps:
       - name: Checkout
@@ -57,14 +74,32 @@ jobs:
           path: composeApp/build/outputs/apk/debug/*.apk
           if-no-files-found: ignore
 
+  firebase-distribution:
+    name: Firebase App Distribution
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    needs: android-validation
+    if: >-
+      ${{ github.event_name == 'push' ||
+          github.event.inputs.target == 'all' ||
+          github.event.inputs.target == 'firebase' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Set up Node.js for Firebase CLI
-        if: github.event_name == 'push'
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
+      - name: Download debug APK
+        uses: actions/download-artifact@v4
+        with:
+          name: composeApp-debug-apk
+          path: dist-apk
+
       - name: Write Firebase service account
-        if: github.event_name == 'push'
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
         run: |
@@ -76,7 +111,6 @@ jobs:
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
 
       - name: Sync Firebase App Distribution test cases
-        if: github.event_name == 'push'
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
           FIREBASE_APP_ID: "1:37917280954:android:f25a8ccc787de9f3f91083"
@@ -111,14 +145,13 @@ jobs:
           echo "updated" > "$sync_status"
 
       - name: Prepare Firebase automated test cases
-        if: github.event_name == 'push'
         run: |
           python3 - <<'PY' > "$RUNNER_TEMP/firebase-test-case-ids.txt"
           from pathlib import Path
           import re
 
           yaml = Path("firebase-appdistribution-testcases.yaml").read_text()
-          for test_id in re.findall(r"(?m)^\\s*id:\\s*(\\S+)\\s*$", yaml):
+          for test_id in re.findall(r"(?m)^\s*id:\s*(\S+)\s*$", yaml):
               print(test_id)
           PY
 
@@ -131,7 +164,6 @@ jobs:
 
       - name: Distribute debug APK to Firebase App Distribution
         id: firebase-distribution
-        if: github.event_name == 'push'
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
           FIREBASE_APP_ID: "1:37917280954:android:f25a8ccc787de9f3f91083"
@@ -140,11 +172,14 @@ jobs:
           FIREBASE_GROUPS: ${{ secrets.FIREBASE_GROUPS }}
           FIREBASE_TEST_DEVICES: ${{ secrets.FIREBASE_TEST_DEVICES }}
         run: |
+          apk_path="dist-apk/composeApp-debug.apk"
+          release_notes="Debug build from $GITHUB_REF_NAME at $GITHUB_SHA."
+
           args=(
-            "composeApp/build/outputs/apk/debug/composeApp-debug.apk"
+            "$apk_path"
             "--app" "$FIREBASE_APP_ID"
             "--project" "$FIREBASE_PROJECT_ID"
-            "--release-notes" "Debug build from $GITHUB_REF_NAME at $GITHUB_SHA."
+            "--release-notes" "$release_notes"
           )
 
           if [ -n "$FIREBASE_TESTERS" ]; then
@@ -168,7 +203,7 @@ jobs:
           npx -y firebase-tools@latest appdistribution:distribute "${args[@]}" 2>&1 | tee "$RUNNER_TEMP/firebase-distribution.log"
 
       - name: Publish Firebase App Distribution test status
-        if: github.event_name == 'push' && always()
+        if: always()
         env:
           FIREBASE_TEST_DEVICES: ${{ secrets.FIREBASE_TEST_DEVICES }}
           FIREBASE_DISTRIBUTION_OUTCOME: ${{ steps.firebase-distribution.outcome }}
@@ -197,25 +232,19 @@ jobs:
             if [ -f "$RUNNER_TEMP/firebase-distribution.log" ]; then
               echo
               echo "### Firebase Links"
-              python3 - <<'PY'
-              from pathlib import Path
-              import re
-              import os
-
-              log = Path(os.environ["RUNNER_TEMP"], "firebase-distribution.log").read_text(errors="ignore")
-              for url in re.findall(r"https://\\S+", log):
-                  label = "Firebase link"
-                  if "console.firebase.google.com" in url:
-                      label = "Firebase console"
-                  elif "appdistribution.firebase.google.com" in url:
-                      label = "Tester release"
-                  print(f"- [{label}]({url})")
-              PY
+              grep -Eo 'https://[^[:space:]]+' "$RUNNER_TEMP/firebase-distribution.log" | while read -r url; do
+                label="Firebase link"
+                case "$url" in
+                  *console.firebase.google.com*) label="Firebase console" ;;
+                  *appdistribution.firebase.google.com*) label="Tester release" ;;
+                esac
+                echo "- [$label]($url)"
+              done
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Firebase distribution report
-        if: github.event_name == 'push' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: firebase-app-distribution-report
@@ -229,6 +258,10 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 25
     continue-on-error: true
+    if: >-
+      ${{ github.event_name == 'push' ||
+          github.event.inputs.target == 'all' ||
+          github.event.inputs.target == 'ios' }}
 
     steps:
       - name: Checkout
