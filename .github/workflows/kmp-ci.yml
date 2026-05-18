@@ -7,6 +7,9 @@ on:
       - master
       - develop
       - "feature/**"
+  push:
+    branches:
+      - "feature/**"
 
 concurrency:
   group: kmp-ci-${{ github.ref }}
