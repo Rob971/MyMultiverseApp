@@ -10,7 +10,6 @@ ktor = "3.0.0"
 datetime = "0.6.1"
 multiplatformSettings = "1.1.1"
 appcompat = "1.6.1"
-androidx-compose-material-icons = "1.8.0"
 
 [libraries]
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
@@ -37,8 +36,6 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "multiplatformSettings" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
-androidx-compose-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "androidx-compose-material-icons" }
-androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "androidx-compose-material-icons" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

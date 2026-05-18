@@ -183,10 +183,93 @@ PATCHES: dict[str, dict[str, str]] = {
     },
 }
 
-# Italian and Arabic reuse FR/ES patterns lightly
-PATCHES["it"] = {**PATCHES["fr"], "home_greeting": "Il cuore pulsante della nostra famiglia."}
-PATCHES["ar"] = PATCHES["es"].copy()
-PATCHES["ar-rSA"] = PATCHES["es"].copy()
+PATCHES["it"] = {
+    "home_greeting": "Il cuore pulsante della nostra famiglia.",
+    "calendar_weekday_mon": "Lun",
+    "calendar_weekday_tue": "Mar",
+    "calendar_weekday_wed": "Mer",
+    "calendar_weekday_thu": "Gio",
+    "calendar_weekday_fri": "Ven",
+    "calendar_weekday_sat": "Sab",
+    "calendar_weekday_sun": "Dom",
+    "calendar_nav_previous": "Precedente",
+    "calendar_nav_next": "Successivo",
+    "calendar_header_today": "Oggi, %1$d %2$s",
+    "calendar_header_week_same_month": "%1$d - %2$d %3$s, %4$d",
+    "calendar_header_week_diff_month": "%1$d %2$s - %3$d %4$s, %5$d",
+    "calendar_header_month": "%1$s %2$d",
+    "month_january": "Gennaio",
+    "month_february": "Febbraio",
+    "month_march": "Marzo",
+    "month_april": "Aprile",
+    "month_may": "Maggio",
+    "month_june": "Giugno",
+    "month_july": "Luglio",
+    "month_august": "Agosto",
+    "month_september": "Settembre",
+    "month_october": "Ottobre",
+    "month_november": "Novembre",
+    "month_december": "Dicembre",
+    "dream_card_open_detail": "Apri dettaglio",
+    "dream_card_menu": "Menu",
+    "dream_card_collapse_tasks": "Comprimi attività",
+    "dream_card_expand_tasks": "Espandi attività",
+    "dream_card_streak_days": "%1$d giorni",
+    "insights_footer": "Questi modelli rafforzano la psicologia della costanza più che della perfezione. Ogni piccola azione costruisce il futuro della nostra famiglia.",
+    "detail_celebration_subtitle": "Un cuore, una famiglia.",
+    "detail_connection": "Connessione",
+    "detail_energy": "Energia",
+    "detail_stress": "Stress",
+    "detail_schedule": "Programma",
+    "detail_show_strategy": "Mostra strategia",
+    "detail_hide_strategy": "Nascondi strategia",
+    "detail_wellness_radar_title": "Radar benessere di coppia",
+    "detail_wellness_radar_subtitle": "Voi + Loro vs. Il problema. Usate questa scheda per trasformare la tensione nel prossimo passo condiviso.",
+}
+PATCHES["ar"] = {
+    "home_greeting": "قلب عائلتنا النابض.",
+    "calendar_weekday_mon": "الإثنين",
+    "calendar_weekday_tue": "الثلاثاء",
+    "calendar_weekday_wed": "الأربعاء",
+    "calendar_weekday_thu": "الخميس",
+    "calendar_weekday_fri": "الجمعة",
+    "calendar_weekday_sat": "السبت",
+    "calendar_weekday_sun": "الأحد",
+    "calendar_nav_previous": "السابق",
+    "calendar_nav_next": "التالي",
+    "calendar_header_today": "اليوم، %1$d %2$s",
+    "calendar_header_week_same_month": "%1$d - %2$d %3$s، %4$d",
+    "calendar_header_week_diff_month": "%1$d %2$s - %3$d %4$s، %5$d",
+    "calendar_header_month": "%1$s %2$d",
+    "month_january": "يناير",
+    "month_february": "فبراير",
+    "month_march": "مارس",
+    "month_april": "أبريل",
+    "month_may": "مايو",
+    "month_june": "يونيو",
+    "month_july": "يوليو",
+    "month_august": "أغسطس",
+    "month_september": "سبتمبر",
+    "month_october": "أكتوبر",
+    "month_november": "نوفمبر",
+    "month_december": "ديسمبر",
+    "dream_card_open_detail": "فتح التفاصيل",
+    "dream_card_menu": "القائمة",
+    "dream_card_collapse_tasks": "طي الأنشطة",
+    "dream_card_expand_tasks": "توسيع الأنشطة",
+    "dream_card_streak_days": "%1$d أيام",
+    "insights_footer": "هذه النماذج تعزز نفسية الاستمرارية على الكمال. كل فعل صغير يبني مستقبل عائلتنا.",
+    "detail_celebration_subtitle": "قلب واحد، عائلة واحدة.",
+    "detail_connection": "التواصل",
+    "detail_energy": "الطاقة",
+    "detail_stress": "التوتر",
+    "detail_schedule": "الجدول",
+    "detail_show_strategy": "عرض الاستراتيجية",
+    "detail_hide_strategy": "إخفاء الاستراتيجية",
+    "detail_wellness_radar_title": "رادار رفاهية الأزواج",
+    "detail_wellness_radar_subtitle": "أنتم + هم ضد المشكلة. استخدموا هذه البطاقة لتحويل التوتر إلى خطوة مشتركة تالية.",
+}
+PATCHES["ar-rSA"] = PATCHES["ar"].copy()
 
 
 def patch_locale(locale_dir: str, patches: dict[str, str]) -> int:
@@ -196,7 +279,11 @@ def patch_locale(locale_dir: str, patches: dict[str, str]) -> int:
     for key, value in patches.items():
         escaped = html.escape(value, quote=False)
         pattern = rf'(<string name="{re.escape(key)}">)(.*?)(</string>)'
-        new_text, count = re.subn(pattern, rf"\1{escaped}\3", text, count=1, flags=re.DOTALL)
+
+        def repl(m: re.Match[str], val: str = escaped) -> str:
+            return m.group(1) + val + m.group(3)
+
+        new_text, count = re.subn(pattern, repl, text, count=1, flags=re.DOTALL)
         if count:
             text = new_text
             updated += 1

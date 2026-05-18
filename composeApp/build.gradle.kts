@@ -39,9 +39,6 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(compose.components.resources)
 
-            implementation(libs.androidx.compose.material.icons.core)
-            implementation(libs.androidx.compose.material.icons.extended)
-
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.screenmodel)
             implementation(libs.voyager.transitions)
