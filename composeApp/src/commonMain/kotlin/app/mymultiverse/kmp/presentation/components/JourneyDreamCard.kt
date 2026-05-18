@@ -28,6 +28,7 @@ import app.mymultiverse.kmp.domain.model.JourneyCategory
 import app.mymultiverse.kmp.domain.model.JourneyTask
 import app.mymultiverse.kmp.domain.model.LongTermProjectProfile
 import app.mymultiverse.kmp.domain.model.MealPlanningProfile
+import app.mymultiverse.kmp.presentation.screens.home.experienceResources
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
@@ -310,7 +311,7 @@ private fun CategoryBadge(
         shape = CircleShape,
     ) {
         Text(
-            text = category.displayName,
+            text = stringResource(category.experienceResources.displayName),
             style = MaterialTheme.typography.labelSmall,
             color = SharedJourneyColors.InkDeep,
             fontWeight = FontWeight.Bold,
