@@ -110,7 +110,7 @@ fun CelebrationOverlay() {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "✨ BRAVISSIMO! ✨",
+                text = "✨ ${stringResource(Res.string.detail_celebration_headline)} ✨",
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Black,
                 color = SharedJourneyColors.LemonZestYellow
@@ -199,7 +199,7 @@ fun DetailContent(
                                     )
                                     Spacer(Modifier.width(6.dp))
                                     Text(
-                                        text = "${journey.familyStreak} Day Streak",
+                                        text = stringResource(Res.string.detail_day_streak, journey.familyStreak),
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.ExtraBold,
                                         color = SharedJourneyColors.TerracottaOrange
@@ -314,7 +314,7 @@ fun DetailContent(
                                 contentColor = SharedJourneyColors.MediterraneanTeal
                             )
                         ) {
-                            Icon(AppIcons.Add, contentDescription = "Add Event")
+                            Icon(AppIcons.Add, contentDescription = stringResource(Res.string.action_add_event))
                         }
 
                         TextButton(
@@ -414,21 +414,21 @@ fun GoalStatsRow(journey: Journey, onInsightsClick: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             StatCard(
-                label = "Cheers",
+                label = stringResource(Res.string.detail_cheers),
                 value = totalCheers.toString(),
                 icon = AppIcons.Favorite,
                 color = SharedJourneyColors.TerracottaOrange,
                 modifier = Modifier.weight(1f)
             )
             StatCard(
-                label = "Progress",
+                label = stringResource(Res.string.detail_progress_chip),
                 value = "$completedTasks/$totalTasks",
                 icon = AppIcons.CheckCircle,
                 color = SharedJourneyColors.MediterraneanTeal,
                 modifier = Modifier.weight(1f)
             )
             StatCard(
-                label = "Lead",
+                label = stringResource(Res.string.detail_lead),
                 value = topPartner,
                 icon = AppIcons.Person,
                 color = SharedJourneyColors.LemonZestYellow,
@@ -606,16 +606,31 @@ fun HealthWellnessInsightSection(
                 }
             } else {
                 if (profile.conflictTopic.isNotBlank()) {
-                    WellnessLine("De-escalator", profile.conflictTopic)
+                    WellnessLine(stringResource(Res.string.task_label_de_escalator), profile.conflictTopic)
                 }
                 if (profile.partnerLoveLanguage.isNotBlank()) {
-                    WellnessLine("Appreciation", "${profile.partnerLoveLanguage} - ${profile.availableTime.ifBlank { "quick action" }} - ${profile.budget.ifBlank { "no budget" }}")
+                    WellnessLine(
+                        stringResource(Res.string.detail_wellness_appreciation),
+                        stringResource(
+                            Res.string.detail_wellness_appreciation_format,
+                            profile.partnerLoveLanguage,
+                            profile.availableTime.ifBlank { stringResource(Res.string.detail_wellness_quick_action) },
+                            profile.budget.ifBlank { stringResource(Res.string.detail_wellness_no_budget) },
+                        ),
+                    )
                 }
                 if (profile.weeklyDrain.isNotBlank()) {
-                    WellnessLine("Weekly drain", profile.weeklyDrain)
+                    WellnessLine(stringResource(Res.string.detail_wellness_weekly_drain), profile.weeklyDrain)
                 }
                 if (profile.dateNightLikes.isNotBlank()) {
-                    WellnessLine("Date night", "${profile.dateNightDuration.ifBlank { "Tonight" }} around ${profile.dateNightLikes}")
+                    WellnessLine(
+                        stringResource(Res.string.task_label_date_night),
+                        stringResource(
+                            Res.string.detail_wellness_date_night_format,
+                            profile.dateNightDuration.ifBlank { stringResource(Res.string.dream_card_tonight) },
+                            profile.dateNightLikes,
+                        ),
+                    )
                 }
             }
         }
@@ -661,7 +676,10 @@ private fun WellnessContextChip(label: String, value: String, modifier: Modifier
                 fontWeight = FontWeight.Black
             )
             Text(
-                text = "${value.ifBlank { "?" }}/10",
+                text = stringResource(
+                    Res.string.detail_wellness_score,
+                    value.ifBlank { "?" },
+                ),
                 style = MaterialTheme.typography.titleMedium,
                 color = SharedJourneyColors.InkDeep,
                 fontWeight = FontWeight.Black
@@ -707,7 +725,7 @@ fun LongTermActionBlueprintSection(journey: Journey) {
     ) {
         Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(
-                text = "Household Action Blueprint",
+                text = stringResource(Res.string.detail_household_blueprint),
                 style = MaterialTheme.typography.titleMedium,
                 color = SharedJourneyColors.InkDeep,
                 fontWeight = FontWeight.Black
@@ -719,12 +737,12 @@ fun LongTermActionBlueprintSection(journey: Journey) {
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                LongTermContextChip("Milestone", profile.milestoneType, Modifier.weight(1f))
-                LongTermContextChip("Timeline", profile.timeline, Modifier.weight(1f))
+                LongTermContextChip(stringResource(Res.string.detail_longterm_milestone), profile.milestoneType, Modifier.weight(1f))
+                LongTermContextChip(stringResource(Res.string.detail_timeline), profile.timeline, Modifier.weight(1f))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                LongTermContextChip("Budget", profile.budgetStyle, Modifier.weight(1f))
-                LongTermContextChip("Roadblock", profile.roadblock, Modifier.weight(1f))
+                LongTermContextChip(stringResource(Res.string.task_label_budget), profile.budgetStyle, Modifier.weight(1f))
+                LongTermContextChip(stringResource(Res.string.detail_longterm_roadblock), profile.roadblock, Modifier.weight(1f))
             }
 
             Surface(
@@ -734,13 +752,13 @@ fun LongTermActionBlueprintSection(journey: Journey) {
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
-                        text = "Next best action",
+                        text = stringResource(Res.string.detail_next_best_action),
                         style = MaterialTheme.typography.labelSmall,
                         color = SharedJourneyColors.MediterraneanTeal,
                         fontWeight = FontWeight.Black
                     )
                     Text(
-                        text = nextTask?.title ?: "All generated plan steps are complete. Add the next follow-up task when the milestone moves into a new phase.",
+                        text = nextTask?.title ?: stringResource(Res.string.detail_all_plan_steps_complete),
                         style = MaterialTheme.typography.bodyMedium,
                         color = SharedJourneyColors.InkDeep,
                         fontWeight = FontWeight.Bold
@@ -749,7 +767,7 @@ fun LongTermActionBlueprintSection(journey: Journey) {
             }
 
             Text(
-                text = "Progress by part",
+                text = stringResource(Res.string.detail_progress_by_part),
                 style = MaterialTheme.typography.titleSmall,
                 color = SharedJourneyColors.InkDeep,
                 fontWeight = FontWeight.Black
@@ -757,7 +775,7 @@ fun LongTermActionBlueprintSection(journey: Journey) {
 
             if (groupedTasks.isEmpty()) {
                 Text(
-                    text = "No plan steps yet. Add tasks below to start tracking this milestone.",
+                    text = stringResource(Res.string.detail_no_plan_steps),
                     style = MaterialTheme.typography.bodySmall,
                     color = SharedJourneyColors.InkMuted
                 )
@@ -785,7 +803,7 @@ private fun LongTermContextChip(label: String, value: String, modifier: Modifier
                 fontWeight = FontWeight.Black
             )
             Text(
-                text = value.ifBlank { "Not set" },
+                text = value.ifBlank { stringResource(Res.string.detail_not_set) },
                 style = MaterialTheme.typography.labelMedium,
                 color = SharedJourneyColors.InkDeep,
                 fontWeight = FontWeight.Bold
@@ -827,7 +845,11 @@ private fun LongTermProgressPart(label: String, tasks: List<JourneyTask>) {
             )
             tasks.take(3).forEach { task ->
                 Text(
-                    text = if (task.isCompleted) "Done: ${task.title}" else "Open: ${task.title}",
+                    text = if (task.isCompleted) {
+                        stringResource(Res.string.detail_task_done, task.title)
+                    } else {
+                        stringResource(Res.string.detail_task_open, task.title)
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = SharedJourneyColors.InkMuted
                 )
@@ -855,14 +877,15 @@ fun FinanceBillLedgerSection(
     onLogBillClick: () -> Unit,
 ) {
     val entries = journey.financeBillEntries
-    val partnerAOwes = entries.filter { it.owedBy == "Partner A" }.sumOf { it.owedAmount }
-    val partnerBOwes = entries.filter { it.owedBy == "Partner B" }.sumOf { it.owedAmount }
+    val partnerAOwes = entries.filter { it.owedBy == PARTNER_A_ID }.sumOf { it.owedAmount }
+    val partnerBOwes = entries.filter { it.owedBy == PARTNER_B_ID }.sumOf { it.owedAmount }
     val netBalance = partnerAOwes - partnerBOwes
     val balanceText = when {
-        netBalance > 0.0 -> "Partner A owes Partner B ${netBalance.toMoneyText()}"
-        netBalance < 0.0 -> "Partner B owes Partner A ${(-netBalance).toMoneyText()}"
-        else -> "All logged variable bills are balanced"
+        netBalance > 0.0 -> stringResource(Res.string.detail_finance_balance_a_owes_b, netBalance.toMoneyText())
+        netBalance < 0.0 -> stringResource(Res.string.detail_finance_balance_b_owes_a, (-netBalance).toMoneyText())
+        else -> stringResource(Res.string.detail_finance_all_balanced)
     }
+    val splitStrategy = profile.billSplitStrategy.ifBlank { stringResource(Res.string.detail_saved_split_rule) }
 
     Card(
         modifier = Modifier
@@ -874,13 +897,13 @@ fun FinanceBillLedgerSection(
     ) {
         Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text(
-                text = "Variable Bill Tracker",
+                text = stringResource(Res.string.detail_variable_bill_tracker),
                 style = MaterialTheme.typography.titleMedium,
                 color = SharedJourneyColors.InkDeep,
                 fontWeight = FontWeight.Black
             )
             Text(
-                text = "Receipt text-to-split MVP: paste receipt text or enter the bill manually, then the app applies ${profile.billSplitStrategy.ifBlank { "the saved split rule" }}.",
+                text = stringResource(Res.string.detail_variable_bill_desc, splitStrategy),
                 style = MaterialTheme.typography.bodySmall,
                 color = SharedJourneyColors.InkMuted
             )
@@ -904,7 +927,7 @@ fun FinanceBillLedgerSection(
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)
             ) {
-                Text("Log variable bill", fontWeight = FontWeight.Bold)
+                Text(stringResource(Res.string.detail_log_variable_bill), fontWeight = FontWeight.Bold)
             }
             entries.takeLast(4).reversed().forEach { entry ->
                 FinanceBillEntryRow(entry)
@@ -925,8 +948,27 @@ private fun FinanceBillEntryRow(entry: FinanceBillEntry) {
                 Text(entry.merchant, style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkDeep, fontWeight = FontWeight.Bold)
                 Text(entry.amount.toMoneyText(), style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkDeep, fontWeight = FontWeight.Bold)
             }
-            Text("${entry.category} • ${entry.billDate} • paid by ${entry.paidBy}", style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.InkMuted)
-            Text("${entry.owedBy} owes ${entry.owedTo} ${entry.owedAmount.toMoneyText()}", style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.MediterraneanTeal, fontWeight = FontWeight.Bold)
+            Text(
+                stringResource(
+                    Res.string.detail_bill_entry_meta,
+                    entry.category,
+                    entry.billDate,
+                    partnerDisplayName(entry.paidBy),
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = SharedJourneyColors.InkMuted,
+            )
+            Text(
+                stringResource(
+                    Res.string.detail_bill_entry_owes,
+                    partnerDisplayName(entry.owedBy),
+                    partnerDisplayName(entry.owedTo),
+                    entry.owedAmount.toMoneyText(),
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = SharedJourneyColors.MediterraneanTeal,
+                fontWeight = FontWeight.Bold,
+            )
         }
     }
 }
@@ -942,8 +984,11 @@ private fun FinanceBillEntryDialog(
     var merchant by remember { mutableStateOf("") }
     var billDate by remember { mutableStateOf("") }
     var amountText by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf(profile.recurringBills.firstOrNull()?.substringBefore(" (") ?: "Utilities") }
-    var paidBy by remember { mutableStateOf("Partner A") }
+    val defaultCategory = stringResource(Res.string.finance_spend_utilities)
+    var category by remember(profile.recurringBills, defaultCategory) {
+        mutableStateOf(profile.recurringBills.firstOrNull()?.substringBefore(" (") ?: defaultCategory)
+    }
+    var paidBy by remember { mutableStateOf(PARTNER_A_ID) }
 
     val amount = amountText.toAmountValue()
     val shares = calculateFinanceShares(amount, paidBy, profile)
@@ -951,18 +996,18 @@ private fun FinanceBillEntryDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Log variable bill", fontWeight = FontWeight.Black) },
+        title = { Text(stringResource(Res.string.detail_log_variable_bill), fontWeight = FontWeight.Black) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    "Paste receipt text or enter the fields manually. Camera OCR and email forwarding can feed this same parser later.",
+                    stringResource(Res.string.detail_finance_dialog_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = SharedJourneyColors.InkMuted
                 )
                 TextField(
                     value = receiptText,
                     onValueChange = { receiptText = it },
-                    placeholder = { Text("Paste receipt text, e.g. ENEL Energia 2026-05-16 Total \$143.20") },
+                    placeholder = { Text(stringResource(Res.string.detail_finance_receipt_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3,
                     colors = TextFieldDefaults.colors(
@@ -982,23 +1027,30 @@ private fun FinanceBillEntryDialog(
                     enabled = receiptText.isNotBlank(),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Extract from receipt text")
+                    Text(stringResource(Res.string.detail_finance_extract_receipt))
                 }
-                TextField(value = merchant, onValueChange = { merchant = it }, placeholder = { Text("Merchant") }, modifier = Modifier.fillMaxWidth())
-                TextField(value = billDate, onValueChange = { billDate = it }, placeholder = { Text("Date, e.g. 2026-05-16") }, modifier = Modifier.fillMaxWidth())
-                TextField(value = amountText, onValueChange = { amountText = it }, placeholder = { Text("Amount, e.g. 143.20") }, modifier = Modifier.fillMaxWidth())
-                TextField(value = category, onValueChange = { category = it }, placeholder = { Text("Category") }, modifier = Modifier.fillMaxWidth())
+                TextField(value = merchant, onValueChange = { merchant = it }, placeholder = { Text(stringResource(Res.string.detail_finance_merchant)) }, modifier = Modifier.fillMaxWidth())
+                TextField(value = billDate, onValueChange = { billDate = it }, placeholder = { Text(stringResource(Res.string.detail_finance_date_placeholder)) }, modifier = Modifier.fillMaxWidth())
+                TextField(value = amountText, onValueChange = { amountText = it }, placeholder = { Text(stringResource(Res.string.detail_finance_amount_placeholder)) }, modifier = Modifier.fillMaxWidth())
+                TextField(value = category, onValueChange = { category = it }, placeholder = { Text(stringResource(Res.string.detail_finance_category)) }, modifier = Modifier.fillMaxWidth())
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("Partner A", "Partner B").forEach { partner ->
+                    listOf(PARTNER_A_ID, PARTNER_B_ID).forEach { partner ->
                         FilterChip(
                             selected = paidBy == partner,
                             onClick = { paidBy = partner },
-                            label = { Text("Paid by $partner") }
+                            label = { Text(stringResource(Res.string.detail_finance_paid_by, partnerDisplayName(partner))) }
                         )
                     }
                 }
                 Text(
-                    "${shares.owedBy} owes ${shares.owedTo} ${shares.owedAmount.toMoneyText()} (${shares.partnerAShare.toMoneyText()} A / ${shares.partnerBShare.toMoneyText()} B)",
+                    stringResource(
+                        Res.string.detail_finance_split_preview,
+                        partnerDisplayName(shares.owedBy),
+                        partnerDisplayName(shares.owedTo),
+                        shares.owedAmount.toMoneyText(),
+                        shares.partnerAShare.toMoneyText(),
+                        shares.partnerBShare.toMoneyText(),
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = SharedJourneyColors.MediterraneanTeal,
                     fontWeight = FontWeight.Bold
@@ -1028,12 +1080,12 @@ private fun FinanceBillEntryDialog(
                 },
                 enabled = canSave
             ) {
-                Text("Save bill")
+                Text(stringResource(Res.string.detail_finance_save_bill))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(Res.string.action_cancel))
             }
         }
     )
@@ -1065,7 +1117,7 @@ fun MonthlySpendingSection(profile: FinanceProfile) {
     ) {
         Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text(
-                text = "Spending Explorer",
+                text = stringResource(Res.string.detail_spending_explorer),
                 style = MaterialTheme.typography.titleMedium,
                 color = SharedJourneyColors.InkDeep,
                 fontWeight = FontWeight.Black
@@ -1075,25 +1127,46 @@ fun MonthlySpendingSection(profile: FinanceProfile) {
                     FilterChip(
                         selected = selectedPeriod == period,
                         onClick = { selectedPeriod = period },
-                        label = { Text(period.label) }
+                        label = { Text(period.displayLabel()) }
                     )
                 }
             }
             Text(
-                text = "${selectedPeriod.label} reported spend: ${periodTotal.toCurrencyText(selectedPeriod)}",
+                text = stringResource(
+                    Res.string.detail_reported_spend,
+                    selectedPeriod.displayLabel(),
+                    periodTotal.toCurrencyText(selectedPeriod),
+                ),
                 style = MaterialTheme.typography.titleLarge,
                 color = SharedJourneyColors.MediterraneanTeal,
                 fontWeight = FontWeight.Black
             )
             Text(
-                text = "Top category: ${topCategory?.first ?: "Not enough data"}" +
-                    if (topCategory != null) " (${topShare}% of reported ${selectedPeriod.label.lowercase()} spend)." else ".",
+                text = buildString {
+                    append(
+                        stringResource(
+                            Res.string.detail_top_category,
+                            topCategory?.first ?: stringResource(Res.string.detail_not_enough_data),
+                        ),
+                    )
+                    if (topCategory != null) {
+                        append(
+                            stringResource(
+                                Res.string.detail_top_category_share,
+                                topShare,
+                                selectedPeriod.displayLabel().lowercase(),
+                            ),
+                        )
+                    } else {
+                        append('.')
+                    }
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = SharedJourneyColors.InkDeep,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = "These values are derived from the monthly amounts reported during setup. Receipt import or manual bill entries can refine the history over time.",
+                text = stringResource(Res.string.detail_spending_disclaimer),
                 style = MaterialTheme.typography.bodySmall,
                 color = SharedJourneyColors.InkMuted
             )
@@ -1135,14 +1208,21 @@ private fun MonthlySpendRow(
 }
 
 private enum class SpendingPeriod(
-    val label: String,
     val suffix: String,
     val monthMultiplier: Double,
 ) {
-    Day("Day", "day", 1.0 / 30.0),
-    Week("Week", "wk", 1.0 / 4.33),
-    Month("Month", "mo", 1.0),
-    Quarter("Quarter", "qtr", 3.0),
+    Day("day", 1.0 / 30.0),
+    Week("wk", 1.0 / 4.33),
+    Month("mo", 1.0),
+    Quarter("qtr", 3.0),
+}
+
+@Composable
+private fun SpendingPeriod.displayLabel(): String = when (this) {
+    SpendingPeriod.Day -> stringResource(Res.string.detail_spending_period_day)
+    SpendingPeriod.Week -> stringResource(Res.string.detail_spending_period_week)
+    SpendingPeriod.Month -> stringResource(Res.string.detail_spending_period_month)
+    SpendingPeriod.Quarter -> stringResource(Res.string.detail_spending_period_quarter)
 }
 
 private data class FinanceSplitShares(
@@ -1173,22 +1253,22 @@ private fun calculateFinanceShares(
             parseCustomSplit(profile.customSplitPercentages) ?: (0.5 to 0.5)
         }
         profile.billSplitStrategy.contains("assign", ignoreCase = true) -> {
-            if (paidBy == "Partner A") 1.0 to 0.0 else 0.0 to 1.0
+            if (paidBy == PARTNER_A_ID) 1.0 to 0.0 else 0.0 to 1.0
         }
         else -> 0.5 to 0.5
     }
     val partnerAShare = amount * partnerAPercent
     val partnerBShare = amount * partnerBPercent
-    val owedAmount = if (paidBy == "Partner A") partnerBShare else partnerAShare
+    val owedAmount = if (paidBy == PARTNER_A_ID) partnerBShare else partnerAShare
     val owedBy = when {
-        owedAmount <= 0.0 -> "No one"
-        paidBy == "Partner A" -> "Partner B"
-        else -> "Partner A"
+        owedAmount <= 0.0 -> PARTNER_NO_ONE_ID
+        paidBy == PARTNER_A_ID -> PARTNER_B_ID
+        else -> PARTNER_A_ID
     }
     val owedTo = when {
-        owedAmount <= 0.0 -> "No one"
-        paidBy == "Partner A" -> "Partner A"
-        else -> "Partner B"
+        owedAmount <= 0.0 -> PARTNER_NO_ONE_ID
+        paidBy == PARTNER_A_ID -> PARTNER_A_ID
+        else -> PARTNER_B_ID
     }
     return FinanceSplitShares(
         partnerAShare = partnerAShare,
@@ -1326,7 +1406,7 @@ private fun TaskBlockItem(
                         ) {
                             Icon(
                                 AppIcons.MoreVert,
-                                contentDescription = "More options",
+                                contentDescription = stringResource(Res.string.content_more_options),
                                 tint = SharedJourneyColors.InkMuted,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -1381,7 +1461,7 @@ private fun TaskBlockItem(
                         }
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = "è impegnato/a",
+                            text = stringResource(Res.string.detail_task_claimed),
                             style = MaterialTheme.typography.labelSmall,
                             color = SharedJourneyColors.InkMuted
                         )
@@ -1391,7 +1471,7 @@ private fun TaskBlockItem(
                             contentPadding = PaddingValues(0.dp)
                         ) {
                             Text(
-                                "🤚 Prendi in carico",
+                                stringResource(Res.string.detail_task_claim),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = SharedJourneyColors.MediterraneanTeal,
                                 fontWeight = FontWeight.Bold
@@ -1411,13 +1491,13 @@ private fun TaskBlockItem(
                     ) {
                         Icon(
                             AppIcons.Favorite,
-                            contentDescription = "Cheer",
+                            contentDescription = stringResource(Res.string.content_cheer),
                             modifier = Modifier.size(16.dp),
                             tint = SharedJourneyColors.TerracottaOrange
                         )
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            text = "${task.cheersCount} Cuori",
+                            text = stringResource(Res.string.detail_hearts_count, task.cheersCount),
                             style = MaterialTheme.typography.labelSmall,
                             color = SharedJourneyColors.InkDeep,
                             fontWeight = FontWeight.Black
@@ -1436,4 +1516,16 @@ private fun parseColor(hex: String?): Color {
     } catch (_: Exception) {
         SharedJourneyColors.TerracottaOrange
     }
+}
+
+private const val PARTNER_A_ID = "Partner A"
+private const val PARTNER_B_ID = "Partner B"
+private const val PARTNER_NO_ONE_ID = "No one"
+
+@Composable
+private fun partnerDisplayName(partnerId: String): String = when (partnerId) {
+    PARTNER_A_ID -> stringResource(Res.string.detail_partner_a)
+    PARTNER_B_ID -> stringResource(Res.string.detail_partner_b)
+    PARTNER_NO_ONE_ID -> stringResource(Res.string.detail_partner_no_one)
+    else -> partnerId
 }
