@@ -84,20 +84,70 @@ data class JourneyEditScreen(
         var financeMonthlyOtherSpend by remember { mutableStateOf(existingJourney?.financeProfile?.monthlyOtherSpend ?: "") }
         var healthConflictTopic by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.conflictTopic ?: "") }
         var healthConflictDraft by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.conflictDraft ?: "") }
-        var healthPartnerLoveLanguage by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.partnerLoveLanguage ?: "Acts of Service") }
-        var healthAvailableTime by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.availableTime ?: "15 minutes") }
-        var healthBudget by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.budget ?: "\$10") }
+        var healthPartnerLoveLanguage by remember {
+            mutableStateOf(
+                existingJourney?.healthWellnessProfile?.partnerLoveLanguage
+                    ?: WellnessQuestionnaireValues.OPT_LOVE_ACTS,
+            )
+        }
+        var healthAvailableTime by remember {
+            mutableStateOf(
+                existingJourney?.healthWellnessProfile?.availableTime
+                    ?: WellnessQuestionnaireValues.OPT_TIME_15,
+            )
+        }
+        var healthBudget by remember {
+            mutableStateOf(
+                existingJourney?.healthWellnessProfile?.budget
+                    ?: WellnessQuestionnaireValues.OPT_BUDGET_10,
+            )
+        }
         var healthEnergyLevel by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.energyLevel ?: "5") }
         var healthStressLevel by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.stressLevel ?: "5") }
         var healthConnectionLevel by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.connectionLevel ?: "5") }
-        var healthWeeklyDrain by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.weeklyDrain ?: "Work") }
-        var healthDateNightDuration by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.dateNightDuration ?: "2 hours") }
+        var healthWeeklyDrain by remember {
+            mutableStateOf(
+                existingJourney?.healthWellnessProfile?.weeklyDrain
+                    ?: WellnessQuestionnaireValues.OPT_DRAIN_WORK,
+            )
+        }
+        var healthDateNightDuration by remember {
+            mutableStateOf(
+                existingJourney?.healthWellnessProfile?.dateNightDuration
+                    ?: WellnessQuestionnaireValues.OPT_DURATION_120,
+            )
+        }
         var healthDateNightLikes by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.dateNightLikes ?: "") }
-        var healthDateNightAvoids by remember { mutableStateOf(existingJourney?.healthWellnessProfile?.dateNightAvoids ?: "Watching a movie") }
-        var longTermMilestoneType by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.milestoneType ?: "Moving to a new home") }
-        var longTermRoadblock by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.roadblock ?: "Overwhelmed: We don't know the correct order of steps to take.") }
-        var longTermTimeline by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.timeline ?: "Medium-term (1-6 months)") }
-        var longTermBudgetStyle by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.budgetStyle ?: "Moderate (Some DIY, hiring pros for the big stuff)") }
+        var healthDateNightAvoids by remember {
+            mutableStateOf(
+                existingJourney?.healthWellnessProfile?.dateNightAvoids
+                    ?: WellnessQuestionnaireValues.DEFAULT_DATE_AVOID,
+            )
+        }
+        var longTermMilestoneType by remember {
+            mutableStateOf(
+                existingJourney?.longTermProjectProfile?.milestoneType
+                    ?: LongTermQuestionnaireValues.OPT_MILESTONE_MOVE,
+            )
+        }
+        var longTermRoadblock by remember {
+            mutableStateOf(
+                existingJourney?.longTermProjectProfile?.roadblock
+                    ?: LongTermQuestionnaireValues.OPT_ROADBLOCK_OVERWHELMED,
+            )
+        }
+        var longTermTimeline by remember {
+            mutableStateOf(
+                existingJourney?.longTermProjectProfile?.timeline
+                    ?: LongTermQuestionnaireValues.OPT_TIMELINE_MEDIUM,
+            )
+        }
+        var longTermBudgetStyle by remember {
+            mutableStateOf(
+                existingJourney?.longTermProjectProfile?.budgetStyle
+                    ?: LongTermQuestionnaireValues.OPT_BUDGET_MODERATE,
+            )
+        }
         var longTermSuccessDefinition by remember { mutableStateOf(existingJourney?.longTermProjectProfile?.successDefinition ?: "") }
         var hasStartedDreamCard by remember { mutableStateOf(journeyId != null) }
         val categoryOutcomes = JourneyCategory.entries.associateWith { category ->
@@ -916,7 +966,7 @@ data class JourneyEditScreen(
             }
             if (selectedCategory == JourneyCategory.HealthWellness) {
                 item {
-                    HealthWellnessQuestionnaire(
+                    WellnessPlanningQuestionnaire(
                         conflictTopic = healthConflictTopic,
                         onConflictTopicChange = onHealthConflictTopicChange,
                         conflictDraft = healthConflictDraft,
@@ -947,7 +997,7 @@ data class JourneyEditScreen(
             }
             if (selectedCategory == JourneyCategory.LongTermProjects) {
                 item {
-                    LongTermProjectQuestionnaire(
+                    LongTermPlanningQuestionnaire(
                         milestoneType = longTermMilestoneType,
                         onMilestoneTypeChange = onLongTermMilestoneTypeChange,
                         roadblock = longTermRoadblock,
@@ -1404,406 +1454,6 @@ data class JourneyEditScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-        }
-    }
-
-    @Composable
-    private fun HealthWellnessQuestionnaire(
-        conflictTopic: String,
-        onConflictTopicChange: (String) -> Unit,
-        conflictDraft: String,
-        onConflictDraftChange: (String) -> Unit,
-        partnerLoveLanguage: String,
-        onPartnerLoveLanguageChange: (String) -> Unit,
-        availableTime: String,
-        onAvailableTimeChange: (String) -> Unit,
-        budget: String,
-        onBudgetChange: (String) -> Unit,
-        energyLevel: String,
-        onEnergyLevelChange: (String) -> Unit,
-        stressLevel: String,
-        onStressLevelChange: (String) -> Unit,
-        connectionLevel: String,
-        onConnectionLevelChange: (String) -> Unit,
-        weeklyDrain: String,
-        onWeeklyDrainChange: (String) -> Unit,
-        dateNightDuration: String,
-        onDateNightDurationChange: (String) -> Unit,
-        dateNightLikes: String,
-        onDateNightLikesChange: (String) -> Unit,
-        dateNightAvoids: String,
-        onDateNightAvoidsChange: (String) -> Unit,
-        onGenerateCouplesWellnessPlan: () -> Unit,
-    ) {
-        val loveLanguageOptions = listOf(
-            "Acts of Service",
-            "Words of Affirmation",
-            "Quality Time",
-            "Physical Touch",
-            "Receiving Gifts"
-        )
-        val timeOptions = listOf("5 minutes", "15 minutes", "30 minutes", "1 hour")
-        val budgetOptions = listOf("\$0", "\$10", "\$25", "\$50")
-        val drainOptions = listOf("Work", "Kids", "Chores", "Health", "Money", "Family")
-        val durationOptions = listOf("30 minutes", "1 hour", "2 hours", "All evening")
-        val canGeneratePlan = listOf(
-            conflictTopic,
-            conflictDraft,
-            partnerLoveLanguage,
-            availableTime,
-            budget,
-            energyLevel,
-            stressLevel,
-            connectionLevel,
-            weeklyDrain,
-            dateNightDuration,
-            dateNightLikes,
-            dateNightAvoids
-        ).any { it.isNotBlank() }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(SharedJourneyColors.GlassWhite, RoundedCornerShape(20.dp))
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                "Couples Wellness Check-In",
-                style = MaterialTheme.typography.titleMedium,
-                color = SharedJourneyColors.MediterraneanTeal,
-                fontWeight = FontWeight.Black
-            )
-            Text(
-                "Capture tiny answers that help the AI mediate, translate and plan for the team without taking sides.",
-                style = MaterialTheme.typography.bodySmall,
-                color = SharedJourneyColors.InkMuted
-            )
-
-            QuestionBlock(
-                title = "De-escalator: what are you fighting about?",
-                description = "The AI rewrites blame into a calmer 'I feel / I need / can we' message."
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextField(
-                        value = conflictTopic,
-                        onValueChange = onConflictTopicChange,
-                        placeholder = { Text("Example: dishes, money, bedtime, chores") },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
-                            unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
-                            focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        shape = RoundedCornerShape(16.dp)
-                    )
-                    TextField(
-                        value = conflictDraft,
-                        onValueChange = onConflictDraftChange,
-                        placeholder = { Text("Paste what you want to say before sending it") },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 3,
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
-                            unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
-                            focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        shape = RoundedCornerShape(16.dp)
-                    )
-                }
-            }
-
-            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
-
-            QuestionBlock(
-                title = "Love language translator",
-                description = "Pick quick constraints so the AI can suggest a tiny appreciation action that actually lands."
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OptionChips(loveLanguageOptions, partnerLoveLanguage, onPartnerLoveLanguageChange)
-                    OptionChips(timeOptions, availableTime, onAvailableTimeChange)
-                    OptionChips(budgetOptions, budget, onBudgetChange)
-                }
-            }
-
-            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
-
-            Text(
-                "Weekly Temperature Check",
-                style = MaterialTheme.typography.titleMedium,
-                color = SharedJourneyColors.MediterraneanTeal,
-                fontWeight = FontWeight.Black
-            )
-            WellnessSlider("Energy Level", energyLevel, onEnergyLevelChange)
-            WellnessSlider("Stress Level", stressLevel, onStressLevelChange)
-            WellnessSlider("Connection Level", connectionLevel, onConnectionLevelChange)
-            QuestionBlock(
-                title = "What is draining you the most this week?",
-                description = "This gives the AI a prevention signal before the couple runs out of fuel."
-            ) {
-                OptionChips(drainOptions, weeklyDrain, onWeeklyDrainChange)
-            }
-
-            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
-
-            QuestionBlock(
-                title = "Date night decision maker",
-                description = "Capture constraints so the AI can remove the 'I don't know, what do you want to do?' loop."
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OptionChips(durationOptions, dateNightDuration, onDateNightDurationChange)
-                    TextField(
-                        value = dateNightLikes,
-                        onValueChange = onDateNightLikesChange,
-                        placeholder = { Text("We like sushi, cards, cooking, music...") },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
-                            unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
-                            focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        shape = RoundedCornerShape(16.dp)
-                    )
-                    TextField(
-                        value = dateNightAvoids,
-                        onValueChange = onDateNightAvoidsChange,
-                        placeholder = { Text("We do not want to watch a movie") },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
-                            unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
-                            focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        shape = RoundedCornerShape(16.dp)
-                    )
-                }
-            }
-
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(
-                    "Golden rule: You + Them vs. The Problem. The AI should never judge who is right.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = SharedJourneyColors.MediterraneanTeal,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(14.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            Button(
-                onClick = onGenerateCouplesWellnessPlan,
-                enabled = canGeneratePlan,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)
-            ) {
-                Icon(AppIcons.Sparkles, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(10.dp))
-                Text("Generate couples wellness plan", fontWeight = FontWeight.Bold)
-            }
-        }
-    }
-
-    @Composable
-    private fun WellnessSlider(
-        label: String,
-        value: String,
-        onValueChange: (String) -> Unit,
-    ) {
-        val sliderValue = value.toFloatOrNull()?.coerceIn(1f, 10f) ?: 5f
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                "$label: ${sliderValue.toInt()}/10",
-                style = MaterialTheme.typography.bodyMedium,
-                color = SharedJourneyColors.InkDeep,
-                fontWeight = FontWeight.Bold
-            )
-            Slider(
-                value = sliderValue,
-                onValueChange = { onValueChange(it.toInt().toString()) },
-                valueRange = 1f..10f,
-                steps = 8
-            )
-        }
-    }
-
-    @Composable
-    private fun LongTermProjectQuestionnaire(
-        milestoneType: String,
-        onMilestoneTypeChange: (String) -> Unit,
-        roadblock: String,
-        onRoadblockChange: (String) -> Unit,
-        timeline: String,
-        onTimelineChange: (String) -> Unit,
-        budgetStyle: String,
-        onBudgetStyleChange: (String) -> Unit,
-        successDefinition: String,
-        onSuccessDefinitionChange: (String) -> Unit,
-        onGenerateBlueprint: () -> Unit,
-    ) {
-        val milestoneOptions = listOf(
-            "Moving to a new home",
-            "Renovation / Home Improvement",
-            "Big Event (Wedding, milestone party, baby shower)",
-            "Major life transition (New baby, career change, kids starting school)",
-            "Decluttering / Deep Organization (Garage, attic, etc.)"
-        )
-        val roadblockOptions = listOf(
-            "Time: We are too busy with daily life to focus on it.",
-            "Alignment: We aren't on the same page about the budget, style, or plan.",
-            "Overwhelmed: We don't know the correct order of steps to take.",
-            "Accountability: We start, but things keep getting pushed to the back burner."
-        )
-        val timelineOptions = listOf(
-            "ASAP (Less than a month)",
-            "Medium-term (1-6 months)",
-            "Long-term (6+ months / No rush)"
-        )
-        val budgetOptions = listOf(
-            "Tight / Bootstrapping (DIY all the way)",
-            "Moderate (Some DIY, hiring pros for the big stuff)",
-            "Full Service (We want to hire vendors/professionals)"
-        )
-        val canGenerateBlueprint = milestoneType.isNotBlank() &&
-            roadblock.isNotBlank() &&
-            timeline.isNotBlank() &&
-            budgetStyle.isNotBlank() &&
-            successDefinition.isNotBlank()
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(SharedJourneyColors.GlassWhite, RoundedCornerShape(20.dp))
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                "Long-Term Project Blueprint",
-                style = MaterialTheme.typography.titleMedium,
-                color = SharedJourneyColors.MediterraneanTeal,
-                fontWeight = FontWeight.Black
-            )
-            Text(
-                "Answer four quick prompts and one sentence so the AI can build the project plan for you.",
-                style = MaterialTheme.typography.bodySmall,
-                color = SharedJourneyColors.InkMuted
-            )
-
-            QuestionBlock(
-                title = "What big milestone are you tackling next?",
-                description = "This tells the AI what kind of project mountain it is planning around."
-            ) {
-                OptionChips(milestoneOptions, milestoneType, onMilestoneTypeChange)
-            }
-
-            QuestionBlock(
-                title = "What's the biggest roadblock keeping you from finishing or starting this?",
-                description = "This changes whether the AI emphasizes steps, alignment, ownership or momentum."
-            ) {
-                OptionChips(roadblockOptions, roadblock, onRoadblockChange)
-            }
-
-            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
-
-            Text(
-                "Boundaries",
-                style = MaterialTheme.typography.titleMedium,
-                color = SharedJourneyColors.MediterraneanTeal,
-                fontWeight = FontWeight.Black
-            )
-            QuestionBlock(
-                title = "What is your realistic timeline for this?",
-                description = "Sets the size and cadence of the micro-step checklist."
-            ) {
-                OptionChips(timelineOptions, timeline, onTimelineChange)
-            }
-            QuestionBlock(
-                title = "How would you describe your budget for this?",
-                description = "Helps the AI choose between DIY steps, vendor work and quote tracking."
-            ) {
-                OptionChips(budgetOptions, budgetStyle, onBudgetStyleChange)
-            }
-
-            HorizontalDivider(color = SharedJourneyColors.ParchmentWarm)
-
-            QuestionBlock(
-                title = "In one sentence, what does a successful finish look like to you?",
-                description = "Example: A completely organized garage where we can actually park both cars by summer."
-            ) {
-                TextField(
-                    value = successDefinition,
-                    onValueChange = onSuccessDefinitionChange,
-                    placeholder = { Text("Example: Moving into our new house without losing our minds or overspending on movers.") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
-                        unfocusedContainerColor = SharedJourneyColors.SunDrenchedWhite,
-                        focusedIndicatorColor = SharedJourneyColors.MediterraneanTeal,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                )
-            }
-
-            Button(
-                onClick = onGenerateBlueprint,
-                enabled = canGenerateBlueprint,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = SharedJourneyColors.MediterraneanTeal)
-            ) {
-                Icon(AppIcons.Sparkles, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(10.dp))
-                Text("Generate household action blueprint", fontWeight = FontWeight.Bold)
-            }
-
-            if (!canGenerateBlueprint) {
-                Text(
-                    "Complete the milestone, roadblock, timeline, budget and success sentence so the AI can build the roadmap.",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = SharedJourneyColors.InkMuted,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-    }
-
-    @Composable
-    private fun OptionChips(
-        options: List<String>,
-        selectedOption: String,
-        onOptionSelected: (String) -> Unit
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            options.forEach { option ->
-                FilterChip(
-                    selected = selectedOption == option,
-                    onClick = { onOptionSelected(option) },
-                    label = { Text(option) }
-                )
-            }
-        }
-    }
-
-    @Composable
-    private fun QuestionBlock(
-        title: String,
-        description: String,
-        content: @Composable () -> Unit
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(title, style = MaterialTheme.typography.bodyMedium, color = SharedJourneyColors.InkDeep, fontWeight = FontWeight.Bold)
-            Text(description, style = MaterialTheme.typography.labelSmall, color = SharedJourneyColors.InkMuted)
-            content()
         }
     }
 

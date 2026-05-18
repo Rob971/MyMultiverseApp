@@ -61,3 +61,48 @@ object FinanceQuestionnaireValues {
     const val SPLIT_PROPORTIONAL = OPT_SPLIT_PROPORTIONAL
     const val SPLIT_CUSTOM = OPT_SPLIT_CUSTOM
 }
+
+object WellnessQuestionnaireValues {
+    const val OPT_LOVE_ACTS = "Acts of Service"
+    const val OPT_LOVE_WORDS = "Words of Affirmation"
+    const val OPT_LOVE_QUALITY = "Quality Time"
+    const val OPT_LOVE_TOUCH = "Physical Touch"
+    const val OPT_LOVE_GIFTS = "Receiving Gifts"
+    const val OPT_TIME_5 = "5 minutes"
+    const val OPT_TIME_15 = "15 minutes"
+    const val OPT_TIME_30 = "30 minutes"
+    const val OPT_TIME_60 = "1 hour"
+    const val OPT_BUDGET_0 = "\$0"
+    const val OPT_BUDGET_10 = "\$10"
+    const val OPT_BUDGET_25 = "\$25"
+    const val OPT_BUDGET_50 = "\$50"
+    const val OPT_DRAIN_WORK = "Work"
+    const val OPT_DRAIN_KIDS = "Kids"
+    const val OPT_DRAIN_CHORES = "Chores"
+    const val OPT_DRAIN_HEALTH = "Health"
+    const val OPT_DRAIN_MONEY = "Money"
+    const val OPT_DRAIN_FAMILY = "Family"
+    const val OPT_DURATION_30 = "30 minutes"
+    const val OPT_DURATION_60 = "1 hour"
+    const val OPT_DURATION_120 = "2 hours"
+    const val OPT_DURATION_EVENING = "All evening"
+    const val DEFAULT_DATE_AVOID = "Watching a movie"
+}
+
+object LongTermQuestionnaireValues {
+    const val OPT_MILESTONE_MOVE = "Moving to a new home"
+    const val OPT_MILESTONE_RENO = "Renovation / Home Improvement"
+    const val OPT_MILESTONE_EVENT = "Big Event (Wedding, milestone party, baby shower)"
+    const val OPT_MILESTONE_TRANSITION = "Major life transition (New baby, career change, kids starting school)"
+    const val OPT_MILESTONE_DECLUTTER = "Decluttering / Deep Organization (Garage, attic, etc.)"
+    const val OPT_ROADBLOCK_TIME = "Time: We are too busy with daily life to focus on it."
+    const val OPT_ROADBLOCK_ALIGNMENT = "Alignment: We aren't on the same page about the budget, style, or plan."
+    const val OPT_ROADBLOCK_OVERWHELMED = "Overwhelmed: We don't know the correct order of steps to take."
+    const val OPT_ROADBLOCK_ACCOUNTABILITY = "Accountability: We start, but things keep getting pushed to the back burner."
+    const val OPT_TIMELINE_ASAP = "ASAP (Less than a month)"
+    const val OPT_TIMELINE_MEDIUM = "Medium-term (1-6 months)"
+    const val OPT_TIMELINE_LONG = "Long-term (6+ months / No rush)"
+    const val OPT_BUDGET_TIGHT = "Tight / Bootstrapping (DIY all the way)"
+    const val OPT_BUDGET_MODERATE = "Moderate (Some DIY, hiring pros for the big stuff)"
+    const val OPT_BUDGET_FULL = "Full Service (We want to hire vendors/professionals)"
+}

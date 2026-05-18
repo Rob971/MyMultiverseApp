@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -17,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.finance_q_spend_per_month
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.wellness_q_slider_value
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -103,4 +106,28 @@ fun LocalizedMonthlySpendField(
         ),
         shape = RoundedCornerShape(16.dp),
     )
+}
+
+@Composable
+fun LocalizedWellnessSlider(
+    label: StringResource,
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
+    val sliderValue = value.toFloatOrNull()?.coerceIn(1f, 10f) ?: 5f
+    val labelText = stringResource(label)
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            stringResource(Res.string.wellness_q_slider_value, labelText, sliderValue.toInt()),
+            style = MaterialTheme.typography.bodyMedium,
+            color = SharedJourneyColors.InkDeep,
+            fontWeight = FontWeight.Bold,
+        )
+        Slider(
+            value = sliderValue,
+            onValueChange = { onValueChange(it.toInt().toString()) },
+            valueRange = 1f..10f,
+            steps = 8,
+        )
+    }
 }
