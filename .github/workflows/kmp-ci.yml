@@ -82,7 +82,39 @@ jobs:
 
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
 
+      - name: Sync Firebase App Distribution test cases
+        if: github.event_name == 'push'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+          FIREBASE_APP_ID: "1:37917280954:android:f25a8ccc787de9f3f91083"
+          FIREBASE_PROJECT_ID: "mymultiverseapp"
+        run: |
+          npx -y firebase-tools@latest appdistribution:testcases:import \
+            firebase-appdistribution-testcases.yaml \
+            --app "$FIREBASE_APP_ID" \
+            --project "$FIREBASE_PROJECT_ID"
+
+      - name: Prepare Firebase automated test cases
+        if: github.event_name == 'push'
+        run: |
+          python3 - <<'PY' > "$RUNNER_TEMP/firebase-test-case-ids.txt"
+          from pathlib import Path
+          import re
+
+          yaml = Path("firebase-appdistribution-testcases.yaml").read_text()
+          for test_id in re.findall(r"(?m)^\\s*id:\\s*(\\S+)\\s*$", yaml):
+              print(test_id)
+          PY
+
+          if [ ! -s "$RUNNER_TEMP/firebase-test-case-ids.txt" ]; then
+            echo "No Firebase App Distribution test case IDs found."
+            exit 1
+          fi
+
+          echo "Prepared $(wc -l < "$RUNNER_TEMP/firebase-test-case-ids.txt" | tr -d ' ') Firebase App Distribution test cases."
+
       - name: Distribute debug APK to Firebase App Distribution
+        id: firebase-distribution
         if: github.event_name == 'push'
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
@@ -90,6 +122,7 @@ jobs:
           FIREBASE_PROJECT_ID: "mymultiverseapp"
           FIREBASE_TESTERS: ${{ secrets.FIREBASE_TESTERS }}
           FIREBASE_GROUPS: ${{ secrets.FIREBASE_GROUPS }}
+          FIREBASE_TEST_DEVICES: ${{ secrets.FIREBASE_TEST_DEVICES }}
         run: |
           args=(
             "composeApp/build/outputs/apk/debug/composeApp-debug.apk"
@@ -106,7 +139,70 @@ jobs:
             args+=("--groups" "$FIREBASE_GROUPS")
           fi
 
-          npx -y firebase-tools@latest appdistribution:distribute "${args[@]}"
+          if [ -n "$FIREBASE_TEST_DEVICES" ]; then
+            args+=(
+              "--test-devices" "$FIREBASE_TEST_DEVICES"
+              "--test-case-ids-file" "$RUNNER_TEMP/firebase-test-case-ids.txt"
+            )
+          else
+            echo "::warning::FIREBASE_TEST_DEVICES is not set; the release will be distributed without running Firebase automated tests."
+          fi
+
+          set -o pipefail
+          npx -y firebase-tools@latest appdistribution:distribute "${args[@]}" 2>&1 | tee "$RUNNER_TEMP/firebase-distribution.log"
+
+      - name: Publish Firebase App Distribution test status
+        if: github.event_name == 'push' && always()
+        env:
+          FIREBASE_TEST_DEVICES: ${{ secrets.FIREBASE_TEST_DEVICES }}
+          FIREBASE_DISTRIBUTION_OUTCOME: ${{ steps.firebase-distribution.outcome }}
+        run: |
+          {
+            echo "## Firebase App Distribution"
+            echo
+            echo "- Distribution step: \`$FIREBASE_DISTRIBUTION_OUTCOME\`"
+
+            if [ -n "$FIREBASE_TEST_DEVICES" ]; then
+              echo "- Automated test devices: \`$FIREBASE_TEST_DEVICES\`"
+            else
+              echo "- Automated tests: not run because \`FIREBASE_TEST_DEVICES\` is not configured."
+            fi
+
+            if [ -f "$RUNNER_TEMP/firebase-test-case-ids.txt" ]; then
+              echo
+              echo "### Test Cases"
+              sed 's/^/- `/' "$RUNNER_TEMP/firebase-test-case-ids.txt" | sed 's/$/`/'
+            fi
+
+            if [ -f "$RUNNER_TEMP/firebase-distribution.log" ]; then
+              echo
+              echo "### Firebase Links"
+              python3 - <<'PY'
+              from pathlib import Path
+              import re
+              import os
+
+              log = Path(os.environ["RUNNER_TEMP"], "firebase-distribution.log").read_text(errors="ignore")
+              for url in re.findall(r"https://\\S+", log):
+                  label = "Firebase link"
+                  if "console.firebase.google.com" in url:
+                      label = "Firebase console"
+                  elif "appdistribution.firebase.google.com" in url:
+                      label = "Tester release"
+                  print(f"- [{label}]({url})")
+              PY
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Firebase distribution report
+        if: github.event_name == 'push' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firebase-app-distribution-report
+          path: |
+            ${{ runner.temp }}/firebase-distribution.log
+            ${{ runner.temp }}/firebase-test-case-ids.txt
+          if-no-files-found: ignore
 
   ios-compatibility:
     name: iOS Compatibility Signal
