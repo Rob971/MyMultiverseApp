@@ -38,6 +38,7 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.uiToolingPreview)
             implementation(compose.components.resources)
+            implementation(compose.materialIconsExtended)
 
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.screenmodel)
