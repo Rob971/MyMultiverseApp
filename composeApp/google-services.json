@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:37917280954:android:dd5f7ef825481211f91083",
+        "mobilesdk_app_id": "1:37917280954:android:f25a8ccc787de9f3f91083",
         "android_client_info": {
-          "package_name": "com.mymultiverse.kmp"
+          "package_name": "app.mymultiverse.kmp"
         }
       },
       "oauth_client": [],

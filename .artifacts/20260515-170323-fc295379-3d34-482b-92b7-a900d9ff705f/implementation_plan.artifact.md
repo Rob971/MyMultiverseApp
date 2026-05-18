@@ -32,14 +32,14 @@ This plan outlines the steps to add internationalization (i18n) support for Engl
 ### Presentation Layer
 
 Update the following files to use `stringResource` instead of hardcoded strings:
-- [HomeScreen.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/com/mymultiverse/kmp/presentation/screens/home/HomeScreen.kt)
-- [JourneyEditScreen.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/com/mymultiverse/kmp/presentation/screens/home/JourneyEditScreen.kt)
-- [CalendarScreen.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/com/mymultiverse/kmp/presentation/screens/calendar/CalendarScreen.kt)
-- [InsightsScreen.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/com/mymultiverse/kmp/presentation/screens/insights/InsightsScreen.kt)
-- [DetailScreen.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/com/mymultiverse/kmp/presentation/screens/detail/DetailScreen.kt)
-- [JourneyBanner.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/com/mymultiverse/kmp/presentation/components/JourneyBanner.kt)
-- [JourneyDreamCard.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/com/mymultiverse/kmp/presentation/components/JourneyDreamCard.kt)
-- [TaskEditDialog.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/com/mymultiverse/kmp/presentation/components/TaskEditDialog.kt)
+- [HomeScreen.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/app/mymultiverse/kmp/presentation/screens/home/HomeScreen.kt)
+- [JourneyEditScreen.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/app/mymultiverse/kmp/presentation/screens/home/JourneyEditScreen.kt)
+- [CalendarScreen.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/app/mymultiverse/kmp/presentation/screens/calendar/CalendarScreen.kt)
+- [InsightsScreen.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/app/mymultiverse/kmp/presentation/screens/insights/InsightsScreen.kt)
+- [DetailScreen.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/app/mymultiverse/kmp/presentation/screens/detail/DetailScreen.kt)
+- [JourneyBanner.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/app/mymultiverse/kmp/presentation/components/JourneyBanner.kt)
+- [JourneyDreamCard.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/app/mymultiverse/kmp/presentation/components/JourneyDreamCard.kt)
+- [TaskEditDialog.kt](file:///Users/roberto971/myprojects/mymultiverse/KmpVoyagerCleanArchitecture/composeApp/src/commonMain/kotlin/app/mymultiverse/kmp/presentation/components/TaskEditDialog.kt)
 
 ## Verification Plan
 
