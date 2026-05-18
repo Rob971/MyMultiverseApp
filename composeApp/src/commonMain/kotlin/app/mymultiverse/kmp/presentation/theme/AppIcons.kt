@@ -6,6 +6,36 @@ import androidx.compose.ui.unit.dp
 
 object AppIcons {
 
+    val Check: ImageVector
+        get() = CheckCircle
+
+    val DateRange: ImageVector
+        get() = Notifications
+
+    val Favorite: ImageVector
+        get() = CheckCircle
+
+    val Info: ImageVector
+        get() = Sparkles
+
+    val KeyboardArrowDown: ImageVector
+        get() = ChevronRight
+
+    val KeyboardArrowUp: ImageVector
+        get() = ChevronLeft
+
+    val MoreVert: ImageVector
+        get() = Sparkles
+
+    val Person: ImageVector
+        get() = CheckCircle
+
+    val Refresh: ImageVector
+        get() = Sparkles
+
+    val Star: ImageVector
+        get() = Sparkles
+
     val ChevronLeft: ImageVector
         get() {
             if (_chevronLeft != null) {

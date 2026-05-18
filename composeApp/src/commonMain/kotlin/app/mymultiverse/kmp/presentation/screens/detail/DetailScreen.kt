@@ -9,16 +9,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -50,6 +40,7 @@ import app.mymultiverse.kmp.presentation.screens.calendar.CalendarScreen
 import app.mymultiverse.kmp.presentation.screens.calendar.CalendarScope
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
 import app.mymultiverse.kmp.presentation.screens.insights.InsightsScreen
+import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
@@ -166,7 +157,7 @@ fun DetailContent(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(Res.string.action_back))
+                        Icon(AppIcons.ArrowBack, contentDescription = stringResource(Res.string.action_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -201,7 +192,7 @@ fun DetailContent(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
-                                        Icons.Default.Star,
+                                        AppIcons.Star,
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp),
                                         tint = SharedJourneyColors.TerracottaOrange
@@ -323,7 +314,7 @@ fun DetailContent(
                                 contentColor = SharedJourneyColors.MediterraneanTeal
                             )
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = "Add Event")
+                            Icon(AppIcons.Add, contentDescription = "Add Event")
                         }
 
                         TextButton(
@@ -332,7 +323,7 @@ fun DetailContent(
                                 contentColor = SharedJourneyColors.MediterraneanTeal
                             )
                         ) {
-                            Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(AppIcons.DateRange, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text("Schedule", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                         }
@@ -425,21 +416,21 @@ fun GoalStatsRow(journey: Journey, onInsightsClick: () -> Unit) {
             StatCard(
                 label = "Cheers",
                 value = totalCheers.toString(),
-                icon = Icons.Default.Favorite,
+                icon = AppIcons.Favorite,
                 color = SharedJourneyColors.TerracottaOrange,
                 modifier = Modifier.weight(1f)
             )
             StatCard(
                 label = "Progress",
                 value = "$completedTasks/$totalTasks",
-                icon = Icons.Default.CheckCircle,
+                icon = AppIcons.CheckCircle,
                 color = SharedJourneyColors.MediterraneanTeal,
                 modifier = Modifier.weight(1f)
             )
             StatCard(
                 label = "Lead",
                 value = topPartner,
-                icon = Icons.Default.Person,
+                icon = AppIcons.Person,
                 color = SharedJourneyColors.LemonZestYellow,
                 modifier = Modifier.weight(1f)
             )
@@ -524,7 +515,7 @@ fun SmartPrincipleSection(journey: Journey) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Default.Info,
+                    AppIcons.Info,
                     contentDescription = null,
                     tint = SharedJourneyColors.MediterraneanTeal,
                     modifier = Modifier.size(22.dp)
@@ -696,7 +687,11 @@ fun LongTermActionBlueprintSection(journey: Journey) {
     val nextTask = tasks.firstOrNull { !it.isCompleted }
     val groupedTasks = tasks
         .groupBy { it.label.ifBlank { "Plan" } }
-        .toSortedMap(compareBy { label -> longTermSectionOrder(label) })
+        .toList()
+        .sortedWith(
+            compareBy<Pair<String, List<JourneyTask>>> { (label, _) -> longTermSectionOrder(label) }
+                .thenBy { (label, _) -> label }
+        )
 
     Card(
         modifier = Modifier
@@ -1313,7 +1308,7 @@ private fun TaskBlockItem(
                         modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
-                            Icons.Default.DateRange,
+                            AppIcons.DateRange,
                             contentDescription = stringResource(Res.string.action_edit),
                             tint = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.6f),
                             modifier = Modifier.size(20.dp)
@@ -1326,7 +1321,7 @@ private fun TaskBlockItem(
                             modifier = Modifier.size(36.dp)
                         ) {
                             Icon(
-                                Icons.Default.MoreVert,
+                                AppIcons.MoreVert,
                                 contentDescription = "More options",
                                 tint = SharedJourneyColors.InkMuted,
                                 modifier = Modifier.size(20.dp)
@@ -1411,7 +1406,7 @@ private fun TaskBlockItem(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            Icons.Default.Favorite,
+                            AppIcons.Favorite,
                             contentDescription = "Cheer",
                             modifier = Modifier.size(16.dp),
                             tint = SharedJourneyColors.TerracottaOrange

@@ -8,8 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +28,7 @@ import app.mymultiverse.kmp.domain.model.JourneyCategory
 import app.mymultiverse.kmp.domain.model.JourneyTask
 import app.mymultiverse.kmp.domain.model.LongTermProjectProfile
 import app.mymultiverse.kmp.domain.model.MealPlanningProfile
+import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 @Composable
@@ -142,7 +141,7 @@ fun JourneyDreamCard(
                             
                             Box {
                                 IconButton(onClick = { showMenu = true }) {
-                                    Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = SharedJourneyColors.InkMuted)
+                                    Icon(AppIcons.MoreVert, contentDescription = "Menu", tint = SharedJourneyColors.InkMuted)
                                 }
                                 DropdownMenu(
                                     expanded = showMenu,
@@ -222,7 +221,7 @@ fun JourneyDreamCard(
                                     Spacer(Modifier.width(12.dp))
                                 }
                                 Icon(
-                                    if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    if (isExpanded) AppIcons.KeyboardArrowUp else AppIcons.KeyboardArrowDown,
                                     contentDescription = if (isExpanded) "Collassa attività" else "Espandi attività",
                                     tint = SharedJourneyColors.InkMuted,
                                     modifier = Modifier.size(20.dp)
@@ -263,7 +262,7 @@ fun JourneyDreamCard(
                             modifier = Modifier.align(Alignment.End),
                             colors = ButtonDefaults.textButtonColors(contentColor = SharedJourneyColors.MediterraneanTeal)
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(AppIcons.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(4.dp))
                             Text(stringResource(Res.string.task_edit_title_add), fontWeight = FontWeight.Bold)
                         }
@@ -522,7 +521,7 @@ private fun TaskRow(
         }
         Box {
             IconButton(onClick = { showTaskMenu = true }, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Default.MoreVert, contentDescription = null, modifier = Modifier.size(16.dp), tint = SharedJourneyColors.InkMuted)
+                Icon(AppIcons.MoreVert, contentDescription = null, modifier = Modifier.size(16.dp), tint = SharedJourneyColors.InkMuted)
             }
             DropdownMenu(
                 expanded = showTaskMenu,

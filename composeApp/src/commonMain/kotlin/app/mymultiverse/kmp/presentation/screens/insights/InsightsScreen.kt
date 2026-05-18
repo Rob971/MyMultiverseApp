@@ -6,8 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -29,6 +27,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import app.mymultiverse.kmp.domain.model.Journey
 import app.mymultiverse.kmp.domain.model.JourneyCategory
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
+import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kotlin.math.PI
 import kotlin.math.cos
@@ -47,7 +46,7 @@ data class InsightsScreen(val journey: Journey) : Screen {
                         title = { Text(stringResource(Res.string.insights_title), fontWeight = FontWeight.Black) },
                         navigationIcon = {
                             IconButton(onClick = { navigator.pop() }) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.action_back))
+                                Icon(AppIcons.ArrowBack, contentDescription = stringResource(Res.string.action_back))
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(

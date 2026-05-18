@@ -6,10 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -184,7 +180,7 @@ data class JourneyEditScreen(
                                 screenModel.resetArchitect()
                                 navigator.pop() 
                             }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = stringResource(Res.string.action_back))
+                                Icon(AppIcons.ArrowBack, contentDescription = stringResource(Res.string.action_back))
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -314,7 +310,7 @@ data class JourneyEditScreen(
                             contentColor = Color.White,
                             shape = RoundedCornerShape(16.dp)
                         ) {
-                            Icon(Icons.Default.Check, contentDescription = stringResource(Res.string.action_save))
+                            Icon(AppIcons.Check, contentDescription = stringResource(Res.string.action_save))
                         }
                     }
                 }
@@ -1032,7 +1028,7 @@ data class JourneyEditScreen(
                     onClick = onRegenerate,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Icon(AppIcons.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(Res.string.edit_dream_regenerate))
                 }

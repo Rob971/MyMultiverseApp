@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,6 +30,7 @@ import app.mymultiverse.kmp.presentation.components.NapolitanBackground
 import app.mymultiverse.kmp.presentation.screens.calendar.CalendarScreen
 import app.mymultiverse.kmp.presentation.screens.calendar.CalendarScope
 import app.mymultiverse.kmp.presentation.screens.detail.DetailScreen
+import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object HomeScreen : Screen {
@@ -140,7 +139,7 @@ fun HomeContent(
                 contentColor = Color.White,
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.action_add_dream))
+                Icon(AppIcons.Add, contentDescription = stringResource(Res.string.action_add_dream))
             }
         }
     ) { padding ->

@@ -38,7 +38,6 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.uiToolingPreview)
             implementation(compose.components.resources)
-            implementation(compose.materialIconsExtended)
 
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.screenmodel)
@@ -64,17 +63,6 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
-        }
-    }
-}
-
-configurations.configureEach {
-    resolutionStrategy.eachDependency {
-        if (requested.group == "androidx.compose.material" &&
-            requested.name in setOf("material-icons-core", "material-icons-extended")
-        ) {
-            useVersion("1.7.6")
-            because("AndroidX Material Icons 1.8.0 is not published; Compose Multiplatform resolves icons through 1.7.6.")
         }
     }
 }
