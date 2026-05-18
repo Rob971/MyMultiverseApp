@@ -64,6 +64,50 @@ jobs:
           path: composeApp/build/outputs/apk/debug/*.apk
           if-no-files-found: ignore
 
+      - name: Set up Node.js for Firebase CLI
+        if: github.event_name == 'push'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Write Firebase service account
+        if: github.event_name == 'push'
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "FIREBASE_SERVICE_ACCOUNT_JSON secret is required for Firebase App Distribution."
+            exit 1
+          fi
+
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
+
+      - name: Distribute debug APK to Firebase App Distribution
+        if: github.event_name == 'push'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+          FIREBASE_APP_ID: "1:37917280954:android:f25a8ccc787de9f3f91083"
+          FIREBASE_PROJECT_ID: "mymultiverseapp"
+          FIREBASE_TESTERS: ${{ secrets.FIREBASE_TESTERS }}
+          FIREBASE_GROUPS: ${{ secrets.FIREBASE_GROUPS }}
+        run: |
+          args=(
+            "composeApp/build/outputs/apk/debug/composeApp-debug.apk"
+            "--app" "$FIREBASE_APP_ID"
+            "--project" "$FIREBASE_PROJECT_ID"
+            "--release-notes" "Debug build from $GITHUB_REF_NAME at $GITHUB_SHA."
+          )
+
+          if [ -n "$FIREBASE_TESTERS" ]; then
+            args+=("--testers" "$FIREBASE_TESTERS")
+          fi
+
+          if [ -n "$FIREBASE_GROUPS" ]; then
+            args+=("--groups" "$FIREBASE_GROUPS")
+          fi
+
+          npx -y firebase-tools@latest appdistribution:distribute "${args[@]}"
+
   ios-compatibility:
     name: iOS Compatibility Signal
     runs-on: macos-15
