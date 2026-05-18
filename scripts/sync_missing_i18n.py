@@ -111,7 +111,18 @@ T: dict[str, dict[str, str]] = {
 # For brevity in maintenance, other locales are generated from es patterns via a second pass
 # We'll load fr/de/it/nap/ar from separate generation below in the same file continuation
 
-LOCALES = ["es", "fr", "de", "it", "nap", "ar", "ar-rSA"]
+LOCALES = ["es", "fr", "de", "it", "nap", "ar-rSA", "ar"]
+
+
+def locale_translations(locale: str) -> dict[str, str]:
+    """Return translation overrides for a locale.
+
+    Generic Arabic (`ar`) reuses the Saudi regional catalog (`ar-rSA`) so the
+    loop never writes English fallbacks when only `ar-rSA` is populated.
+    """
+    if locale == "ar":
+        return dict(T.get("ar") or T.get("ar-rSA") or {})
+    return dict(T.get(locale, {}))
 
 
 def parse_strings(path: Path) -> dict[str, str]:
@@ -535,7 +546,7 @@ if __name__ == "__main__":
         "task_planning_long_term_plan": "يقسم المعلم إلى أجزاء مشروع مرئية وقابلة للتتبع.",
     }
 
-    T["ar"] = T["ar-rSA"]
+    T["ar"] = dict(T["ar-rSA"])
 
     T["fr"] = {
         "dream_card_step_label": "Étape 1 sur 3 · Carte de rêve",
@@ -632,9 +643,9 @@ if __name__ == "__main__":
         "task_planning_long_term_plan": "Découpe le jalon en parties de projet visibles et traçables.",
     }
 
-    # DE, IT, NAP, AR: use English default as fallback merged with partial translations
+    # Partial locales merge with English defaults for any keys not translated yet.
     default = parse_strings(DEFAULT)
     for loc in LOCALES:
         merged = dict(default)
-        merged.update(T.get(loc, {}))
+        merged.update(locale_translations(loc))
         append_missing(loc, merged)

@@ -12,3 +12,11 @@ captures
 *.xcworkspace
 xcuserdata
 DerivedData
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Firebase (download from console; never commit API keys)
+composeApp/google-services.json
