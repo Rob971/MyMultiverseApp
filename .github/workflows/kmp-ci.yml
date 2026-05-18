@@ -7,12 +7,6 @@ on:
       - master
       - develop
       - "feature/**"
-  push:
-    branches:
-      - main
-      - master
-      - develop
-      - "feature/**"
 
 concurrency:
   group: kmp-ci-${{ github.ref }}
@@ -65,13 +59,13 @@ jobs:
           if-no-files-found: ignore
 
       - name: Set up Node.js for Firebase CLI
-        if: github.event_name == 'push'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: Write Firebase service account
-        if: github.event_name == 'push'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
         run: |
@@ -83,7 +77,7 @@ jobs:
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
 
       - name: Sync Firebase App Distribution test cases
-        if: github.event_name == 'push'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
           FIREBASE_APP_ID: "1:37917280954:android:f25a8ccc787de9f3f91083"
@@ -118,7 +112,7 @@ jobs:
           echo "updated" > "$sync_status"
 
       - name: Prepare Firebase automated test cases
-        if: github.event_name == 'push'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           python3 - <<'PY' > "$RUNNER_TEMP/firebase-test-case-ids.txt"
           from pathlib import Path
@@ -138,7 +132,7 @@ jobs:
 
       - name: Distribute debug APK to Firebase App Distribution
         id: firebase-distribution
-        if: github.event_name == 'push'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
           FIREBASE_APP_ID: "1:37917280954:android:f25a8ccc787de9f3f91083"
@@ -151,7 +145,7 @@ jobs:
             "composeApp/build/outputs/apk/debug/composeApp-debug.apk"
             "--app" "$FIREBASE_APP_ID"
             "--project" "$FIREBASE_PROJECT_ID"
-            "--release-notes" "Debug build from $GITHUB_REF_NAME at $GITHUB_SHA."
+            "--release-notes" "Debug build from PR #${{ github.event.pull_request.number }} at $GITHUB_SHA."
           )
 
           if [ -n "$FIREBASE_TESTERS" ]; then
@@ -175,7 +169,7 @@ jobs:
           npx -y firebase-tools@latest appdistribution:distribute "${args[@]}" 2>&1 | tee "$RUNNER_TEMP/firebase-distribution.log"
 
       - name: Publish Firebase App Distribution test status
-        if: github.event_name == 'push' && always()
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && always()
         env:
           FIREBASE_TEST_DEVICES: ${{ secrets.FIREBASE_TEST_DEVICES }}
           FIREBASE_DISTRIBUTION_OUTCOME: ${{ steps.firebase-distribution.outcome }}
@@ -222,7 +216,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Firebase distribution report
-        if: github.event_name == 'push' && always()
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && always()
         uses: actions/upload-artifact@v4
         with:
           name: firebase-app-distribution-report
