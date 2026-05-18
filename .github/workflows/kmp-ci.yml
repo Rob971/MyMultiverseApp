@@ -89,10 +89,33 @@ jobs:
           FIREBASE_APP_ID: "1:37917280954:android:f25a8ccc787de9f3f91083"
           FIREBASE_PROJECT_ID: "mymultiverseapp"
         run: |
+          set -euo pipefail
+
+          remote_testcases="$RUNNER_TEMP/firebase-remote-testcases.yaml"
+          sync_status="$RUNNER_TEMP/firebase-testcase-sync-status.txt"
+
+          npx -y firebase-tools@latest appdistribution:testcases:export \
+            "$remote_testcases" \
+            --app "$FIREBASE_APP_ID" \
+            --project "$FIREBASE_PROJECT_ID" || true
+
+          if [ -s "$remote_testcases" ]; then
+            ruby -ryaml -rjson -e 'puts JSON.generate(YAML.load_file(ARGV[0]))' firebase-appdistribution-testcases.yaml > "$RUNNER_TEMP/firebase-local-testcases.json"
+            ruby -ryaml -rjson -e 'puts JSON.generate(YAML.load_file(ARGV[0]))' "$remote_testcases" > "$RUNNER_TEMP/firebase-remote-testcases.json"
+
+            if cmp -s "$RUNNER_TEMP/firebase-local-testcases.json" "$RUNNER_TEMP/firebase-remote-testcases.json"; then
+              echo "up-to-date" > "$sync_status"
+              echo "Firebase App Distribution test cases are already up to date; skipping import."
+              exit 0
+            fi
+          fi
+
           npx -y firebase-tools@latest appdistribution:testcases:import \
             firebase-appdistribution-testcases.yaml \
             --app "$FIREBASE_APP_ID" \
             --project "$FIREBASE_PROJECT_ID"
+
+          echo "updated" > "$sync_status"
 
       - name: Prepare Firebase automated test cases
         if: github.event_name == 'push'
@@ -161,6 +184,10 @@ jobs:
             echo "## Firebase App Distribution"
             echo
             echo "- Distribution step: \`$FIREBASE_DISTRIBUTION_OUTCOME\`"
+
+            if [ -f "$RUNNER_TEMP/firebase-testcase-sync-status.txt" ]; then
+              echo "- Test case sync: \`$(cat "$RUNNER_TEMP/firebase-testcase-sync-status.txt")\`"
+            fi
 
             if [ -n "$FIREBASE_TEST_DEVICES" ]; then
               echo "- Automated test devices: \`$FIREBASE_TEST_DEVICES\`"
