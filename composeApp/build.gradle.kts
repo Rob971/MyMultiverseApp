@@ -57,8 +57,6 @@ kotlin {
                 implementation(libs.androidx.test.runner)
                 implementation(libs.androidx.compose.ui.test.junit4)
                 implementation(libs.androidx.compose.ui.test.manifest)
-                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-                implementation(compose.uiTest)
             }
         }
     }
@@ -89,4 +87,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+}
+
+dependencies {
+    // Merges ComponentActivity into the debug app manifest for Compose UI tests.
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

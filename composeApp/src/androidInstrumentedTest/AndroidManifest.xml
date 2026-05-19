@@ -2,8 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application>
+        <!-- Required by androidx.compose.ui:ui-test-manifest / createComposeRule() -->
         <activity
-            android:name="app.mymultiverse.kmp.ui.ComposeTestActivity"
+            android:name="androidx.activity.ComponentActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
     </application>
