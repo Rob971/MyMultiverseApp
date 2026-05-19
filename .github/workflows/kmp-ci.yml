@@ -68,8 +68,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: >-
-      ${{ github.event_name == 'workflow_dispatch' &&
-          github.event.inputs.target == 'android-instrumented-tests' }}
+      ${{ github.event_name == 'push' ||
+          contains(fromJSON('["all", "android", "android-instrumented-tests"]'), github.event.inputs.target) }}
 
     steps:
       - name: Checkout

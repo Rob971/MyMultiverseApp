@@ -36,7 +36,7 @@ Every task—planning, review, fix, test, or implementation—must follow this s
 
 ## 5. CI/CD alignment
 
-- Push should pass unit tests; instrumented tests via `workflow_dispatch` → `android-instrumented-tests`.
+- Push runs unit and instrumented tests; manual dispatch can target `all`, `android`, or `android-instrumented-tests`.
 - Firebase releases: keep `firebase-appdistribution-testcases.yaml` in sync; release notes reference QA checklist when distributing.
 
 ## Definition of done

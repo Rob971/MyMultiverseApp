@@ -39,4 +39,4 @@ When changing user-visible nutrition/grocery/meal/AI flows, update `firebase-app
 ./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid
 ```
 
-Run instrumented tests locally or via CI `workflow_dispatch` → `android-instrumented-tests` for UI changes.
+Run instrumented tests locally or via CI (push, or `workflow_dispatch` with `all` / `android` / `android-instrumented-tests`).

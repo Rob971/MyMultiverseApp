@@ -8,8 +8,8 @@ alwaysApply: false
 
 ## Workflow (`.github/workflows/kmp-ci.yml`)
 
-- **Push** to `main` / `master` / `feature/**`: runs Android unit tests (`:composeApp:testDebugUnitTest`).
-- **Instrumented tests**: manual `workflow_dispatch` with target `android-instrumented-tests` (emulator).
+- **Push** to `main` / `master` / `feature/**`: runs unit tests and instrumented UI tests (emulator).
+- **Instrumented tests** (also on manual dispatch): targets `all`, `android`, or `android-instrumented-tests`.
 - **Firebase distribute**: targets `firebase` or `firebase-release`; requires secrets (`FIREBASE_SERVICE_ACCOUNT_JSON`, testers/groups).
 
 ## Change guidelines
