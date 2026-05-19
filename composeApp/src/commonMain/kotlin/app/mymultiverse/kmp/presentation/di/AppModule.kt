@@ -25,7 +25,12 @@ private val dataModule = module {
 
 private val presentationModule = module {
     singleOf(::HomeScreenModel)
-    singleOf(::NutritionScreenModel)
+    single {
+        NutritionScreenModel(
+            repository = get(),
+            adviceService = get(),
+        )
+    }
 }
 
 val appModule = module {

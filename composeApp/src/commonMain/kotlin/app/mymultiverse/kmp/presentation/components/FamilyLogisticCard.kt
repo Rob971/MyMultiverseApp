@@ -1,7 +1,7 @@
 package app.mymultiverse.kmp.presentation.components
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FamilyLogisticCard(
     title: String,
@@ -45,9 +44,15 @@ fun FamilyLogisticCard(
     statusLine: String? = null,
 ) {
     val cardAlpha = if (enabled) 1f else 0.72f
+    val clickModifier = if (enabled) {
+        Modifier.clickable(onClick = onClick)
+    } else {
+        Modifier
+    }
     val semanticsModifier = modifier
         .fillMaxWidth()
         .alpha(cardAlpha)
+        .then(clickModifier)
         .semantics {
             role = Role.Button
             contentDescription = buildString {
@@ -60,8 +65,6 @@ fun FamilyLogisticCard(
         }
 
     Surface(
-        onClick = onClick,
-        enabled = enabled,
         modifier = semanticsModifier,
         shape = RoundedCornerShape(24.dp),
         color = SharedJourneyColors.GlassWhite,

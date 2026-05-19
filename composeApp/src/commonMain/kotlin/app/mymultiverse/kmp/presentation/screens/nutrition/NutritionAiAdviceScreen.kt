@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -189,16 +189,20 @@ fun NutritionAiAdviceScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SuggestionChip(
     label: String,
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
+    val chipModifier = if (enabled) {
+        Modifier.clickable(onClick = onClick)
+    } else {
+        Modifier
+    }
+
     Surface(
-        onClick = onClick,
-        enabled = enabled,
+        modifier = chipModifier,
         shape = RoundedCornerShape(20.dp),
         color = SharedJourneyColors.GlassTerracotta,
         border = androidx.compose.foundation.BorderStroke(

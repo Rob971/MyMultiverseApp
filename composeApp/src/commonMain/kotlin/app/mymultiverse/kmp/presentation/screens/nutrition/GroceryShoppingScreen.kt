@@ -11,7 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -148,7 +148,6 @@ fun GroceryShoppingScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GroceryItemRow(
     item: GroceryItem,
@@ -157,8 +156,9 @@ private fun GroceryItemRow(
     onRemove: () -> Unit,
 ) {
     Surface(
-        onClick = onToggle,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onToggle),
         shape = RoundedCornerShape(20.dp),
         color = SharedJourneyColors.GlassWhite,
     ) {
