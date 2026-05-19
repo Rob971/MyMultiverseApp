@@ -1,3 +1,0 @@
-ALTER TABLE JourneyEntity ADD COLUMN mealCookingFor TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN mealDietaryRestrictions TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN mealDislikedIngredients TEXT;

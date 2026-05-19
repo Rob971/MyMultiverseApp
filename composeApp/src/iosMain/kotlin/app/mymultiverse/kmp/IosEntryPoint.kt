@@ -1,3 +1,5 @@
+package app.mymultiverse.kmp
+
 import androidx.compose.ui.window.ComposeUIViewController
 import app.mymultiverse.kmp.presentation.App
 

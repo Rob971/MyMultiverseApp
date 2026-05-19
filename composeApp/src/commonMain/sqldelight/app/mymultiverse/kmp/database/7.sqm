@@ -1,8 +1,0 @@
-ALTER TABLE JourneyEntity ADD COLUMN financeSplit TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN financeBillManager TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN financeDailyAnnoyance TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN financePartnerASpendingStyle TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN financePartnerBSpendingStyle TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN financeMoneyTalkFrequency TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN financePrimaryGoal TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN financeIrregularExpensePlan TEXT;
