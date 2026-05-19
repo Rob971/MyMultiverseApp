@@ -184,11 +184,7 @@ jobs:
           release_notes="Debug build from $GITHUB_REF_NAME at $GITHUB_SHA."
           if [ -f firebase-appdistribution-testcases.yaml ]; then
             checklist=$(grep -E '^  - id:' firebase-appdistribution-testcases.yaml | sed 's/^  - id: /- /' | head -12)
-            release_notes="${release_notes}
-
-QA checklist (firebase-appdistribution-testcases.yaml):
-${checklist}
-"
+            release_notes=$(printf '%s\n\nQA checklist (firebase-appdistribution-testcases.yaml):\n%s' "$release_notes" "$checklist")
           fi
 
           args=(
