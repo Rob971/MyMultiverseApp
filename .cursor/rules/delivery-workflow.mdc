@@ -17,7 +17,7 @@ Every task—planning, review, fix, test, or implementation—must follow this s
 ## 2. Implement
 
 - Match project architecture and naming; reuse shared components (`ScreenLayout`, `FamilyLogistics*`, scaffolds).
-- No drive-by refactors, secrets in repo, or hardcoded user-facing strings.
+- No drive-by refactors, secrets in repo, or hardcoded user-facing strings (see `i18n-multilingual.mdc`).
 - Platform code only when no multiplatform library exists (`expect`/`actual` as last resort).
 
 ## 3. Test
@@ -32,7 +32,7 @@ Every task—planning, review, fix, test, or implementation—must follow this s
 - UX: loading/error/empty states, snackbars, keyboard + `imePadding`, accessibility labels on icons.
 - Architecture: dependencies point inward; no UI in domain/data.
 - Security: no credentials committed; env/secrets only in CI secrets.
-- i18n: new keys in **all** locale files under `composeResources/values*`.
+- i18n: follow `i18n-multilingual.mdc` (all 8 locales, no hardcoded UI copy, parity tests green).
 
 ## 5. CI/CD alignment
 

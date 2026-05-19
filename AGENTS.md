@@ -9,6 +9,7 @@ Cursor rules in `.cursor/rules/` define how to plan, implement, test, and ship c
 | `delivery-workflow.mdc` | Always | Plan → implement → test → review → CI; definition of done |
 | `architecture-clean.mdc` | Always | Domain / data / presentation, DI, layer boundaries |
 | `kmp-core.mdc` | Always | KMP, Compose, resources, coroutines |
+| `i18n-multilingual.mdc` | Always | 8 locales, string keys, parity tests, RTL, no hardcoded UI copy |
 | `official-docs-urls.mdc` | Always | Indexed docs for fast-moving APIs |
 | `ui-ux-compose.mdc` | `presentation/**` | Layout, design system, UX states, i18n, testTags |
 | `qa-testing.mdc` | Tests + Firebase YAML | Unit, instrumented, manual QA checklist |

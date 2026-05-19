@@ -27,8 +27,7 @@ alwaysApply: false
 
 ## Strings & accessibility
 
-- All user-visible text via `composeResources` (`stringResource(Res.string.*)`); add keys to every `values*` locale.
-- Register feature keys in `*StringKeys.kt` when using locale parity tests.
+- Follow `i18n-multilingual.mdc` for all copy (8 locales, shared helpers, no hardcoded strings).
 - Icons: `contentDescription` for meaningful actions; `null` only for decorative duplicates.
 
 ## Testability
