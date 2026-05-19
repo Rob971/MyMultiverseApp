@@ -2,7 +2,7 @@ package app.mymultiverse.kmp.presentation.di
 
 import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
-import app.mymultiverse.kmp.domain.service.NutritionAdviceService
+import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionScreenModel
 import com.russhwolf.settings.MapSettings
@@ -63,7 +63,7 @@ class AppModuleKoinTest : KoinTest {
     fun nutritionScreenModel_resolvesWithRepositoryAndAdviceService() {
         val model = get<NutritionScreenModel>()
         val repository = get<NutritionRepository>()
-        val advice = get<NutritionAdviceService>()
+        val advice = get<NutritionAiAssistantService>()
 
         assertNotNull(model)
         assertNotNull(repository)

@@ -4,7 +4,11 @@ import app.mymultiverse.kmp.domain.model.nutrition.DayMeals
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
-import app.mymultiverse.kmp.domain.service.NutritionAdviceService
+import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
+import app.mymultiverse.kmp.domain.nutrition.MealSlot
+import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
+import app.mymultiverse.kmp.domain.nutrition.NutritionAiPlanner
+import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,6 +25,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
@@ -47,7 +52,7 @@ class NutritionScreenModelTest {
         val repository = FakeNutritionRepository(weekKey)
         val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope) { "item-1" }
 
-        model.addGroceryItem("  Olive oil  ")
+        assertTrue(model.addGroceryItem("  Olive oil  "))
         advanceUntilIdle()
 
         assertEquals(listOf(GroceryItem("item-1", "Olive oil", false)), repository.grocery.value)
@@ -58,7 +63,7 @@ class NutritionScreenModelTest {
         val repository = FakeNutritionRepository(weekKey)
         val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
 
-        model.addGroceryItem("   ")
+        assertFalse(model.addGroceryItem("   "))
         advanceUntilIdle()
 
         assertTrue(repository.grocery.value.isEmpty())
@@ -75,6 +80,61 @@ class NutritionScreenModelTest {
         advanceUntilIdle()
 
         assertTrue(repository.grocery.value.single().isChecked)
+    }
+
+    @Test
+    fun addGroceryItem_rejectsDuplicateLabels() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope) { "item-1" }
+
+        assertTrue(model.addGroceryItem("Milk"))
+        advanceUntilIdle()
+        assertFalse(model.addGroceryItem(" milk "))
+        advanceUntilIdle()
+
+        assertEquals(1, repository.grocery.value.size)
+    }
+
+    @Test
+    fun updateGroceryItemLabel_updatesExistingItem() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.grocery.value = listOf(GroceryItem("1", "Rice", false))
+        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
+        advanceUntilIdle()
+
+        assertTrue(model.updateGroceryItemLabel("1", "Brown rice"))
+        advanceUntilIdle()
+
+        assertEquals("Brown rice", repository.grocery.value.single().label)
+    }
+
+    @Test
+    fun restoreGroceryItem_insertsAtIndex() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.grocery.value = listOf(GroceryItem("2", "Beans", false))
+        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
+        advanceUntilIdle()
+
+        model.restoreGroceryItem(GroceryItem("1", "Rice", false), index = 0)
+        advanceUntilIdle()
+
+        assertEquals(listOf("Rice", "Beans"), repository.grocery.value.map { it.label })
+    }
+
+    @Test
+    fun clearCheckedGroceryItems_removesOnlyChecked() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.grocery.value = listOf(
+            GroceryItem("1", "Rice", false),
+            GroceryItem("2", "Beans", true),
+        )
+        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
+        advanceUntilIdle()
+
+        model.clearCheckedGroceryItems()
+        advanceUntilIdle()
+
+        assertEquals("Rice", repository.grocery.value.single().label)
     }
 
     @Test
@@ -129,8 +189,8 @@ class NutritionScreenModelTest {
         model.askNutritionAdvice("Vegetables?")
         advanceUntilIdle()
 
-        assertIs<NutritionAiState.Answer>(model.aiState.value)
-        assertEquals("Eat more vegetables.", (model.aiState.value as NutritionAiState.Answer).text)
+        assertIs<NutritionAiState.Advice>(model.aiState.value)
+        assertEquals("Eat more vegetables.", (model.aiState.value as NutritionAiState.Advice).text)
     }
 
     @Test
@@ -157,20 +217,77 @@ class NutritionScreenModelTest {
 
         assertEquals(NutritionAiState.Idle, model.aiState.value)
     }
+
+    @Test
+    fun runAiAssistant_groceryMode_persistsReadOnlyAiGrocery() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService(groceryLabels = listOf("Milk", "Eggs"))
+        val model = NutritionScreenModel(repository, ai, modelScope) { "ai-1" }
+
+        model.runAiAssistant(NutritionAiMode.GroceryList, "high protein")
+        advanceUntilIdle()
+
+        assertIs<NutritionAiState.GroceryList>(model.aiState.value)
+        assertEquals(2, repository.aiGrocery.value.size)
+        assertEquals("Milk", repository.aiGrocery.value.first().label)
+    }
+
+    @Test
+    fun runAiAssistant_mealPlanMode_previewsThenApplies() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService()
+        val model = NutritionScreenModel(repository, ai, modelScope)
+
+        model.runAiAssistant(
+            NutritionAiMode.MealPlan,
+            "vegetarian",
+            MealPlanGenerationScope.FullWeek,
+        )
+        advanceUntilIdle()
+
+        assertIs<NutritionAiState.MealPlanPreview>(model.aiState.value)
+        model.applyPreviewedMealPlan()
+        advanceUntilIdle()
+
+        assertEquals(NutritionAiState.Idle, model.aiState.value)
+        assertTrue(repository.mealPlan.value.days.any { it.lunch.isNotBlank() })
+    }
+
+    @Test
+    fun generateGroceryForMeal_appendsDistinctAiGrocery() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService(mealGroceryLabels = listOf("Garlic", "Pasta"))
+        val model = NutritionScreenModel(repository, ai, modelScope) { "meal-g1" }
+
+        model.updateMeal(0, lunch = "Pasta carbonara")
+        advanceUntilIdle()
+        model.generateGroceryForMeal(0, MealSlot.Lunch, "Monday")
+        advanceUntilIdle()
+
+        assertEquals(2, repository.aiGrocery.value.size)
+        assertEquals("Garlic", repository.aiGrocery.value.first().label)
+    }
 }
 
 private class FakeNutritionRepository(
     override val weekKey: String,
 ) : NutritionRepository {
     val grocery = MutableStateFlow<List<GroceryItem>>(emptyList())
+    val aiGrocery = MutableStateFlow<List<GroceryItem>>(emptyList())
     val mealPlan = MutableStateFlow(WeeklyMealPlan(weekKey = weekKey))
 
     override fun observeGroceryItems(): Flow<List<GroceryItem>> = grocery
+
+    override fun observeAiGroceryItems(): Flow<List<GroceryItem>> = aiGrocery
 
     override fun observeMealPlan(): Flow<WeeklyMealPlan> = mealPlan
 
     override suspend fun saveGroceryItems(items: List<GroceryItem>) {
         grocery.value = items
+    }
+
+    override suspend fun saveAiGroceryItems(items: List<GroceryItem>) {
+        aiGrocery.value = items
     }
 
     override suspend fun saveMealPlan(plan: WeeklyMealPlan) {
@@ -180,14 +297,46 @@ private class FakeNutritionRepository(
 
 private class FakeNutritionAdviceService(
     private val answer: String = "Advice",
+    private val groceryLabels: List<String> = listOf("Oats", "Bananas"),
+    private val mealGroceryLabels: List<String> = listOf("Lemon", "Herbs"),
     private val shouldFail: Boolean = false,
     private val failureMessage: String = "error",
-) : NutritionAdviceService {
-    override suspend fun ask(question: String): Result<String> {
+) : NutritionAiAssistantService {
+    override suspend fun askAdvice(question: String): Result<String> {
         return if (shouldFail) {
             Result.failure(IllegalArgumentException(failureMessage))
         } else {
             Result.success(answer)
+        }
+    }
+
+    override suspend fun generateGroceryList(criteria: String): Result<List<String>> {
+        return if (criteria.isBlank()) {
+            Result.failure(IllegalArgumentException("empty_criteria"))
+        } else {
+            Result.success(groceryLabels)
+        }
+    }
+
+    override suspend fun generateGroceryForMeal(mealDescription: String): Result<List<String>> {
+        return if (mealDescription.isBlank()) {
+            Result.failure(IllegalArgumentException("empty_meal"))
+        } else {
+            Result.success(mealGroceryLabels)
+        }
+    }
+
+    override suspend fun generateMealPlan(
+        criteria: String,
+        scope: MealPlanGenerationScope,
+        currentPlan: WeeklyMealPlan,
+    ): Result<NutritionAiPlanner.MealPlanGeneration> {
+        return if (criteria.isBlank()) {
+            Result.failure(IllegalArgumentException("empty_criteria"))
+        } else {
+            Result.success(
+                NutritionAiPlanner.generateMealPlan(criteria, scope, currentPlan),
+            )
         }
     }
 }

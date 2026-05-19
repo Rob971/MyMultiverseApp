@@ -8,8 +8,10 @@ interface NutritionRepository {
     val weekKey: String
 
     fun observeGroceryItems(): Flow<List<GroceryItem>>
+    fun observeAiGroceryItems(): Flow<List<GroceryItem>>
     fun observeMealPlan(): Flow<WeeklyMealPlan>
 
     suspend fun saveGroceryItems(items: List<GroceryItem>)
+    suspend fun saveAiGroceryItems(items: List<GroceryItem>)
     suspend fun saveMealPlan(plan: WeeklyMealPlan)
 }

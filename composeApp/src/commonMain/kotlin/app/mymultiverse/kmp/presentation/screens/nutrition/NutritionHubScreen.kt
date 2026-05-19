@@ -17,6 +17,7 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_t
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_description
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_progress
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_hub_sections_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_hub_subtitle
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_hub_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_description
@@ -28,6 +29,7 @@ import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
+import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.WeekContextBanner
@@ -92,6 +94,12 @@ fun NutritionHubScreen(
                     style = MaterialTheme.typography.bodyLarge,
                     color = SharedJourneyColors.InkMuted,
                     fontWeight = FontWeight.Medium,
+                )
+            }
+
+            item {
+                FamilyLogisticsSectionHeader(
+                    title = stringResource(Res.string.nutrition_hub_sections_title),
                 )
             }
 

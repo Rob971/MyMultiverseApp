@@ -1,0 +1,36 @@
+---
+description: Data layer, persistence, services, and repository implementations
+globs: "**/data/**/*.kt"
+alwaysApply: false
+---
+
+# Data & backend (client-side)
+
+This app is KMP-first; “backend” here means data layer, local persistence, and service implementations.
+
+## Repositories
+
+- Implement interfaces from `domain/repository/` (e.g. `NutritionRepository`).
+- Persistence keys are explicit and week-scoped where needed (`nutrition_ai_grocery_{weekKey}`).
+- Expose `Flow` for observe APIs; save methods are `suspend`.
+
+## Services
+
+- Implement `domain/service/` contracts in `data/service/` (e.g. `LocalNutritionAiAssistantService`).
+- Validate inputs; return `Result` with stable error messages for empty/invalid input.
+- Keep AI/business rules in **domain** (`NutritionAiPlanner`); services delegate after optional delay/simulation.
+
+## Storage
+
+- Use shared codecs (`NutritionStorageCodec`) for serialization; test round-trips in unit tests.
+- Platform storage via expect/actual only when no shared store exists.
+
+## Error handling
+
+- Fail fast on invalid input at service boundary; screen models map failures to user-facing `NutritionAiState.Error` or snackbars.
+- No silent swallowing of persistence errors in production paths.
+
+## Testing
+
+- Repository impl tests with fake/in-memory drivers where possible.
+- Service tests for validation and success paths (`LocalNutritionAdviceServiceTest`).

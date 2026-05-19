@@ -11,7 +11,7 @@ class LocalNutritionAdviceServiceTest {
     fun ask_blankQuestion_returnsEmptyQuestionFailure() = runTest {
         val service = LocalNutritionAdviceService(responseDelayMs = 0)
 
-        val result = service.ask("   ")
+        val result = service.askAdvice("   ")
 
         assertTrue(result.isFailure)
         assertEquals("empty_question", result.exceptionOrNull()?.message)
@@ -21,7 +21,7 @@ class LocalNutritionAdviceServiceTest {
     fun ask_validQuestion_returnsSuccess() = runTest {
         val service = LocalNutritionAdviceService(responseDelayMs = 0)
 
-        val result = service.ask("High protein lunches")
+        val result = service.askAdvice("High protein lunches")
 
         assertTrue(result.isSuccess)
         assertTrue(result.getOrNull()!!.contains("protein", ignoreCase = true))
@@ -31,7 +31,7 @@ class LocalNutritionAdviceServiceTest {
     fun ask_trimsQuestionBeforeBuildingAdvice() = runTest {
         val service = LocalNutritionAdviceService(responseDelayMs = 0)
 
-        val result = service.ask("  protein lunch  ")
+        val result = service.askAdvice("  protein lunch  ")
 
         assertTrue(result.isSuccess)
         assertTrue(result.getOrNull()!!.contains("protein", ignoreCase = true))

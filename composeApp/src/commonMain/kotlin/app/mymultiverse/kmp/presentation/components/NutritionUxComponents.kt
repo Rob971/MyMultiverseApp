@@ -77,7 +77,7 @@ fun EmptyStateCard(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = FamilyLogisticsDesign.cardShape,
         color = SharedJourneyColors.GlassWhite,
     ) {
         Column(

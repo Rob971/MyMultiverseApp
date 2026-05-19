@@ -4,9 +4,11 @@ globs: "**/commonMain/**/*.kt"
 alwaysApply: true
 ---
 
-# KMP Coding Standards
+# KMP coding standards
 
+- Follow `delivery-workflow.mdc` for plan → implement → test → review on every change.
 - Prioritize `expect`/`actual` only when no multiplatform library exists.
 - Use `kotlinx-coroutines` for concurrency; never use platform-specific threads.
 - For UI, use `org.jetbrains.compose` (Compose Multiplatform).
-- For resources, use the new `Res` API (`Res.drawable.icon` instead of platform-specific IDs).
+- For resources, use the Compose `Res` API (`Res.string.*`, `Res.drawable.*`), not platform-specific IDs.
+- Navigation: Voyager screens/routes in `presentation/navigation/`; keep screen composables thin.

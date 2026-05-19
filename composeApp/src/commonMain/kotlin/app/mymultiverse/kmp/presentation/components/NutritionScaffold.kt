@@ -29,6 +29,7 @@ fun NutritionScaffold(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     bottomBar: @Composable () -> Unit = {},
+    snackbarHost: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val backLabel = stringResource(Res.string.action_back)
@@ -74,6 +75,7 @@ fun NutritionScaffold(
             )
         },
         bottomBar = bottomBar,
+        snackbarHost = snackbarHost,
         content = content,
     )
 }

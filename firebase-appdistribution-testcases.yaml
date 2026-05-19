@@ -1,0 +1,101 @@
+# Manual QA checklist for Firebase App Distribution testers.
+# Aligns with Nutrition / Family Logistics flows (weekly meal plan, grocery, AI adviser).
+
+version: 3
+updated: 2026-05-19
+
+summary: |
+  Verify home → nutrition hub → grocery (editable), weekly meal plan (lunch/dinner),
+  AI adviser (advice / full grocery / meal plan), and per-meal AI grocery from the meal plan.
+  AI grocery lists are read-only and separate from your editable shopping list.
+
+test_cases:
+  - id: home-nutrition-card
+    title: Open nutrition from home
+    steps:
+      - Launch the app and go to Home.
+      - Scroll to the Family Logistics / Nutrition card and tap it.
+    expected:
+      - Nutrition hub opens with Grocery, Meal plan, and AI adviser cards.
+
+  - id: hub-grocery-navigation
+    title: Open editable grocery list
+    steps:
+      - From Nutrition hub, tap the Grocery card.
+    expected:
+      - Grocery screen shows week label, empty state or existing items, and add field at bottom.
+      - Keyboard does not cover the input when typing.
+
+  - id: grocery-crud
+    title: Add, check off, edit, and delete grocery items
+    steps:
+      - Add two items (e.g. Milk, Bread).
+      - Tap checkbox on one item to mark it checked.
+      - Edit an item label inline.
+      - Swipe-delete an item and use Undo if shown.
+    expected:
+      - Items appear under To buy / Checked off as appropriate.
+      - Changes persist after leaving and returning to the screen.
+
+  - id: grocery-ai-readonly
+    title: AI grocery on grocery screen (read-only)
+    steps:
+      - Generate an AI grocery list via AI adviser (Grocery mode) or from a meal plan meal (see meal-plan-meal-grocery).
+      - Return to the editable Grocery screen.
+    expected:
+      - AI suggested groceries section appears above the editable list.
+      - AI items cannot be checked, edited, or swiped; editable list below is unchanged.
+
+  - id: meal-plan-edit
+    title: Edit weekly meal plan
+    steps:
+      - From Nutrition hub, open Weekly meal plan.
+      - Expand a day (if collapsed) and enter lunch and dinner text for today or another day.
+    expected:
+      - Today is highlighted; other days can expand/collapse.
+      - Lunch and dinner fields save while on screen.
+
+  - id: meal-plan-meal-grocery
+    title: Generate AI grocery for a single meal (lunch or dinner)
+    steps:
+      - On Weekly meal plan, enter a non-empty lunch (e.g. Pasta primavera).
+      - Tap "Generate AI grocery list" under the lunch field.
+      - Repeat for dinner on another day if desired.
+    expected:
+      - Snackbar confirms items added (or none new if duplicates).
+      - AI suggested groceries section appears on the meal plan screen.
+      - Same items appear on Grocery screen as read-only AI list; editable list is not modified.
+
+  - id: ai-advice
+    title: AI nutrition advice
+    steps:
+      - Open AI adviser from hub.
+      - Ensure Advice mode is selected.
+      - Enter criteria and tap generate.
+    expected:
+      - Loading state, then advice card with text.
+
+  - id: ai-grocery-mode
+    title: AI full grocery list from criteria
+    steps:
+      - On AI adviser, switch to Grocery mode.
+      - Enter criteria (e.g. high protein) and generate.
+    expected:
+      - Read-only AI grocery list shown; items persist for the week.
+
+  - id: ai-meal-plan-mode
+    title: AI meal plan preview and apply
+    steps:
+      - On AI adviser, switch to Meal plan mode.
+      - Enter criteria; choose full week or today; generate.
+      - Review preview and tap Apply to meal plan.
+    expected:
+      - Preview shows proposed meals; after apply, Weekly meal plan reflects changes.
+
+  - id: language-picker
+    title: App language (if exposed on your build)
+    steps:
+      - Change app language from settings or language control if visible.
+      - Revisit Nutrition hub and meal plan strings.
+    expected:
+      - Nutrition strings update for the selected locale (EN, FR, ES, DE, IT, Napoli, AR).

@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.kmp.domain.model.Greeting
+import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
@@ -18,7 +19,7 @@ import app.mymultiverse.kmp.presentation.screens.home.HomeContent
 import app.mymultiverse.kmp.presentation.screens.home.HomeTestTags
 import app.mymultiverse.kmp.presentation.screens.nutrition.GroceryListTestTags
 import app.mymultiverse.kmp.presentation.screens.nutrition.GroceryShoppingScreen
-import app.mymultiverse.kmp.presentation.screens.nutrition.MealPlanTestTags
+import app.mymultiverse.kmp.presentation.components.MealPlanTestTags
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionAiAdviceScreen
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionAiTestTags
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionHubScreen
@@ -53,7 +54,7 @@ class NutritionUxInstrumentedTest {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         return NutritionScreenModel(
             repository = InstrumentedNutritionRepository(weekKey),
-            adviceService = InstrumentedNutritionAdviceService(adviceAnswer),
+            aiAssistant = InstrumentedNutritionAdviceService(adviceAnswer),
             scope = scope,
             newItemId = { itemId },
         )
@@ -95,7 +96,7 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithTag("${GroceryListTestTags.ITEM_ROW_PREFIX}$itemId")
+        composeRule.onNodeWithTag("${GroceryListTestTags.CHECKBOX_PREFIX}$itemId")
             .performClick()
         composeRule.waitForIdle()
 
@@ -125,6 +126,33 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun mealPlan_generateLunchGrocery_appendsAiGroceryItems() {
+        setAppCompatTheme()
+        val weekKey = WeekCalendar.currentWeekKey()
+        val dayIndex = WeekCalendar.todayIndexInWeek(weekKey) ?: 0
+        val screenModel = nutritionScreenModel(weekKey = weekKey)
+
+        composeRule.setContent {
+            AppTheme {
+                WeeklyMealPlanScreen(onBack = {}, screenModel = screenModel)
+            }
+        }
+
+        val lunchField = composeRule.onNodeWithTag(MealPlanTestTags.lunchField(dayIndex))
+        lunchField.performScrollTo()
+        lunchField.performTextInput("Pasta primavera")
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag(MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch))
+            .performClick()
+        composeRule.waitForIdle()
+
+        assertEquals(3, screenModel.aiGroceryItems.value.size)
+        composeRule.onNodeWithText("Tomatoes").assertIsDisplayed()
+        composeRule.onNodeWithText("Basil").assertIsDisplayed()
+    }
+
+    @Test
     fun nutritionAi_askQuestion_showsAnswer() {
         setAppCompatTheme()
         val answer = "Add leafy greens to every lunch."
@@ -136,9 +164,9 @@ class NutritionUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(NutritionAiTestTags.QUESTION_FIELD)
+        composeRule.onNodeWithTag(NutritionAiTestTags.CRITERIA_FIELD)
             .performTextInput("What veggies should we eat?")
-        composeRule.onNodeWithTag(NutritionAiTestTags.ASK_BUTTON).performClick()
+        composeRule.onNodeWithTag(NutritionAiTestTags.GENERATE_BUTTON).performClick()
         composeRule.waitForIdle()
 
         composeRule.onNodeWithTag(NutritionAiTestTags.ANSWER_CARD).assertIsDisplayed()

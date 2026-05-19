@@ -69,6 +69,20 @@ class NutritionRepositoryImplTest {
     }
 
     @Test
+    fun saveAiGroceryItems_persistsSeparatelyFromUserGrocery() = runTest {
+        val settings = MapSettings()
+        val repository = NutritionRepositoryImpl(settings, weekKey)
+        val userItems = listOf(GroceryItem("u1", "Bread", false))
+        val aiItems = listOf(GroceryItem("a1", "Spinach", false))
+
+        repository.saveGroceryItems(userItems)
+        repository.saveAiGroceryItems(aiItems)
+
+        assertEquals(userItems, repository.observeGroceryItems().first())
+        assertEquals(aiItems, repository.observeAiGroceryItems().first())
+    }
+
+    @Test
     fun loadsPersistedMealPlanOnConstruction() = runTest {
         val settings = MapSettings()
         val stored = WeeklyMealPlan(

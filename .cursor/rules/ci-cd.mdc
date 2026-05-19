@@ -1,0 +1,33 @@
+---
+description: CI/CD, GitHub Actions, and Firebase App Distribution practices
+globs: "**/.github/**/*.{yml,yaml},**/firebase*.yaml"
+alwaysApply: false
+---
+
+# CI/CD
+
+## Workflow (`.github/workflows/kmp-ci.yml`)
+
+- **Push** to `main` / `master` / `feature/**`: runs Android unit tests (`:composeApp:testDebugUnitTest`).
+- **Instrumented tests**: manual `workflow_dispatch` with target `android-instrumented-tests` (emulator).
+- **Firebase distribute**: targets `firebase` or `firebase-release`; requires secrets (`FIREBASE_SERVICE_ACCOUNT_JSON`, testers/groups).
+
+## Change guidelines
+
+- Do not break default push jobs when adding steps; use `if:` conditions consistent with existing `target` inputs.
+- Never commit secrets, `google-services.json` keys, or service account JSON; use GitHub Secrets.
+- Keep Gradle cache (`gradle/actions/setup-gradle`) and JDK 17 aligned with project.
+
+## Firebase App Distribution
+
+- Release notes: include branch/SHA; append QA checklist excerpt from `firebase-appdistribution-testcases.yaml` when file exists.
+- When shipping UX changes, ensure testers have updated manual cases in that YAML file.
+
+## Commits & PRs
+
+- Commit only when user asks; use repo commit message style.
+- PRs: summarize behavior change, test plan (unit + instrumented + manual), screenshots for UI when relevant.
+
+## Artifacts
+
+- Debug APK artifact name: `composeApp-debug-apk` (used by Firebase job download step).
