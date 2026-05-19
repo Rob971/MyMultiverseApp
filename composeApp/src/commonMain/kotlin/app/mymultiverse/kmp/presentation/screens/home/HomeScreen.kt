@@ -15,25 +15,27 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import app.mymultiverse.kmp.domain.model.Greeting
+import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.LanguagePicker
-import app.mymultiverse.kmp.presentation.components.NapolitanBackground
+import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import org.koin.compose.koinInject
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onOpenNutrition: () -> Unit,
+) {
     val screenModel = koinInject<HomeScreenModel>()
     val greeting by screenModel.greeting.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
 
-    NapolitanBackground {
-        HomeContent(
-            greeting = greeting,
-            isRefreshing = isRefreshing,
-            onRefreshClick = { screenModel.refresh() },
-        )
-    }
+    HomeContent(
+        greeting = greeting,
+        isRefreshing = isRefreshing,
+        onRefreshClick = { screenModel.refresh() },
+        onOpenNutrition = onOpenNutrition,
+    )
 }
 
 @Composable
@@ -41,6 +43,7 @@ fun HomeContent(
     greeting: Greeting?,
     isRefreshing: Boolean,
     onRefreshClick: () -> Unit,
+    onOpenNutrition: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -99,6 +102,36 @@ fun HomeContent(
                     color = SharedJourneyColors.InkDeep,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                     textAlign = TextAlign.Center
+                )
+            }
+
+            item {
+                FamilyLogisticCard(
+                    title = stringResource(Res.string.home_logistics_nutrition_title),
+                    description = stringResource(Res.string.home_logistics_nutrition_description),
+                    accentColor = SharedJourneyColors.SageSoft,
+                    icon = AppIcons.Restaurant,
+                    onClick = onOpenNutrition,
+                )
+            }
+
+            item {
+                FamilyLogisticCard(
+                    title = stringResource(Res.string.home_logistics_adventures_title),
+                    description = stringResource(Res.string.home_logistics_adventures_description),
+                    accentColor = SharedJourneyColors.TerracottaOrange,
+                    icon = AppIcons.Explore,
+                    onClick = {},
+                )
+            }
+
+            item {
+                FamilyLogisticCard(
+                    title = stringResource(Res.string.home_logistics_budget_title),
+                    description = stringResource(Res.string.home_logistics_budget_description),
+                    accentColor = SharedJourneyColors.MediterraneanTeal,
+                    icon = AppIcons.AccountBalance,
+                    onClick = {},
                 )
             }
 
