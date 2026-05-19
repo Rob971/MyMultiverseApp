@@ -8,11 +8,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import app.mymultiverse.kmp.presentation.components.screenListPadding
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
@@ -21,6 +27,10 @@ import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import org.koin.compose.koinInject
+
+object HomeTestTags {
+    const val NUTRITION_CARD = "home_nutrition_card"
+}
 
 @Composable
 fun HomeScreen(
@@ -48,6 +58,7 @@ fun HomeContent(
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
 
     Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             @OptIn(ExperimentalMaterial3Api::class)
             TopAppBar(
@@ -64,8 +75,9 @@ fun HomeContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .safeDrawingPadding(),
-            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 20.dp),
+                .navigationBarsPadding()
+                .imePadding(),
+            contentPadding = screenListPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
@@ -113,6 +125,7 @@ fun HomeContent(
                     description = stringResource(Res.string.home_logistics_nutrition_description),
                     accentColor = SharedJourneyColors.SageSoft,
                     icon = AppIcons.Restaurant,
+                    modifier = Modifier.testTag(HomeTestTags.NUTRITION_CARD),
                     onClick = onOpenNutrition,
                 )
             }

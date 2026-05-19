@@ -3,8 +3,6 @@ package app.mymultiverse.kmp.presentation.screens.nutrition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
@@ -42,8 +41,17 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_t
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_try_again
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
+import app.mymultiverse.kmp.presentation.components.ScreenLayout
+import app.mymultiverse.kmp.presentation.components.screenContentArea
+import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import org.koin.compose.koinInject
+
+object NutritionAiTestTags {
+    const val QUESTION_FIELD = "nutrition_ai_question"
+    const val ASK_BUTTON = "nutrition_ai_ask_button"
+    const val ANSWER_CARD = "nutrition_ai_answer"
+}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -65,12 +73,9 @@ fun NutritionAiAdviceScreen(
         onBack = onBack,
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 24.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.screenContentArea(padding),
+            contentPadding = screenListPadding(),
+            verticalArrangement = Arrangement.spacedBy(ScreenLayout.sectionSpacing),
         ) {
             item {
                 Text(
@@ -106,7 +111,9 @@ fun NutritionAiAdviceScreen(
                 OutlinedTextField(
                     value = question,
                     onValueChange = { question = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(NutritionAiTestTags.QUESTION_FIELD),
                     placeholder = { Text(stringResource(Res.string.nutrition_ai_question_hint)) },
                     shape = RoundedCornerShape(16.dp),
                     minLines = 4,
@@ -117,7 +124,9 @@ fun NutritionAiAdviceScreen(
             item {
                 Button(
                     onClick = { screenModel.askNutritionAdvice(question) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(NutritionAiTestTags.ASK_BUTTON),
                     enabled = question.isNotBlank() && !isLoading,
                 ) {
                     if (isLoading) {
@@ -146,7 +155,9 @@ fun NutritionAiAdviceScreen(
                 is NutritionAiState.Answer -> {
                     item {
                         Surface(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(NutritionAiTestTags.ANSWER_CARD),
                             shape = RoundedCornerShape(24.dp),
                             color = SharedJourneyColors.GlassWhite,
                         ) {

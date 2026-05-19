@@ -1,9 +1,6 @@
 package app.mymultiverse.kmp.presentation.screens.nutrition
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -11,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
@@ -31,11 +29,20 @@ import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
+import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.WeekContextBanner
+import app.mymultiverse.kmp.presentation.components.screenContentArea
+import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import org.koin.compose.koinInject
+
+object NutritionHubTestTags {
+    const val GROCERY_CARD = "nutrition_hub_grocery"
+    const val MEAL_PLAN_CARD = "nutrition_hub_meal_plan"
+    const val AI_CARD = "nutrition_hub_ai"
+}
 
 @Composable
 fun NutritionHubScreen(
@@ -71,12 +78,9 @@ fun NutritionHubScreen(
         onBack = onBack,
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 24.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.screenContentArea(padding),
+            contentPadding = screenListPadding(),
+            verticalArrangement = Arrangement.spacedBy(ScreenLayout.sectionSpacing),
         ) {
             item {
                 WeekContextBanner(weekLabel = weekLabel)
@@ -98,6 +102,7 @@ fun NutritionHubScreen(
                     accentColor = SharedJourneyColors.SageSoft,
                     icon = AppIcons.Restaurant,
                     statusLine = groceryStatus,
+                    modifier = Modifier.testTag(NutritionHubTestTags.GROCERY_CARD),
                     onClick = { onOpenSection(NutritionSection.Grocery) },
                 )
             }
@@ -109,6 +114,7 @@ fun NutritionHubScreen(
                     accentColor = SharedJourneyColors.TerracottaOrange,
                     icon = AppIcons.DateRange,
                     statusLine = mealPlanStatus,
+                    modifier = Modifier.testTag(NutritionHubTestTags.MEAL_PLAN_CARD),
                     onClick = { onOpenSection(NutritionSection.MealPlan) },
                 )
             }
@@ -119,6 +125,7 @@ fun NutritionHubScreen(
                     description = stringResource(Res.string.nutrition_ai_description),
                     accentColor = SharedJourneyColors.MediterraneanTeal,
                     icon = AppIcons.Sparkles,
+                    modifier = Modifier.testTag(NutritionHubTestTags.AI_CARD),
                     onClick = { onOpenSection(NutritionSection.AiAdvice) },
                 )
             }

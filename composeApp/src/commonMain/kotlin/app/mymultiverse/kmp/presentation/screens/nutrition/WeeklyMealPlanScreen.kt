@@ -3,9 +3,7 @@ package app.mymultiverse.kmp.presentation.screens.nutrition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +18,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
@@ -44,9 +43,17 @@ import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.NutritionProgressChip
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
+import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.TodayBadge
+import app.mymultiverse.kmp.presentation.components.screenContentArea
+import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import org.koin.compose.koinInject
+
+object MealPlanTestTags {
+    fun lunchField(dayIndex: Int) = "meal_plan_lunch_$dayIndex"
+    fun dinnerField(dayIndex: Int) = "meal_plan_dinner_$dayIndex"
+}
 
 @Composable
 fun WeeklyMealPlanScreen(
@@ -68,12 +75,9 @@ fun WeeklyMealPlanScreen(
         onBack = onBack,
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 24.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.screenContentArea(padding),
+            contentPadding = screenListPadding(),
+            verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
         ) {
             item {
                 NutritionProgressChip(
@@ -89,6 +93,7 @@ fun WeeklyMealPlanScreen(
 
             items(orderedDays, key = { it.index }) { entry ->
                 DayMealCard(
+                    dayIndex = entry.index,
                     dayLabel = stringResource(dayLabels[entry.index]),
                     day = entry.day,
                     isToday = entry.index == todayIndex,
@@ -103,6 +108,7 @@ fun WeeklyMealPlanScreen(
 
 @Composable
 private fun DayMealCard(
+    dayIndex: Int,
     dayLabel: String,
     day: DayMeals,
     isToday: Boolean,
@@ -145,7 +151,9 @@ private fun DayMealCard(
             OutlinedTextField(
                 value = day.lunch,
                 onValueChange = onLunchChange,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(MealPlanTestTags.lunchField(dayIndex)),
                 label = { Text(stringResource(Res.string.nutrition_meal_lunch)) },
                 shape = RoundedCornerShape(16.dp),
                 minLines = 2,
@@ -153,7 +161,9 @@ private fun DayMealCard(
             OutlinedTextField(
                 value = day.dinner,
                 onValueChange = onDinnerChange,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(MealPlanTestTags.dinnerField(dayIndex)),
                 label = { Text(stringResource(Res.string.nutrition_meal_dinner)) },
                 shape = RoundedCornerShape(16.dp),
                 minLines = 2,
