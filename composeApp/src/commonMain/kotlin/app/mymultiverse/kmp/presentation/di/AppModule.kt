@@ -33,6 +33,10 @@ private val presentationModule = module {
     }
 }
 
+/** Core modules without platform bindings; used by unit tests with a test platform module. */
+internal fun coreKoinModules() = listOf(domainModule, dataModule, presentationModule)
+
 val appModule = module {
-    includes(domainModule, dataModule, presentationModule, platformModule())
+    includes(coreKoinModules())
+    includes(platformModule())
 }
