@@ -78,6 +78,9 @@
     <string name="nutrition_ai_scope_full_week">الأسبوع كامل</string>
     <string name="nutrition_ai_scope_today">اليوم فقط</string>
     <string name="nutrition_ai_grocery_result_title">مشتريات مقترحة من الذكاء الاصطناعي</string>
+    <string name="nutrition_ai_grocery_summary">تم اقتراح %1$d عناصر وفق معاييرك.</string>
+    <string name="nutrition_ai_meal_plan_summary_full_week">معاينة خطة الوجبات للأسبوع كاملًا. راجع أدناه ثم طبّق.</string>
+    <string name="nutrition_ai_meal_plan_summary_single_day">معاينة خطة الوجبات ليوم %1$s. راجع أدناه ثم طبّق.</string>
     <string name="nutrition_ai_grocery_readonly_note">قائمة للقراءة فقط. قائمتك القابلة للتعديل أدناه.</string>
     <string name="nutrition_ai_clear_grocery">مسح قائمة الذكاء الاصطناعي</string>
     <string name="nutrition_ai_meal_plan_result_title">معاينة</string>

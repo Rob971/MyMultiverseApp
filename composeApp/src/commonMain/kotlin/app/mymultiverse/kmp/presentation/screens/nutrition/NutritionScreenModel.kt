@@ -24,7 +24,7 @@ sealed class NutritionAiState {
     data object Idle : NutritionAiState()
     data object Loading : NutritionAiState()
     data class Advice(val text: String) : NutritionAiState()
-    data class GroceryList(val items: List<String>, val summary: String) : NutritionAiState()
+    data class GroceryList(val itemCount: Int) : NutritionAiState()
     data class MealPlanPreview(
         val plan: WeeklyMealPlan,
         val summary: String,
@@ -160,11 +160,8 @@ class NutritionScreenModel(
                 NutritionAiMode.GroceryList -> {
                     aiAssistant.generateGroceryList(criteria)
                         .onSuccess { labels ->
-                            persistAiGrocery(labels)
-                            _aiState.value = NutritionAiState.GroceryList(
-                                items = labels,
-                                summary = "Suggested ${labels.size} items from your criteria.",
-                            )
+                            val addedCount = appendAiGrocery(labels)
+                            _aiState.value = NutritionAiState.GroceryList(itemCount = addedCount)
                         }
                         .onFailure { error -> _aiState.value = NutritionAiState.Error(error.toAiMessage()) }
                 }
@@ -211,9 +208,7 @@ class NutritionScreenModel(
             _mealGroceryLoading.value = MealGroceryRequest(dayIndex, slot)
             aiAssistant.generateGroceryForMeal(mealText)
                 .onSuccess { labels ->
-                    val beforeCount = aiGroceryItems.value.size
-                    appendAiGrocery(labels)
-                    val addedCount = aiGroceryItems.value.size - beforeCount
+                    val addedCount = appendAiGrocery(labels)
                     _mealGroceryResult.value = MealGroceryResult(
                         itemCount = addedCount,
                         dayLabel = dayLabel,
@@ -245,11 +240,7 @@ class NutritionScreenModel(
         runAiAssistant(NutritionAiMode.Advice, question)
     }
 
-    private suspend fun persistAiGrocery(labels: List<String>) {
-        appendAiGrocery(labels)
-    }
-
-    private suspend fun appendAiGrocery(labels: List<String>) {
+    private suspend fun appendAiGrocery(labels: List<String>): Int {
         val seen = aiGroceryItems.value.map { it.label.trim().lowercase() }.toMutableSet()
         val newItems = buildList {
             labels.forEach { raw ->
@@ -261,8 +252,9 @@ class NutritionScreenModel(
                 }
             }
         }
-        if (newItems.isEmpty()) return
+        if (newItems.isEmpty()) return 0
         repository.saveAiGroceryItems(aiGroceryItems.value + newItems)
+        return newItems.size
     }
 
     private fun Throwable.toAiMessage(): String = message ?: "unknown_error"

@@ -2,9 +2,11 @@ package app.mymultiverse.kmp.presentation.screens.nutrition
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -21,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_clear_grocery
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_readonly_note
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_result_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_add_hint
@@ -169,16 +172,24 @@ fun GroceryShoppingScreen(
                             subtitle = stringResource(Res.string.nutrition_ai_grocery_readonly_note),
                         )
                     }
+                    item {
+                        OutlinedButton(
+                            onClick = { screenModel.clearAiGrocery() },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(Res.string.nutrition_ai_clear_grocery))
+                        }
+                    }
                 }
 
-                if (totalCount == 0) {
+                if (totalCount == 0 && aiGroceryItems.isEmpty()) {
                     item {
                         EmptyStateCard(
                             message = stringResource(Res.string.nutrition_grocery_empty),
                             icon = AppIcons.Restaurant,
                         )
                     }
-                } else {
+                } else if (totalCount > 0) {
                     if (sections.active.isNotEmpty()) {
                         item {
                             FamilyLogisticsSectionHeader(title = sectionToBuy)

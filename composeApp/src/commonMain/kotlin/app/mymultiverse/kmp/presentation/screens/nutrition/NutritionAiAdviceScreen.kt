@@ -39,6 +39,9 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_e
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_generate_button
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_readonly_note
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_result_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_summary
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_meal_plan_summary_full_week
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_meal_plan_summary_single_day
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_loading
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_meal_plan_result_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_mode_advice
@@ -64,6 +67,7 @@ import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiReadOnlyGroceryList
+import app.mymultiverse.kmp.presentation.components.nutritionDayLabel
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsCardSurface
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsDesign
 import app.mymultiverse.kmp.presentation.components.NutritionFeatureHeader
@@ -301,7 +305,10 @@ fun NutritionAiAdviceScreen(
                 is NutritionAiState.GroceryList -> {
                     item {
                         Text(
-                            text = state.summary,
+                            text = stringResource(
+                                Res.string.nutrition_ai_grocery_summary,
+                                state.itemCount,
+                            ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = SharedJourneyColors.InkMuted,
                         )
@@ -325,8 +332,17 @@ fun NutritionAiAdviceScreen(
                 }
                 is NutritionAiState.MealPlanPreview -> {
                     item {
+                        val summaryText = when (val scope = state.scope) {
+                            is MealPlanGenerationScope.FullWeek ->
+                                stringResource(Res.string.nutrition_ai_meal_plan_summary_full_week)
+                            is MealPlanGenerationScope.SingleDay ->
+                                stringResource(
+                                    Res.string.nutrition_ai_meal_plan_summary_single_day,
+                                    nutritionDayLabel(scope.dayIndex),
+                                )
+                        }
                         Text(
-                            text = state.summary,
+                            text = summaryText,
                             style = MaterialTheme.typography.bodyMedium,
                             color = SharedJourneyColors.InkMuted,
                         )
@@ -417,15 +433,7 @@ private fun MealPlanPreviewCard(
     lunch: String,
     dinner: String,
 ) {
-    val dayLabel = when (dayIndex) {
-        0 -> "Mon"
-        1 -> "Tue"
-        2 -> "Wed"
-        3 -> "Thu"
-        4 -> "Fri"
-        5 -> "Sat"
-        else -> "Sun"
-    }
+    val dayLabel = nutritionDayLabel(dayIndex)
     FamilyLogisticsCardSurface {
         Column(
             modifier = Modifier

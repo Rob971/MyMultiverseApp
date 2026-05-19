@@ -78,6 +78,9 @@
     <string name="nutrition_ai_scope_full_week">Semana completa</string>
     <string name="nutrition_ai_scope_today">Solo hoy</string>
     <string name="nutrition_ai_grocery_result_title">Compras sugeridas por IA</string>
+    <string name="nutrition_ai_grocery_summary">%1$d artículos sugeridos según tus criterios.</string>
+    <string name="nutrition_ai_meal_plan_summary_full_week">Vista previa del plan de comidas para toda la semana. Revisa abajo y aplica.</string>
+    <string name="nutrition_ai_meal_plan_summary_single_day">Vista previa del plan de comidas para %1$s. Revisa abajo y aplica.</string>
     <string name="nutrition_ai_grocery_readonly_note">Lista de solo lectura. Tu lista editable está abajo.</string>
     <string name="nutrition_ai_clear_grocery">Borrar lista IA</string>
     <string name="nutrition_ai_meal_plan_result_title">Vista previa</string>

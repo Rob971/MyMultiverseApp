@@ -227,7 +227,9 @@ class NutritionScreenModelTest {
         model.runAiAssistant(NutritionAiMode.GroceryList, "high protein")
         advanceUntilIdle()
 
-        assertIs<NutritionAiState.GroceryList>(model.aiState.value)
+        val groceryState = model.aiState.value
+        assertIs<NutritionAiState.GroceryList>(groceryState)
+        assertEquals(2, groceryState.itemCount)
         assertEquals(2, repository.aiGrocery.value.size)
         assertEquals("Milk", repository.aiGrocery.value.first().label)
     }

@@ -14,13 +14,6 @@ import androidx.compose.ui.Modifier
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_readonly_note
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_result_title
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_day_friday
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_day_monday
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_day_saturday
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_day_sunday
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_day_thursday
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_day_tuesday
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_day_wednesday
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_dinner
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_generate_grocery
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_grocery_added
@@ -37,7 +30,6 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_today
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_label
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.nutrition.MealPlanDayOrdering
@@ -45,6 +37,7 @@ import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiReadOnlyGroceryList
+import app.mymultiverse.kmp.presentation.components.nutritionDayLabel
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.MealPlanDayCard
 import app.mymultiverse.kmp.presentation.components.NutritionFeatureHeader
@@ -67,7 +60,6 @@ fun WeeklyMealPlanScreen(
     val mealGroceryResult by screenModel.mealGroceryResult.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val dayLabels = weekDayLabels()
     val todayIndex = remember(screenModel.weekKey) { WeekCalendar.todayIndexInWeek(screenModel.weekKey) }
     val orderedDays = remember(mealPlan, todayIndex) {
         MealPlanDayOrdering.orderDaysForDisplay(mealPlan.days, todayIndex)
@@ -157,7 +149,7 @@ fun WeeklyMealPlanScreen(
                     )
                 }
                 item {
-                    val todayDayLabel = stringResource(dayLabels[todayEntry.index])
+                    val todayDayLabel = nutritionDayLabel(todayEntry.index)
                     MealPlanDayCard(
                         dayIndex = todayEntry.index,
                         dayLabel = todayDayLabel,
@@ -196,7 +188,7 @@ fun WeeklyMealPlanScreen(
                     )
                 }
                 items(upcomingEntries, key = { it.index }) { entry ->
-                    val entryDayLabel = stringResource(dayLabels[entry.index])
+                    val entryDayLabel = nutritionDayLabel(entry.index)
                     MealPlanDayCard(
                         dayIndex = entry.index,
                         dayLabel = entryDayLabel,
@@ -226,14 +218,3 @@ fun WeeklyMealPlanScreen(
         }
     }
 }
-
-@Composable
-private fun weekDayLabels(): List<StringResource> = listOf(
-    Res.string.nutrition_day_monday,
-    Res.string.nutrition_day_tuesday,
-    Res.string.nutrition_day_wednesday,
-    Res.string.nutrition_day_thursday,
-    Res.string.nutrition_day_friday,
-    Res.string.nutrition_day_saturday,
-    Res.string.nutrition_day_sunday,
-)
