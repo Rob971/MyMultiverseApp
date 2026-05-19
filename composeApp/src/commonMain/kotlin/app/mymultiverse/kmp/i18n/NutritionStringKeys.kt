@@ -34,6 +34,17 @@ object NutritionStringKeys {
         "nutrition_ai_loading",
         "nutrition_ai_error",
         "nutrition_ai_empty_question",
+        "home_logistics_coming_soon",
+        "nutrition_week_dates",
+        "nutrition_grocery_progress",
+        "nutrition_meal_plan_progress",
+        "nutrition_today",
+        "nutrition_delete_item",
+        "nutrition_ai_try_again",
+        "nutrition_ai_suggestions_title",
+        "nutrition_ai_suggestion_protein",
+        "nutrition_ai_suggestion_veggies",
+        "nutrition_ai_suggestion_allergy",
     )
 
     val localeDirectories: List<String> = listOf(

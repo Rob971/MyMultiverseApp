@@ -37,6 +37,17 @@
     <string name="nutrition_ai_loading">جارٍ البحث عن إرشادات غذائية...</string>
     <string name="nutrition_ai_error">تعذر إنشاء النصيحة. حاول مرة أخرى.</string>
     <string name="nutrition_ai_empty_question">يرجى إدخال سؤال عن التغذية.</string>
+    <string name="home_logistics_coming_soon">قريبًا</string>
+    <string name="nutrition_week_dates">%1$s – %2$s</string>
+    <string name="nutrition_grocery_progress">تم تحديد %1$d من %2$d</string>
+    <string name="nutrition_meal_plan_progress">%1$d من %2$d أيام مخططة</string>
+    <string name="nutrition_today">اليوم</string>
+    <string name="nutrition_delete_item">إزالة العنصر</string>
+    <string name="nutrition_ai_try_again">اطرح سؤالًا آخر</string>
+    <string name="nutrition_ai_suggestions_title">جرّب أن تسأل</string>
+    <string name="nutrition_ai_suggestion_protein">غداء عالي البروتين للعائلة</string>
+    <string name="nutrition_ai_suggestion_veggies">المزيد من الخضار على العشاء</string>
+    <string name="nutrition_ai_suggestion_allergy">وجبات خفيفة مناسبة للحساسية للأطفال</string>
     <string name="home_refresh_inspirations">تحديث الإلهامات</string>
     <string name="edit_dream_architect_title">مهندس الأحلام</string>
     <string name="edit_dream_edit_title">تعديل الحلم</string>

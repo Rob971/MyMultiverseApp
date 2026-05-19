@@ -27,4 +27,32 @@ object WeekCalendar {
             start.plus(index, DateTimeUnit.DAY)
         }
     }
+
+    fun weekEndDate(weekKey: String): LocalDate {
+        val start = LocalDate.parse(weekKey)
+        return start.plus(WeeklyMealPlan.DAYS_IN_WEEK - 1, DateTimeUnit.DAY)
+    }
+
+    /** Compact range label, e.g. 19/05 – 25/05 (locale-neutral). */
+    fun formatWeekRange(weekKey: String): String {
+        val start = LocalDate.parse(weekKey)
+        val end = weekEndDate(weekKey)
+        return "${formatShortDate(start)} – ${formatShortDate(end)}"
+    }
+
+    fun todayIndexInWeek(
+        weekKey: String,
+        today: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault()),
+    ): Int? {
+        if (weekKeyFor(today) != weekKey) return null
+        val start = LocalDate.parse(weekKey)
+        val index = today.toEpochDays() - start.toEpochDays()
+        return index.takeIf { it in 0 until WeeklyMealPlan.DAYS_IN_WEEK }
+    }
+
+    private fun formatShortDate(date: LocalDate): String {
+        val day = date.dayOfMonth.toString().padStart(2, '0')
+        val month = date.monthNumber.toString().padStart(2, '0')
+        return "$day/$month"
+    }
 }

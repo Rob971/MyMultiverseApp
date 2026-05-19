@@ -37,6 +37,17 @@
     <string name="nutrition_ai_loading">Ernährungstipps werden gesucht...</string>
     <string name="nutrition_ai_error">Beratung konnte nicht erstellt werden. Bitte erneut versuchen.</string>
     <string name="nutrition_ai_empty_question">Bitte geben Sie eine Ernährungsfrage ein.</string>
+    <string name="home_logistics_coming_soon">Demnächst</string>
+    <string name="nutrition_week_dates">%1$s – %2$s</string>
+    <string name="nutrition_grocery_progress">%1$d von %2$d erledigt</string>
+    <string name="nutrition_meal_plan_progress">%1$d von %2$d Tagen geplant</string>
+    <string name="nutrition_today">Heute</string>
+    <string name="nutrition_delete_item">Artikel entfernen</string>
+    <string name="nutrition_ai_try_again">Weitere Frage stellen</string>
+    <string name="nutrition_ai_suggestions_title">Fragen Sie zum Beispiel</string>
+    <string name="nutrition_ai_suggestion_protein">Proteinreiche Familien-Mittagessen</string>
+    <string name="nutrition_ai_suggestion_veggies">Mehr Gemüse beim Abendessen</string>
+    <string name="nutrition_ai_suggestion_allergy">Allergikerfreundliche Snacks für Kinder</string>
     <string name="home_refresh_inspirations">Inspirationen Aktualisieren</string>
     <string name="edit_dream_architect_title">Traumarchitekt</string>
     <string name="edit_dream_edit_title">Traum Bearbeiten</string>

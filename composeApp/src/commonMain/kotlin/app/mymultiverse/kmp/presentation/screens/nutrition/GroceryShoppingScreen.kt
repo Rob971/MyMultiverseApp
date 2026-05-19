@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -26,16 +28,20 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_add_button
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_delete_item
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_add_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_progress
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_title
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_label
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
+import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
+import app.mymultiverse.kmp.presentation.components.EmptyStateCard
+import app.mymultiverse.kmp.presentation.components.NutritionProgressChip
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
@@ -48,31 +54,31 @@ fun GroceryShoppingScreen(
 ) {
     val items by screenModel.groceryItems.collectAsState()
     var newItemText by rememberSaveable { mutableStateOf("") }
+    val weekSubtitle = WeekCalendar.formatWeekRange(screenModel.weekKey)
+    val checkedCount = items.count { it.isChecked }
+    val deleteLabel = stringResource(Res.string.nutrition_delete_item)
+
+    fun submitNewItem() {
+        if (newItemText.isNotBlank()) {
+            screenModel.addGroceryItem(newItemText)
+            newItemText = ""
+        }
+    }
 
     NutritionScaffold(
         title = stringResource(Res.string.nutrition_grocery_title),
+        subtitle = weekSubtitle,
         onBack = onBack,
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 24.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            item {
-                Text(
-                    text = stringResource(Res.string.nutrition_week_label, screenModel.weekKey),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = SharedJourneyColors.MediterraneanTeal,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                )
-            }
-
-            item {
+        bottomBar = {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = SharedJourneyColors.GlassWhite,
+                shadowElevation = 8.dp,
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -83,32 +89,56 @@ fun GroceryShoppingScreen(
                         placeholder = { Text(stringResource(Res.string.nutrition_grocery_add_hint)) },
                         singleLine = true,
                         shape = RoundedCornerShape(16.dp),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { submitNewItem() }),
                     )
-                    Button(
-                        onClick = {
-                            screenModel.addGroceryItem(newItemText)
-                            newItemText = ""
-                        },
+                    FilledIconButton(
+                        onClick = { submitNewItem() },
                         enabled = newItemText.isNotBlank(),
                     ) {
-                        Text(stringResource(Res.string.nutrition_grocery_add_button))
+                        Icon(
+                            imageVector = AppIcons.Add,
+                            contentDescription = stringResource(Res.string.nutrition_grocery_add_hint),
+                        )
                     }
+                }
+            }
+        },
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 24.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (items.isNotEmpty()) {
+                item {
+                    NutritionProgressChip(
+                        label = stringResource(
+                            Res.string.nutrition_grocery_progress,
+                            checkedCount,
+                            items.size,
+                        ),
+                        progress = checkedCount.toFloat() / items.size,
+                        accentColor = SharedJourneyColors.SageSoft,
+                    )
                 }
             }
 
             if (items.isEmpty()) {
                 item {
-                    Text(
-                        text = stringResource(Res.string.nutrition_grocery_empty),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = SharedJourneyColors.InkMuted,
-                        modifier = Modifier.padding(vertical = 8.dp),
+                    EmptyStateCard(
+                        message = stringResource(Res.string.nutrition_grocery_empty),
+                        icon = AppIcons.Restaurant,
                     )
                 }
             } else {
                 items(items, key = { it.id }) { item ->
                     GroceryItemRow(
                         item = item,
+                        deleteLabel = deleteLabel,
                         onToggle = { screenModel.toggleGroceryItem(item.id) },
                         onRemove = { screenModel.removeGroceryItem(item.id) },
                     )
@@ -118,13 +148,16 @@ fun GroceryShoppingScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GroceryItemRow(
     item: GroceryItem,
+    deleteLabel: String,
     onToggle: () -> Unit,
     onRemove: () -> Unit,
 ) {
     Surface(
+        onClick = onToggle,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         color = SharedJourneyColors.GlassWhite,
@@ -132,29 +165,30 @@ private fun GroceryItemRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Checkbox(
-                checked = item.isChecked,
-                onCheckedChange = { onToggle() },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = SharedJourneyColors.SageSoft,
-                    checkmarkColor = SharedJourneyColors.InkDeep,
-                ),
-            )
             Text(
                 text = item.label,
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.bodyLarge,
-                color = SharedJourneyColors.InkDeep,
+                color = if (item.isChecked) {
+                    SharedJourneyColors.InkMuted
+                } else {
+                    SharedJourneyColors.InkDeep
+                },
                 textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
             )
-            IconButton(onClick = onRemove) {
+            IconButton(
+                onClick = onRemove,
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = SharedJourneyColors.TerracottaOrange,
+                ),
+            ) {
                 Icon(
                     imageVector = AppIcons.Delete,
-                    contentDescription = null,
-                    tint = SharedJourneyColors.TerracottaOrange,
+                    contentDescription = deleteLabel,
                 )
             }
         }

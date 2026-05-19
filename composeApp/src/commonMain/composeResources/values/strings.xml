@@ -37,6 +37,17 @@
     <string name="nutrition_ai_loading">Finding nutritional guidance...</string>
     <string name="nutrition_ai_error">Could not generate advice. Try again.</string>
     <string name="nutrition_ai_empty_question">Please enter a nutrition question.</string>
+    <string name="home_logistics_coming_soon">Coming soon</string>
+    <string name="nutrition_week_dates">%1$s – %2$s</string>
+    <string name="nutrition_grocery_progress">%1$d of %2$d checked</string>
+    <string name="nutrition_meal_plan_progress">%1$d of %2$d days planned</string>
+    <string name="nutrition_today">Today</string>
+    <string name="nutrition_delete_item">Remove item</string>
+    <string name="nutrition_ai_try_again">Ask another question</string>
+    <string name="nutrition_ai_suggestions_title">Try asking</string>
+    <string name="nutrition_ai_suggestion_protein">High-protein family lunches</string>
+    <string name="nutrition_ai_suggestion_veggies">More vegetables at dinner</string>
+    <string name="nutrition_ai_suggestion_allergy">Allergy-friendly snacks for kids</string>
     <string name="home_refresh_inspirations">Refresh Inspirations</string>
     <string name="edit_dream_architect_title">Dream Architect</string>
     <string name="edit_dream_edit_title">Edit Dream</string>

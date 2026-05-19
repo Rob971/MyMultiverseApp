@@ -1,15 +1,20 @@
 package app.mymultiverse.kmp.presentation.screens.nutrition
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,12 +34,18 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_e
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_error
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_loading
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_question_hint
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestion_allergy
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestion_protein
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestion_veggies
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestions_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_try_again
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import org.koin.compose.koinInject
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NutritionAiAdviceScreen(
     onBack: () -> Unit,
@@ -43,6 +54,11 @@ fun NutritionAiAdviceScreen(
     val aiState by screenModel.aiState.collectAsState()
     var question by rememberSaveable { mutableStateOf("") }
     val isLoading = aiState is NutritionAiState.Loading
+    val suggestions = listOf(
+        stringResource(Res.string.nutrition_ai_suggestion_protein),
+        stringResource(Res.string.nutrition_ai_suggestion_veggies),
+        stringResource(Res.string.nutrition_ai_suggestion_allergy),
+    )
 
     NutritionScaffold(
         title = stringResource(Res.string.nutrition_ai_title),
@@ -65,6 +81,28 @@ fun NutritionAiAdviceScreen(
             }
 
             item {
+                Text(
+                    text = stringResource(Res.string.nutrition_ai_suggestions_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = SharedJourneyColors.InkDeep,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                FlowRow(
+                    modifier = Modifier.padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    suggestions.forEach { suggestion ->
+                        SuggestionChip(
+                            label = suggestion,
+                            enabled = !isLoading,
+                            onClick = { question = suggestion },
+                        )
+                    }
+                }
+            }
+
+            item {
                 OutlinedTextField(
                     value = question,
                     onValueChange = { question = it },
@@ -82,7 +120,15 @@ fun NutritionAiAdviceScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = question.isNotBlank() && !isLoading,
                 ) {
-                    Text(stringResource(Res.string.nutrition_ai_ask_button))
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = SharedJourneyColors.SunDrenchedWhite,
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Text(stringResource(Res.string.nutrition_ai_ask_button))
+                    }
                 }
             }
 
@@ -90,10 +136,6 @@ fun NutritionAiAdviceScreen(
                 NutritionAiState.Idle -> Unit
                 NutritionAiState.Loading -> {
                     item {
-                        CircularProgressIndicator(
-                            color = SharedJourneyColors.MediterraneanTeal,
-                            modifier = Modifier.padding(vertical = 8.dp),
-                        )
                         Text(
                             text = stringResource(Res.string.nutrition_ai_loading),
                             style = MaterialTheme.typography.bodyMedium,
@@ -117,6 +159,17 @@ fun NutritionAiAdviceScreen(
                             )
                         }
                     }
+                    item {
+                        OutlinedButton(
+                            onClick = {
+                                screenModel.resetAiState()
+                                question = ""
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(Res.string.nutrition_ai_try_again))
+                        }
+                    }
                 }
                 is NutritionAiState.Error -> {
                     item {
@@ -133,5 +186,31 @@ fun NutritionAiAdviceScreen(
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SuggestionChip(
+    label: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        shape = RoundedCornerShape(20.dp),
+        color = SharedJourneyColors.GlassTerracotta,
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            SharedJourneyColors.TerracottaOrange.copy(alpha = 0.3f),
+        ),
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+            style = MaterialTheme.typography.labelMedium,
+            color = SharedJourneyColors.MediterraneanTeal,
+        )
     }
 }

@@ -45,6 +45,8 @@ fun HomeContent(
     onRefreshClick: () -> Unit,
     onOpenNutrition: () -> Unit,
 ) {
+    val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
+
     Scaffold(
         topBar = {
             @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +76,7 @@ fun HomeContent(
                             null -> stringResource(Res.string.home_banner_loading)
                             else -> stringResource(Res.string.home_greeting)
                         },
-                    description = stringResource(Res.string.home_banner_description)
+                    description = stringResource(Res.string.home_banner_description),
                 )
             }
 
@@ -101,7 +103,7 @@ fun HomeContent(
                     fontWeight = FontWeight.Black,
                     color = SharedJourneyColors.InkDeep,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
             }
 
@@ -121,6 +123,8 @@ fun HomeContent(
                     description = stringResource(Res.string.home_logistics_adventures_description),
                     accentColor = SharedJourneyColors.TerracottaOrange,
                     icon = AppIcons.Explore,
+                    enabled = false,
+                    badge = comingSoonLabel,
                     onClick = {},
                 )
             }
@@ -131,6 +135,8 @@ fun HomeContent(
                     description = stringResource(Res.string.home_logistics_budget_description),
                     accentColor = SharedJourneyColors.MediterraneanTeal,
                     icon = AppIcons.AccountBalance,
+                    enabled = false,
+                    badge = comingSoonLabel,
                     onClick = {},
                 )
             }
@@ -139,7 +145,7 @@ fun HomeContent(
                 Spacer(Modifier.height(24.dp))
                 Box(
                     modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     TextButton(
                         onClick = onRefreshClick,
@@ -149,7 +155,7 @@ fun HomeContent(
                             stringResource(Res.string.home_refresh_inspirations),
                             style = MaterialTheme.typography.labelMedium,
                             color = SharedJourneyColors.InkMuted,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         )
                     }
                 }

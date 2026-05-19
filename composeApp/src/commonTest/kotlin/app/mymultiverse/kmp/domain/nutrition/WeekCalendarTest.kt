@@ -47,4 +47,24 @@ class WeekCalendarTest {
         assertEquals(LocalDate(2026, 5, 18), dates.first())
         assertEquals(LocalDate(2026, 5, 24), dates.last())
     }
+
+    @Test
+    fun formatWeekRange_usesShortDates() {
+        assertEquals("18/05 – 24/05", WeekCalendar.formatWeekRange("2026-05-18"))
+    }
+
+    @Test
+    fun todayIndexInWeek_returnsIndexForDateInSameWeek() {
+        val wednesday = LocalDate(2026, 5, 20)
+        val weekKey = WeekCalendar.weekKeyFor(wednesday)
+
+        assertEquals(2, WeekCalendar.todayIndexInWeek(weekKey, today = wednesday))
+    }
+
+    @Test
+    fun todayIndexInWeek_returnsNullForDifferentWeek() {
+        val wednesday = LocalDate(2026, 5, 20)
+
+        assertEquals(null, WeekCalendar.todayIndexInWeek("2020-01-06", today = wednesday))
+    }
 }

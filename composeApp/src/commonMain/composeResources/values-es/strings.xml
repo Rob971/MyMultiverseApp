@@ -37,6 +37,17 @@
     <string name="nutrition_ai_loading">Buscando orientación nutricional...</string>
     <string name="nutrition_ai_error">No se pudo generar el consejo. Inténtalo de nuevo.</string>
     <string name="nutrition_ai_empty_question">Introduce una pregunta sobre nutrición.</string>
+    <string name="home_logistics_coming_soon">Próximamente</string>
+    <string name="nutrition_week_dates">%1$s – %2$s</string>
+    <string name="nutrition_grocery_progress">%1$d de %2$d marcados</string>
+    <string name="nutrition_meal_plan_progress">%1$d de %2$d días planificados</string>
+    <string name="nutrition_today">Hoy</string>
+    <string name="nutrition_delete_item">Eliminar artículo</string>
+    <string name="nutrition_ai_try_again">Hacer otra pregunta</string>
+    <string name="nutrition_ai_suggestions_title">Prueba a preguntar</string>
+    <string name="nutrition_ai_suggestion_protein">Almuerzos proteicos para la familia</string>
+    <string name="nutrition_ai_suggestion_veggies">Más verduras en la cena</string>
+    <string name="nutrition_ai_suggestion_allergy">Snacks sin alérgenos para niños</string>
     <string name="home_refresh_inspirations">Actualizar Inspiraciones</string>
     <string name="edit_dream_architect_title">Arquitecto de Sueños</string>
     <string name="edit_dream_edit_title">Editar Sueño</string>
