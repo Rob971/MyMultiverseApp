@@ -54,6 +54,21 @@ class NutritionRepositoryImplTest {
     }
 
     @Test
+    fun differentWeekKeys_useSeparateStorageKeys() = runTest {
+        val settings = MapSettings()
+        val weekA = "2026-05-11"
+        val weekB = "2026-05-18"
+        val repoA = NutritionRepositoryImpl(settings, weekA)
+        val repoB = NutritionRepositoryImpl(settings, weekB)
+
+        repoA.saveGroceryItems(listOf(GroceryItem("1", "Week A", false)))
+        repoB.saveGroceryItems(listOf(GroceryItem("2", "Week B", false)))
+
+        assertEquals("Week A", repoA.observeGroceryItems().first().single().label)
+        assertEquals("Week B", repoB.observeGroceryItems().first().single().label)
+    }
+
+    @Test
     fun loadsPersistedMealPlanOnConstruction() = runTest {
         val settings = MapSettings()
         val stored = WeeklyMealPlan(

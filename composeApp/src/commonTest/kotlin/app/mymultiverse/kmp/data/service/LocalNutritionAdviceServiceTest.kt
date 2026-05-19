@@ -26,4 +26,14 @@ class LocalNutritionAdviceServiceTest {
         assertTrue(result.isSuccess)
         assertTrue(result.getOrNull()!!.contains("protein", ignoreCase = true))
     }
+
+    @Test
+    fun ask_trimsQuestionBeforeBuildingAdvice() = runTest {
+        val service = LocalNutritionAdviceService(responseDelayMs = 0)
+
+        val result = service.ask("  protein lunch  ")
+
+        assertTrue(result.isSuccess)
+        assertTrue(result.getOrNull()!!.contains("protein", ignoreCase = true))
+    }
 }

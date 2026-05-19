@@ -39,6 +39,8 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.domain.model.nutrition.DayMeals
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
+import app.mymultiverse.kmp.domain.nutrition.MealPlanDayOrdering
+import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.NutritionProgressChip
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
@@ -55,9 +57,9 @@ fun WeeklyMealPlanScreen(
     val dayLabels = weekDayLabels()
     val todayIndex = remember(screenModel.weekKey) { WeekCalendar.todayIndexInWeek(screenModel.weekKey) }
     val orderedDays = remember(mealPlan, todayIndex) {
-        buildOrderedDayEntries(mealPlan.days, todayIndex)
+        MealPlanDayOrdering.orderDaysForDisplay(mealPlan.days, todayIndex)
     }
-    val plannedDays = mealPlan.days.count { it.lunch.isNotBlank() || it.dinner.isNotBlank() }
+    val plannedDays = NutritionHubSummary.plannedDaysCount(mealPlan.days)
     val weekSubtitle = WeekCalendar.formatWeekRange(screenModel.weekKey)
 
     NutritionScaffold(
@@ -97,18 +99,6 @@ fun WeeklyMealPlanScreen(
             }
         }
     }
-}
-
-private data class DayEntry(val index: Int, val day: DayMeals)
-
-private fun buildOrderedDayEntries(
-    days: List<DayMeals>,
-    todayIndex: Int?,
-): List<DayEntry> {
-    val entries = days.mapIndexed { index, day -> DayEntry(index, day) }
-    if (todayIndex == null) return entries
-    val today = entries[todayIndex]
-    return listOf(today) + entries.filterNot { it.index == todayIndex }
 }
 
 @Composable

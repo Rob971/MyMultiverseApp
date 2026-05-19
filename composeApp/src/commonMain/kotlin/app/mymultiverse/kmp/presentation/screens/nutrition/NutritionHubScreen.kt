@@ -27,6 +27,7 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_label
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
+import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
@@ -49,19 +50,16 @@ fun NutritionHubScreen(
         WeekCalendar.formatWeekRange(screenModel.weekKey),
     )
 
-    val groceryStatus = if (grocery.isEmpty()) {
-        null
-    } else {
+    val groceryProgress = NutritionHubSummary.groceryProgress(grocery)
+    val groceryStatus = groceryProgress?.let { progress ->
         stringResource(
             Res.string.nutrition_grocery_progress,
-            grocery.count { it.isChecked },
-            grocery.size,
+            progress.checked,
+            progress.total,
         )
     }
 
-    val plannedDays = mealPlan.days.count { day ->
-        day.lunch.isNotBlank() || day.dinner.isNotBlank()
-    }
+    val plannedDays = NutritionHubSummary.plannedDaysCount(mealPlan.days)
     val mealPlanStatus = stringResource(
         Res.string.nutrition_meal_plan_progress,
         plannedDays,

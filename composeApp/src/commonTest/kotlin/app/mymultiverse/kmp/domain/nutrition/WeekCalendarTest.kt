@@ -67,4 +67,11 @@ class WeekCalendarTest {
 
         assertEquals(null, WeekCalendar.todayIndexInWeek("2020-01-06", today = wednesday))
     }
+
+    @Test
+    fun currentWeekKey_matchesWeekKeyForToday() {
+        val today = LocalDate(2026, 5, 20)
+
+        assertEquals(WeekCalendar.weekKeyFor(today), WeekCalendar.currentWeekKey())
+    }
 }

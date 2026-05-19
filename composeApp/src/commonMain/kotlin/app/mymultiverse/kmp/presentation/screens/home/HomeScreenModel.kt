@@ -30,6 +30,8 @@ class HomeScreenModel(
             _isRefreshing.value = true
             try {
                 _greeting.value = getGreetingUseCase()
+            } catch (_: Throwable) {
+                // Keep the last greeting when refresh fails.
             } finally {
                 _isRefreshing.value = false
             }
