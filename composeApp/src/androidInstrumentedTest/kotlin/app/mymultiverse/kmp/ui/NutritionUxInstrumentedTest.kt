@@ -1,7 +1,6 @@
 package app.mymultiverse.kmp.ui
 
 import androidx.appcompat.R
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -40,7 +39,7 @@ import org.junit.runner.RunWith
 class NutritionUxInstrumentedTest {
 
     @get:Rule
-    val composeRule = createAndroidComposeRule<AppCompatActivity>()
+    val composeRule = createAndroidComposeRule<ComposeTestActivity>()
 
     private fun setAppCompatTheme() {
         composeRule.activity.setTheme(R.style.Theme_AppCompat_Light_NoActionBar)

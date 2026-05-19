@@ -51,6 +51,7 @@ kotlin {
         }
         val androidInstrumentedTest by getting {
             dependencies {
+                implementation(libs.androidx.appcompat)
                 implementation(kotlin("test"))
                 implementation(libs.androidx.test.ext.junit)
                 implementation(libs.androidx.test.runner)

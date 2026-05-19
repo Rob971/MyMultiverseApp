@@ -1,6 +1,5 @@
 package app.mymultiverse.kmp.ui
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -21,7 +20,7 @@ import org.junit.runner.RunWith
 class FamilyLogisticCardInstrumentedTest {
 
     @get:Rule
-    val composeRule = createAndroidComposeRule<AppCompatActivity>()
+    val composeRule = createAndroidComposeRule<ComposeTestActivity>()
 
     @Test
     fun enabledCard_tapInvokesClickHandler_underAppCompatTheme() {
