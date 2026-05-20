@@ -201,12 +201,14 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                HomeContent(
-                    greeting = Greeting("Hello"),
-                    isRefreshing = false,
-                    onRefreshClick = {},
-                    onOpenNutrition = { openedNutrition = true },
-                )
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = Greeting("Hello"),
+                        isRefreshing = false,
+                        onRefreshClick = {},
+                        onOpenNutrition = { openedNutrition = true },
+                    )
+                }
             }
         }
 
