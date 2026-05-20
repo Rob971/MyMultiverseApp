@@ -1,37 +1,40 @@
 package app.mymultiverse.kmp.presentation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.backhandler.BackHandler
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
 import app.mymultiverse.kmp.presentation.navigation.AppRoute
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
+import app.mymultiverse.kmp.presentation.navigation.rememberAppNavigator
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreen
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionFlow
 import app.mymultiverse.kmp.presentation.theme.AppTheme
+
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun App() {
     AppTheme {
-        var route by remember { mutableStateOf<AppRoute>(AppRoute.Home) }
+        val navigator = rememberAppNavigator()
+        val route = navigator.current
+
+        BackHandler(enabled = navigator.canGoBack) {
+            navigator.navigateBack()
+        }
 
         NapolitanBackground {
-            when (val currentRoute = route) {
+            when (route) {
                 AppRoute.Home -> HomeScreen(
                     onOpenNutrition = {
-                        route = AppRoute.Nutrition(section = NutritionSection.Hub)
+                        navigator.navigateTo(AppRoute.Nutrition(section = NutritionSection.Hub))
                     },
                 )
 
                 is AppRoute.Nutrition -> NutritionFlow(
-                    section = currentRoute.section,
-                    onBackToHome = { route = AppRoute.Home },
-                    onBackToHub = {
-                        route = AppRoute.Nutrition(section = NutritionSection.Hub)
-                    },
+                    section = route.section,
+                    onBack = navigator::navigateBack,
                     onOpenSection = { section ->
-                        route = AppRoute.Nutrition(section = section)
+                        navigator.navigateTo(AppRoute.Nutrition(section = section))
                     },
                 )
             }

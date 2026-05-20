@@ -35,6 +35,7 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.uiToolingPreview)
             implementation(compose.components.resources)
+            implementation("org.jetbrains.compose.ui:ui-backhandler:1.8.0")
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)

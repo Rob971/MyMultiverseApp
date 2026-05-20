@@ -6,17 +6,16 @@ import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 @Composable
 fun NutritionFlow(
     section: NutritionSection,
-    onBackToHome: () -> Unit,
-    onBackToHub: () -> Unit,
+    onBack: () -> Unit,
     onOpenSection: (NutritionSection) -> Unit,
 ) {
     when (section) {
         NutritionSection.Hub -> NutritionHubScreen(
-            onBack = onBackToHome,
+            onBack = onBack,
             onOpenSection = onOpenSection,
         )
-        NutritionSection.Grocery -> GroceryShoppingScreen(onBack = onBackToHub)
-        NutritionSection.MealPlan -> WeeklyMealPlanScreen(onBack = onBackToHub)
-        NutritionSection.AiAdvice -> NutritionAiAdviceScreen(onBack = onBackToHub)
+        NutritionSection.Grocery -> GroceryShoppingScreen(onBack = onBack)
+        NutritionSection.MealPlan -> WeeklyMealPlanScreen(onBack = onBack)
+        NutritionSection.AiAdvice -> NutritionAiAdviceScreen(onBack = onBack)
     }
 }
