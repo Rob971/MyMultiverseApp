@@ -1,8 +1,11 @@
 package app.mymultiverse.kmp.domain.nutrition
 
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
+import kotlinx.datetime.Clock
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -70,7 +73,7 @@ class WeekCalendarTest {
 
     @Test
     fun currentWeekKey_matchesWeekKeyForToday() {
-        val today = LocalDate(2026, 5, 20)
+        val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
 
         assertEquals(WeekCalendar.weekKeyFor(today), WeekCalendar.currentWeekKey())
     }
