@@ -24,6 +24,7 @@ import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionAiAdviceScre
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionAiTestTags
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionHubScreen
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionHubTestTags
+import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionAiState
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.WeeklyMealPlanScreen
 import app.mymultiverse.kmp.presentation.theme.AppTheme
@@ -60,6 +61,38 @@ class NutritionUxInstrumentedTest {
         )
     }
 
+    private fun waitForCondition(
+        timeoutMillis: Long = 10_000,
+        condition: () -> Boolean,
+    ) {
+        val deadline = System.currentTimeMillis() + timeoutMillis
+        while (System.currentTimeMillis() < deadline) {
+            composeRule.waitForIdle()
+            if (condition()) return
+            Thread.sleep(50)
+        }
+        composeRule.waitForIdle()
+        check(condition()) { "Condition not met within ${timeoutMillis}ms" }
+    }
+
+    private fun waitForGroceryCount(screenModel: NutritionScreenModel, count: Int) {
+        waitForCondition { screenModel.groceryItems.value.size == count }
+    }
+
+    private fun waitForMealPlanLunch(
+        screenModel: NutritionScreenModel,
+        dayIndex: Int,
+        lunch: String,
+    ) {
+        waitForCondition {
+            screenModel.mealPlan.value.days[dayIndex].lunch == lunch
+        }
+    }
+
+    private fun waitForAiGroceryCount(screenModel: NutritionScreenModel, count: Int) {
+        waitForCondition { screenModel.aiGroceryItems.value.size == count }
+    }
+
     @Test
     fun grocery_addItem_showsInList() {
         setAppCompatTheme()
@@ -74,7 +107,7 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(GroceryInputBarTestTags.INPUT_FIELD)
             .performTextInput("Milk")
         composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
-        composeRule.waitForIdle()
+        waitForGroceryCount(screenModel, 1)
 
         composeRule.onNodeWithText("Milk").assertIsDisplayed()
     }
@@ -94,11 +127,13 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(GroceryInputBarTestTags.INPUT_FIELD)
             .performTextInput("Bread")
         composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
-        composeRule.waitForIdle()
+        waitForGroceryCount(screenModel, 1)
 
         composeRule.onNodeWithTag("${GroceryListTestTags.CHECKBOX_PREFIX}$itemId")
             .performClick()
-        composeRule.waitForIdle()
+        waitForCondition {
+            screenModel.groceryItems.value.singleOrNull()?.isChecked == true
+        }
 
         assertTrue(screenModel.groceryItems.value.single().isChecked)
     }
@@ -119,7 +154,7 @@ class NutritionUxInstrumentedTest {
         val lunchField = composeRule.onNodeWithTag(MealPlanTestTags.lunchField(dayIndex))
         lunchField.performScrollTo()
         lunchField.performTextInput("Pasta salad")
-        composeRule.waitForIdle()
+        waitForMealPlanLunch(screenModel, dayIndex, "Pasta salad")
 
         composeRule.onNodeWithText("Pasta salad").assertIsDisplayed()
         assertEquals("Pasta salad", screenModel.mealPlan.value.days[dayIndex].lunch)
@@ -141,11 +176,12 @@ class NutritionUxInstrumentedTest {
         val lunchField = composeRule.onNodeWithTag(MealPlanTestTags.lunchField(dayIndex))
         lunchField.performScrollTo()
         lunchField.performTextInput("Pasta primavera")
-        composeRule.waitForIdle()
+        waitForMealPlanLunch(screenModel, dayIndex, "Pasta primavera")
 
         composeRule.onNodeWithTag(MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch))
+            .performScrollTo()
             .performClick()
-        composeRule.waitForIdle()
+        waitForAiGroceryCount(screenModel, 3)
 
         assertEquals(3, screenModel.aiGroceryItems.value.size)
         composeRule.onNodeWithText("Tomatoes").assertIsDisplayed()
@@ -165,9 +201,12 @@ class NutritionUxInstrumentedTest {
         }
 
         composeRule.onNodeWithTag(NutritionAiTestTags.CRITERIA_FIELD)
+            .performScrollTo()
             .performTextInput("What veggies should we eat?")
-        composeRule.onNodeWithTag(NutritionAiTestTags.GENERATE_BUTTON).performClick()
-        composeRule.waitForIdle()
+        composeRule.onNodeWithTag(NutritionAiTestTags.GENERATE_BUTTON)
+            .performScrollTo()
+            .performClick()
+        waitForCondition { screenModel.aiState.value is NutritionAiState.Advice }
 
         composeRule.onNodeWithTag(NutritionAiTestTags.ANSWER_CARD).assertIsDisplayed()
         composeRule.onNodeWithText(answer).assertIsDisplayed()
@@ -189,7 +228,9 @@ class NutritionUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(NutritionHubTestTags.GROCERY_CARD).performClick()
+        composeRule.onNodeWithTag(NutritionHubTestTags.GROCERY_CARD)
+            .performScrollTo()
+            .performClick()
 
         assertEquals(NutritionSection.Grocery, opened)
     }
