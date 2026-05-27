@@ -69,7 +69,7 @@ jobs:
     timeout-minutes: 30
     if: >-
       ${{ github.event_name == 'push' ||
-          contains(fromJSON('["all", "android", "android-instrumented-tests"]'), github.event.inputs.target) }}
+          contains(fromJSON('["all", "android", "android-instrumented-tests", "firebase", "firebase-release"]'), github.event.inputs.target) }}
 
     steps:
       - name: Checkout
@@ -145,6 +145,7 @@ jobs:
     timeout-minutes: 20
     needs:
       - android-tests
+      - android-instrumented-tests
       - android-apk
     if: >-
       ${{ github.event_name == 'push' ||

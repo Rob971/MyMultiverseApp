@@ -9,8 +9,8 @@ alwaysApply: false
 ## Workflow (`.github/workflows/kmp-ci.yml`)
 
 - **Push** to `main` / `master` / `feature/**`: runs unit tests and instrumented UI tests (emulator).
-- **Instrumented tests** (also on manual dispatch): targets `all`, `android`, or `android-instrumented-tests`.
-- **Firebase distribute**: targets `firebase` or `firebase-release`; requires secrets (`FIREBASE_SERVICE_ACCOUNT_JSON`, testers/groups).
+- **Instrumented tests** (also on manual dispatch): targets `all`, `android`, `android-instrumented-tests`, `firebase`, or `firebase-release`.
+- **Firebase distribute**: targets `firebase` or `firebase-release`; requires secrets (`FIREBASE_SERVICE_ACCOUNT_JSON`, testers/groups). `firebase-release` waits for unit tests, instrumented UI tests, and the debug APK job.
 
 ## Change guidelines
 
