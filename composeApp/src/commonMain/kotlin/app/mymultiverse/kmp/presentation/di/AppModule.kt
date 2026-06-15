@@ -7,7 +7,7 @@ import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.kmp.data.repository.SettingsNutritionSpaceSelectionStore
 import app.mymultiverse.kmp.data.service.LocalNutritionAiAssistantService
 import app.mymultiverse.kmp.data.supabase.SupabaseAuthRepository
-import app.mymultiverse.kmp.data.supabase.SupabaseClientFactory
+import app.mymultiverse.kmp.data.supabase.SupabaseClientHolder
 import app.mymultiverse.kmp.data.supabase.SupabaseSharingSpaceRepository
 import app.mymultiverse.kmp.data.supabase.SupabaseSpaceCollaborationRepository
 import app.mymultiverse.kmp.data.supabase.UnconfiguredAuthRepository
@@ -42,8 +42,9 @@ private val domainModule = module {
 
 private val dataModule = module {
     single<CoroutineScope> { CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate) }
+    single { SupabaseClientHolder.create() }
     single<AuthRepository> {
-        val client = SupabaseClientFactory.createOrNull()
+        val client = get<SupabaseClientHolder>().client
         if (client != null) {
             SupabaseAuthRepository(client, get())
         } else {
@@ -51,7 +52,7 @@ private val dataModule = module {
         }
     }
     single<SharingSpaceRepository> {
-        val client = SupabaseClientFactory.createOrNull()
+        val client = get<SupabaseClientHolder>().client
         if (client != null) {
             SupabaseSharingSpaceRepository(client)
         } else {
@@ -59,7 +60,7 @@ private val dataModule = module {
         }
     }
     single<SpaceCollaborationRepository> {
-        val client = SupabaseClientFactory.createOrNull()
+        val client = get<SupabaseClientHolder>().client
         if (client != null) {
             SupabaseSpaceCollaborationRepository(client)
         } else {
@@ -72,7 +73,7 @@ private val dataModule = module {
     single { NutritionSyncOutbox(get()) }
     single<NutritionSessionCoordinator> {
         val settings = get<com.russhwolf.settings.Settings>()
-        val client = SupabaseClientFactory.createOrNull()
+        val client = get<SupabaseClientHolder>().client
         NutritionSessionCoordinatorImpl.create(
             settings = settings,
             remoteApi = client?.let { NutritionRemoteApi(it) },

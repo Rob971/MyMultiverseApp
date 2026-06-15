@@ -4,10 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
-import app.mymultiverse.kmp.data.supabase.SupabaseClientFactory
+import app.mymultiverse.kmp.data.supabase.AuthRedirectEvents
 import app.mymultiverse.kmp.presentation.App
 import app.mymultiverse.kmp.presentation.di.appModule
-import io.github.jan.supabase.auth.handleDeeplinks
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.KoinApplication
 
@@ -32,7 +31,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun deliverAuthRedirect(intent: Intent?) {
-        val client = SupabaseClientFactory.createOrNull() ?: return
-        intent?.let { client.handleDeeplinks(it) }
+        intent?.data?.toString()?.let(AuthRedirectEvents::emit)
     }
 }

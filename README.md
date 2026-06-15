@@ -10,7 +10,7 @@ Android and iOS share one UI and domain layer; platform code is limited to `andr
 |------|--------|
 | Home hub | Greeting, navigation into topics |
 | Nutrition | Grocery list, weekly meal plan, local AI assistant |
-| Auth | Email sign-up / sign-in; Google & Apple OAuth (deeplink `app.mymultiverse.kmp://auth`); sign out from Home |
+| Auth | Email sign-up / sign-in; Google & Apple OAuth (deeplink `app.mymultiverse.kmp://auth/callback`); sign out from Home |
 | Sharing | Nutrition **spaces** with per-space feature toggles |
 | Collaboration | Members by email (direct add or pending invite), roles, groups, group member management |
 | Sync | Offline-first grocery & meal plan per space (local cache + outbox + Supabase); hub sync status banner |
@@ -105,7 +105,7 @@ Or with the Supabase CLI linked to your project:
 ./scripts/apply-supabase-migrations.sh
 ```
 
-Configure **Auth → URL configuration** in Supabase Dashboard: add redirect URL `app.mymultiverse.kmp://auth` and enable Google/Apple providers when using OAuth.
+Configure **Auth → URL configuration** in Supabase Dashboard: add redirect URL `app.mymultiverse.kmp://auth/callback` and enable Google/Apple providers when using OAuth.
 
 Ensure **Realtime** is enabled for the project (Database → Replication). The last migration adds the table to the `supabase_realtime` publication.
 

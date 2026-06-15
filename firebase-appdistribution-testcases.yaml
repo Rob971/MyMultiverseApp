@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Aligns with Nutrition / Family Logistics flows (weekly meal plan, grocery, AI adviser).
 
-version: 4
+version: 5
 updated: 2026-06-15
 
 summary: |
@@ -16,6 +16,14 @@ test_cases:
       - Sign in with email and password (or create an account).
     expected:
       - Home screen appears after successful authentication.
+
+  - id: auth-oauth-redirect
+    title: Google or Apple OAuth redirect
+    steps:
+      - From Login, tap Google or Apple (providers enabled in Supabase Dashboard).
+      - Complete provider sign-in in the browser; app reopens via app.mymultiverse.kmp://auth/callback.
+    expected:
+      - Home screen appears without staying on Login.
 
   - id: home-sign-out
     title: Sign out from home

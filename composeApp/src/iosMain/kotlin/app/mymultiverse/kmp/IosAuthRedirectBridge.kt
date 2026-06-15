@@ -1,7 +1,6 @@
 package app.mymultiverse.kmp
 
-import app.mymultiverse.kmp.data.supabase.SupabaseClientFactory
-import app.mymultiverse.kmp.data.supabase.handleAuthDeeplink
+import app.mymultiverse.kmp.data.supabase.AuthRedirectEvents
 import kotlin.experimental.ExperimentalObjCName
 import kotlin.native.ObjCName
 
@@ -9,7 +8,6 @@ import kotlin.native.ObjCName
 @ObjCName("AuthRedirectBridge")
 object IosAuthRedirectBridge {
     fun handle(url: String) {
-        val client = SupabaseClientFactory.createOrNull() ?: return
-        handleAuthDeeplink(client, url)
+        AuthRedirectEvents.emit(url)
     }
 }

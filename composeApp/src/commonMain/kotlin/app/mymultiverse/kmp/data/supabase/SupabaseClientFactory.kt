@@ -7,19 +7,23 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 
 internal object SupabaseClientFactory {
-    fun createOrNull(): SupabaseClient? {
-        if (SupabaseSecrets.ANON_KEY.isBlank()) return null
+    private val sharedClient: SupabaseClient? by lazy {
+        if (SupabaseSecrets.ANON_KEY.isBlank()) return@lazy null
 
-        return createSupabaseClient(
+        createSupabaseClient(
             supabaseUrl = SupabaseConfig.URL,
             supabaseKey = SupabaseSecrets.ANON_KEY,
         ) {
             install(Auth) {
-                scheme = "app.mymultiverse.kmp"
+                scheme = AuthRedirectUrls.SCHEME
                 host = "auth"
             }
             install(Postgrest)
             install(Realtime)
         }
     }
+
+    fun getOrNull(): SupabaseClient? = sharedClient
+
+    fun createOrNull(): SupabaseClient? = getOrNull()
 }
