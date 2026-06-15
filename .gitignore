@@ -20,3 +20,6 @@ __pycache__/
 
 # Firebase (download from console; never commit API keys)
 composeApp/google-services.json
+
+# Supabase CLI local link state (created by `supabase link`)
+supabase/.temp/
