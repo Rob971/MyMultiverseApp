@@ -6,6 +6,8 @@ build
 *.iml
 .DS_Store
 local.properties
+# Gradle daemon JVM pin (generated locally by updateDaemonJvm; breaks CI foojay downloads)
+gradle/gradle-daemon-jvm.properties
 captures
 .externalNativeBuild
 .cxx
