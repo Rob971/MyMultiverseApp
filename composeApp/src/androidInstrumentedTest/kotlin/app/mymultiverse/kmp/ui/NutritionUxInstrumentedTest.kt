@@ -208,8 +208,12 @@ class NutritionUxInstrumentedTest {
             .performClick()
         waitForCondition { screenModel.aiState.value is NutritionAiState.Advice }
 
-        composeRule.onNodeWithTag(NutritionAiTestTags.ANSWER_CARD).assertIsDisplayed()
-        composeRule.onNodeWithText(answer).assertIsDisplayed()
+        composeRule.onNodeWithTag(NutritionAiTestTags.ANSWER_CARD)
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithText(answer)
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test

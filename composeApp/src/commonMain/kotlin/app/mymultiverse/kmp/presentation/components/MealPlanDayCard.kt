@@ -132,9 +132,8 @@ fun MealPlanDayCard(
                         generateGroceryLabel = generateGroceryLabel,
                         onGenerateGrocery = { onGenerateGroceryForMeal(MealSlot.Lunch) },
                         isGeneratingGrocery = loadingMeal == MealSlot.Lunch,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag(MealPlanTestTags.lunchField(dayIndex)),
+                        modifier = Modifier.fillMaxWidth(),
+                        fieldTestTag = MealPlanTestTags.lunchField(dayIndex),
                         generateGroceryTestTag = MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch),
                     )
                     MealPlanMealField(
@@ -145,9 +144,8 @@ fun MealPlanDayCard(
                         generateGroceryLabel = generateGroceryLabel,
                         onGenerateGrocery = { onGenerateGroceryForMeal(MealSlot.Dinner) },
                         isGeneratingGrocery = loadingMeal == MealSlot.Dinner,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag(MealPlanTestTags.dinnerField(dayIndex)),
+                        modifier = Modifier.fillMaxWidth(),
+                        fieldTestTag = MealPlanTestTags.dinnerField(dayIndex),
                         generateGroceryTestTag = MealPlanTestTags.groceryButton(dayIndex, MealSlot.Dinner),
                     )
                 }
@@ -166,13 +164,16 @@ private fun MealPlanMealField(
     onGenerateGrocery: () -> Unit,
     isGeneratingGrocery: Boolean,
     modifier: Modifier = Modifier,
+    fieldTestTag: String,
     generateGroceryTestTag: String,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(fieldTestTag),
             label = { Text(label) },
             placeholder = { Text(label) },
             shape = FamilyLogisticsDesign.fieldShape,
