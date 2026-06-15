@@ -6,6 +6,7 @@ on:
       - main
       - master
       - "feature/**"
+  pull_request:
   workflow_dispatch:
     inputs:
       target:
@@ -24,7 +25,7 @@ on:
           - firebase-release
 
 concurrency:
-  group: kmp-ci-${{ github.workflow }}-${{ github.ref }}
+  group: kmp-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -41,6 +42,7 @@ jobs:
     timeout-minutes: 20
     if: >-
       ${{ github.event_name == 'push' ||
+          github.event_name == 'pull_request' ||
           contains(fromJSON('["all", "android", "android-tests", "firebase", "firebase-release"]'), github.event.inputs.target) }}
 
     steps:
@@ -69,6 +71,7 @@ jobs:
     timeout-minutes: 30
     if: >-
       ${{ github.event_name == 'push' ||
+          github.event_name == 'pull_request' ||
           contains(fromJSON('["all", "android", "android-instrumented-tests", "firebase", "firebase-release"]'), github.event.inputs.target) }}
 
     steps:
@@ -107,6 +110,7 @@ jobs:
     timeout-minutes: 25
     if: >-
       ${{ github.event_name == 'push' ||
+          github.event_name == 'pull_request' ||
           contains(fromJSON('["all", "android", "android-tests", "android-build", "firebase", "firebase-release"]'), github.event.inputs.target) }}
 
     steps:
@@ -245,6 +249,7 @@ jobs:
     continue-on-error: true
     if: >-
       ${{ github.event_name == 'push' ||
+          github.event_name == 'pull_request' ||
           github.event.inputs.target == 'all' ||
           github.event.inputs.target == 'ios' }}
 

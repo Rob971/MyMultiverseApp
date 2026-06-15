@@ -5,6 +5,7 @@ import app.mymultiverse.kmp.data.repository.NutritionRepositoryHolder
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.kmp.data.repository.SettingsNutritionSpaceSelectionStore
 import app.mymultiverse.kmp.data.service.LocalNutritionAiAssistantService
+import app.mymultiverse.kmp.data.supabase.NutritionSpaceRealtimeSync
 import app.mymultiverse.kmp.data.supabase.SupabaseAuthRepository
 import app.mymultiverse.kmp.data.supabase.SupabaseClientFactory
 import app.mymultiverse.kmp.data.supabase.SupabaseSharingSpaceRepository
@@ -69,6 +70,7 @@ private val dataModule = module {
     single {
         val settings = get<com.russhwolf.settings.Settings>()
         val client = SupabaseClientFactory.createOrNull()
+        val realtimeSync = client?.let { NutritionSpaceRealtimeSync(it, get()) }
         NutritionRepositoryHolder(
             localFallback = NutritionRepositoryImpl(settings),
             remoteFactory = { spaceId ->
@@ -78,6 +80,7 @@ private val dataModule = module {
                     NutritionRepositoryImpl(settings)
                 }
             },
+            realtimeSync = realtimeSync,
         )
     }
     single<NutritionAiAssistantService> { LocalNutritionAiAssistantService() }

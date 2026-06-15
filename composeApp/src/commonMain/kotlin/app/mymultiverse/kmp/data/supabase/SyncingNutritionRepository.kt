@@ -47,23 +47,30 @@ class SyncingNutritionRepository(
             }
             .decodeList<NutritionWeekDataRow>()
 
-        rows.forEach { row ->
-            when (row.dataKind) {
-                "grocery" -> {
-                    val items = NutritionStorageCodec.decodeGrocery(row.payload)
-                    settings.putString(groceryKey, NutritionStorageCodec.encodeGrocery(items))
-                    _groceryItems.value = items
-                }
-                "ai_grocery" -> {
-                    val items = NutritionStorageCodec.decodeGrocery(row.payload)
-                    settings.putString(aiGroceryKey, NutritionStorageCodec.encodeGrocery(items))
-                    _aiGroceryItems.value = items
-                }
-                "meal_plan" -> {
-                    val plan = NutritionStorageCodec.decodeMealPlan(weekKey, row.payload)
-                    settings.putString(mealPlanKey, NutritionStorageCodec.encodeMealPlan(plan))
-                    _mealPlan.value = plan
-                }
+        rows.forEach { applyRemoteWeekData(it) }
+    }
+
+    fun applyRemoteWeekData(row: NutritionWeekDataRow) {
+        if (row.spaceId != spaceId || row.weekKey != weekKey) return
+        applyPayload(row.dataKind, row.payload)
+    }
+
+    private fun applyPayload(dataKind: String, payload: String) {
+        when (dataKind) {
+            "grocery" -> {
+                val items = NutritionStorageCodec.decodeGrocery(payload)
+                settings.putString(groceryKey, NutritionStorageCodec.encodeGrocery(items))
+                _groceryItems.value = items
+            }
+            "ai_grocery" -> {
+                val items = NutritionStorageCodec.decodeGrocery(payload)
+                settings.putString(aiGroceryKey, NutritionStorageCodec.encodeGrocery(items))
+                _aiGroceryItems.value = items
+            }
+            "meal_plan" -> {
+                val plan = NutritionStorageCodec.decodeMealPlan(weekKey, payload)
+                settings.putString(mealPlanKey, NutritionStorageCodec.encodeMealPlan(plan))
+                _mealPlan.value = plan
             }
         }
     }

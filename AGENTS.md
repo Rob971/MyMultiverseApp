@@ -24,4 +24,4 @@ Cursor rules in `.cursor/rules/` define how to plan, implement, test, and ship c
 ./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid
 ```
 
-Instrumented UI tests: run on **push**, or GitHub Actions → **KMP CI** → `workflow_dispatch` → `all`, `android`, or `android-instrumented-tests`.
+Instrumented UI tests: run on **push** and **pull request**, or GitHub Actions → **KMP CI** → `workflow_dispatch` → `all`, `android`, or `android-instrumented-tests`.
