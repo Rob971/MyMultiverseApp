@@ -9,18 +9,26 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
-    if (file.exists()) {
-        file.inputStream().use { load(it) }
-    }
-}
-val supabaseAnonKey = localProperties.getProperty("supabase.anonKey", "")
+val defaultSupabaseUrl = "https://ivjdzreazvkrrirecznk.supabase.co"
 
 val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
+    val localPropsFile = rootProject.file("local.properties")
     val outputDir = layout.buildDirectory.dir("generated/supabase/kotlin/app/mymultiverse/kmp/data/supabase")
+
+    inputs.file(localPropsFile).optional()
     outputs.dir(outputDir)
+
     doLast {
+        val properties = Properties().apply {
+            if (localPropsFile.exists()) {
+                localPropsFile.inputStream().use { load(it) }
+            }
+        }
+        val supabaseUrl = properties.getProperty("supabase.url", defaultSupabaseUrl)
+            .trim()
+            .ifBlank { defaultSupabaseUrl }
+        val supabaseAnonKey = properties.getProperty("supabase.anonKey", "").trim()
+
         val dir = outputDir.get().asFile
         dir.mkdirs()
         dir.resolve("SupabaseSecrets.kt").writeText(
@@ -28,7 +36,8 @@ val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
             package app.mymultiverse.kmp.data.supabase
 
             internal object SupabaseSecrets {
-                const val ANON_KEY: String = ${supabaseAnonKey.trim().quoteForKotlin()}
+                const val URL: String = ${supabaseUrl.quoteForKotlin()}
+                const val ANON_KEY: String = ${supabaseAnonKey.quoteForKotlin()}
             }
             """.trimIndent(),
         )

@@ -1,5 +1,6 @@
 package app.mymultiverse.kmp.presentation.di
 
+import app.mymultiverse.kmp.data.supabase.SupabaseRuntimeFlags
 import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.model.auth.AuthUser
@@ -69,13 +70,18 @@ class AppModuleKoinTest : KoinTest {
 
     @BeforeTest
     fun start() {
+        SupabaseRuntimeFlags.disableClientCreation = true
         Dispatchers.setMain(testDispatcher)
-        startKoin { modules(testAppModule) }
+        startKoin {
+            allowOverride(true)
+            modules(testAppModule)
+        }
     }
 
     @AfterTest
     fun stop() {
         stopKoin()
+        SupabaseRuntimeFlags.disableClientCreation = false
         Dispatchers.resetMain()
     }
 

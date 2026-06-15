@@ -42,7 +42,7 @@ private val domainModule = module {
 
 private val dataModule = module {
     single<CoroutineScope> { CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate) }
-    single { SupabaseClientHolder.create() }
+    single { SupabaseClientHolder.create(get()) }
     single<AuthRepository> {
         val client = get<SupabaseClientHolder>().client
         if (client != null) {

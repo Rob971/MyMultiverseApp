@@ -73,19 +73,20 @@ When you open a space (hub, grocery, or meal plan), `NutritionSessionCoordinator
 
 ## Local setup
 
-### 1. Clone and configure Supabase anon key
+### 1. Clone and configure Supabase
 
 ```bash
 cp local.properties.example local.properties
 ```
 
-Edit `local.properties` and set your publishable/anon key:
+Edit `local.properties` and set your publishable/anon key (and optionally override the project URL):
 
 ```properties
+supabase.url=https://your-project.supabase.co
 supabase.anonKey=your_supabase_anon_or_publishable_key_here
 ```
 
-The project URL is committed in `SupabaseConfig.kt`. The Gradle task `generateSupabaseSecrets` embeds the anon key at compile time (never commit `local.properties`).
+The Gradle task `generateSupabaseSecrets` embeds both values into `commonMain` at compile time for Android and iOS (never commit `local.properties`). If `supabase.url` is omitted, the default production URL from `composeApp/build.gradle.kts` is used.
 
 Without a key, auth and sharing screens show a “not configured” state; local-only nutrition still works.
 

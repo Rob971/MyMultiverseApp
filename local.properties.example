@@ -1,5 +1,6 @@
 # Copy to local.properties (gitignored) and fill in your Supabase publishable/anon key.
 # Dashboard: Project Settings → API → Project URL + anon / publishable key
 #
-# supabase.url is committed in SupabaseConfig.kt for this project.
+# supabase.url is optional; defaults to the production project URL in composeApp/build.gradle.kts.
+supabase.url=https://ivjdzreazvkrrirecznk.supabase.co
 supabase.anonKey=your_supabase_anon_or_publishable_key_here
