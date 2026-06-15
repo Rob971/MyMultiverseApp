@@ -5,10 +5,14 @@ on:
     branches:
       - main
       - master
+      - "feature/**"
   pull_request:
     branches:
       - main
       - master
+    types:
+      - opened
+      - reopened
   workflow_dispatch:
     inputs:
       target:
@@ -154,7 +158,8 @@ jobs:
       - android-instrumented-tests
       - android-apk
     if: >-
-      ${{ github.event_name == 'push' ||
+      ${{ (github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
           contains(fromJSON('["all", "firebase", "firebase-release"]'), github.event.inputs.target) }}
 
     steps:
