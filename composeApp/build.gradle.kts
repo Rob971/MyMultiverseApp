@@ -15,7 +15,10 @@ val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
     val localPropsFile = rootProject.file("local.properties")
     val outputDir = layout.buildDirectory.dir("generated/supabase/kotlin/app/mymultiverse/kmp/data/supabase")
 
-    inputs.file(localPropsFile).optional()
+    inputs.property(
+        "localPropertiesState",
+        if (localPropsFile.exists()) localPropsFile.readText() else "<missing>",
+    )
     outputs.dir(outputDir)
 
     doLast {
