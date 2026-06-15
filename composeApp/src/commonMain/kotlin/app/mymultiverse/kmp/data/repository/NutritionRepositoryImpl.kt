@@ -15,6 +15,8 @@ class NutritionRepositoryImpl(
     override val weekKey: String = WeekCalendar.currentWeekKey(),
 ) : NutritionRepository {
 
+    override val spaceId: String? = null
+
     private val groceryKey = "nutrition_grocery_$weekKey"
     private val aiGroceryKey = "nutrition_ai_grocery_$weekKey"
     private val mealPlanKey = "nutrition_meal_plan_$weekKey"
@@ -28,6 +30,8 @@ class NutritionRepositoryImpl(
     override fun observeAiGroceryItems(): Flow<List<GroceryItem>> = _aiGroceryItems.asStateFlow()
 
     override fun observeMealPlan(): Flow<WeeklyMealPlan> = _mealPlan.asStateFlow()
+
+    override suspend fun refreshFromRemote() = Unit
 
     override suspend fun saveGroceryItems(items: List<GroceryItem>) {
         settings.putString(groceryKey, NutritionStorageCodec.encodeGrocery(items))

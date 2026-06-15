@@ -24,6 +24,8 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_progress
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_label
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_hub_manage_members
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_subtitle
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
@@ -35,6 +37,7 @@ import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.WeekContextBanner
 import app.mymultiverse.kmp.presentation.components.screenContentArea
 import app.mymultiverse.kmp.presentation.components.screenListPadding
+import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
@@ -44,10 +47,13 @@ object NutritionHubTestTags {
     const val GROCERY_CARD = "nutrition_hub_grocery"
     const val MEAL_PLAN_CARD = "nutrition_hub_meal_plan"
     const val AI_CARD = "nutrition_hub_ai"
+    const val MEMBERS_CARD = "nutrition_hub_members"
 }
 
 @Composable
 fun NutritionHubScreen(
+    spaceName: String,
+    enabledFeatures: Set<NutritionSharingFeature>,
     onBack: () -> Unit,
     onOpenSection: (NutritionSection) -> Unit,
     screenModel: NutritionScreenModel = koinInject(),
@@ -77,6 +83,7 @@ fun NutritionHubScreen(
 
     NutritionScaffold(
         title = stringResource(Res.string.nutrition_hub_title),
+        subtitle = spaceName,
         onBack = onBack,
     ) { padding ->
         LazyColumn(
@@ -105,37 +112,54 @@ fun NutritionHubScreen(
 
             item {
                 FamilyLogisticCard(
-                    title = stringResource(Res.string.nutrition_grocery_title),
-                    description = stringResource(Res.string.nutrition_grocery_description),
-                    accentColor = SharedJourneyColors.SageSoft,
-                    icon = AppIcons.Restaurant,
-                    statusLine = groceryStatus,
-                    modifier = Modifier.testTag(NutritionHubTestTags.GROCERY_CARD),
-                    onClick = { onOpenSection(NutritionSection.Grocery) },
-                )
-            }
-
-            item {
-                FamilyLogisticCard(
-                    title = stringResource(Res.string.nutrition_meal_plan_title),
-                    description = stringResource(Res.string.nutrition_meal_plan_description),
-                    accentColor = SharedJourneyColors.TerracottaOrange,
-                    icon = AppIcons.DateRange,
-                    statusLine = mealPlanStatus,
-                    modifier = Modifier.testTag(NutritionHubTestTags.MEAL_PLAN_CARD),
-                    onClick = { onOpenSection(NutritionSection.MealPlan) },
-                )
-            }
-
-            item {
-                FamilyLogisticCard(
-                    title = stringResource(Res.string.nutrition_ai_title),
-                    description = stringResource(Res.string.nutrition_ai_description),
+                    title = stringResource(Res.string.sharing_hub_manage_members),
+                    description = stringResource(Res.string.sharing_members_subtitle),
                     accentColor = SharedJourneyColors.MediterraneanTeal,
-                    icon = AppIcons.Sparkles,
-                    modifier = Modifier.testTag(NutritionHubTestTags.AI_CARD),
-                    onClick = { onOpenSection(NutritionSection.AiAdvice) },
+                    icon = AppIcons.Person,
+                    modifier = Modifier.testTag(NutritionHubTestTags.MEMBERS_CARD),
+                    onClick = { onOpenSection(NutritionSection.Members) },
                 )
+            }
+
+            if (NutritionSharingFeature.Grocery in enabledFeatures) {
+                item {
+                    FamilyLogisticCard(
+                        title = stringResource(Res.string.nutrition_grocery_title),
+                        description = stringResource(Res.string.nutrition_grocery_description),
+                        accentColor = SharedJourneyColors.SageSoft,
+                        icon = AppIcons.Restaurant,
+                        statusLine = groceryStatus,
+                        modifier = Modifier.testTag(NutritionHubTestTags.GROCERY_CARD),
+                        onClick = { onOpenSection(NutritionSection.Grocery) },
+                    )
+                }
+            }
+
+            if (NutritionSharingFeature.MealPlan in enabledFeatures) {
+                item {
+                    FamilyLogisticCard(
+                        title = stringResource(Res.string.nutrition_meal_plan_title),
+                        description = stringResource(Res.string.nutrition_meal_plan_description),
+                        accentColor = SharedJourneyColors.TerracottaOrange,
+                        icon = AppIcons.DateRange,
+                        statusLine = mealPlanStatus,
+                        modifier = Modifier.testTag(NutritionHubTestTags.MEAL_PLAN_CARD),
+                        onClick = { onOpenSection(NutritionSection.MealPlan) },
+                    )
+                }
+            }
+
+            if (NutritionSharingFeature.AiAdvice in enabledFeatures) {
+                item {
+                    FamilyLogisticCard(
+                        title = stringResource(Res.string.nutrition_ai_title),
+                        description = stringResource(Res.string.nutrition_ai_description),
+                        accentColor = SharedJourneyColors.MediterraneanTeal,
+                        icon = AppIcons.Sparkles,
+                        modifier = Modifier.testTag(NutritionHubTestTags.AI_CARD),
+                        onClick = { onOpenSection(NutritionSection.AiAdvice) },
+                    )
+                }
             }
         }
     }

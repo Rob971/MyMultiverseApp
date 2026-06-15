@@ -3,6 +3,7 @@ package app.mymultiverse.kmp.presentation.screens.nutrition
 import app.mymultiverse.kmp.domain.model.nutrition.DayMeals
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
+import app.mymultiverse.kmp.data.repository.NutritionRepositoryHolder
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
@@ -50,7 +51,7 @@ class NutritionScreenModelTest {
     @Test
     fun addGroceryItem_trimsLabelAndPersists() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
-        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope) { "item-1" }
+        val model = nutritionScreenModel(repository, scope = modelScope) { "item-1" }
 
         assertTrue(model.addGroceryItem("  Olive oil  "))
         advanceUntilIdle()
@@ -61,7 +62,7 @@ class NutritionScreenModelTest {
     @Test
     fun addGroceryItem_ignoresBlankInput() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
-        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
+        val model = nutritionScreenModel(repository, scope = modelScope)
 
         assertFalse(model.addGroceryItem("   "))
         advanceUntilIdle()
@@ -73,7 +74,7 @@ class NutritionScreenModelTest {
     fun toggleGroceryItem_flipsCheckedState() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         repository.grocery.value = listOf(GroceryItem("1", "Rice", false))
-        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
+        val model = nutritionScreenModel(repository, scope = modelScope)
         advanceUntilIdle()
 
         model.toggleGroceryItem("1")
@@ -85,7 +86,7 @@ class NutritionScreenModelTest {
     @Test
     fun addGroceryItem_rejectsDuplicateLabels() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
-        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope) { "item-1" }
+        val model = nutritionScreenModel(repository, scope = modelScope) { "item-1" }
 
         assertTrue(model.addGroceryItem("Milk"))
         advanceUntilIdle()
@@ -99,7 +100,7 @@ class NutritionScreenModelTest {
     fun updateGroceryItemLabel_updatesExistingItem() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         repository.grocery.value = listOf(GroceryItem("1", "Rice", false))
-        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
+        val model = nutritionScreenModel(repository, scope = modelScope)
         advanceUntilIdle()
 
         assertTrue(model.updateGroceryItemLabel("1", "Brown rice"))
@@ -112,7 +113,7 @@ class NutritionScreenModelTest {
     fun restoreGroceryItem_insertsAtIndex() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         repository.grocery.value = listOf(GroceryItem("2", "Beans", false))
-        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
+        val model = nutritionScreenModel(repository, scope = modelScope)
         advanceUntilIdle()
 
         model.restoreGroceryItem(GroceryItem("1", "Rice", false), index = 0)
@@ -128,7 +129,7 @@ class NutritionScreenModelTest {
             GroceryItem("1", "Rice", false),
             GroceryItem("2", "Beans", true),
         )
-        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
+        val model = nutritionScreenModel(repository, scope = modelScope)
         advanceUntilIdle()
 
         model.clearCheckedGroceryItems()
@@ -144,7 +145,7 @@ class NutritionScreenModelTest {
             GroceryItem("1", "Rice", false),
             GroceryItem("2", "Beans", false),
         )
-        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
+        val model = nutritionScreenModel(repository, scope = modelScope)
         advanceUntilIdle()
 
         model.removeGroceryItem("1")
@@ -156,7 +157,7 @@ class NutritionScreenModelTest {
     @Test
     fun updateMeal_updatesLunchAndDinnerForDay() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
-        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
+        val model = nutritionScreenModel(repository, scope = modelScope)
         advanceUntilIdle()
 
         model.updateMeal(dayIndex = 2, lunch = "Quinoa bowl")
@@ -171,7 +172,7 @@ class NutritionScreenModelTest {
     @Test
     fun updateMeal_ignoresInvalidDayIndex() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
-        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
+        val model = nutritionScreenModel(repository, scope = modelScope)
         advanceUntilIdle()
 
         model.updateMeal(dayIndex = 99, lunch = "Ignored")
@@ -184,7 +185,7 @@ class NutritionScreenModelTest {
     fun askNutritionAdvice_successSetsAnswerState() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val advice = FakeNutritionAdviceService(answer = "Eat more vegetables.")
-        val model = NutritionScreenModel(repository, advice, modelScope)
+        val model = nutritionScreenModel(repository, advice, modelScope)
 
         model.askNutritionAdvice("Vegetables?")
         advanceUntilIdle()
@@ -197,7 +198,7 @@ class NutritionScreenModelTest {
     fun askNutritionAdvice_failureSetsErrorState() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val advice = FakeNutritionAdviceService(shouldFail = true, failureMessage = "empty_question")
-        val model = NutritionScreenModel(repository, advice, modelScope)
+        val model = nutritionScreenModel(repository, advice, modelScope)
 
         model.askNutritionAdvice("")
         advanceUntilIdle()
@@ -209,7 +210,7 @@ class NutritionScreenModelTest {
     @Test
     fun resetAiState_returnsToIdle() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
-        val model = NutritionScreenModel(repository, FakeNutritionAdviceService(), modelScope)
+        val model = nutritionScreenModel(repository, scope = modelScope)
         model.askNutritionAdvice("Protein?")
         advanceUntilIdle()
 
@@ -222,7 +223,7 @@ class NutritionScreenModelTest {
     fun runAiAssistant_groceryMode_persistsReadOnlyAiGrocery() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val ai = FakeNutritionAdviceService(groceryLabels = listOf("Milk", "Eggs"))
-        val model = NutritionScreenModel(repository, ai, modelScope) { "ai-1" }
+        val model = nutritionScreenModel(repository, ai, modelScope) { "ai-1" }
 
         model.runAiAssistant(NutritionAiMode.GroceryList, "high protein")
         advanceUntilIdle()
@@ -238,7 +239,7 @@ class NutritionScreenModelTest {
     fun runAiAssistant_mealPlanMode_previewsThenApplies() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val ai = FakeNutritionAdviceService()
-        val model = NutritionScreenModel(repository, ai, modelScope)
+        val model = nutritionScreenModel(repository, ai, modelScope)
 
         model.runAiAssistant(
             NutritionAiMode.MealPlan,
@@ -259,7 +260,7 @@ class NutritionScreenModelTest {
     fun generateGroceryForMeal_appendsDistinctAiGrocery() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val ai = FakeNutritionAdviceService(mealGroceryLabels = listOf("Garlic", "Pasta"))
-        val model = NutritionScreenModel(repository, ai, modelScope) { "meal-g1" }
+        val model = nutritionScreenModel(repository, ai, modelScope) { "meal-g1" }
 
         model.updateMeal(0, lunch = "Pasta carbonara")
         advanceUntilIdle()
@@ -274,6 +275,7 @@ class NutritionScreenModelTest {
 private class FakeNutritionRepository(
     override val weekKey: String,
 ) : NutritionRepository {
+    override val spaceId: String? = "test-space"
     val grocery = MutableStateFlow<List<GroceryItem>>(emptyList())
     val aiGrocery = MutableStateFlow<List<GroceryItem>>(emptyList())
     val mealPlan = MutableStateFlow(WeeklyMealPlan(weekKey = weekKey))
@@ -283,6 +285,8 @@ private class FakeNutritionRepository(
     override fun observeAiGroceryItems(): Flow<List<GroceryItem>> = aiGrocery
 
     override fun observeMealPlan(): Flow<WeeklyMealPlan> = mealPlan
+
+    override suspend fun refreshFromRemote() = Unit
 
     override suspend fun saveGroceryItems(items: List<GroceryItem>) {
         grocery.value = items
@@ -296,6 +300,27 @@ private class FakeNutritionRepository(
         mealPlan.value = plan
     }
 }
+
+private fun nutritionRepositoryHolder(
+    repository: FakeNutritionRepository,
+): NutritionRepositoryHolder =
+    NutritionRepositoryHolder(
+        localFallback = repository,
+        remoteFactory = { repository },
+    )
+
+private fun nutritionScreenModel(
+    repository: FakeNutritionRepository,
+    advice: NutritionAiAssistantService = FakeNutritionAdviceService(),
+    scope: CoroutineScope,
+    newItemId: () -> String = { "item-1" },
+): NutritionScreenModel =
+    NutritionScreenModel(
+        repositoryHolder = nutritionRepositoryHolder(repository),
+        aiAssistant = advice,
+        scope = scope,
+        newItemId = newItemId,
+    )
 
 private class FakeNutritionAdviceService(
     private val answer: String = "Advice",

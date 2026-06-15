@@ -7,8 +7,12 @@ import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
+import app.mymultiverse.kmp.data.repository.NutritionRepositoryHolder
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
+import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -34,22 +38,36 @@ sealed class NutritionAiState {
 }
 
 class NutritionScreenModel(
-    private val repository: NutritionRepository,
+    private val repositoryHolder: NutritionRepositoryHolder,
     private val aiAssistant: NutritionAiAssistantService,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
     private val newItemId: () -> String = { "${Random.nextLong()}_${Random.nextInt()}" },
 ) {
+    private val repository: NutritionRepository
+        get() = repositoryHolder.active.value
 
-    val weekKey: String = repository.weekKey
+    val weekKey: String
+        get() = repository.weekKey
 
-    val groceryItems: StateFlow<List<GroceryItem>> = repository.observeGroceryItems()
+    val groceryItems: StateFlow<List<GroceryItem>> = repositoryHolder.active
+        .flatMapLatest { it.observeGroceryItems() }
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    val aiGroceryItems: StateFlow<List<GroceryItem>> = repository.observeAiGroceryItems()
+    val aiGroceryItems: StateFlow<List<GroceryItem>> = repositoryHolder.active
+        .flatMapLatest { it.observeAiGroceryItems() }
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    val mealPlan: StateFlow<WeeklyMealPlan> = repository.observeMealPlan()
-        .stateIn(scope, SharingStarted.Eagerly, WeeklyMealPlan(weekKey = repository.weekKey))
+    val mealPlan: StateFlow<WeeklyMealPlan> = repositoryHolder.active
+        .flatMapLatest { it.observeMealPlan() }
+        .stateIn(
+            scope,
+            SharingStarted.Eagerly,
+            WeeklyMealPlan(weekKey = WeekCalendar.currentWeekKey()),
+        )
+
+    suspend fun activateSpace(spaceId: String) {
+        repositoryHolder.activate(spaceId)
+    }
 
     private val _aiState = MutableStateFlow<NutritionAiState>(NutritionAiState.Idle)
     val aiState: StateFlow<NutritionAiState> = _aiState.asStateFlow()

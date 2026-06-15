@@ -10,19 +10,22 @@ import kotlin.test.assertIs
 class AppNavigationTest {
 
     @Test
-    fun openNutritionFromHome_targetsHubByDefault() {
+    fun openNutritionFromHome_targetsSpacesByDefault() {
         val fromHome = AppRoute.Nutrition()
 
-        assertEquals(NutritionSection.Hub, fromHome.section)
+        assertEquals(NutritionSection.Spaces, fromHome.section)
+        assertEquals(null, fromHome.space)
     }
 
     @Test
     fun nutritionSections_areDistinctDestinations() {
         val sections = listOf(
+            NutritionSection.Spaces,
             NutritionSection.Hub,
             NutritionSection.Grocery,
             NutritionSection.MealPlan,
             NutritionSection.AiAdvice,
+            NutritionSection.Members,
         )
 
         assertEquals(sections.size, sections.distinct().size)
@@ -30,8 +33,13 @@ class AppNavigationTest {
 
     @Test
     fun backToHub_preservesNutritionContainer() {
-        val grocery = AppRoute.Nutrition(section = NutritionSection.Grocery)
-        val hub = AppRoute.Nutrition(section = NutritionSection.Hub)
+        val space = NutritionSpaceContext(
+            id = "space-1",
+            name = "Home",
+            features = setOf(app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature.Grocery),
+        )
+        val grocery = AppRoute.Nutrition(space = space, section = NutritionSection.Grocery)
+        val hub = AppRoute.Nutrition(space = space, section = NutritionSection.Hub)
 
         assertIs<AppRoute.Nutrition>(grocery)
         assertIs<AppRoute.Nutrition>(hub)

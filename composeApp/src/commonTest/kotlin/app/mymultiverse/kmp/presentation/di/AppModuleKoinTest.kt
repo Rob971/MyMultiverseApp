@@ -1,7 +1,12 @@
 package app.mymultiverse.kmp.presentation.di
 
 import app.mymultiverse.kmp.domain.manager.LanguageManager
+import app.mymultiverse.kmp.domain.model.auth.AuthState
+import app.mymultiverse.kmp.domain.model.auth.AuthUser
+import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
+import app.mymultiverse.kmp.domain.repository.SharingSpaceRepository
+import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionScreenModel
@@ -40,6 +45,19 @@ class AppModuleKoinTest : KoinTest {
     private val testPlatformModule = module {
         single<Settings> { MapSettings() }
         single<LanguageManager> { FakeLanguageManager() }
+        single<AuthRepository> {
+            FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(
+                        id = "test-user",
+                        email = "test@example.com",
+                        displayName = "Test User",
+                    ),
+                ),
+            )
+        }
+        single<SharingSpaceRepository> { FakeSharingSpaceRepository() }
+        single<SpaceCollaborationRepository> { FakeSpaceCollaborationRepository() }
     }
 
     private val testAppModule = module {

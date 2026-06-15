@@ -1,3 +1,4 @@
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -5,6 +6,55 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
+}
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+val supabaseAnonKey = localProperties.getProperty("supabase.anonKey", "")
+
+val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
+    val outputDir = layout.buildDirectory.dir("generated/supabase/kotlin/app/mymultiverse/kmp/data/supabase")
+    outputs.dir(outputDir)
+    doLast {
+        val dir = outputDir.get().asFile
+        dir.mkdirs()
+        dir.resolve("SupabaseSecrets.kt").writeText(
+            """
+            package app.mymultiverse.kmp.data.supabase
+
+            internal object SupabaseSecrets {
+                const val ANON_KEY: String = ${supabaseAnonKey.trim().quoteForKotlin()}
+            }
+            """.trimIndent(),
+        )
+    }
+}
+
+fun String.quoteForKotlin(): String = buildString {
+    append('"')
+    for (ch in this@quoteForKotlin) {
+        when (ch) {
+            '\\' -> append("\\\\")
+            '"' -> append("\\\"")
+            '\n' -> append("\\n")
+            '\r' -> append("\\r")
+            '\t' -> append("\\t")
+            else -> append(ch)
+        }
+    }
+    append('"')
+}
+
+configurations.configureEach {
+    resolutionStrategy {
+        force("androidx.browser:browser:1.8.0")
+        force("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+    }
 }
 
 kotlin {
@@ -27,6 +77,10 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.androidx.appcompat)
+            implementation(libs.ktor.client.android)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -41,8 +95,12 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.coroutines)
+
+            implementation(libs.supabase.auth)
+            implementation(libs.supabase.postgrest)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -62,7 +120,16 @@ kotlin {
             }
         }
     }
+
+    sourceSets.named("commonMain") {
+        kotlin.srcDir(layout.buildDirectory.dir("generated/supabase/kotlin"))
+    }
 }
+
+tasks.matching { it.name.contains("compile", ignoreCase = true) && it.name.contains("Kotlin") }
+    .configureEach {
+        dependsOn(generateSupabaseSecrets)
+    }
 
 android {
     namespace = "app.mymultiverse.kmp"
