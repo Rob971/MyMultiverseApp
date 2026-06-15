@@ -3,11 +3,13 @@ package app.mymultiverse.kmp.ui
 import androidx.appcompat.R
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.kmp.domain.model.Greeting
@@ -208,12 +210,10 @@ class NutritionUxInstrumentedTest {
             .performClick()
         waitForCondition { screenModel.aiState.value is NutritionAiState.Advice }
 
-        composeRule.onNodeWithTag(NutritionAiTestTags.ANSWER_CARD)
-            .performScrollTo()
-            .assertIsDisplayed()
-        composeRule.onNodeWithText(answer)
-            .performScrollTo()
-            .assertIsDisplayed()
+        composeRule.onNodeWithTag(NutritionAiTestTags.SCROLL_LIST)
+            .performScrollToNode(hasTestTag(NutritionAiTestTags.ANSWER_CARD))
+        composeRule.onNodeWithTag(NutritionAiTestTags.ANSWER_CARD).assertIsDisplayed()
+        composeRule.onNodeWithText(answer).assertIsDisplayed()
     }
 
     @Test

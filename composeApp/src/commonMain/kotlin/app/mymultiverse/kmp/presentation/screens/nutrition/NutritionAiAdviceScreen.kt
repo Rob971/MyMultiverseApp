@@ -80,6 +80,7 @@ import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import org.koin.compose.koinInject
 
 object NutritionAiTestTags {
+    const val SCROLL_LIST = "nutrition_ai_scroll"
     const val CRITERIA_FIELD = "nutrition_ai_criteria"
     const val GENERATE_BUTTON = "nutrition_ai_generate"
     const val ANSWER_CARD = "nutrition_ai_answer"
@@ -142,7 +143,9 @@ fun NutritionAiAdviceScreen(
         onBack = onBack,
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.screenContentArea(padding),
+            modifier = Modifier
+                .screenContentArea(padding)
+                .testTag(NutritionAiTestTags.SCROLL_LIST),
             contentPadding = screenListPadding(),
             verticalArrangement = Arrangement.spacedBy(ScreenLayout.sectionSpacing),
         ) {
