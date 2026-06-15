@@ -33,6 +33,8 @@ data class ContactGroup(
     val name: String,
     val lifecycle: GroupLifecycle,
     val ownerId: String,
+    val eventLabel: String? = null,
+    val startsAtEpochMillis: Long? = null,
     val expiresAtEpochMillis: Long? = null,
 )
 

@@ -24,12 +24,14 @@ import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.LanguagePicker
+import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import org.koin.compose.koinInject
 
 object HomeTestTags {
     const val NUTRITION_CARD = "home_nutrition_card"
+    const val SIGN_OUT_BUTTON = "home_sign_out_button"
 }
 
 @Composable
@@ -39,12 +41,17 @@ fun HomeScreen(
     val screenModel = koinInject<HomeScreenModel>()
     val greeting by screenModel.greeting.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
+    val pendingInvites by screenModel.pendingInvites.collectAsState()
 
     HomeContent(
         greeting = greeting,
         isRefreshing = isRefreshing,
+        pendingInvites = pendingInvites,
         onRefreshClick = { screenModel.refresh() },
         onOpenNutrition = onOpenNutrition,
+        onSignOut = { screenModel.signOut() },
+        onAcceptInvite = screenModel::acceptInvite,
+        onDeclineInvite = screenModel::declineInvite,
     )
 }
 
@@ -52,8 +59,12 @@ fun HomeScreen(
 fun HomeContent(
     greeting: Greeting?,
     isRefreshing: Boolean,
+    pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.SpaceInvite>,
     onRefreshClick: () -> Unit,
     onOpenNutrition: () -> Unit,
+    onSignOut: () -> Unit,
+    onAcceptInvite: (String) -> Unit,
+    onDeclineInvite: (String) -> Unit,
 ) {
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
 
@@ -65,6 +76,12 @@ fun HomeContent(
                 title = { },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 actions = {
+                    TextButton(
+                        onClick = onSignOut,
+                        modifier = Modifier.testTag(HomeTestTags.SIGN_OUT_BUTTON),
+                    ) {
+                        Text(stringResource(Res.string.auth_sign_out))
+                    }
                     LanguagePicker()
                 },
             )
@@ -89,6 +106,14 @@ fun HomeContent(
                             else -> stringResource(Res.string.home_greeting)
                         },
                     description = stringResource(Res.string.home_banner_description),
+                )
+            }
+
+            item {
+                PendingInvitesCard(
+                    invites = pendingInvites,
+                    onAccept = onAcceptInvite,
+                    onDecline = onDeclineInvite,
                 )
             }
 

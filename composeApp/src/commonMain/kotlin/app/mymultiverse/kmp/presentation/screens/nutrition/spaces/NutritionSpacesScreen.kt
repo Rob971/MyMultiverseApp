@@ -286,5 +286,6 @@ private fun SharingSpace.toContext(): NutritionSpaceContext =
     NutritionSpaceContext(
         id = id,
         name = name,
+        ownerId = ownerId,
         features = features,
     )

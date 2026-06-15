@@ -3,6 +3,11 @@ package app.mymultiverse.kmp.presentation.screens.home
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.repository.GreetingRepository
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
+import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
+import app.mymultiverse.kmp.presentation.di.FakeAuthRepository
+import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
+import app.mymultiverse.kmp.presentation.di.FakeSpaceCollaborationRepository
+import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -31,43 +36,54 @@ class HomeScreenModelTest {
         Dispatchers.resetMain()
     }
 
+    private fun model(repository: FakeGreetingRepository): HomeScreenModel =
+        HomeScreenModel(
+            getGreetingUseCase = GetGreetingUseCase(repository),
+            authRepository = FakeAuthRepository(),
+            collaborationRepository = FakeSpaceCollaborationRepository(),
+            sessionCoordinator = FakeNutritionSessionCoordinator(
+                initialRepository = NutritionRepositoryImpl(MapSettings()),
+            ),
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+
     @Test
     fun init_loadsGreeting() = runTest(testDispatcher) {
         val repository = FakeGreetingRepository(Greeting("Welcome home"))
-        val model = HomeScreenModel(GetGreetingUseCase(repository))
+        val screenModel = model(repository)
 
         advanceUntilIdle()
 
-        assertEquals("Welcome home", model.greeting.value?.text)
-        assertFalse(model.isRefreshing.value)
+        assertEquals("Welcome home", screenModel.greeting.value?.text)
+        assertFalse(screenModel.isRefreshing.value)
     }
 
     @Test
     fun refresh_replacesGreetingWhenSuccessful() = runTest(testDispatcher) {
         val repository = FakeGreetingRepository(Greeting("Again"))
-        val model = HomeScreenModel(GetGreetingUseCase(repository))
+        val screenModel = model(repository)
         advanceUntilIdle()
 
         repository.nextGreeting = Greeting("Refreshed")
-        model.refresh()
+        screenModel.refresh()
         advanceUntilIdle()
 
-        assertFalse(model.isRefreshing.value)
-        assertEquals("Refreshed", model.greeting.value?.text)
+        assertFalse(screenModel.isRefreshing.value)
+        assertEquals("Refreshed", screenModel.greeting.value?.text)
     }
 
     @Test
     fun refresh_clearsRefreshingEvenWhenRepositoryFails() = runTest(testDispatcher) {
         val repository = FakeGreetingRepository(Greeting("Initial"))
-        val model = HomeScreenModel(GetGreetingUseCase(repository))
+        val screenModel = model(repository)
         advanceUntilIdle()
 
         repository.failOnLoad = true
-        model.refresh()
+        screenModel.refresh()
         advanceUntilIdle()
 
-        assertFalse(model.isRefreshing.value)
-        assertEquals("Initial", model.greeting.value?.text)
+        assertFalse(screenModel.isRefreshing.value)
+        assertEquals("Initial", screenModel.greeting.value?.text)
     }
 }
 

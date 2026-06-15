@@ -1,15 +1,61 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Aligns with Nutrition / Family Logistics flows (weekly meal plan, grocery, AI adviser).
 
-version: 3
-updated: 2026-05-19
+version: 4
+updated: 2026-06-15
 
 summary: |
-  Verify home → nutrition hub → grocery (editable), weekly meal plan (lunch/dinner),
-  AI adviser (advice / full grocery / meal plan), and per-meal AI grocery from the meal plan.
-  AI grocery lists are read-only and separate from your editable shopping list.
+  Verify auth, sharing spaces, members/groups, pending invites, sign-out, and nutrition
+  hub sync status. Core grocery, meal plan, and AI flows remain as before.
 
 test_cases:
+  - id: auth-sign-in
+    title: Email sign-in
+    steps:
+      - Launch the app with Supabase configured.
+      - Sign in with email and password (or create an account).
+    expected:
+      - Home screen appears after successful authentication.
+
+  - id: home-sign-out
+    title: Sign out from home
+    steps:
+      - From Home, tap Sign out in the top bar.
+    expected:
+      - Login screen returns.
+
+  - id: home-pending-invite
+    title: Accept a pending space invite
+    steps:
+      - Sign in as a user who has a pending nutrition space invite.
+      - On Home, tap Accept on the invite card.
+    expected:
+      - Invite card disappears; user can open Nutrition and see the shared space.
+
+  - id: nutrition-sharing-spaces
+    title: Open nutrition sharing spaces
+    steps:
+      - From Home, open Nutrition.
+      - View the list of sharing spaces or create a new one with at least Grocery enabled.
+    expected:
+      - Space list loads; new space opens the nutrition hub.
+
+  - id: nutrition-members
+    title: Manage space members
+    steps:
+      - From a sharing space hub, open People and groups.
+      - Add a person by email (existing account) or send an invite (unknown email).
+      - Create a trip/event group with an end date and add it to the space.
+    expected:
+      - Members list shows owner, people, and groups; invite sent message for unknown emails.
+
+  - id: nutrition-sync-status
+    title: Shared nutrition sync indicator
+    steps:
+      - Open a sharing space hub while online, then toggle airplane mode and edit grocery.
+    expected:
+      - Hub shows syncing, pending, or offline status when shared sync is not idle.
+
   - id: home-nutrition-card
     title: Open nutrition from home
     steps:

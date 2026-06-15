@@ -1,28 +1,41 @@
 package app.mymultiverse.kmp.presentation.screens.home
 
 import app.mymultiverse.kmp.domain.model.Greeting
+import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
+import app.mymultiverse.kmp.domain.repository.AuthRepository
+import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
+import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class HomeScreenModel(
     private val getGreetingUseCase: GetGreetingUseCase,
+    private val authRepository: AuthRepository,
+    private val collaborationRepository: SpaceCollaborationRepository,
+    private val sessionCoordinator: NutritionSessionCoordinator,
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-
     private val _greeting = MutableStateFlow<Greeting?>(null)
     val greeting: StateFlow<Greeting?> = _greeting.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+    val pendingInvites: StateFlow<List<SpaceInvite>> = collaborationRepository
+        .observePendingInvites()
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     init {
         refresh()
+        scope.launch { collaborationRepository.refreshPendingInvites() }
     }
 
     fun refresh() {
@@ -30,11 +43,31 @@ class HomeScreenModel(
             _isRefreshing.value = true
             try {
                 _greeting.value = getGreetingUseCase()
+                collaborationRepository.refreshPendingInvites()
             } catch (_: Throwable) {
                 // Keep the last greeting when refresh fails.
             } finally {
                 _isRefreshing.value = false
             }
+        }
+    }
+
+    fun signOut() {
+        scope.launch {
+            sessionCoordinator.deactivate()
+            authRepository.signOut()
+        }
+    }
+
+    fun acceptInvite(inviteId: String) {
+        scope.launch {
+            collaborationRepository.acceptInvite(inviteId)
+        }
+    }
+
+    fun declineInvite(inviteId: String) {
+        scope.launch {
+            collaborationRepository.declineInvite(inviteId)
         }
     }
 }

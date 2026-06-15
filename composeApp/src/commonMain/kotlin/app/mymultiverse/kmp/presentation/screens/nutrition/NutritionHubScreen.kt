@@ -33,11 +33,13 @@ import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
+import app.mymultiverse.kmp.presentation.components.NutritionSyncStatusBanner
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.WeekContextBanner
 import app.mymultiverse.kmp.presentation.components.screenContentArea
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
+import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
@@ -60,6 +62,7 @@ fun NutritionHubScreen(
 ) {
     val grocery by screenModel.groceryItems.collectAsState()
     val mealPlan by screenModel.mealPlan.collectAsState()
+    val syncStatus by screenModel.syncStatus.collectAsState()
     val weekLabel = stringResource(
         Res.string.nutrition_week_label,
         WeekCalendar.formatWeekRange(screenModel.weekKey),
@@ -93,6 +96,12 @@ fun NutritionHubScreen(
         ) {
             item {
                 WeekContextBanner(weekLabel = weekLabel)
+            }
+
+            if (syncStatus != NutritionSyncStatus.Idle) {
+                item {
+                    NutritionSyncStatusBanner(status = syncStatus)
+                }
             }
 
             item {

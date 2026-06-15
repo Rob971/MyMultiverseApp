@@ -33,6 +33,8 @@ data class ContactGroupRow(
     val name: String,
     val lifecycle: String,
     @SerialName("owner_id") val ownerId: String,
+    @SerialName("event_label") val eventLabel: String? = null,
+    @SerialName("starts_at") val startsAt: String? = null,
     @SerialName("expires_at") val expiresAt: String? = null,
 )
 
@@ -41,6 +43,8 @@ data class ContactGroupInsertRow(
     val name: String,
     val lifecycle: String,
     @SerialName("owner_id") val ownerId: String,
+    @SerialName("event_label") val eventLabel: String? = null,
+    @SerialName("starts_at") val startsAt: String? = null,
     @SerialName("expires_at") val expiresAt: String? = null,
 )
 
@@ -48,6 +52,37 @@ data class ContactGroupInsertRow(
 data class GroupMemberInsertRow(
     @SerialName("group_id") val groupId: String,
     @SerialName("user_id") val userId: String,
+)
+
+@Serializable
+data class GroupMemberRow(
+    val id: String,
+    @SerialName("group_id") val groupId: String,
+    @SerialName("user_id") val userId: String,
+)
+
+@Serializable
+data class SpaceInviteRow(
+    val id: String,
+    @SerialName("space_id") val spaceId: String,
+    val email: String,
+    val role: String,
+    @SerialName("expires_at") val expiresAt: String? = null,
+    @SerialName("accepted_at") val acceptedAt: String? = null,
+    @SerialName("declined_at") val declinedAt: String? = null,
+)
+
+@Serializable
+data class SpaceInviteInsertRow(
+    @SerialName("space_id") val spaceId: String,
+    val email: String,
+    val role: String,
+    @SerialName("invited_by") val invitedBy: String,
+)
+
+@Serializable
+data class SpaceInviteUpdateRow(
+    @SerialName("declined_at") val declinedAt: String,
 )
 
 @Serializable

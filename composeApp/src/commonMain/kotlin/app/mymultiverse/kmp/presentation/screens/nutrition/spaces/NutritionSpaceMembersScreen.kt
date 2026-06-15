@@ -12,7 +12,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -28,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.model.sharing.GroupLifecycle
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberKind
-import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
+import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.screenContentArea
@@ -38,6 +37,7 @@ import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_add_group
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_add_person
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_add_to_group
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_cancel
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_confirm_add
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_create_group_title
@@ -49,14 +49,29 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_member
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_generic
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_group_name_required
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_not_configured
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_event_expires_label
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_event_expires_required
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_event_label
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_event_label_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_group_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_group_lifecycle_event
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_group_lifecycle_persistent
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_group_member_added
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_group_members_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_group_name_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_group_pick_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_sent
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_loading
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_manage_group
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_member_added
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_owner_fallback
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_person_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_remove
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_role_editor
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_role_label
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_role_owner
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_role_viewer
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_select_role
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_subtitle
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_title
 import org.jetbrains.compose.resources.stringResource
@@ -66,6 +81,7 @@ object NutritionSpaceMembersTestTags {
     const val ADD_PERSON_BUTTON = "nutrition_members_add_person"
     const val ADD_GROUP_BUTTON = "nutrition_members_add_group"
     const val MEMBER_ROW = "nutrition_members_row"
+    const val MANAGE_GROUP_BUTTON = "nutrition_members_manage_group"
 }
 
 @Composable
@@ -75,18 +91,28 @@ fun NutritionSpaceMembersScreen(
     screenModel: NutritionSpaceMembersScreenModel = koinInject(),
 ) {
     val uiState by screenModel.uiState.collectAsState()
-    val errorMessage = uiState.error?.let { error ->
-        when (error) {
-            SpaceMembersError.Generic -> stringResource(Res.string.sharing_members_error_generic)
-            SpaceMembersError.EmailRequired -> stringResource(Res.string.sharing_members_error_email_required)
-            SpaceMembersError.EmailNotFound -> stringResource(Res.string.sharing_members_error_email_not_found)
-            SpaceMembersError.GroupNameRequired -> stringResource(Res.string.sharing_members_error_group_name_required)
-            SpaceMembersError.NotConfigured -> stringResource(Res.string.sharing_members_error_not_configured)
+    val ownerFallback = stringResource(Res.string.sharing_members_owner_fallback)
+    val errorMessage = uiState.error?.let { error -> mapErrorMessage(error) }
+    val successMessage = uiState.successMessageKey?.let { success ->
+        when (success) {
+            SpaceMembersSuccess.InviteSent -> stringResource(Res.string.sharing_members_invite_sent)
+            SpaceMembersSuccess.MemberAdded -> stringResource(Res.string.sharing_members_member_added)
+            SpaceMembersSuccess.GroupMemberAdded -> stringResource(Res.string.sharing_members_group_member_added)
         }
     }
 
-    LaunchedEffect(space.id) {
-        screenModel.bindSpace(space.id)
+    LaunchedEffect(space.id, space.ownerId, space.ownerDisplayName) {
+        screenModel.bindSpace(
+            spaceId = space.id,
+            ownerId = space.ownerId,
+            ownerDisplayName = space.ownerDisplayName ?: ownerFallback,
+        )
+    }
+
+    LaunchedEffect(successMessage) {
+        if (successMessage != null) {
+            screenModel.clearSuccessMessage()
+        }
     }
 
     NutritionScaffold(
@@ -117,6 +143,14 @@ fun NutritionSpaceMembersScreen(
                         text = stringResource(Res.string.sharing_members_subtitle),
                         color = SharedJourneyColors.InkDeep.copy(alpha = 0.75f),
                     )
+                }
+                if (successMessage != null) {
+                    item {
+                        Text(
+                            text = successMessage,
+                            color = SharedJourneyColors.MediterraneanTeal,
+                        )
+                    }
                 }
                 item {
                     Row(
@@ -157,7 +191,10 @@ fun NutritionSpaceMembersScreen(
                     items(uiState.members, key = { it.id }) { member ->
                         MemberRow(
                             member = member,
-                            onRemove = { screenModel.removeMember(member.id) },
+                            onRemove = { screenModel.removeMember(member.id, space.id) },
+                            onManageGroup = {
+                                screenModel.openManageGroupDialog(member.referenceId)
+                            },
                         )
                     }
                 }
@@ -178,14 +215,29 @@ fun NutritionSpaceMembersScreen(
             onDismissRequest = screenModel::dismissDialogs,
             title = { Text(stringResource(Res.string.sharing_members_add_person)) },
             text = {
-                OutlinedTextField(
-                    value = uiState.emailInput,
-                    onValueChange = screenModel::onEmailChange,
-                    label = { Text(stringResource(Res.string.sharing_members_email_label)) },
-                    placeholder = { Text(stringResource(Res.string.sharing_members_email_hint)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = uiState.emailInput,
+                        onValueChange = screenModel::onEmailChange,
+                        label = { Text(stringResource(Res.string.sharing_members_email_label)) },
+                        placeholder = { Text(stringResource(Res.string.sharing_members_email_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(stringResource(Res.string.sharing_members_select_role))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(
+                            selected = uiState.selectedRole == SpaceMemberRole.Editor,
+                            onClick = { screenModel.onRoleChange(SpaceMemberRole.Editor) },
+                            label = { Text(stringResource(Res.string.sharing_members_role_editor)) },
+                        )
+                        FilterChip(
+                            selected = uiState.selectedRole == SpaceMemberRole.Viewer,
+                            onClick = { screenModel.onRoleChange(SpaceMemberRole.Viewer) },
+                            label = { Text(stringResource(Res.string.sharing_members_role_viewer)) },
+                        )
+                    }
+                }
             },
             confirmButton = {
                 Button(
@@ -226,6 +278,23 @@ fun NutritionSpaceMembersScreen(
                             selected = uiState.groupLifecycle == GroupLifecycle.Event,
                             onClick = { screenModel.onGroupLifecycleChange(GroupLifecycle.Event) },
                             label = { Text(stringResource(Res.string.sharing_members_group_lifecycle_event)) },
+                        )
+                    }
+                    if (uiState.groupLifecycle == GroupLifecycle.Event) {
+                        OutlinedTextField(
+                            value = uiState.groupEventLabelInput,
+                            onValueChange = screenModel::onGroupEventLabelChange,
+                            label = { Text(stringResource(Res.string.sharing_members_event_label)) },
+                            placeholder = { Text(stringResource(Res.string.sharing_members_event_label_hint)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        OutlinedTextField(
+                            value = uiState.groupExpiresInput,
+                            onValueChange = screenModel::onGroupExpiresChange,
+                            label = { Text(stringResource(Res.string.sharing_members_event_expires_label)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }
@@ -276,13 +345,67 @@ fun NutritionSpaceMembersScreen(
             },
         )
     }
+
+    if (uiState.showManageGroupDialog) {
+        AlertDialog(
+            onDismissRequest = screenModel::dismissDialogs,
+            title = { Text(stringResource(Res.string.sharing_members_group_members_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    uiState.groupMembers.forEach { member ->
+                        Text(text = member.displayName)
+                    }
+                    OutlinedTextField(
+                        value = uiState.groupMemberEmailInput,
+                        onValueChange = screenModel::onGroupMemberEmailChange,
+                        label = { Text(stringResource(Res.string.sharing_members_email_label)) },
+                        placeholder = { Text(stringResource(Res.string.sharing_members_email_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = screenModel::submitAddGroupMember,
+                    enabled = !uiState.isSaving,
+                    modifier = Modifier.testTag(NutritionSpaceMembersTestTags.MANAGE_GROUP_BUTTON),
+                ) {
+                    Text(stringResource(Res.string.sharing_members_add_to_group))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = screenModel::dismissDialogs) {
+                    Text(stringResource(Res.string.sharing_members_cancel))
+                }
+            },
+        )
+    }
 }
+
+@Composable
+private fun mapErrorMessage(error: SpaceMembersError): String =
+    when (error) {
+        SpaceMembersError.Generic -> stringResource(Res.string.sharing_members_error_generic)
+        SpaceMembersError.EmailRequired -> stringResource(Res.string.sharing_members_error_email_required)
+        SpaceMembersError.EmailNotFound -> stringResource(Res.string.sharing_members_error_email_not_found)
+        SpaceMembersError.GroupNameRequired -> stringResource(Res.string.sharing_members_error_group_name_required)
+        SpaceMembersError.EventExpiresRequired -> stringResource(Res.string.sharing_members_event_expires_required)
+        SpaceMembersError.NotConfigured -> stringResource(Res.string.sharing_members_error_not_configured)
+    }
 
 @Composable
 private fun MemberRow(
     member: SpaceMember,
     onRemove: () -> Unit,
+    onManageGroup: () -> Unit,
 ) {
+    val roleLabel = when (member.role) {
+        SpaceMemberRole.Owner -> stringResource(Res.string.sharing_members_role_owner)
+        SpaceMemberRole.Editor -> stringResource(Res.string.sharing_members_role_editor)
+        SpaceMemberRole.Viewer -> stringResource(Res.string.sharing_members_role_viewer)
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -299,9 +422,20 @@ private fun MemberRow(
                 },
                 color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
             )
+            Text(
+                text = stringResource(Res.string.sharing_members_role_label, roleLabel),
+                color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
+            )
         }
-        TextButton(onClick = onRemove) {
-            Text(stringResource(Res.string.sharing_members_remove))
+        if (member.kind == SpaceMemberKind.Group) {
+            TextButton(onClick = onManageGroup) {
+                Text(stringResource(Res.string.sharing_members_manage_group))
+            }
+        }
+        if (member.role != SpaceMemberRole.Owner) {
+            TextButton(onClick = onRemove) {
+                Text(stringResource(Res.string.sharing_members_remove))
+            }
         }
     }
 }

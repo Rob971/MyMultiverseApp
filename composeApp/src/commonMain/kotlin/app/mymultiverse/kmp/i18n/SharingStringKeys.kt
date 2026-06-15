@@ -44,6 +44,23 @@ object SharingStringKeys {
         "sharing_members_error_group_name_required",
         "sharing_members_error_not_configured",
         "sharing_members_loading",
+        "sharing_members_role_owner",
+        "sharing_members_role_editor",
+        "sharing_members_role_viewer",
+        "sharing_members_role_label",
+        "sharing_members_owner_fallback",
+        "sharing_members_manage_group",
+        "sharing_members_group_members_title",
+        "sharing_members_add_to_group",
+        "sharing_members_group_member_added",
+        "sharing_members_event_label",
+        "sharing_members_event_label_hint",
+        "sharing_members_event_expires_label",
+        "sharing_members_event_expires_required",
+        "sharing_members_group_expired",
+        "sharing_members_invite_sent",
+        "sharing_members_member_added",
+        "sharing_members_select_role",
     )
 
     val localeDirectories: List<String> = NutritionStringKeys.localeDirectories

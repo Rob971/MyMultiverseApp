@@ -16,6 +16,11 @@ object AuthStringKeys {
         "auth_error_generic",
         "auth_error_config_missing",
         "auth_loading",
+        "auth_sign_out",
+        "auth_pending_invites_title",
+        "auth_pending_invites_subtitle",
+        "auth_pending_invites_accept",
+        "auth_pending_invites_decline",
     )
 
     val localeDirectories: List<String> = NutritionStringKeys.localeDirectories

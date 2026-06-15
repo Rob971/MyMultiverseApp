@@ -14,7 +14,10 @@ internal object SupabaseClientFactory {
             supabaseUrl = SupabaseConfig.URL,
             supabaseKey = SupabaseSecrets.ANON_KEY,
         ) {
-            install(Auth)
+            install(Auth) {
+                scheme = "app.mymultiverse.kmp"
+                host = "auth"
+            }
             install(Postgrest)
             install(Realtime)
         }

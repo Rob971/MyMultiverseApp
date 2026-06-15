@@ -258,8 +258,12 @@ class NutritionUxInstrumentedTest {
                     HomeContent(
                         greeting = Greeting("Hello"),
                         isRefreshing = false,
+                        pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = { openedNutrition = true },
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
                     )
                 }
             }

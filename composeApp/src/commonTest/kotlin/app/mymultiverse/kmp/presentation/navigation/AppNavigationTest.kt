@@ -36,6 +36,7 @@ class AppNavigationTest {
         val space = NutritionSpaceContext(
             id = "space-1",
             name = "Family",
+            ownerId = "owner-1",
             features = setOf(app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature.Grocery),
         )
         val members = AppRoute.Nutrition(space = space, section = NutritionSection.Members)
@@ -49,6 +50,7 @@ class AppNavigationTest {
         val space = NutritionSpaceContext(
             id = "space-1",
             name = "Home",
+            ownerId = "owner-1",
             features = setOf(app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature.Grocery),
         )
         val grocery = AppRoute.Nutrition(space = space, section = NutritionSection.Grocery)

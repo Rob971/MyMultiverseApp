@@ -5,6 +5,8 @@ import app.mymultiverse.kmp.domain.model.auth.AuthUser
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.Apple
+import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.auth.user.UserInfo
@@ -27,6 +29,10 @@ class SupabaseAuthRepository(
     init {
         client.auth.sessionStatus
             .onEach { status -> _authState.update { mapSessionStatus(status) } }
+            .launchIn(scope)
+
+        AuthRedirectEvents.urls
+            .onEach { url -> handleAuthDeeplink(client, url) }
             .launchIn(scope)
     }
 
@@ -51,10 +57,14 @@ class SupabaseAuthRepository(
         }
 
     override suspend fun signInWithGoogle(): Result<Unit> =
-        Result.failure(UnsupportedOperationException("google_oauth_not_configured"))
+        runCatching {
+            client.auth.signInWith(Google)
+        }
 
     override suspend fun signInWithApple(): Result<Unit> =
-        Result.failure(UnsupportedOperationException("apple_oauth_not_configured"))
+        runCatching {
+            client.auth.signInWith(Apple)
+        }
 
     override suspend fun signOut() {
         client.auth.signOut()

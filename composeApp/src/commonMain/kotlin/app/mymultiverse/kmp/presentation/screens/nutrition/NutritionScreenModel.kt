@@ -10,6 +10,7 @@ import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
+import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -64,6 +65,9 @@ class NutritionScreenModel(
             SharingStarted.Eagerly,
             WeeklyMealPlan(weekKey = WeekCalendar.currentWeekKey()),
         )
+
+    val syncStatus: StateFlow<NutritionSyncStatus> = session.observeSyncStatus()
+        .stateIn(scope, SharingStarted.Eagerly, NutritionSyncStatus.Idle)
 
     suspend fun activateSpace(spaceId: String) {
         session.activateSpace(spaceId)
