@@ -8,8 +8,8 @@ alwaysApply: false
 
 ## Workflow (`.github/workflows/kmp-ci.yml`)
 
-- **Push** to `main` / `master` / `feature/**`: unit tests, instrumented UI tests, debug APK, iOS signal. Firebase distribute only on `main` / `master` push (not feature branches).
-- **Pull request** into `main` / `master` (`opened` / `reopened` only): same validation jobs when a PR is first opened; further commits rely on the feature-branch **push** trigger (avoids duplicate runs on `synchronize`).
+- **Push** to `main` / `master` / `feature/**`: unit tests, instrumented UI tests, debug APK, iOS signal, Firebase distribute.
+- **Pull request** into `main` / `master` (`opened` / `reopened` only): same jobs including Firebase; further commits rely on the feature-branch **push** trigger (avoids duplicate runs on `synchronize`).
 - **Instrumented tests** (also on manual dispatch): targets `all`, `android`, `android-instrumented-tests`, `firebase`, or `firebase-release`.
 - **Firebase distribute**: targets `firebase` or `firebase-release`; requires secrets (`FIREBASE_SERVICE_ACCOUNT_JSON`, testers/groups). `firebase-release` waits for unit tests, instrumented UI tests, and the debug APK job.
 

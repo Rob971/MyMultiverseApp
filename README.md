@@ -146,12 +146,11 @@ GitHub Actions workflow: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-
 
 | Trigger | Jobs |
 |---------|------|
-| **Push** to `main`, `master`, or `feature/**` | Unit tests, instrumented tests, debug APK, iOS compile signal |
-| **Pull request** into `main` or `master` (opened / reopened) | Same validation jobs when the PR is first opened; later commits run via feature-branch push |
-| **Push** to `main` or `master` only | Also runs Firebase App Distribution |
+| **Push** to `main`, `master`, or `feature/**` | Unit tests, instrumented tests, debug APK, iOS compile signal, Firebase App Distribution |
+| **Pull request** into `main` or `master` (opened / reopened) | Same jobs including Firebase; later commits run via feature-branch push |
 | **Manual dispatch** | Choose `all`, `android`, `android-instrumented-tests`, `ios`, `firebase`, etc. |
 
-Firebase App Distribution runs on **push to `main` / `master`** and manual `firebase` targets—not on feature branches or pull requests.
+Firebase App Distribution runs on every **push**, **pull request** (opened / reopened), and manual `firebase` / `firebase-release` dispatch.
 
 ## Project layout
 
