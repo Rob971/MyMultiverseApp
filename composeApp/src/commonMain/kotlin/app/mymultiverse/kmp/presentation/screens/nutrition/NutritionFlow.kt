@@ -46,8 +46,31 @@ fun NutritionFlow(
             )
         }
 
-        NutritionSection.Grocery -> GroceryShoppingScreen(onBack = onBack)
-        NutritionSection.MealPlan -> WeeklyMealPlanScreen(onBack = onBack)
-        NutritionSection.AiAdvice -> NutritionAiAdviceScreen(onBack = onBack)
+        NutritionSection.Grocery -> {
+            space?.let { activeSpace ->
+                LaunchedEffect(activeSpace.id) {
+                    nutritionScreenModel.activateSpace(activeSpace.id)
+                }
+            }
+            GroceryShoppingScreen(onBack = onBack)
+        }
+
+        NutritionSection.MealPlan -> {
+            space?.let { activeSpace ->
+                LaunchedEffect(activeSpace.id) {
+                    nutritionScreenModel.activateSpace(activeSpace.id)
+                }
+            }
+            WeeklyMealPlanScreen(onBack = onBack)
+        }
+
+        NutritionSection.AiAdvice -> {
+            space?.let { activeSpace ->
+                LaunchedEffect(activeSpace.id) {
+                    nutritionScreenModel.activateSpace(activeSpace.id)
+                }
+            }
+            NutritionAiAdviceScreen(onBack = onBack)
+        }
     }
 }

@@ -16,6 +16,7 @@ import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.GroceryInputBarTestTags
+import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.screens.home.HomeContent
 import app.mymultiverse.kmp.presentation.screens.home.HomeTestTags
@@ -54,9 +55,10 @@ class NutritionUxInstrumentedTest {
         itemId: String = "instrumented-item-1",
         adviceAnswer: String = "Eat more vegetables.",
     ): NutritionScreenModel {
+        val repository = InstrumentedNutritionRepository(weekKey)
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         return NutritionScreenModel(
-            repository = InstrumentedNutritionRepository(weekKey),
+            session = InstrumentedNutritionSessionCoordinator(repository),
             aiAssistant = InstrumentedNutritionAdviceService(adviceAnswer),
             scope = scope,
             newItemId = { itemId },
@@ -225,6 +227,12 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 NutritionHubScreen(
+                    spaceName = "Test space",
+                    enabledFeatures = setOf(
+                        NutritionSharingFeature.Grocery,
+                        NutritionSharingFeature.MealPlan,
+                        NutritionSharingFeature.AiAdvice,
+                    ),
                     onBack = {},
                     onOpenSection = { opened = it },
                     screenModel = screenModel,

@@ -13,7 +13,7 @@ Android and iOS share one UI and domain layer; platform code is limited to `andr
 | Auth | Email sign-up / sign-in via Supabase (Google & Apple stubbed) |
 | Sharing | Nutrition **spaces** with per-space feature toggles |
 | Collaboration | Invite people by email, create/add contact groups |
-| Sync | Grocery & meal plan stored per `space_id` + week in Supabase |
+| Sync | Offline-first grocery & meal plan per space (local cache + outbox + Supabase) |
 | Realtime | Live updates when another member edits shared nutrition data |
 
 Supported UI languages: English, French, Spanish, German, Italian, Arabic (incl. Saudi), Neapolitan.
@@ -25,10 +25,32 @@ Clean architecture with three Kotlin packages under `composeApp/src/commonMain/k
 | Layer | Package | Responsibility |
 |-------|---------|----------------|
 | **Domain** | `domain/` | Models, repository interfaces, use cases, pure helpers |
-| **Data** | `data/` | Supabase repos, local settings persistence, codecs |
+| **Data** | `data/` | Local store, remote API, sync engine, Supabase repositories |
 | **Presentation** | `presentation/` | Compose UI, Voyager routes, screen models, theme, DI |
 
-**Dependency rule:** domain never depends on Compose, Android, iOS, or data implementations. Presentation talks to domain contracts; Koin wires implementations.
+**Dependency rule:** domain never depends on Compose, Android, iOS, or data implementations. Presentation talks to **domain ports** only (`NutritionSessionCoordinator`, `AuthRepository`, etc.); Koin wires implementations.
+
+### Mobile frontend vs API (data layer)
+
+| Package | Role |
+|---------|------|
+| `presentation/` | Compose UI + screen models (no Supabase / Settings imports) |
+| `domain/repository/` | Contracts the UI depends on |
+| `data/local/` | Device cache (`NutritionLocalStore`, sync outbox) |
+| `data/remote/` | Supabase PostgREST (`NutritionRemoteApi`) |
+| `data/sync/` | Offline-first orchestration (`NutritionSyncEngine`, `OfflineFirstNutritionRepository`, Realtime) |
+| `data/supabase/` | Auth, sharing spaces, collaboration repositories |
+
+### Offline-first nutrition sync
+
+When a sharing space is active:
+
+1. **Write locally first** — grocery / meal plan changes land in `Settings` immediately.
+2. **Push** — `NutritionSyncEngine` upserts to Supabase; failures enqueue to a durable outbox.
+3. **Pull** — on space activation, pending pushes flush then remote week data is fetched.
+4. **Realtime** — other members’ edits stream in; own `updated_by` echoes are ignored.
+
+Personal nutrition (no space) stays local-only via `NutritionRepositoryImpl`.
 
 ### Nutrition sharing flow
 
@@ -40,7 +62,7 @@ Login → Home → Nutrition → Sharing spaces → Space hub
                               └── AI advice (local assistant)
 ```
 
-When you open a space hub, the app activates a `SyncingNutritionRepository` for that `space_id`, pulls the current week from PostgREST, and subscribes to Supabase Realtime on `nutrition_space_week_data`. Local edits upsert to Supabase; remote edits from other members update the UI without a manual refresh.
+When you open a space (hub, grocery, or meal plan), `NutritionSessionCoordinator` activates an `OfflineFirstNutritionRepository` for that `space_id`, flushes any pending outbox entries, pulls the current week, and subscribes to Supabase Realtime.
 
 ## Prerequisites
 

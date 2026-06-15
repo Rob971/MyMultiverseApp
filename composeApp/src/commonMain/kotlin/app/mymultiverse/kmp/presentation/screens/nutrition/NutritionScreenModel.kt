@@ -7,7 +7,7 @@ import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
-import app.mymultiverse.kmp.data.repository.NutritionRepositoryHolder
+import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
@@ -38,26 +38,26 @@ sealed class NutritionAiState {
 }
 
 class NutritionScreenModel(
-    private val repositoryHolder: NutritionRepositoryHolder,
+    private val session: NutritionSessionCoordinator,
     private val aiAssistant: NutritionAiAssistantService,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
     private val newItemId: () -> String = { "${Random.nextLong()}_${Random.nextInt()}" },
 ) {
     private val repository: NutritionRepository
-        get() = repositoryHolder.active.value
+        get() = session.nutrition.value
 
     val weekKey: String
         get() = repository.weekKey
 
-    val groceryItems: StateFlow<List<GroceryItem>> = repositoryHolder.active
+    val groceryItems: StateFlow<List<GroceryItem>> = session.nutrition
         .flatMapLatest { it.observeGroceryItems() }
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    val aiGroceryItems: StateFlow<List<GroceryItem>> = repositoryHolder.active
+    val aiGroceryItems: StateFlow<List<GroceryItem>> = session.nutrition
         .flatMapLatest { it.observeAiGroceryItems() }
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    val mealPlan: StateFlow<WeeklyMealPlan> = repositoryHolder.active
+    val mealPlan: StateFlow<WeeklyMealPlan> = session.nutrition
         .flatMapLatest { it.observeMealPlan() }
         .stateIn(
             scope,
@@ -66,7 +66,7 @@ class NutritionScreenModel(
         )
 
     suspend fun activateSpace(spaceId: String) {
-        repositoryHolder.activate(spaceId)
+        session.activateSpace(spaceId)
     }
 
     private val _aiState = MutableStateFlow<NutritionAiState>(NutritionAiState.Idle)

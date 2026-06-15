@@ -5,6 +5,7 @@ import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.model.auth.AuthUser
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
+import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.SharingSpaceRepository
 import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
@@ -108,6 +109,16 @@ class AppModuleKoinTest : KoinTest {
         advanceUntilIdle()
 
         assertNotNull(model.greeting.value)
+    }
+
+    @Test
+    fun nutritionSessionCoordinator_resolvesWithScreenModel() {
+        val coordinator = get<NutritionSessionCoordinator>()
+        val model = get<NutritionScreenModel>()
+
+        assertNotNull(coordinator)
+        assertNotNull(model)
+        assertEquals(coordinator.nutrition.value.weekKey, model.weekKey)
     }
 
     @Test

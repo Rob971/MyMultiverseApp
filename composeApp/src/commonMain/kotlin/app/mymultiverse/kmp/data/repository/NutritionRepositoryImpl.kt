@@ -1,59 +1,46 @@
 package app.mymultiverse.kmp.data.repository
 
+import app.mymultiverse.kmp.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 
+/**
+ * Personal (non-shared) nutrition data — local device storage only.
+ */
 class NutritionRepositoryImpl(
-    private val settings: Settings,
+    settings: Settings,
     override val weekKey: String = WeekCalendar.currentWeekKey(),
 ) : NutritionRepository {
 
     override val spaceId: String? = null
 
-    private val groceryKey = "nutrition_grocery_$weekKey"
-    private val aiGroceryKey = "nutrition_ai_grocery_$weekKey"
-    private val mealPlanKey = "nutrition_meal_plan_$weekKey"
+    private val localStore = NutritionLocalStore(
+        settings = settings,
+        spaceId = null,
+        weekKey = weekKey,
+    )
 
-    private val _groceryItems = MutableStateFlow(loadGrocery())
-    private val _aiGroceryItems = MutableStateFlow(loadAiGrocery())
-    private val _mealPlan = MutableStateFlow(loadMealPlan())
+    override fun observeGroceryItems(): Flow<List<GroceryItem>> = localStore.observeGroceryItems()
 
-    override fun observeGroceryItems(): Flow<List<GroceryItem>> = _groceryItems.asStateFlow()
+    override fun observeAiGroceryItems(): Flow<List<GroceryItem>> = localStore.observeAiGroceryItems()
 
-    override fun observeAiGroceryItems(): Flow<List<GroceryItem>> = _aiGroceryItems.asStateFlow()
-
-    override fun observeMealPlan(): Flow<WeeklyMealPlan> = _mealPlan.asStateFlow()
+    override fun observeMealPlan(): Flow<WeeklyMealPlan> = localStore.observeMealPlan()
 
     override suspend fun refreshFromRemote() = Unit
 
     override suspend fun saveGroceryItems(items: List<GroceryItem>) {
-        settings.putString(groceryKey, NutritionStorageCodec.encodeGrocery(items))
-        _groceryItems.value = items
+        localStore.saveGroceryItems(items)
     }
 
     override suspend fun saveAiGroceryItems(items: List<GroceryItem>) {
-        settings.putString(aiGroceryKey, NutritionStorageCodec.encodeGrocery(items))
-        _aiGroceryItems.value = items
+        localStore.saveAiGroceryItems(items)
     }
 
     override suspend fun saveMealPlan(plan: WeeklyMealPlan) {
-        settings.putString(mealPlanKey, NutritionStorageCodec.encodeMealPlan(plan))
-        _mealPlan.value = plan
+        localStore.saveMealPlan(plan)
     }
-
-    private fun loadGrocery(): List<GroceryItem> =
-        NutritionStorageCodec.decodeGrocery(settings.getStringOrNull(groceryKey))
-
-    private fun loadAiGrocery(): List<GroceryItem> =
-        NutritionStorageCodec.decodeGrocery(settings.getStringOrNull(aiGroceryKey))
-
-    private fun loadMealPlan(): WeeklyMealPlan =
-        NutritionStorageCodec.decodeMealPlan(weekKey, settings.getStringOrNull(mealPlanKey))
 }

@@ -3,8 +3,8 @@ package app.mymultiverse.kmp.presentation.screens.nutrition
 import app.mymultiverse.kmp.domain.model.nutrition.DayMeals
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
-import app.mymultiverse.kmp.data.repository.NutritionRepositoryHolder
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
+import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
@@ -301,13 +301,10 @@ private class FakeNutritionRepository(
     }
 }
 
-private fun nutritionRepositoryHolder(
+private fun nutritionSession(
     repository: FakeNutritionRepository,
-): NutritionRepositoryHolder =
-    NutritionRepositoryHolder(
-        localFallback = repository,
-        remoteFactory = { repository },
-    )
+): FakeNutritionSessionCoordinator =
+    FakeNutritionSessionCoordinator(repository)
 
 private fun nutritionScreenModel(
     repository: FakeNutritionRepository,
@@ -316,7 +313,7 @@ private fun nutritionScreenModel(
     newItemId: () -> String = { "item-1" },
 ): NutritionScreenModel =
     NutritionScreenModel(
-        repositoryHolder = nutritionRepositoryHolder(repository),
+        session = nutritionSession(repository),
         aiAssistant = advice,
         scope = scope,
         newItemId = newItemId,

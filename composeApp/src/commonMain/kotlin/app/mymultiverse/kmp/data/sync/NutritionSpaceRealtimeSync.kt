@@ -1,13 +1,13 @@
-package app.mymultiverse.kmp.data.supabase
+package app.mymultiverse.kmp.data.sync
 
 import app.mymultiverse.kmp.data.supabase.dto.NutritionWeekDataRow
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
+import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
-import io.github.jan.supabase.realtime.PostgresAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
@@ -19,7 +19,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 
 /**
  * Subscribes to [nutrition_space_week_data] changes for a single space/week and
- * forwards remote edits to the active [SyncingNutritionRepository].
+ * forwards remote edits to the active [OfflineFirstNutritionRepository].
  */
 class NutritionSpaceRealtimeSync(
     private val client: SupabaseClient,
