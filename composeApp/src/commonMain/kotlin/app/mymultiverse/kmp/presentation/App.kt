@@ -1,19 +1,42 @@
 package app.mymultiverse.kmp.presentation
 
 import androidx.compose.runtime.Composable
-import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.transitions.SlideTransition
-import app.mymultiverse.kmp.presentation.di.appModule
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.backhandler.BackHandler
+import app.mymultiverse.kmp.presentation.components.NapolitanBackground
+import app.mymultiverse.kmp.presentation.navigation.AppRoute
+import app.mymultiverse.kmp.presentation.navigation.NutritionSection
+import app.mymultiverse.kmp.presentation.navigation.rememberAppNavigator
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreen
+import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionFlow
 import app.mymultiverse.kmp.presentation.theme.AppTheme
-import org.koin.compose.KoinContext
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun App() {
-    KoinContext {
-        AppTheme {
-            Navigator(screen = HomeScreen) { navigator ->
-                SlideTransition(navigator)
+    AppTheme {
+        val navigator = rememberAppNavigator()
+        val route = navigator.current
+
+        BackHandler(enabled = navigator.canGoBack) {
+            navigator.navigateBack()
+        }
+
+        NapolitanBackground {
+            when (route) {
+                AppRoute.Home -> HomeScreen(
+                    onOpenNutrition = {
+                        navigator.navigateTo(AppRoute.Nutrition(section = NutritionSection.Hub))
+                    },
+                )
+
+                is AppRoute.Nutrition -> NutritionFlow(
+                    section = route.section,
+                    onBack = navigator::navigateBack,
+                    onOpenSection = { section ->
+                        navigator.navigateTo(AppRoute.Nutrition(section = section))
+                    },
+                )
             }
         }
     }

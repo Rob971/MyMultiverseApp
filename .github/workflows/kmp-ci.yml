@@ -17,12 +17,11 @@ on:
           - all
           - android
           - android-tests
+          - android-instrumented-tests
           - android-build
           - ios
           - firebase
-          - firebase-testcases
           - firebase-release
-          - firebase-tests
 
 concurrency:
   group: kmp-ci-${{ github.workflow }}-${{ github.ref }}
@@ -42,7 +41,7 @@ jobs:
     timeout-minutes: 20
     if: >-
       ${{ github.event_name == 'push' ||
-          contains(fromJSON('["all", "android", "android-tests", "firebase", "firebase-release", "firebase-tests"]'), github.event.inputs.target) }}
+          contains(fromJSON('["all", "android", "android-tests", "firebase", "firebase-release"]'), github.event.inputs.target) }}
 
     steps:
       - name: Checkout
@@ -61,11 +60,46 @@ jobs:
       - name: Ensure Gradle wrapper is executable
         run: chmod +x ./gradlew
 
-      - name: Generate database and Compose resources
-        run: ./gradlew :composeApp:generateCommonMainAppDatabaseInterface :composeApp:generateResourceAccessorsForCommonMain
-
       - name: Run Android unit tests
         run: ./gradlew :composeApp:testDebugUnitTest
+
+  android-instrumented-tests:
+    name: Android Instrumented UI Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: >-
+      ${{ github.event_name == 'push' ||
+          contains(fromJSON('["all", "android", "android-instrumented-tests", "firebase", "firebase-release"]'), github.event.inputs.target) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Ensure Gradle wrapper is executable
+        run: chmod +x ./gradlew
+
+      - name: Enable KVM for emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run instrumented tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          script: ./gradlew :composeApp:connectedDebugAndroidTest
 
   android-apk:
     name: Android Debug APK
@@ -73,7 +107,7 @@ jobs:
     timeout-minutes: 25
     if: >-
       ${{ github.event_name == 'push' ||
-          contains(fromJSON('["all", "android", "android-build", "firebase", "firebase-release", "firebase-tests"]'), github.event.inputs.target) }}
+          contains(fromJSON('["all", "android", "android-tests", "android-build", "firebase", "firebase-release"]'), github.event.inputs.target) }}
 
     steps:
       - name: Checkout
@@ -105,121 +139,17 @@ jobs:
           path: composeApp/build/outputs/apk/debug/*.apk
           if-no-files-found: error
 
-  firebase-testcases:
-    name: Firebase Test Cases
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    if: >-
-      ${{ github.event_name == 'push' ||
-          contains(fromJSON('["all", "firebase", "firebase-testcases", "firebase-tests"]'), github.event.inputs.target) }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js for Firebase CLI
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Write Firebase service account
-        env:
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
-        run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
-            echo "FIREBASE_SERVICE_ACCOUNT_JSON secret is required for Firebase App Distribution."
-            exit 1
-          fi
-
-          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
-
-      - name: Prepare Firebase automated test case IDs
-        run: |
-          python3 - <<'PY' > "$RUNNER_TEMP/firebase-test-case-ids.txt"
-          from pathlib import Path
-          import re
-
-          yaml = Path("firebase-appdistribution-testcases.yaml").read_text()
-          for test_id in re.findall(r"(?m)^\s*id:\s*(\S+)\s*$", yaml):
-              print(test_id)
-          PY
-
-          if [ ! -s "$RUNNER_TEMP/firebase-test-case-ids.txt" ]; then
-            echo "No Firebase App Distribution test case IDs found."
-            exit 1
-          fi
-
-          echo "Prepared $(wc -l < "$RUNNER_TEMP/firebase-test-case-ids.txt" | tr -d ' ') Firebase App Distribution test cases."
-
-      - name: Sync Firebase App Distribution test cases
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
-        run: |
-          set -euo pipefail
-
-          remote_testcases="$RUNNER_TEMP/firebase-remote-testcases.yaml"
-          sync_status="$RUNNER_TEMP/firebase-testcase-sync-status.txt"
-
-          npx -y firebase-tools@latest appdistribution:testcases:export \
-            "$remote_testcases" \
-            --app "$FIREBASE_APP_ID" \
-            --project "$FIREBASE_PROJECT_ID" || true
-
-          if [ -s "$remote_testcases" ]; then
-            ruby -ryaml -rjson -e 'puts JSON.generate(YAML.load_file(ARGV[0]))' firebase-appdistribution-testcases.yaml > "$RUNNER_TEMP/firebase-local-testcases.json"
-            ruby -ryaml -rjson -e 'puts JSON.generate(YAML.load_file(ARGV[0]))' "$remote_testcases" > "$RUNNER_TEMP/firebase-remote-testcases.json"
-
-            if cmp -s "$RUNNER_TEMP/firebase-local-testcases.json" "$RUNNER_TEMP/firebase-remote-testcases.json"; then
-              echo "up-to-date" > "$sync_status"
-              echo "Firebase App Distribution test cases are already up to date; skipping import."
-              exit 0
-            fi
-          fi
-
-          npx -y firebase-tools@latest appdistribution:testcases:import \
-            firebase-appdistribution-testcases.yaml \
-            --app "$FIREBASE_APP_ID" \
-            --project "$FIREBASE_PROJECT_ID"
-
-          echo "updated" > "$sync_status"
-
-      - name: Publish Firebase test case status
-        if: always()
-        run: |
-          {
-            echo "## Firebase App Distribution Test Cases"
-            echo
-            if [ -f "$RUNNER_TEMP/firebase-testcase-sync-status.txt" ]; then
-              echo "- Test case sync: \`$(cat "$RUNNER_TEMP/firebase-testcase-sync-status.txt")\`"
-            fi
-
-            if [ -f "$RUNNER_TEMP/firebase-test-case-ids.txt" ]; then
-              echo
-              echo "### Test Cases"
-              sed 's/^/- `/' "$RUNNER_TEMP/firebase-test-case-ids.txt" | sed 's/$/`/'
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload Firebase test case metadata
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: firebase-testcase-metadata
-          path: |
-            ${{ runner.temp }}/firebase-testcase-sync-status.txt
-            ${{ runner.temp }}/firebase-test-case-ids.txt
-          if-no-files-found: ignore
-
   firebase-release:
     name: Firebase Release Upload
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs:
       - android-tests
+      - android-instrumented-tests
       - android-apk
     if: >-
       ${{ github.event_name == 'push' ||
-          contains(fromJSON('["all", "firebase", "firebase-release", "firebase-tests"]'), github.event.inputs.target) }}
+          contains(fromJSON('["all", "firebase", "firebase-release"]'), github.event.inputs.target) }}
 
     steps:
       - name: Set up Node.js for Firebase CLI
@@ -253,6 +183,10 @@ jobs:
         run: |
           apk_path="dist-apk/composeApp-debug.apk"
           release_notes="Debug build from $GITHUB_REF_NAME at $GITHUB_SHA."
+          if [ -f firebase-appdistribution-testcases.yaml ]; then
+            checklist=$(grep -E '^  - id:' firebase-appdistribution-testcases.yaml | sed 's/^  - id: /- /' | head -12)
+            release_notes=$(printf '%s\n\nQA checklist (firebase-appdistribution-testcases.yaml):\n%s' "$release_notes" "$checklist")
+          fi
 
           args=(
             "$apk_path"
@@ -302,109 +236,6 @@ jobs:
         with:
           name: firebase-release-report
           path: ${{ runner.temp }}/firebase-distribution.log
-          if-no-files-found: ignore
-
-  firebase-automated-tests:
-    name: Firebase Automated Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs:
-      - android-apk
-      - firebase-testcases
-      - firebase-release
-    if: >-
-      ${{ github.event_name == 'push' ||
-          contains(fromJSON('["all", "firebase", "firebase-tests"]'), github.event.inputs.target) }}
-    continue-on-error: true
-
-    steps:
-      - name: Set up Node.js for Firebase CLI
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Download debug APK
-        uses: actions/download-artifact@v4
-        with:
-          name: composeApp-debug-apk
-          path: dist-apk
-
-      - name: Download Firebase test case metadata
-        uses: actions/download-artifact@v4
-        with:
-          name: firebase-testcase-metadata
-          path: firebase-testcase-metadata
-
-      - name: Write Firebase service account
-        env:
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
-        run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
-            echo "FIREBASE_SERVICE_ACCOUNT_JSON secret is required for Firebase App Distribution."
-            exit 1
-          fi
-
-          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
-
-      - name: Run Firebase automated tests
-        id: firebase-automated-tests
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
-          FIREBASE_TEST_DEVICES: ${{ secrets.FIREBASE_TEST_DEVICES }}
-        run: |
-          if [ -z "$FIREBASE_TEST_DEVICES" ]; then
-            echo "::warning::FIREBASE_TEST_DEVICES is not set; skipping Firebase automated tests."
-            exit 0
-          fi
-
-          set -o pipefail
-          npx -y firebase-tools@latest appdistribution:distribute \
-            "dist-apk/composeApp-debug.apk" \
-            --app "$FIREBASE_APP_ID" \
-            --project "$FIREBASE_PROJECT_ID" \
-            --release-notes "Automated test run for $GITHUB_REF_NAME at $GITHUB_SHA." \
-            --test-devices "$FIREBASE_TEST_DEVICES" \
-            --test-case-ids-file "firebase-testcase-metadata/firebase-test-case-ids.txt" \
-            --test-non-blocking \
-            2>&1 | tee "$RUNNER_TEMP/firebase-automated-tests.log"
-
-      - name: Publish Firebase automated test status
-        if: always()
-        env:
-          FIREBASE_TEST_DEVICES: ${{ secrets.FIREBASE_TEST_DEVICES }}
-          FIREBASE_AUTOMATED_TEST_OUTCOME: ${{ steps.firebase-automated-tests.outcome }}
-        run: |
-          {
-            echo "## Firebase Automated Tests"
-            echo
-            if [ -n "$FIREBASE_TEST_DEVICES" ]; then
-              echo "- Automated test devices: \`$FIREBASE_TEST_DEVICES\`"
-              echo "- Automated test step: \`${FIREBASE_AUTOMATED_TEST_OUTCOME:-skipped}\`"
-            else
-              echo "- Automated tests: not run because \`FIREBASE_TEST_DEVICES\` is not configured."
-            fi
-
-            if [ -f "firebase-testcase-metadata/firebase-test-case-ids.txt" ]; then
-              echo
-              echo "### Test Cases"
-              sed 's/^/- `/' "firebase-testcase-metadata/firebase-test-case-ids.txt" | sed 's/$/`/'
-            fi
-
-            if [ -f "$RUNNER_TEMP/firebase-automated-tests.log" ]; then
-              echo
-              echo "### Automated Test Log"
-              echo '```text'
-              tail -n 40 "$RUNNER_TEMP/firebase-automated-tests.log"
-              echo '```'
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload Firebase automated test report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: firebase-automated-test-report
-          path: ${{ runner.temp }}/firebase-automated-tests.log
           if-no-files-found: ignore
 
   ios-compatibility:

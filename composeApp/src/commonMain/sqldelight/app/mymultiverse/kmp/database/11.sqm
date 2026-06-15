@@ -1,5 +1,0 @@
-ALTER TABLE JourneyEntity ADD COLUMN longTermMilestoneType TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN longTermRoadblock TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN longTermTimeline TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN longTermBudgetStyle TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN longTermSuccessDefinition TEXT;

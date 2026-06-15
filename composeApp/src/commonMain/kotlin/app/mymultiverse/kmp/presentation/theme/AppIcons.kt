@@ -374,4 +374,144 @@ object AppIcons {
             return _sparkles!!
         }
     private var _sparkles: ImageVector? = null
+
+    val Restaurant: ImageVector
+        get() {
+            if (_restaurant != null) return _restaurant!!
+            _restaurant = ImageVector.Builder(
+                name = "Filled.Restaurant",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(11.0f, 9.0f)
+                    horizontalLineTo(9.0f)
+                    verticalLineTo(2.0f)
+                    horizontalLineTo(7.0f)
+                    verticalLineTo(9.0f)
+                    horizontalLineTo(5.0f)
+                    verticalLineTo(2.0f)
+                    horizontalLineTo(3.0f)
+                    verticalLineTo(9.0f)
+                    curveTo(3.0f, 11.12f, 4.66f, 12.84f, 6.75f, 12.97f)
+                    verticalLineTo(22.0f)
+                    horizontalLineTo(9.25f)
+                    verticalLineTo(12.97f)
+                    curveTo(11.34f, 12.84f, 13.0f, 11.12f, 13.0f, 9.0f)
+                    verticalLineTo(5.0f)
+                    horizontalLineTo(11.0f)
+                    verticalLineTo(9.0f)
+                    close()
+                    moveTo(21.0f, 9.0f)
+                    verticalLineTo(2.0f)
+                    horizontalLineTo(19.0f)
+                    verticalLineTo(9.0f)
+                    curveTo(19.0f, 10.1f, 18.1f, 11.0f, 17.0f, 11.0f)
+                    reflectiveCurveTo(15.0f, 10.1f, 15.0f, 9.0f)
+                    verticalLineTo(2.0f)
+                    horizontalLineTo(13.0f)
+                    verticalLineTo(9.0f)
+                    curveTo(13.0f, 11.12f, 14.66f, 12.84f, 16.75f, 12.97f)
+                    verticalLineTo(22.0f)
+                    horizontalLineTo(19.25f)
+                    verticalLineTo(12.97f)
+                    curveTo(21.34f, 12.84f, 23.0f, 11.12f, 23.0f, 9.0f)
+                    verticalLineTo(2.0f)
+                    horizontalLineTo(21.0f)
+                    verticalLineTo(9.0f)
+                    close()
+                }
+            }.build()
+            return _restaurant!!
+        }
+    private var _restaurant: ImageVector? = null
+
+    val Explore: ImageVector
+        get() {
+            if (_explore != null) return _explore!!
+            _explore = ImageVector.Builder(
+                name = "Filled.Explore",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(12.0f, 2.0f)
+                    curveTo(6.48f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
+                    reflectiveCurveTo(6.48f, 22.0f, 12.0f, 22.0f)
+                    reflectiveCurveTo(22.0f, 17.52f, 22.0f, 12.0f)
+                    reflectiveCurveTo(17.52f, 2.0f, 12.0f, 2.0f)
+                    close()
+                    moveTo(12.0f, 20.0f)
+                    curveTo(7.59f, 20.0f, 4.0f, 16.41f, 4.0f, 12.0f)
+                    reflectiveCurveTo(7.59f, 4.0f, 12.0f, 4.0f)
+                    reflectiveCurveTo(20.0f, 7.59f, 20.0f, 12.0f)
+                    reflectiveCurveTo(16.41f, 20.0f, 12.0f, 20.0f)
+                    close()
+                    moveTo(12.0f, 6.0f)
+                    curveTo(9.79f, 6.0f, 8.0f, 7.79f, 8.0f, 10.0f)
+                    curveTo(8.0f, 13.0f, 12.0f, 18.0f, 12.0f, 18.0f)
+                    reflectiveCurveTo(16.0f, 13.0f, 16.0f, 10.0f)
+                    curveTo(16.0f, 7.79f, 14.21f, 6.0f, 12.0f, 6.0f)
+                    close()
+                    moveTo(12.0f, 11.5f)
+                    curveTo(11.17f, 11.5f, 10.5f, 10.83f, 10.5f, 10.0f)
+                    reflectiveCurveTo(11.17f, 8.5f, 12.0f, 8.5f)
+                    reflectiveCurveTo(13.5f, 9.17f, 13.5f, 10.0f)
+                    reflectiveCurveTo(12.83f, 11.5f, 12.0f, 11.5f)
+                    close()
+                }
+            }.build()
+            return _explore!!
+        }
+    private var _explore: ImageVector? = null
+
+    val AccountBalance: ImageVector
+        get() {
+            if (_accountBalance != null) return _accountBalance!!
+            _accountBalance = ImageVector.Builder(
+                name = "Filled.AccountBalance",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(4.0f, 10.0f)
+                    verticalLineTo(20.0f)
+                    horizontalLineTo(8.0f)
+                    verticalLineTo(10.0f)
+                    horizontalLineTo(4.0f)
+                    close()
+                    moveTo(10.0f, 10.0f)
+                    verticalLineTo(20.0f)
+                    horizontalLineTo(14.0f)
+                    verticalLineTo(10.0f)
+                    horizontalLineTo(10.0f)
+                    close()
+                    moveTo(16.0f, 10.0f)
+                    verticalLineTo(20.0f)
+                    horizontalLineTo(20.0f)
+                    verticalLineTo(10.0f)
+                    horizontalLineTo(16.0f)
+                    close()
+                    moveTo(2.0f, 22.0f)
+                    horizontalLineTo(22.0f)
+                    verticalLineTo(24.0f)
+                    horizontalLineTo(2.0f)
+                    verticalLineTo(22.0f)
+                    close()
+                    moveTo(12.0f, 7.0f)
+                    lineTo(22.0f, 2.0f)
+                    lineTo(2.0f, 2.0f)
+                    lineTo(12.0f, 7.0f)
+                    close()
+                }
+            }.build()
+            return _accountBalance!!
+        }
+    private var _accountBalance: ImageVector? = null
 }

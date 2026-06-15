@@ -1,0 +1,41 @@
+---
+description: Compose UI and UX standards for presentation layer
+globs: "**/presentation/**/*.kt"
+alwaysApply: false
+---
+
+# UI & UX (Compose Multiplatform)
+
+## Layout & scrolling
+
+- Use `ScreenLayout` tokens and `Modifier.screenContentArea()` + `screenListPadding()` for screen insets.
+- Lists with bottom inputs: weighted `LazyColumn` + input bar (not a fixed scaffold bar that fights the keyboard).
+- Apply `imePadding()` on scrollable content; Android activity uses `adjustResize` when adding text-heavy screens.
+
+## Design system
+
+- Reuse `FamilyLogisticsCardSurface`, `NutritionFeatureHeader`, `FamilyLogisticsSectionHeader`, `NutritionScaffold`.
+- Colors/icons from `SharedJourneyColors` and `AppIcons`; avoid one-off hex values.
+- Cards: consistent padding (16dp horizontal), section spacing from `ScreenLayout`.
+
+## UX requirements
+
+- **States**: loading (progress on buttons), error (snackbar or inline), empty (helpful copy + CTA).
+- **Destructive actions**: confirm or swipe + undo snackbar where appropriate.
+- **AI-generated data**: clearly read-only (separate list, subtitle); never mix with user-editable CRUD without explicit design.
+- **Feedback**: snackbars for async success/failure; disable buttons while loading.
+
+## Strings & accessibility
+
+- Follow `i18n-multilingual.mdc` for all copy (8 locales, shared helpers, no hardcoded strings).
+- Icons: `contentDescription` for meaningful actions; `null` only for decorative duplicates.
+
+## Testability
+
+- Expose stable `testTag`s on primary controls (`*TestTags` objects, e.g. `MealPlanTestTags.groceryButton`).
+
+## Anti-patterns
+
+- Hardcoded English in composables or screen models.
+- Business logic heavy in `@Composable` functions (move to screen model or domain).
+- Calling `stringResource` inside non-`@Composable` lambdas or `LaunchedEffect`—resolve strings in composable scope first.

@@ -1,2 +1,0 @@
-ALTER TABLE JourneyEntity ADD COLUMN mealLocationPreference TEXT;
-ALTER TABLE JourneyEntity ADD COLUMN mealManualLocation TEXT;

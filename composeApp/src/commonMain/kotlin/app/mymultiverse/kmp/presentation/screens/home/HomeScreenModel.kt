@@ -1,170 +1,40 @@
 package app.mymultiverse.kmp.presentation.screens.home
 
-import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.screenModelScope
-import app.mymultiverse.kmp.domain.model.*
-import app.mymultiverse.kmp.domain.service.AiService
-import app.mymultiverse.kmp.domain.manager.LanguageManager
-import app.mymultiverse.kmp.domain.usecase.*
-import kotlinx.coroutines.flow.*
+import app.mymultiverse.kmp.domain.model.Greeting
+import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class HomeScreenModel(
     private val getGreetingUseCase: GetGreetingUseCase,
-    private val getJourneysUseCase: GetJourneysUseCase,
-    private val upsertJourneyUseCase: UpsertJourneyUseCase,
-    private val deleteJourneyUseCase: DeleteJourneyUseCase,
-    private val toggleTaskUseCase: ToggleTaskUseCase,
-    private val cheerTaskUseCase: CheerTaskUseCase,
-    private val addTaskUseCase: AddTaskUseCase,
-    private val updateTaskUseCase: UpdateTaskUseCase,
-    private val deleteTaskUseCase: DeleteTaskUseCase,
-    private val addFinanceBillEntryUseCase: AddFinanceBillEntryUseCase,
-    private val refreshJourneysUseCase: RefreshJourneysUseCase,
-    private val aiService: AiService,
-    private val languageManager: LanguageManager,
-) : ScreenModel {
+) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
     private val _greeting = MutableStateFlow<Greeting?>(null)
     val greeting: StateFlow<Greeting?> = _greeting.asStateFlow()
 
-    private val _architectState = MutableStateFlow<ArchitectState>(ArchitectState.Idle)
-    val architectState: StateFlow<ArchitectState> = _architectState.asStateFlow()
-
-    val currentLanguage: StateFlow<String> = languageManager.currentLanguage
-
-    fun changeLanguage(languageCode: String) {
-        languageManager.changeLanguage(languageCode)
-    }
-
-    val journeys: StateFlow<List<Journey>> = getJourneysUseCase()
-        .stateIn(screenModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     init {
         refresh()
     }
 
     fun refresh() {
-        screenModelScope.launch {
-            _greeting.value = getGreetingUseCase()
-            refreshJourneysUseCase()
-        }
-    }
-
-    fun refineDream(seed: String) {
-        if (seed.isBlank()) return
-        screenModelScope.launch {
-            _architectState.value = ArchitectState.Refining
-            aiService.refineDream(seed)
-                .onSuccess { proposal ->
-                    _architectState.value = ArchitectState.Proposed(proposal)
-                }
-                .onFailure { error ->
-                    _architectState.value = ArchitectState.Error(error.message ?: "Errore sconosciuto")
-                }
-        }
-    }
-
-    fun generateWeeklyMealPlan(profile: MealPlanningProfile) {
-        screenModelScope.launch {
-            _architectState.value = ArchitectState.Refining
-            aiService.generateWeeklyMealPlan(profile)
-                .onSuccess { proposal ->
-                    _architectState.value = ArchitectState.Proposed(proposal)
-                }
-                .onFailure { error ->
-                    _architectState.value = ArchitectState.Error(error.message ?: "Errore sconosciuto")
-                }
-        }
-    }
-
-    fun generateFinancialBlueprint(profile: FinanceProfile) {
-        screenModelScope.launch {
-            _architectState.value = ArchitectState.Refining
-            aiService.generateFinancialBlueprint(profile)
-                .onSuccess { proposal ->
-                    _architectState.value = ArchitectState.Proposed(proposal)
-                }
-                .onFailure { error ->
-                    _architectState.value = ArchitectState.Error(error.message ?: "Errore sconosciuto")
-                }
-        }
-    }
-
-    fun generateCouplesWellnessPlan(profile: HealthWellnessProfile) {
-        screenModelScope.launch {
-            _architectState.value = ArchitectState.Refining
-            aiService.generateCouplesWellnessPlan(profile)
-                .onSuccess { proposal ->
-                    _architectState.value = ArchitectState.Proposed(proposal)
-                }
-                .onFailure { error ->
-                    _architectState.value = ArchitectState.Error(error.message ?: "Errore sconosciuto")
-                }
-        }
-    }
-
-    fun generateLongTermProjectBlueprint(profile: LongTermProjectProfile) {
-        screenModelScope.launch {
-            _architectState.value = ArchitectState.Refining
-            aiService.generateLongTermProjectBlueprint(profile)
-                .onSuccess { proposal ->
-                    _architectState.value = ArchitectState.Proposed(proposal)
-                }
-                .onFailure { error ->
-                    _architectState.value = ArchitectState.Error(error.message ?: "Errore sconosciuto")
-                }
-        }
-    }
-
-    fun resetArchitect() {
-        _architectState.value = ArchitectState.Idle
-    }
-
-    fun addJourney(journey: Journey) {
-        screenModelScope.launch {
-            upsertJourneyUseCase(journey)
-        }
-    }
-
-    fun deleteJourney(id: String) {
-        screenModelScope.launch {
-            deleteJourneyUseCase(id)
-        }
-    }
-
-    fun toggleTask(journeyId: String, taskId: String) {
-        screenModelScope.launch {
-            toggleTaskUseCase(journeyId, taskId)
-        }
-    }
-
-    fun cheerTask(journeyId: String, taskId: String) {
-        screenModelScope.launch {
-            cheerTaskUseCase(journeyId, taskId)
-        }
-    }
-
-    fun addTask(journeyId: String, task: JourneyTask) {
-        screenModelScope.launch {
-            addTaskUseCase(journeyId, task)
-        }
-    }
-
-    fun updateTask(task: JourneyTask) {
-        screenModelScope.launch {
-            updateTaskUseCase(task)
-        }
-    }
-
-    fun deleteTask(journeyId: String, taskId: String) {
-        screenModelScope.launch {
-            deleteTaskUseCase(journeyId, taskId)
-        }
-    }
-
-    fun addFinanceBillEntry(journeyId: String, entry: FinanceBillEntry) {
-        screenModelScope.launch {
-            addFinanceBillEntryUseCase(journeyId, entry)
+        scope.launch {
+            _isRefreshing.value = true
+            try {
+                _greeting.value = getGreetingUseCase()
+            } catch (_: Throwable) {
+                // Keep the last greeting when refresh fails.
+            } finally {
+                _isRefreshing.value = false
+            }
         }
     }
 }

@@ -6,14 +6,31 @@ import kotlinx.coroutines.flow.StateFlow
 import platform.Foundation.NSUserDefaults
 
 class IOSLanguageManager(
-    private val settings: Settings
+    private val settings: Settings,
 ) : LanguageManager {
-    private val _currentLanguage = MutableStateFlow(settings.getString("app_language", "nap"))
+    private val persistedLanguage = readPersistedLanguage()
+    private val _currentLanguage = MutableStateFlow(persistedLanguage)
     override val currentLanguage: StateFlow<String> = _currentLanguage
 
+    init {
+        applyLocale(persistedLanguage)
+    }
+
     override fun changeLanguage(languageCode: String) {
-        settings.putString("app_language", languageCode)
-        _currentLanguage.value = languageCode
+        val normalized = SupportedAppLanguages.normalize(languageCode)
+        if (normalized == _currentLanguage.value) return
+
+        settings.putString(SupportedAppLanguages.SETTINGS_KEY, normalized)
+        _currentLanguage.value = normalized
+        applyLocale(normalized)
+    }
+
+    private fun readPersistedLanguage(): String {
+        val stored = settings.getString(SupportedAppLanguages.SETTINGS_KEY, SupportedAppLanguages.DEFAULT_CODE)
+        return SupportedAppLanguages.normalize(stored)
+    }
+
+    private fun applyLocale(languageCode: String) {
         NSUserDefaults.standardUserDefaults.setObject(listOf(languageCode), forKey = "AppleLanguages")
         NSUserDefaults.standardUserDefaults.synchronize()
     }

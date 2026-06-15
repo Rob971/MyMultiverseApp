@@ -2,153 +2,82 @@ package app.mymultiverse.kmp.presentation.screens.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.foundation.background
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import app.mymultiverse.kmp.presentation.components.screenListPadding
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
-import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.koin.getScreenModel
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
 import app.mymultiverse.kmp.domain.model.Greeting
-import app.mymultiverse.kmp.domain.model.Journey
+import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
-import app.mymultiverse.kmp.presentation.components.JourneyDreamCard
-import app.mymultiverse.kmp.presentation.components.NapolitanBackground
-import app.mymultiverse.kmp.presentation.screens.calendar.CalendarScreen
-import app.mymultiverse.kmp.presentation.screens.calendar.CalendarScope
-import app.mymultiverse.kmp.presentation.screens.detail.DetailScreen
+import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import org.koin.compose.koinInject
 
-object HomeScreen : Screen {
-    @Composable
-    override fun Content() {
-        val navigator = LocalNavigator.currentOrThrow
-        val screenModel = getScreenModel<HomeScreenModel>()
+object HomeTestTags {
+    const val NUTRITION_CARD = "home_nutrition_card"
+}
 
-        val greeting by screenModel.greeting.collectAsState()
-        val journeys by screenModel.journeys.collectAsState()
-        val currentLanguage by screenModel.currentLanguage.collectAsState()
+@Composable
+fun HomeScreen(
+    onOpenNutrition: () -> Unit,
+) {
+    val screenModel = koinInject<HomeScreenModel>()
+    val greeting by screenModel.greeting.collectAsState()
+    val isRefreshing by screenModel.isRefreshing.collectAsState()
 
-        NapolitanBackground {
-            HomeContent(
-                greeting = greeting,
-                journeys = journeys,
-                onJourneyClick = { dream ->
-                    navigator.push(DetailScreen(journeyId = dream.id))
-                },
-                onAddJourneyClick = {
-                    navigator.push(JourneyEditScreen())
-                },
-                onEditJourneyClick = { journeyId ->
-                    navigator.push(JourneyEditScreen(journeyId = journeyId))
-                },
-                onDeleteJourneyClick = { journeyId ->
-                    screenModel.deleteJourney(journeyId)
-                },
-                onRefreshClick = {
-                    screenModel.refresh()
-                },
-                onTaskToggle = { jId, tId -> screenModel.toggleTask(jId, tId) },
-                onTaskAdd = { jId, task -> screenModel.addTask(jId, task) },
-                onTaskUpdate = { task -> screenModel.updateTask(task) },
-                onTaskDelete = { jId, tId -> screenModel.deleteTask(jId, tId) },
-                onTaskClick = { jId, tId -> navigator.push(CalendarScreen(CalendarScope.Task(jId, tId))) },
-                currentLanguage = currentLanguage,
-                onLanguageSelected = { lang -> screenModel.changeLanguage(lang) }
-            )
-        }
-    }
+    HomeContent(
+        greeting = greeting,
+        isRefreshing = isRefreshing,
+        onRefreshClick = { screenModel.refresh() },
+        onOpenNutrition = onOpenNutrition,
+    )
 }
 
 @Composable
 fun HomeContent(
     greeting: Greeting?,
-    journeys: List<Journey>,
-    onJourneyClick: (Journey) -> Unit,
-    onAddJourneyClick: () -> Unit,
-    onEditJourneyClick: (String) -> Unit,
-    onDeleteJourneyClick: (String) -> Unit,
+    isRefreshing: Boolean,
     onRefreshClick: () -> Unit,
-    onTaskToggle: (String, String) -> Unit,
-    onTaskAdd: (String, app.mymultiverse.kmp.domain.model.JourneyTask) -> Unit,
-    onTaskUpdate: (app.mymultiverse.kmp.domain.model.JourneyTask) -> Unit,
-    onTaskDelete: (String, String) -> Unit,
-    onTaskClick: (String, String) -> Unit,
-    currentLanguage: String,
-    onLanguageSelected: (String) -> Unit
+    onOpenNutrition: () -> Unit,
 ) {
+    val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
+
     Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
-            var expanded by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
             @OptIn(ExperimentalMaterial3Api::class)
             TopAppBar(
                 title = { },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 actions = {
-                    Box {
-                        TextButton(onClick = { expanded = true }) {
-                            Text(currentLanguage.uppercase(), fontWeight = FontWeight.Bold, color = SharedJourneyColors.MediterraneanTeal)
-                        }
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.background(SharedJourneyColors.SunDrenchedWhite)
-                        ) {
-                            val languages = listOf(
-                                "ar-rSA" to "العربية",
-                                "de" to "Deutsch",
-                                "en" to "English",
-                                "es" to "Español",
-                                "fr" to "Français",
-                                "it" to "Italiano",
-                                "nap" to "Napulitano"
-                            )
-                            languages.forEach { (code, name) ->
-                                DropdownMenuItem(
-                                    text = { Text(name, color = if (code == currentLanguage) SharedJourneyColors.MediterraneanTeal else SharedJourneyColors.InkDeep) },
-                                    onClick = {
-                                        onLanguageSelected(code)
-                                        expanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
+                    LanguagePicker()
+                },
             )
         },
         containerColor = Color.Transparent,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddJourneyClick,
-                containerColor = SharedJourneyColors.TerracottaOrange,
-                contentColor = Color.White,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Icon(AppIcons.Add, contentDescription = stringResource(Res.string.action_add_dream))
-            }
-        }
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .safeDrawingPadding(),
-            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 20.dp),
+                .navigationBarsPadding()
+                .imePadding(),
+            contentPadding = screenListPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
@@ -159,12 +88,12 @@ fun HomeContent(
                             null -> stringResource(Res.string.home_banner_loading)
                             else -> stringResource(Res.string.home_greeting)
                         },
-                    description = stringResource(Res.string.home_banner_description)
+                    description = stringResource(Res.string.home_banner_description),
                 )
             }
 
             item {
-                if (greeting == null) {
+                if (greeting == null || isRefreshing) {
                     Box(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center,
@@ -186,22 +115,42 @@ fun HomeContent(
                     fontWeight = FontWeight.Black,
                     color = SharedJourneyColors.InkDeep,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
             }
 
-            itemsIndexed(journeys) { _, dream ->
-                JourneyDreamCard(
-                    dream = dream,
-                    progressColor = parseJourneyColor(dream.colorHex ?: dream.category.defaultColorHex),
-                    onClick = { onJourneyClick(dream) },
-                    onEditClick = { onEditJourneyClick(dream.id) },
-                    onDeleteClick = { onDeleteJourneyClick(dream.id) },
-                    onTaskToggle = onTaskToggle,
-                    onTaskAdd = onTaskAdd,
-                    onTaskUpdate = onTaskUpdate,
-                    onTaskDelete = onTaskDelete,
-                    onTaskClick = onTaskClick
+            item {
+                FamilyLogisticCard(
+                    title = stringResource(Res.string.home_logistics_nutrition_title),
+                    description = stringResource(Res.string.home_logistics_nutrition_description),
+                    accentColor = SharedJourneyColors.SageSoft,
+                    icon = AppIcons.Restaurant,
+                    modifier = Modifier.testTag(HomeTestTags.NUTRITION_CARD),
+                    onClick = onOpenNutrition,
+                )
+            }
+
+            item {
+                FamilyLogisticCard(
+                    title = stringResource(Res.string.home_logistics_adventures_title),
+                    description = stringResource(Res.string.home_logistics_adventures_description),
+                    accentColor = SharedJourneyColors.TerracottaOrange,
+                    icon = AppIcons.Explore,
+                    enabled = false,
+                    badge = comingSoonLabel,
+                    onClick = {},
+                )
+            }
+
+            item {
+                FamilyLogisticCard(
+                    title = stringResource(Res.string.home_logistics_budget_title),
+                    description = stringResource(Res.string.home_logistics_budget_description),
+                    accentColor = SharedJourneyColors.MediterraneanTeal,
+                    icon = AppIcons.AccountBalance,
+                    enabled = false,
+                    badge = comingSoonLabel,
+                    onClick = {},
                 )
             }
 
@@ -209,27 +158,21 @@ fun HomeContent(
                 Spacer(Modifier.height(24.dp))
                 Box(
                     modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
-                    TextButton(onClick = onRefreshClick) {
+                    TextButton(
+                        onClick = onRefreshClick,
+                        enabled = !isRefreshing,
+                    ) {
                         Text(
                             stringResource(Res.string.home_refresh_inspirations),
                             style = MaterialTheme.typography.labelMedium,
                             color = SharedJourneyColors.InkMuted,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         )
                     }
                 }
             }
         }
-    }
-}
-
-private fun parseJourneyColor(hex: String?): Color {
-    return try {
-        if (hex == null) SharedJourneyColors.TerracottaOrange
-        else Color(("FF" + hex).toLong(16))
-    } catch (_: Exception) {
-        SharedJourneyColors.TerracottaOrange
     }
 }

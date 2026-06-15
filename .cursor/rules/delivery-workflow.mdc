@@ -1,0 +1,44 @@
+---
+description: End-to-end workflow for planning, implementation, review, testing, and release
+alwaysApply: true
+---
+
+# Delivery workflow (always follow)
+
+Every task—planning, review, fix, test, or implementation—must follow this sequence. Do not skip steps unless the user explicitly asks for docs-only or question-only work.
+
+## 1. Plan
+
+- Restate the goal, acceptance criteria, and affected layers (UI, domain, data, CI, QA).
+- Read existing code and conventions before designing; prefer extending over inventing.
+- Call out risks (i18n, persistence, keyboard/scroll, AI read-only vs editable data, platform splits).
+- Keep scope minimal: smallest correct change.
+
+## 2. Implement
+
+- Match project architecture and naming; reuse shared components (`ScreenLayout`, `FamilyLogistics*`, scaffolds).
+- No drive-by refactors, secrets in repo, or hardcoded user-facing strings (see `i18n-multilingual.mdc`).
+- Platform code only when no multiplatform library exists (`expect`/`actual` as last resort).
+
+## 3. Test
+
+- **Unit** (`commonTest`): domain logic, screen models, repositories, codecs, i18n key parity.
+- **Instrumented** (`androidInstrumentedTest`): critical UX paths with `testTag`s; use fakes, not production network.
+- Update `firebase-appdistribution-testcases.yaml` when user-facing flows change.
+- Run relevant Gradle tasks before claiming done (e.g. `:composeApp:testDebugUnitTest`).
+
+## 4. Review (self-check)
+
+- UX: loading/error/empty states, snackbars, keyboard + `imePadding`, accessibility labels on icons.
+- Architecture: dependencies point inward; no UI in domain/data.
+- Security: no credentials committed; env/secrets only in CI secrets.
+- i18n: follow `i18n-multilingual.mdc` (all 8 locales, no hardcoded UI copy, parity tests green).
+
+## 5. CI/CD alignment
+
+- Push runs unit and instrumented tests; manual dispatch can target `all`, `android`, or `android-instrumented-tests`.
+- Firebase releases: keep `firebase-appdistribution-testcases.yaml` in sync; release notes reference QA checklist when distributing.
+
+## Definition of done
+
+Feature works on target platforms, tests added/updated and passing, strings localized, manual QA steps documented, no new linter issues in touched files.

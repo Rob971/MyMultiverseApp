@@ -1,0 +1,42 @@
+---
+description: QA, unit tests, instrumented tests, and Firebase manual test cases
+globs: "**/*{Test,test}*/**/*.{kt,yaml,yml}"
+alwaysApply: false
+---
+
+# QA & testing
+
+## Test pyramid
+
+1. **Unit** (`composeApp/src/commonTest`): fast, deterministic; fake repositories/services.
+2. **Instrumented** (`androidInstrumentedTest`): Compose UI tests for happy paths and regressions.
+3. **Manual** (`firebase-appdistribution-testcases.yaml`): steps for Firebase App Distribution testers.
+
+## Unit tests
+
+- Test domain pure functions (`NutritionAiPlanner`, codecs, presentation helpers) without mocks when possible.
+- Screen models: `runTest` + `TestDispatcher`; `advanceUntilIdle()` after async `update*` calls that use `scope.launch`.
+- Fakes must implement **full** service interfaces (all methods, including new API additions).
+- i18n: `NutritionLocaleStringsTest` / `HomeStringKeys`—every locale file must define required keys.
+
+## Instrumented tests
+
+- Use `createAndroidComposeRule`, `AppTheme`, and inject `NutritionScreenModel` with `InstrumentedNutrition*` fakes.
+- Prefer `onNodeWithTag` over text for stability; use `performScrollTo` before off-screen nodes.
+- Cover: navigation entry, CRUD, AI flows, meal-plan per-meal grocery generation when touching those screens.
+
+## Manual QA (Firebase)
+
+When changing user-visible nutrition/grocery/meal/AI flows, update `firebase-appdistribution-testcases.yaml`:
+
+- Clear steps, expected results, ids for each scenario.
+- Distinguish editable grocery vs read-only AI grocery.
+
+## Before merge
+
+```bash
+./gradlew :composeApp:testDebugUnitTest
+./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid
+```
+
+Run instrumented tests locally or via CI (push, or `workflow_dispatch` with `all` / `android` / `android-instrumented-tests`).
