@@ -146,8 +146,8 @@ GitHub Actions workflow: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-
 
 | Trigger | Jobs |
 |---------|------|
-| **Push** to `main`, `master`, or `feature/**` | Unit tests, instrumented tests, debug APK, optional Firebase distribute |
-| **Pull request** (any branch) | Unit tests, instrumented tests, debug APK, iOS compile signal |
+| **Push** to `main` or `master` | Unit tests, instrumented tests, debug APK, Firebase distribute |
+| **Pull request** into `main` or `master` | Unit tests, instrumented tests, debug APK, iOS compile signal (one run per push; no duplicate with feature-branch push) |
 | **Manual dispatch** | Choose `all`, `android`, `android-instrumented-tests`, `ios`, `firebase`, etc. |
 
 Firebase App Distribution runs on **push** and manual `firebase` targets only—not on pull requests.
