@@ -13,13 +13,22 @@ class FakeNutritionSessionCoordinator(
 ) : NutritionSessionCoordinator {
     private val _nutrition = MutableStateFlow(initialRepository)
 
+    var activatedSpaceId: String? = null
+        private set
+    var deactivateCount: Int = 0
+        private set
+
     override val nutrition = _nutrition.asStateFlow()
 
     override fun observeSyncStatus(): Flow<NutritionSyncStatus> = flowOf(NutritionSyncStatus.Idle)
 
-    override suspend fun activateSpace(spaceId: String) = Unit
+    override suspend fun activateSpace(spaceId: String) {
+        activatedSpaceId = spaceId
+    }
 
-    override fun deactivate() = Unit
+    override fun deactivate() {
+        deactivateCount++
+    }
 
     fun setRepository(repository: NutritionRepository) {
         _nutrition.value = repository

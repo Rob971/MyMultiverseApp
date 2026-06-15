@@ -9,6 +9,7 @@ import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.SharingSpaceRepository
 import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
+import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionScreenModel
 import com.russhwolf.settings.MapSettings
@@ -122,7 +123,29 @@ class AppModuleKoinTest : KoinTest {
     }
 
     @Test
-    fun nutritionRepository_isSingletonWithScreenModel() {
+    fun nutritionScreenModel_mutationsFlowThroughSessionCoordinator() = runTest(testDispatcher) {
+        val coordinator = get<NutritionSessionCoordinator>()
+        val model = get<NutritionScreenModel>()
+
+        model.addGroceryItem("Session path")
+        advanceUntilIdle()
+
+        assertEquals(1, coordinator.nutrition.value.observeGroceryItems().first().size)
+    }
+
+    @Test
+    fun activateSpace_switchesActiveNutritionToSharedScope() = runTest(testDispatcher) {
+        val coordinator = get<NutritionSessionCoordinator>()
+
+        coordinator.activateSpace("koin-space")
+        advanceUntilIdle()
+
+        assertEquals("koin-space", coordinator.nutrition.value.spaceId)
+        assertEquals(NutritionSyncStatus.RemoteUnavailable, coordinator.observeSyncStatus().first())
+    }
+
+    @Test
+    fun nutritionScreenModel_sharesWeekKeyWithPersonalRepository() {
         val repositoryFromModel = get<NutritionScreenModel>().weekKey
         val repositoryDirect = get<NutritionRepository>().weekKey
 

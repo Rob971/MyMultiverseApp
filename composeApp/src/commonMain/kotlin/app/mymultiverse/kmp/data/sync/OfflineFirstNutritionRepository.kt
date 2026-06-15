@@ -26,7 +26,10 @@ class OfflineFirstNutritionRepository(
     override fun observeMealPlan(): Flow<WeeklyMealPlan> = localStore.observeMealPlan()
 
     override suspend fun refreshFromRemote() {
-        if (!remoteEnabled) return
+        if (!remoteEnabled) {
+            syncEngine.markRemoteUnavailable()
+            return
+        }
         syncEngine.flushPending(spaceId, weekKey)
         syncEngine.pullRemote(spaceId, weekKey) { applyRemoteWeekData(it) }
     }

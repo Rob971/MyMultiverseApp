@@ -92,6 +92,10 @@ class NutritionSyncEngine(
         _status.value = NutritionSyncStatus.Idle
     }
 
+    fun markRemoteUnavailable() {
+        _status.value = NutritionSyncStatus.RemoteUnavailable
+    }
+
     private fun refreshStatus(spaceId: String, weekKey: String) {
         val pendingCount = outbox.pendingFor(spaceId, weekKey).size
         _status.value = when {

@@ -32,6 +32,19 @@ class AppNavigationTest {
     }
 
     @Test
+    fun membersRoute_requiresSpaceContext() {
+        val space = NutritionSpaceContext(
+            id = "space-1",
+            name = "Family",
+            features = setOf(app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature.Grocery),
+        )
+        val members = AppRoute.Nutrition(space = space, section = NutritionSection.Members)
+
+        assertEquals(NutritionSection.Members, members.section)
+        assertEquals("space-1", members.space?.id)
+    }
+
+    @Test
     fun backToHub_preservesNutritionContainer() {
         val space = NutritionSpaceContext(
             id = "space-1",

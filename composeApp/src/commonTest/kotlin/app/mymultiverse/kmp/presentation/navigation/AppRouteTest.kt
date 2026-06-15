@@ -22,6 +22,13 @@ class AppRouteTest {
     }
 
     @Test
+    fun nutritionRoute_storesMembersSection() {
+        val route = AppRoute.Nutrition(section = NutritionSection.Members)
+
+        assertEquals(NutritionSection.Members, route.section)
+    }
+
+    @Test
     fun homeRoute_isSingleton() {
         assertIs<AppRoute.Home>(AppRoute.Home)
     }

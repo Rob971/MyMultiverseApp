@@ -257,6 +257,22 @@ class NutritionScreenModelTest {
     }
 
     @Test
+    fun activateSpace_delegatesToSessionCoordinator() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val session = nutritionSession(repository)
+        val model = NutritionScreenModel(
+            session = session,
+            aiAssistant = FakeNutritionAdviceService(),
+            scope = modelScope,
+        )
+
+        model.activateSpace("space-99")
+        advanceUntilIdle()
+
+        assertEquals("space-99", session.activatedSpaceId)
+    }
+
+    @Test
     fun generateGroceryForMeal_appendsDistinctAiGrocery() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val ai = FakeNutritionAdviceService(mealGroceryLabels = listOf("Garlic", "Pasta"))
