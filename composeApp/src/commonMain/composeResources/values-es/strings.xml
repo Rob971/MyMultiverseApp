@@ -617,6 +617,13 @@
     <string name="auth_provider_coming_soon">Esta opción de inicio de sesión estará disponible pronto.</string>
     <string name="auth_error_generic">No se pudo iniciar sesión. Revisa tus datos e inténtalo de nuevo.</string>
     <string name="auth_error_config_missing">Supabase no está configurado en esta build. Añade supabase.anonKey en local.properties.</string>
+    <string name="auth_error_invalid_credentials">Introduce un correo y una contraseña válidos.</string>
+    <string name="auth_error_invalid_email">Introduce una dirección de correo válida.</string>
+    <string name="auth_error_weak_password">La contraseña debe tener al menos 6 caracteres.</string>
+    <string name="auth_error_user_already_exists">Ya existe una cuenta con este correo. Inicia sesión.</string>
+    <string name="auth_error_email_unconfirmed">Confirma tu correo antes de iniciar sesión.</string>
+    <string name="auth_error_signup_disabled">Los nuevos registros no están disponibles ahora.</string>
+    <string name="auth_success_email_confirmation">Cuenta creada. Revisa tu correo para confirmar y luego inicia sesión.</string>
     <string name="auth_loading">Iniciando sesión...</string>
     <string name="sharing_nutrition_spaces_title">Espacios compartidos de nutrición</string>
     <string name="sharing_nutrition_spaces_subtitle">Elige o crea un espacio y decide quién comparte compras, plan semanal y consejos IA.</string>

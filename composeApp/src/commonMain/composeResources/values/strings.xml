@@ -618,6 +618,13 @@
     <string name="auth_provider_coming_soon">This sign-in option will be available soon.</string>
     <string name="auth_error_generic">Could not sign in. Check your details and try again.</string>
     <string name="auth_error_config_missing">Supabase is not configured on this build. Add supabase.anonKey to local.properties.</string>
+    <string name="auth_error_invalid_credentials">Enter a valid email and password.</string>
+    <string name="auth_error_invalid_email">Enter a valid email address.</string>
+    <string name="auth_error_weak_password">Password must be at least 6 characters.</string>
+    <string name="auth_error_user_already_exists">An account with this email already exists. Sign in instead.</string>
+    <string name="auth_error_email_unconfirmed">Confirm your email before signing in.</string>
+    <string name="auth_error_signup_disabled">New sign-ups are not available right now.</string>
+    <string name="auth_success_email_confirmation">Account created. Check your email to confirm, then sign in.</string>
     <string name="auth_loading">Signing in...</string>
     <string name="sharing_nutrition_spaces_title">Nutrition sharing spaces</string>
     <string name="sharing_nutrition_spaces_subtitle">Choose or create a space and pick who shares grocery, meal plan, and AI advice.</string>

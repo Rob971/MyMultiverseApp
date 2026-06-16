@@ -617,6 +617,13 @@
     <string name="auth_provider_coming_soon">Diese Anmeldeoption ist bald verfügbar.</string>
     <string name="auth_error_generic">Anmeldung fehlgeschlagen. Prüfe deine Angaben und versuche es erneut.</string>
     <string name="auth_error_config_missing">Supabase ist in diesem Build nicht konfiguriert. Füge supabase.anonKey in local.properties hinzu.</string>
+    <string name="auth_error_invalid_credentials">Gib eine gültige E-Mail und ein gültiges Passwort ein.</string>
+    <string name="auth_error_invalid_email">Gib eine gültige E-Mail-Adresse ein.</string>
+    <string name="auth_error_weak_password">Das Passwort muss mindestens 6 Zeichen lang sein.</string>
+    <string name="auth_error_user_already_exists">Ein Konto mit dieser E-Mail existiert bereits. Melde dich an.</string>
+    <string name="auth_error_email_unconfirmed">Bestätige deine E-Mail, bevor du dich anmeldest.</string>
+    <string name="auth_error_signup_disabled">Neue Registrierungen sind derzeit nicht verfügbar.</string>
+    <string name="auth_success_email_confirmation">Konto erstellt. Bestätige deine E-Mail und melde dich dann an.</string>
     <string name="auth_loading">Anmeldung läuft...</string>
     <string name="sharing_nutrition_spaces_title">Geteilte Ernährungsbereiche</string>
     <string name="sharing_nutrition_spaces_subtitle">Wähle oder erstelle einen Bereich und lege fest, wer Einkauf, Wochenplan und KI-Tipps teilt.</string>

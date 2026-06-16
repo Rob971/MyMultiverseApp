@@ -617,6 +617,13 @@
     <string name="auth_provider_coming_soon">Cette option de connexion sera bientôt disponible.</string>
     <string name="auth_error_generic">Connexion impossible. Vérifiez vos informations et réessayez.</string>
     <string name="auth_error_config_missing">Supabase n'est pas configuré pour cette build. Ajoutez supabase.anonKey dans local.properties.</string>
+    <string name="auth_error_invalid_credentials">Saisissez un e-mail et un mot de passe valides.</string>
+    <string name="auth_error_invalid_email">Saisissez une adresse e-mail valide.</string>
+    <string name="auth_error_weak_password">Le mot de passe doit contenir au moins 6 caractères.</string>
+    <string name="auth_error_user_already_exists">Un compte existe déjà avec cet e-mail. Connectez-vous.</string>
+    <string name="auth_error_email_unconfirmed">Confirmez votre e-mail avant de vous connecter.</string>
+    <string name="auth_error_signup_disabled">Les nouvelles inscriptions ne sont pas disponibles pour le moment.</string>
+    <string name="auth_success_email_confirmation">Compte créé. Vérifiez votre e-mail pour confirmer, puis connectez-vous.</string>
     <string name="auth_loading">Connexion en cours...</string>
     <string name="sharing_nutrition_spaces_title">Espaces partagés nutrition</string>
     <string name="sharing_nutrition_spaces_subtitle">Choisissez ou créez un espace et décidez qui partage courses, repas et conseils IA.</string>

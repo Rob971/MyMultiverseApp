@@ -10,12 +10,14 @@ summary: |
 
 test_cases:
   - id: auth-sign-in
-    title: Email sign-in
+    title: Email sign-in and sign-up
     steps:
       - Launch the app with Supabase configured.
-      - Sign in with email and password (or create an account).
+      - Sign up with a new email and password (at least 6 characters), or sign in with an existing account.
+      - If email confirmation is enabled, verify the success message appears and confirm via email before signing in.
     expected:
       - Home screen appears after successful authentication.
+      - Invalid credentials, weak passwords, and duplicate accounts show clear on-screen messages.
 
   - id: auth-oauth-redirect
     title: Google or Apple OAuth redirect

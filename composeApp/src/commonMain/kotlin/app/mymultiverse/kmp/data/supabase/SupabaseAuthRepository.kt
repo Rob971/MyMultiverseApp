@@ -1,5 +1,6 @@
 package app.mymultiverse.kmp.data.supabase
 
+import app.mymultiverse.kmp.domain.auth.AuthFailureCodes
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.model.auth.AuthUser
 import app.mymultiverse.kmp.domain.repository.AuthRepository
@@ -45,17 +46,27 @@ class SupabaseAuthRepository(
 
     override suspend fun signInWithEmail(email: String, password: String): Result<Unit> =
         runCatching {
+            client.auth.awaitInitialization()
             client.auth.signInWith(Email) {
                 this.email = email.trim()
                 this.password = password
             }
+            syncAuthStateFromCurrentSession()
+            checkNotNull(currentAuthUser()) { "sign_in_failed" }
         }
 
     override suspend fun signUpWithEmail(email: String, password: String): Result<Unit> =
         runCatching {
+            client.auth.awaitInitialization()
             client.auth.signUpWith(Email) {
                 this.email = email.trim()
                 this.password = password
+            }
+            val user = currentAuthUser()
+            if (user != null) {
+                syncAuthStateFromCurrentSession()
+            } else {
+                throw IllegalStateException(AuthFailureCodes.EMAIL_CONFIRMATION_REQUIRED)
             }
         }
 

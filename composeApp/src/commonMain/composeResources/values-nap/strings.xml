@@ -617,6 +617,13 @@
     <string name="auth_provider_coming_soon">Questa opzione di accesso sarà disponibile a breve.</string>
     <string name="auth_error_generic">Accesso non riuscito. Controlla i dati e riprova.</string>
     <string name="auth_error_config_missing">Supabase non è configurato in questa build. Aggiungi supabase.anonKey in local.properties.</string>
+    <string name="auth_error_invalid_credentials">Miette n\'email e \'na password valide.</string>
+    <string name="auth_error_invalid_email">Miette n\'indirizzo email valido.</string>
+    <string name="auth_error_weak_password">\'A password adda avé almeno 6 carattere.</string>
+    <string name="auth_error_user_already_exists">Ce sta già n\'account cu sta email. Accedi.</string>
+    <string name="auth_error_email_unconfirmed">Conferma l\'email primma \'e accedé.</string>
+    <string name="auth_error_signup_disabled">Mò nun se ponno fà registrazione nuove.</string>
+    <string name="auth_success_email_confirmation">Account criato. Controlla l\'email pe\' confermà, poi accedi.</string>
     <string name="auth_loading">Accesso in corso...</string>
     <string name="sharing_nutrition_spaces_title">Spazie condivise nutrizione</string>
     <string name="sharing_nutrition_spaces_subtitle">Scegli o crià nu spazio e decidi cu spartisce spesa, piano e consigli AI.</string>

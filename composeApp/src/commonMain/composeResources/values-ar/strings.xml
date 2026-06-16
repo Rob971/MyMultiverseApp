@@ -617,6 +617,13 @@
     <string name="auth_provider_coming_soon">خيار تسجيل الدخول هذا سيكون متاحًا قريبًا.</string>
     <string name="auth_error_generic">تعذر تسجيل الدخول. تحقق من بياناتك وحاول مرة أخرى.</string>
     <string name="auth_error_config_missing">لم يتم إعداد Supabase في هذا الإصدار. أضف supabase.anonKey إلى local.properties.</string>
+    <string name="auth_error_invalid_credentials">أدخل بريدًا إلكترونيًا وكلمة مرور صالحين.</string>
+    <string name="auth_error_invalid_email">أدخل عنوان بريد إلكتروني صالحًا.</string>
+    <string name="auth_error_weak_password">يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.</string>
+    <string name="auth_error_user_already_exists">يوجد حساب بهذا البريد بالفعل. سجّل الدخول.</string>
+    <string name="auth_error_email_unconfirmed">أكّد بريدك الإلكتروني قبل تسجيل الدخول.</string>
+    <string name="auth_error_signup_disabled">التسجيلات الجديدة غير متاحة حاليًا.</string>
+    <string name="auth_success_email_confirmation">تم إنشاء الحساب. تحقق من بريدك للتأكيد ثم سجّل الدخول.</string>
     <string name="auth_loading">جارٍ تسجيل الدخول...</string>
     <string name="sharing_nutrition_spaces_title">مساحات مشاركة التغذية</string>
     <string name="sharing_nutrition_spaces_subtitle">اختر أو أنشئ مساحة وحدد من يشارك التسوق والخطة الأسبوعية ونصائح الذكاء الاصطناعي.</string>

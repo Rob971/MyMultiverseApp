@@ -39,12 +39,19 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_google
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_email_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_error_config_missing
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_error_email_unconfirmed
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_error_generic
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_error_invalid_credentials
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_error_invalid_email
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_error_signup_disabled
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_error_user_already_exists
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_error_weak_password
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_password_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_provider_coming_soon
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_sign_in_button
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_sign_up_button
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_subtitle
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_success_email_confirmation
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_switch_to_sign_in
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_switch_to_sign_up
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_title
@@ -65,11 +72,21 @@ fun LoginScreen(
     screenModel: LoginScreenModel = koinInject(),
 ) {
     val uiState by screenModel.uiState.collectAsState()
-    val errorMessage = when {
-        showConfigMissing -> stringResource(Res.string.auth_error_config_missing)
-        uiState.error is LoginError.ConfigMissing -> stringResource(Res.string.auth_error_config_missing)
-        uiState.error is LoginError.ProviderComingSoon -> stringResource(Res.string.auth_provider_coming_soon)
-        uiState.error is LoginError.Generic -> stringResource(Res.string.auth_error_generic)
+    val feedbackMessage = when {
+        showConfigMissing -> stringResource(Res.string.auth_error_config_missing) to false
+        uiState.message is LoginMessage.EmailConfirmationSent ->
+            stringResource(Res.string.auth_success_email_confirmation) to true
+        uiState.message is LoginMessage.Error -> when ((uiState.message as LoginMessage.Error).type) {
+            LoginError.ConfigMissing -> stringResource(Res.string.auth_error_config_missing) to false
+            LoginError.ProviderComingSoon -> stringResource(Res.string.auth_provider_coming_soon) to false
+            LoginError.InvalidCredentials -> stringResource(Res.string.auth_error_invalid_credentials) to false
+            LoginError.InvalidEmail -> stringResource(Res.string.auth_error_invalid_email) to false
+            LoginError.WeakPassword -> stringResource(Res.string.auth_error_weak_password) to false
+            LoginError.UserAlreadyExists -> stringResource(Res.string.auth_error_user_already_exists) to false
+            LoginError.EmailNotConfirmed -> stringResource(Res.string.auth_error_email_unconfirmed) to false
+            LoginError.SignUpDisabled -> stringResource(Res.string.auth_error_signup_disabled) to false
+            LoginError.Generic -> stringResource(Res.string.auth_error_generic) to false
+        }
         else -> null
     }
 
@@ -156,11 +173,16 @@ fun LoginScreen(
                     .testTag(LoginTestTags.PASSWORD_FIELD),
             )
 
-            if (errorMessage != null) {
+            if (feedbackMessage != null) {
+                val (text, isSuccess) = feedbackMessage
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = errorMessage,
-                    color = MaterialTheme.colorScheme.error,
+                    text = text,
+                    color = if (isSuccess) {
+                        SharedJourneyColors.MediterraneanTeal
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
@@ -170,7 +192,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(20.dp))
             Button(
                 onClick = screenModel::submitEmailAuth,
-                enabled = !uiState.isLoading && !showConfigMissing,
+                enabled = !uiState.isLoading && !showConfigMissing && uiState.canSubmitEmailAuth,
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag(LoginTestTags.SUBMIT_BUTTON),
