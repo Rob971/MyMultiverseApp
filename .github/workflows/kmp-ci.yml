@@ -108,18 +108,15 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Install emulator runtime libraries
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libpulse0 libxcb-cursor0
-
       - name: Run instrumented tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           arch: x86_64
+          cores: 4
+          emulator-boot-timeout: 900
           disable-animations: true
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-metrics -camera-back none
+          disable-spellchecker: true
           script: ./gradlew :composeApp:connectedDebugAndroidTest --build-cache
 
   android-apk:
