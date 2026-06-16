@@ -10,9 +10,10 @@ This app is KMP-first; “backend” here means data layer, local persistence, a
 
 ## Repositories
 
-- Implement interfaces from `domain/repository/` (e.g. `NutritionRepository`).
-- Persistence keys are explicit and week-scoped where needed (`nutrition_ai_grocery_{weekKey}`).
-- Expose `Flow` for observe APIs; save methods are `suspend`.
+- Implement interfaces from `domain/repository/` (e.g. `NutritionRepository`, `NutritionSessionCoordinator`).
+- Split nutrition sharing into **local** (`data/local/`), **remote API** (`data/remote/`), and **sync** (`data/sync/`).
+- Personal nutrition: `NutritionRepositoryImpl` → `NutritionLocalStore` only.
+- Shared spaces: `OfflineFirstNutritionRepository` + `NutritionSyncEngine` (outbox on push failure) + Realtime.
 
 ## Services
 

@@ -20,16 +20,21 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
+import app.mymultiverse.kmp.domain.AppBuildInfo
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.LanguagePicker
+import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import org.koin.compose.koinInject
 
 object HomeTestTags {
     const val NUTRITION_CARD = "home_nutrition_card"
+    const val SIGN_OUT_BUTTON = "home_sign_out_button"
+    const val APP_VERSION_LABEL = "home_app_version_label"
+    const val LOADING_INDICATOR = "home_loading_indicator"
 }
 
 @Composable
@@ -39,12 +44,17 @@ fun HomeScreen(
     val screenModel = koinInject<HomeScreenModel>()
     val greeting by screenModel.greeting.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
+    val pendingInvites by screenModel.pendingInvites.collectAsState()
 
     HomeContent(
         greeting = greeting,
         isRefreshing = isRefreshing,
+        pendingInvites = pendingInvites,
         onRefreshClick = { screenModel.refresh() },
         onOpenNutrition = onOpenNutrition,
+        onSignOut = { screenModel.signOut() },
+        onAcceptInvite = screenModel::acceptInvite,
+        onDeclineInvite = screenModel::declineInvite,
     )
 }
 
@@ -52,8 +62,12 @@ fun HomeScreen(
 fun HomeContent(
     greeting: Greeting?,
     isRefreshing: Boolean,
+    pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.SpaceInvite>,
     onRefreshClick: () -> Unit,
     onOpenNutrition: () -> Unit,
+    onSignOut: () -> Unit,
+    onAcceptInvite: (String) -> Unit,
+    onDeclineInvite: (String) -> Unit,
 ) {
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
 
@@ -65,6 +79,12 @@ fun HomeContent(
                 title = { },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 actions = {
+                    TextButton(
+                        onClick = onSignOut,
+                        modifier = Modifier.testTag(HomeTestTags.SIGN_OUT_BUTTON),
+                    ) {
+                        Text(stringResource(Res.string.auth_sign_out))
+                    }
                     LanguagePicker()
                 },
             )
@@ -93,7 +113,15 @@ fun HomeContent(
             }
 
             item {
-                if (greeting == null || isRefreshing) {
+                PendingInvitesCard(
+                    invites = pendingInvites,
+                    onAccept = onAcceptInvite,
+                    onDecline = onDeclineInvite,
+                )
+            }
+
+            item {
+                if (greeting == null) {
                     Box(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center,
@@ -101,7 +129,9 @@ fun HomeContent(
                         CircularProgressIndicator(
                             color = SharedJourneyColors.MediterraneanTeal,
                             strokeWidth = 3.dp,
-                            modifier = Modifier.size(32.dp),
+                            modifier = Modifier
+                                .size(32.dp)
+                                .testTag(HomeTestTags.LOADING_INDICATOR),
                         )
                     }
                 }
@@ -172,6 +202,25 @@ fun HomeContent(
                         )
                     }
                 }
+            }
+
+            item {
+                val versionLabel =
+                    if (AppBuildInfo.IS_RELEASE_CANDIDATE) {
+                        stringResource(Res.string.home_app_version_rc, AppBuildInfo.VERSION_NAME)
+                    } else {
+                        stringResource(Res.string.home_app_version, AppBuildInfo.VERSION_NAME)
+                    }
+                Text(
+                    text = versionLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SharedJourneyColors.InkMuted,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                        .testTag(HomeTestTags.APP_VERSION_LABEL),
+                    textAlign = TextAlign.Center,
+                )
             }
         }
     }

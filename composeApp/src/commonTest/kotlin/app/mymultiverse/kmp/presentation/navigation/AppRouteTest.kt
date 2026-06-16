@@ -7,10 +7,11 @@ import kotlin.test.assertIs
 class AppRouteTest {
 
     @Test
-    fun nutritionRoute_defaultsToHubSection() {
+    fun nutritionRoute_defaultsToSpacesSection() {
         val route = AppRoute.Nutrition()
 
-        assertEquals(NutritionSection.Hub, route.section)
+        assertEquals(NutritionSection.Spaces, route.section)
+        assertEquals(null, route.space)
     }
 
     @Test
@@ -18,6 +19,13 @@ class AppRouteTest {
         val route = AppRoute.Nutrition(section = NutritionSection.MealPlan)
 
         assertEquals(NutritionSection.MealPlan, route.section)
+    }
+
+    @Test
+    fun nutritionRoute_storesMembersSection() {
+        val route = AppRoute.Nutrition(section = NutritionSection.Members)
+
+        assertEquals(NutritionSection.Members, route.section)
     }
 
     @Test

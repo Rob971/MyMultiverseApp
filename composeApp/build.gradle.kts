@@ -1,3 +1,5 @@
+import java.util.Properties
+import org.gradle.api.tasks.PathSensitivity
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -5,6 +7,106 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
+}
+
+val defaultSupabaseUrl = "https://ivjdzreazvkrrirecznk.supabase.co"
+
+val appVersionProperties = Properties().apply {
+    val versionFile = rootProject.file("gradle/app-version.properties")
+    check(versionFile.exists()) { "Missing gradle/app-version.properties" }
+    versionFile.inputStream().use { load(it) }
+}
+val appVersionLts = appVersionProperties.getProperty("version.lts")
+val appVersionCandidate = appVersionProperties.getProperty("version.candidate", "0").toInt()
+val appVersionCode = appVersionProperties.getProperty("version.code", "1").toInt()
+val appVersionName = if (appVersionCandidate > 0) {
+    val ltsParts = appVersionLts.split(".")
+    val major = ltsParts.getOrElse(0) { "0" }
+    val minor = ltsParts.getOrElse(1) { "0" }
+    "$major.$minor.$appVersionCandidate"
+} else {
+    appVersionLts
+}
+
+val generateAppBuildInfo = tasks.register("generateAppBuildInfo") {
+    val versionFile = rootProject.layout.projectDirectory.file("gradle/app-version.properties")
+    val outputDir = layout.buildDirectory.dir("generated/appinfo/kotlin/app/mymultiverse/kmp/domain")
+
+    inputs.file(versionFile).withPathSensitivity(PathSensitivity.NONE)
+    outputs.dir(outputDir)
+
+    doLast {
+        val dir = outputDir.get().asFile
+        dir.mkdirs()
+        dir.resolve("AppBuildInfo.kt").writeText(
+            """
+            package app.mymultiverse.kmp.domain
+
+            internal object AppBuildInfo {
+                const val VERSION_NAME: String = ${appVersionName.quoteForKotlin()}
+                const val VERSION_CODE: Int = $appVersionCode
+                const val IS_RELEASE_CANDIDATE: Boolean = ${appVersionCandidate > 0}
+            }
+            """.trimIndent(),
+        )
+    }
+}
+
+val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
+    val localPropsFile = rootProject.layout.projectDirectory.file("local.properties")
+    val outputDir = layout.buildDirectory.dir("generated/supabase/kotlin/app/mymultiverse/kmp/data/supabase")
+
+    inputs.files(localPropsFile).optional().withPathSensitivity(PathSensitivity.NONE)
+    outputs.dir(outputDir)
+
+    doLast {
+        val properties = Properties().apply {
+            val file = localPropsFile.asFile
+            if (file.exists()) {
+                file.inputStream().use { load(it) }
+            }
+        }
+        val supabaseUrl = properties.getProperty("supabase.url", defaultSupabaseUrl)
+            .trim()
+            .ifBlank { defaultSupabaseUrl }
+        val supabaseAnonKey = properties.getProperty("supabase.anonKey", "").trim()
+
+        val dir = outputDir.get().asFile
+        dir.mkdirs()
+        dir.resolve("SupabaseSecrets.kt").writeText(
+            """
+            package app.mymultiverse.kmp.data.supabase
+
+            internal object SupabaseSecrets {
+                const val URL: String = ${supabaseUrl.quoteForKotlin()}
+                const val ANON_KEY: String = ${supabaseAnonKey.quoteForKotlin()}
+            }
+            """.trimIndent(),
+        )
+    }
+}
+
+fun String.quoteForKotlin(): String = buildString {
+    append('"')
+    for (ch in this@quoteForKotlin) {
+        when (ch) {
+            '\\' -> append("\\\\")
+            '"' -> append("\\\"")
+            '\n' -> append("\\n")
+            '\r' -> append("\\r")
+            '\t' -> append("\\t")
+            else -> append(ch)
+        }
+    }
+    append('"')
+}
+
+configurations.configureEach {
+    resolutionStrategy {
+        force("androidx.browser:browser:1.8.0")
+        force("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+    }
 }
 
 kotlin {
@@ -27,6 +129,10 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.androidx.appcompat)
+            implementation(libs.ktor.client.android)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -41,8 +147,13 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.coroutines)
+
+            implementation(libs.supabase.auth)
+            implementation(libs.supabase.postgrest)
+            implementation(libs.supabase.realtime)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -62,7 +173,17 @@ kotlin {
             }
         }
     }
+
+    sourceSets.named("commonMain") {
+        kotlin.srcDir(layout.buildDirectory.dir("generated/supabase/kotlin"))
+        kotlin.srcDir(layout.buildDirectory.dir("generated/appinfo/kotlin"))
+    }
 }
+
+tasks.matching { it.name.contains("compile", ignoreCase = true) && it.name.contains("Kotlin") }
+    .configureEach {
+        dependsOn(generateSupabaseSecrets, generateAppBuildInfo)
+    }
 
 android {
     namespace = "app.mymultiverse.kmp"
@@ -71,9 +192,12 @@ android {
         applicationId = "app.mymultiverse.kmp"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+    testOptions {
+        animationsDisabled = true
     }
     packaging {
         resources {

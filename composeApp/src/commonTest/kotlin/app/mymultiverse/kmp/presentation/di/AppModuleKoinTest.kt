@@ -1,8 +1,16 @@
 package app.mymultiverse.kmp.presentation.di
 
+import app.mymultiverse.kmp.data.supabase.SupabaseRuntimeFlags
 import app.mymultiverse.kmp.domain.manager.LanguageManager
+import app.mymultiverse.kmp.domain.model.auth.AuthState
+import app.mymultiverse.kmp.domain.model.auth.AuthUser
+import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
+import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
+import app.mymultiverse.kmp.domain.repository.SharingSpaceRepository
+import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
+import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionScreenModel
 import com.russhwolf.settings.MapSettings
@@ -40,6 +48,19 @@ class AppModuleKoinTest : KoinTest {
     private val testPlatformModule = module {
         single<Settings> { MapSettings() }
         single<LanguageManager> { FakeLanguageManager() }
+        single<AuthRepository> {
+            FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(
+                        id = "test-user",
+                        email = "test@example.com",
+                        displayName = "Test User",
+                    ),
+                ),
+            )
+        }
+        single<SharingSpaceRepository> { FakeSharingSpaceRepository() }
+        single<SpaceCollaborationRepository> { FakeSpaceCollaborationRepository() }
     }
 
     private val testAppModule = module {
@@ -49,13 +70,18 @@ class AppModuleKoinTest : KoinTest {
 
     @BeforeTest
     fun start() {
+        SupabaseRuntimeFlags.disableClientCreation = true
         Dispatchers.setMain(testDispatcher)
-        startKoin { modules(testAppModule) }
+        startKoin {
+            allowOverride(true)
+            modules(testAppModule)
+        }
     }
 
     @AfterTest
     fun stop() {
         stopKoin()
+        SupabaseRuntimeFlags.disableClientCreation = false
         Dispatchers.resetMain()
     }
 
@@ -93,7 +119,39 @@ class AppModuleKoinTest : KoinTest {
     }
 
     @Test
-    fun nutritionRepository_isSingletonWithScreenModel() {
+    fun nutritionSessionCoordinator_resolvesWithScreenModel() {
+        val coordinator = get<NutritionSessionCoordinator>()
+        val model = get<NutritionScreenModel>()
+
+        assertNotNull(coordinator)
+        assertNotNull(model)
+        assertEquals(coordinator.nutrition.value.weekKey, model.weekKey)
+    }
+
+    @Test
+    fun nutritionScreenModel_mutationsFlowThroughSessionCoordinator() = runTest(testDispatcher) {
+        val coordinator = get<NutritionSessionCoordinator>()
+        val model = get<NutritionScreenModel>()
+
+        model.addGroceryItem("Session path")
+        advanceUntilIdle()
+
+        assertEquals(1, coordinator.nutrition.value.observeGroceryItems().first().size)
+    }
+
+    @Test
+    fun activateSpace_switchesActiveNutritionToSharedScope() = runTest(testDispatcher) {
+        val coordinator = get<NutritionSessionCoordinator>()
+
+        coordinator.activateSpace("koin-space")
+        advanceUntilIdle()
+
+        assertEquals("koin-space", coordinator.nutrition.value.spaceId)
+        assertEquals(NutritionSyncStatus.RemoteUnavailable, coordinator.observeSyncStatus().first())
+    }
+
+    @Test
+    fun nutritionScreenModel_sharesWeekKeyWithPersonalRepository() {
         val repositoryFromModel = get<NutritionScreenModel>().weekKey
         val repositoryDirect = get<NutritionRepository>().weekKey
 

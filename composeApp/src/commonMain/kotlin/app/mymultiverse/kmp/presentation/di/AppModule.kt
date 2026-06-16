@@ -1,14 +1,37 @@
 package app.mymultiverse.kmp.presentation.di
 
+import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
+import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteApi
 import app.mymultiverse.kmp.data.repository.GreetingRepositoryImpl
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
+import app.mymultiverse.kmp.data.repository.SettingsNutritionSpaceSelectionStore
 import app.mymultiverse.kmp.data.service.LocalNutritionAiAssistantService
+import app.mymultiverse.kmp.data.supabase.SupabaseAuthRepository
+import app.mymultiverse.kmp.data.supabase.SupabaseClientHolder
+import app.mymultiverse.kmp.data.supabase.SupabaseSharingSpaceRepository
+import app.mymultiverse.kmp.data.supabase.SupabaseSpaceCollaborationRepository
+import app.mymultiverse.kmp.data.supabase.UnconfiguredAuthRepository
+import app.mymultiverse.kmp.data.supabase.UnconfiguredSharingSpaceRepository
+import app.mymultiverse.kmp.data.supabase.UnconfiguredSpaceCollaborationRepository
+import app.mymultiverse.kmp.data.sync.NutritionSessionCoordinatorImpl
+import app.mymultiverse.kmp.data.sync.NutritionSpaceRealtimeSync
+import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.GreetingRepository
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
+import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
+import app.mymultiverse.kmp.domain.repository.NutritionSpaceSelectionStore
+import app.mymultiverse.kmp.domain.repository.SharingSpaceRepository
+import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
+import app.mymultiverse.kmp.presentation.screens.auth.LoginScreenModel
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionScreenModel
+import app.mymultiverse.kmp.presentation.screens.nutrition.spaces.NutritionSpaceMembersScreenModel
+import app.mymultiverse.kmp.presentation.screens.nutrition.spaces.NutritionSpacesScreenModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -18,16 +41,57 @@ private val domainModule = module {
 }
 
 private val dataModule = module {
+    single<CoroutineScope> { CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate) }
+    single { SupabaseClientHolder.create(get()) }
+    single<AuthRepository> {
+        val client = get<SupabaseClientHolder>().client
+        if (client != null) {
+            SupabaseAuthRepository(client, get())
+        } else {
+            UnconfiguredAuthRepository()
+        }
+    }
+    single<SharingSpaceRepository> {
+        val client = get<SupabaseClientHolder>().client
+        if (client != null) {
+            SupabaseSharingSpaceRepository(client)
+        } else {
+            UnconfiguredSharingSpaceRepository()
+        }
+    }
+    single<SpaceCollaborationRepository> {
+        val client = get<SupabaseClientHolder>().client
+        if (client != null) {
+            SupabaseSpaceCollaborationRepository(client)
+        } else {
+            UnconfiguredSpaceCollaborationRepository()
+        }
+    }
+    single<NutritionSpaceSelectionStore> { SettingsNutritionSpaceSelectionStore(get()) }
     single<GreetingRepository> { GreetingRepositoryImpl() }
     single<NutritionRepository> { NutritionRepositoryImpl(get()) }
+    single { NutritionSyncOutbox(get()) }
+    single<NutritionSessionCoordinator> {
+        val settings = get<com.russhwolf.settings.Settings>()
+        val client = get<SupabaseClientHolder>().client
+        NutritionSessionCoordinatorImpl.create(
+            settings = settings,
+            remoteApi = client?.let { NutritionRemoteApi(it) },
+            outbox = get(),
+            realtimeSync = client?.let { NutritionSpaceRealtimeSync(it, get()) },
+        )
+    }
     single<NutritionAiAssistantService> { LocalNutritionAiAssistantService() }
 }
 
 private val presentationModule = module {
     singleOf(::HomeScreenModel)
+    singleOf(::LoginScreenModel)
+    singleOf(::NutritionSpacesScreenModel)
+    singleOf(::NutritionSpaceMembersScreenModel)
     single {
         NutritionScreenModel(
-            repository = get(),
+            session = get(),
             aiAssistant = get(),
         )
     }

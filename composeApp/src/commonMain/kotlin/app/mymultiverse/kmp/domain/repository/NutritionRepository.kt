@@ -5,7 +5,10 @@ import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import kotlinx.coroutines.flow.Flow
 
 interface NutritionRepository {
+    val spaceId: String?
     val weekKey: String
+
+    suspend fun refreshFromRemote()
 
     fun observeGroceryItems(): Flow<List<GroceryItem>>
     fun observeAiGroceryItems(): Flow<List<GroceryItem>>

@@ -6,87 +6,153 @@ on:
       - main
       - master
       - "feature/**"
+  pull_request:
+    branches:
+      - main
+      - master
+    types:
+      - opened
+      - reopened
   workflow_dispatch:
     inputs:
-      target:
-        description: "Which pipeline section should run?"
+      job:
+        description: "Job to run (use all for the full pipeline)"
         required: true
         default: all
         type: choice
         options:
           - all
-          - android
-          - android-tests
+          - android-unit-tests
           - android-instrumented-tests
-          - android-build
-          - ios
-          - firebase
+          - android-apk
           - firebase-release
+          - ios-compatibility
+      source_run_id:
+        description: "Optional workflow run ID for firebase-release-only (reuses APK after unit, instrumented, and APK jobs succeeded). Defaults to the latest successful pipeline on this branch."
+        required: false
+        type: string
 
 concurrency:
-  group: kmp-ci-${{ github.workflow }}-${{ github.ref }}
+  group: kmp-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
+  actions: read
 
 env:
   FIREBASE_APP_ID: "1:37917280954:android:f25a8ccc787de9f3f91083"
   FIREBASE_PROJECT_ID: "mymultiverseapp"
+  GRADLE_OPTS: -Dorg.gradle.vfs.watch=false
+  FIREBASE_TOOLS_VERSION: "13.29.1"
+  GRADLE_BUILD_ARGS: --build-cache --parallel
 
 jobs:
-  android-tests:
-    name: Android Unit Tests
+  android-fast:
+    name: Android Fast CI
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     if: >-
       ${{ github.event_name == 'push' ||
-          contains(fromJSON('["all", "android", "android-tests", "firebase", "firebase-release"]'), github.event.inputs.target) }}
+          github.event_name == 'pull_request' ||
+          (github.event_name == 'workflow_dispatch' &&
+            (github.event.inputs.job == 'all' || github.event.inputs.job == 'android-unit-tests')) }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
-          cache: gradle
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+          gradle-home-cache-cleanup: on-success
 
-      - name: Ensure Gradle wrapper is executable
-        run: chmod +x ./gradlew
+      - name: Android CI setup
+        uses: ./.github/actions/android-ci-setup
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Require Supabase secrets
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.job != 'android-unit-tests'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "SUPABASE_URL and SUPABASE_ANON_KEY repository secrets are required for Android builds."
+            exit 1
+          fi
 
       - name: Run Android unit tests
-        run: ./gradlew :composeApp:testDebugUnitTest
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'android-unit-tests'
+        run: ./gradlew :composeApp:testDebugUnitTest ${{ env.GRADLE_BUILD_ARGS }}
+
+      - name: Unit tests and debug APK
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.job != 'android-unit-tests'
+        run: ./gradlew :composeApp:testDebugUnitTest :composeApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
+
+      - name: Upload debug APK
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.job != 'android-unit-tests'
+        uses: actions/upload-artifact@v4
+        with:
+          name: composeApp-debug-apk
+          path: composeApp/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
 
   android-instrumented-tests:
     name: Android Instrumented UI Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
     if: >-
-      ${{ github.event_name == 'push' ||
-          contains(fromJSON('["all", "android", "android-instrumented-tests", "firebase", "firebase-release"]'), github.event.inputs.target) }}
+      ${{ github.event_name == 'pull_request' ||
+          (github.event_name == 'push' &&
+            (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
+          (github.event_name == 'workflow_dispatch' &&
+            (github.event.inputs.job == 'all' || github.event.inputs.job == 'android-instrumented-tests')) }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
-          cache: gradle
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+          gradle-home-cache-cleanup: on-success
 
-      - name: Ensure Gradle wrapper is executable
-        run: chmod +x ./gradlew
+      - name: Android CI setup
+        uses: ./.github/actions/android-ci-setup
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Require Supabase secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "SUPABASE_URL and SUPABASE_ANON_KEY repository secrets are required for Android builds."
+            exit 1
+          fi
 
       - name: Enable KVM for emulator
         run: |
@@ -94,43 +160,95 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api-34-x86_64-${{ hashFiles('.github/workflows/kmp-ci.yml', 'composeApp/build.gradle.kts') }}
+          restore-keys: |
+            avd-api-34-x86_64-
+
+      - name: Create AVD snapshot for cache
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          cores: 4
+          force-avd-creation: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Configure emulator boot options
+        id: emulator-boot
+        run: |
+          if [ "${{ steps.avd-cache.outputs.cache-hit }}" = "true" ]; then
+            echo "opts=-no-snapshot-save -snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none" >> "$GITHUB_OUTPUT"
+          else
+            echo "opts=-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run instrumented tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           arch: x86_64
-          script: ./gradlew :composeApp:connectedDebugAndroidTest
+          cores: 4
+          force-avd-creation: false
+          emulator-boot-timeout: 900
+          disable-animations: true
+          disable-spellchecker: true
+          emulator-options: ${{ steps.emulator-boot.outputs.opts }}
+          script: ./gradlew :composeApp:connectedDebugAndroidTest ${{ env.GRADLE_BUILD_ARGS }}
 
   android-apk:
     name: Android Debug APK
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     if: >-
-      ${{ github.event_name == 'push' ||
-          contains(fromJSON('["all", "android", "android-tests", "android-build", "firebase", "firebase-release"]'), github.event.inputs.target) }}
+      ${{ github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.job == 'android-apk' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
-          cache: gradle
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+          gradle-home-cache-cleanup: on-success
 
-      - name: Ensure Gradle wrapper is executable
-        run: chmod +x ./gradlew
+      - name: Android CI setup
+        uses: ./.github/actions/android-ci-setup
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
 
-      - name: Compile Android debug Kotlin
-        run: ./gradlew :composeApp:compileDebugKotlinAndroid
+      - name: Require Supabase secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "SUPABASE_URL and SUPABASE_ANON_KEY repository secrets are required for Android builds."
+            exit 1
+          fi
 
       - name: Assemble Android debug APK
-        run: ./gradlew :composeApp:assembleDebug
+        run: ./gradlew :composeApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -144,23 +262,106 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs:
-      - android-tests
+      - android-fast
       - android-instrumented-tests
-      - android-apk
     if: >-
-      ${{ github.event_name == 'push' ||
-          contains(fromJSON('["all", "firebase", "firebase-release"]'), github.event.inputs.target) }}
+      ${{ always() && needs.android-fast.result == 'success' && (
+          ((github.event_name == 'push' || github.event_name == 'pull_request') &&
+            (needs.android-instrumented-tests.result == 'success' ||
+              needs.android-instrumented-tests.result == 'skipped')) ||
+          (github.event_name == 'workflow_dispatch' &&
+            github.event.inputs.job == 'all' &&
+            needs.android-instrumented-tests.result == 'success') ||
+          (github.event_name == 'workflow_dispatch' &&
+            github.event.inputs.job == 'firebase-release')
+        ) }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Resolve prior successful pipeline run
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'firebase-release'
+        id: source-run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          run_has_prerequisites() {
+            gh run view "$1" --json jobs --jq '
+              ([.jobs[] | select(.name == "Android Fast CI" and .conclusion == "success")] | length > 0) and
+              (
+                ([.jobs[] | select(.name == "Android Instrumented UI Tests" and .conclusion == "success")] | length > 0) or
+                ([.jobs[] | select(.name == "Android Debug APK" and .conclusion == "success")] | length > 0) or
+                ([.jobs[] | select(.name == "Android Fast CI" and .conclusion == "success")] | length > 0)
+              )
+            '
+          }
+
+          RUN_ID="${{ github.event.inputs.source_run_id }}"
+          if [ -n "$RUN_ID" ]; then
+            if [ "$(run_has_prerequisites "$RUN_ID")" != "true" ]; then
+              echo "Run $RUN_ID is missing a successful unit test or instrumented test (with APK) job."
+              exit 1
+            fi
+            echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          RUN_ID=$(gh run list \
+            --workflow=kmp-ci.yml \
+            --branch="$BRANCH" \
+            --status=success \
+            --limit=30 \
+            --json databaseId,jobs \
+            --jq '[.[] | select(
+              ([.jobs[] | select(.name == "Android Fast CI" and .conclusion == "success")] | length > 0) and
+              (
+                ([.jobs[] | select(.name == "Android Instrumented UI Tests" and .conclusion == "success")] | length > 0) or
+                ([.jobs[] | select(.name == "Android Debug APK" and .conclusion == "success")] | length > 0) or
+                ([.jobs[] | select(.name == "Android Fast CI" and .conclusion == "success")] | length > 0)
+              )
+            )] | first | .databaseId // empty')
+
+          if [ -z "$RUN_ID" ]; then
+            echo "No successful pipeline with unit tests and instrumented tests (with APK) was found on branch $BRANCH."
+            exit 1
+          fi
+
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
       - name: Set up Node.js for Firebase CLI
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      - name: Download debug APK
+      - name: Cache Firebase CLI
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: firebase-tools-${{ env.FIREBASE_TOOLS_VERSION }}-npm
+          restore-keys: |
+            firebase-tools-${{ env.FIREBASE_TOOLS_VERSION }}-
+            firebase-tools-
+
+      - name: Download debug APK from current run
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.job != 'firebase-release'
         uses: actions/download-artifact@v4
         with:
           name: composeApp-debug-apk
+          path: dist-apk
+
+      - name: Download debug APK from prior successful run
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'firebase-release'
+        uses: actions/download-artifact@v4
+        with:
+          name: composeApp-debug-apk
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ steps.source-run.outputs.run_id }}
           path: dist-apk
 
       - name: Write Firebase service account
@@ -182,7 +383,15 @@ jobs:
           FIREBASE_GROUPS: ${{ secrets.FIREBASE_GROUPS }}
         run: |
           apk_path="dist-apk/composeApp-debug.apk"
-          release_notes="Debug build from $GITHUB_REF_NAME at $GITHUB_SHA."
+          app_version="unknown"
+          if [ -f gradle/app-version.properties ]; then
+            lts="$(grep '^version.lts=' gradle/app-version.properties | cut -d= -f2-)"
+            candidate="$(grep '^version.candidate=' gradle/app-version.properties | cut -d= -f2-)"
+            # shellcheck source=scripts/format-app-version.sh
+            source ./scripts/format-app-version.sh
+            app_version="$(format_app_version "$lts" "${candidate:-0}")"
+          fi
+          release_notes="v${app_version} — debug build from $GITHUB_REF_NAME at $GITHUB_SHA."
           if [ -f firebase-appdistribution-testcases.yaml ]; then
             checklist=$(grep -E '^  - id:' firebase-appdistribution-testcases.yaml | sed 's/^  - id: /- /' | head -12)
             release_notes=$(printf '%s\n\nQA checklist (firebase-appdistribution-testcases.yaml):\n%s' "$release_notes" "$checklist")
@@ -204,7 +413,7 @@ jobs:
           fi
 
           set -o pipefail
-          npx -y firebase-tools@latest appdistribution:distribute "${args[@]}" 2>&1 | tee "$RUNNER_TEMP/firebase-distribution.log"
+          npx -y firebase-tools@${{ env.FIREBASE_TOOLS_VERSION }} appdistribution:distribute "${args[@]}" 2>&1 | tee "$RUNNER_TEMP/firebase-distribution.log"
 
       - name: Publish Firebase release status
         if: always()
@@ -244,26 +453,91 @@ jobs:
     timeout-minutes: 25
     continue-on-error: true
     if: >-
-      ${{ github.event_name == 'push' ||
-          github.event.inputs.target == 'all' ||
-          github.event.inputs.target == 'ios' }}
+      ${{ github.event_name == 'pull_request' ||
+          (github.event_name == 'push' &&
+            (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
+          (github.event_name == 'workflow_dispatch' &&
+            (github.event.inputs.job == 'all' || github.event.inputs.job == 'ios-compatibility')) }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
-          cache: gradle
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+          gradle-home-cache-cleanup: on-success
 
-      - name: Ensure Gradle wrapper is executable
-        run: chmod +x ./gradlew
+      - name: Android CI setup
+        uses: ./.github/actions/android-ci-setup
 
       - name: Compile iOS simulator Kotlin
-        run: ./gradlew :composeApp:compileKotlinIosSimulatorArm64
+        run: ./gradlew :composeApp:compileKotlinIosSimulatorArm64 ${{ env.GRADLE_BUILD_ARGS }}
+
+  bump-version:
+    name: Bump Application Version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs:
+      - android-fast
+      - android-instrumented-tests
+      - firebase-release
+    if: >-
+      ${{ always() &&
+          github.event_name == 'push' &&
+          !startsWith(github.event.head_commit.message, 'chore(version):') &&
+          needs.android-fast.result == 'success' &&
+          (needs.android-instrumented-tests.result == 'success' ||
+            needs.android-instrumented-tests.result == 'skipped') &&
+          needs.firebase-release.result == 'success' &&
+          (
+            startsWith(github.ref, 'refs/heads/feature/') ||
+            github.ref == 'refs/heads/main' ||
+            github.ref == 'refs/heads/master'
+          ) }}
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Bump version
+        id: bump
+        run: |
+          chmod +x ./scripts/bump-app-version.sh
+          if [[ "$GITHUB_REF" == refs/heads/main || "$GITHUB_REF" == refs/heads/master ]]; then
+            MODE=lts
+          else
+            MODE=candidate
+          fi
+          OUTPUT="$(./scripts/bump-app-version.sh "$MODE")"
+          echo "$OUTPUT"
+          DISPLAY_NAME="$(echo "$OUTPUT" | grep '^display_name=' | cut -d= -f2-)"
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "display_name=$DISPLAY_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push version bump
+        env:
+          DISPLAY_NAME: ${{ steps.bump.outputs.display_name }}
+          MODE: ${{ steps.bump.outputs.mode }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gradle/app-version.properties iosApp/iosApp/Info.plist
+          if git diff --staged --quiet; then
+            echo "No version changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(version): bump ${MODE} to ${DISPLAY_NAME} [skip ci]"
+          git push

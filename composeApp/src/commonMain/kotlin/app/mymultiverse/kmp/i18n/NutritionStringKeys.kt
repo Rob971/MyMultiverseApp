@@ -45,6 +45,9 @@ object NutritionStringKeys {
         "nutrition_ai_suggestion_protein",
         "nutrition_ai_suggestion_veggies",
         "nutrition_ai_suggestion_allergy",
+        "nutrition_sync_status_syncing",
+        "nutrition_sync_status_pending",
+        "nutrition_sync_status_offline",
     )
 
     val localeDirectories: List<String> = listOf(

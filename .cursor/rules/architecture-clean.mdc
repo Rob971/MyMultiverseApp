@@ -18,6 +18,7 @@ alwaysApply: true
 
 - **Domain** must not depend on Compose, Android, iOS, or `data/`.
 - **Presentation** talks to **domain** (repositories, services, use cases)—not `*Impl` classes directly except via Koin.
+- Nutrition sharing: screen models use `NutritionSessionCoordinator` (domain port), not `data.sync` / `data.local` types.
 - **Data** implements domain contracts; map DTOs/storage to domain models at boundaries.
 - Screen models orchestrate: collect flows, call repository/service, expose `StateFlow` UI state.
 - Put formatting/sorting/partitioning in domain helpers (`GroceryListPresentation`, `MealPlanPresentation`), not duplicated in composables.

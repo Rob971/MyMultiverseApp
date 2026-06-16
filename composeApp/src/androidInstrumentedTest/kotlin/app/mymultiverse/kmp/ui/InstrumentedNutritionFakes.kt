@@ -5,12 +5,17 @@ import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiPlanner
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
+import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
+import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOf
 
 class InstrumentedNutritionRepository(
     override val weekKey: String,
+    override val spaceId: String? = null,
 ) : NutritionRepository {
     val grocery = MutableStateFlow<List<GroceryItem>>(emptyList())
     val aiGrocery = MutableStateFlow<List<GroceryItem>>(emptyList())
@@ -21,6 +26,8 @@ class InstrumentedNutritionRepository(
     override fun observeAiGroceryItems(): Flow<List<GroceryItem>> = aiGrocery
 
     override fun observeMealPlan(): Flow<WeeklyMealPlan> = mealPlan
+
+    override suspend fun refreshFromRemote() = Unit
 
     override suspend fun saveGroceryItems(items: List<GroceryItem>) {
         grocery.value = items
@@ -33,6 +40,20 @@ class InstrumentedNutritionRepository(
     override suspend fun saveMealPlan(plan: WeeklyMealPlan) {
         mealPlan.value = plan
     }
+}
+
+class InstrumentedNutritionSessionCoordinator(
+    repository: InstrumentedNutritionRepository,
+) : NutritionSessionCoordinator {
+    private val _nutrition = MutableStateFlow<NutritionRepository>(repository)
+
+    override val nutrition = _nutrition.asStateFlow()
+
+    override fun observeSyncStatus(): Flow<NutritionSyncStatus> = flowOf(NutritionSyncStatus.Idle)
+
+    override suspend fun activateSpace(spaceId: String) = Unit
+
+    override fun deactivate() = Unit
 }
 
 class InstrumentedNutritionAdviceService(
