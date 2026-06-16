@@ -90,6 +90,8 @@
     <string name="nutrition_ai_suggestion_protein_plan">Repas protéinés pour la semaine</string>
     <string name="nutrition_ai_suggestion_budget_plan">Plan repas économique</string>
     <string name="home_refresh_inspirations">Rafraîchir les Inspirations</string>
+    <string name="home_app_version">Version %1$s</string>
+    <string name="home_app_version_rc">Version %1$s (RC)</string>
     <string name="edit_dream_architect_title">Architecte de Rêves</string>
     <string name="edit_dream_edit_title">Modifier le Rêve</string>
     <string name="action_back">Retour</string>

@@ -387,11 +387,9 @@ jobs:
           if [ -f gradle/app-version.properties ]; then
             lts="$(grep '^version.lts=' gradle/app-version.properties | cut -d= -f2-)"
             candidate="$(grep '^version.candidate=' gradle/app-version.properties | cut -d= -f2-)"
-            if [ -n "$candidate" ] && [ "$candidate" -gt 0 ]; then
-              app_version="${lts}-rc.${candidate}"
-            else
-              app_version="$lts"
-            fi
+            # shellcheck source=scripts/format-app-version.sh
+            source ./scripts/format-app-version.sh
+            app_version="$(format_app_version "$lts" "${candidate:-0}")"
           fi
           release_notes="v${app_version} — debug build from $GITHUB_REF_NAME at $GITHUB_SHA."
           if [ -f firebase-appdistribution-testcases.yaml ]; then

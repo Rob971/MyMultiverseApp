@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
+import app.mymultiverse.kmp.domain.AppBuildInfo
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
@@ -32,6 +33,7 @@ import org.koin.compose.koinInject
 object HomeTestTags {
     const val NUTRITION_CARD = "home_nutrition_card"
     const val SIGN_OUT_BUTTON = "home_sign_out_button"
+    const val APP_VERSION_LABEL = "home_app_version_label"
 }
 
 @Composable
@@ -197,6 +199,25 @@ fun HomeContent(
                         )
                     }
                 }
+            }
+
+            item {
+                val versionLabel =
+                    if (AppBuildInfo.IS_RELEASE_CANDIDATE) {
+                        stringResource(Res.string.home_app_version_rc, AppBuildInfo.VERSION_NAME)
+                    } else {
+                        stringResource(Res.string.home_app_version, AppBuildInfo.VERSION_NAME)
+                    }
+                Text(
+                    text = versionLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SharedJourneyColors.InkMuted,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                        .testTag(HomeTestTags.APP_VERSION_LABEL),
+                    textAlign = TextAlign.Center,
+                )
             }
         }
     }

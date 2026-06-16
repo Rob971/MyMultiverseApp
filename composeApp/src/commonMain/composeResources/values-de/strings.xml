@@ -90,6 +90,8 @@
     <string name="nutrition_ai_suggestion_protein_plan">Proteinreiche Woche</string>
     <string name="nutrition_ai_suggestion_budget_plan">Günstiger Familienplan</string>
     <string name="home_refresh_inspirations">Inspirationen Aktualisieren</string>
+    <string name="home_app_version">Version %1$s</string>
+    <string name="home_app_version_rc">Version %1$s (RC)</string>
     <string name="edit_dream_architect_title">Traumarchitekt</string>
     <string name="edit_dream_edit_title">Traum Bearbeiten</string>
     <string name="action_back">Zurück</string>

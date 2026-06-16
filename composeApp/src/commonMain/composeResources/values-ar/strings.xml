@@ -90,6 +90,8 @@
     <string name="nutrition_ai_suggestion_protein_plan">وجبات غنية بالبروتين</string>
     <string name="nutrition_ai_suggestion_budget_plan">خطة وجبات اقتصادية</string>
     <string name="home_refresh_inspirations">تحديث الإلهامات</string>
+    <string name="home_app_version">الإصدار %1$s</string>
+    <string name="home_app_version_rc">الإصدار %1$s (مرشح)</string>
     <string name="edit_dream_architect_title">مهندس الأحلام</string>
     <string name="edit_dream_edit_title">تعديل الحلم</string>
     <string name="action_back">رجوع</string>

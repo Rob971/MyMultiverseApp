@@ -90,6 +90,8 @@
     <string name="nutrition_ai_suggestion_protein_plan">Pasti proteici settimanali</string>
     <string name="nutrition_ai_suggestion_budget_plan">Piano pasti economico</string>
     <string name="home_refresh_inspirations">Aggiorna Ispirazioni</string>
+    <string name="home_app_version">Versione %1$s</string>
+    <string name="home_app_version_rc">Versione %1$s (RC)</string>
     <string name="edit_dream_architect_title">Architetto dei Sogni</string>
     <string name="edit_dream_edit_title">Modifica Sogno</string>
     <string name="action_back">Indietro</string>

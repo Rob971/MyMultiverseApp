@@ -19,6 +19,8 @@ object HomeStringKeys {
         "home_logistics_coming_soon",
         "home_refresh_inspirations",
         "home_greeting",
+        "home_app_version",
+        "home_app_version_rc",
         "action_back",
     )
 

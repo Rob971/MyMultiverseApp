@@ -5,6 +5,8 @@ set -euo pipefail
 
 MODE="${1:?usage: $0 candidate|lts}"
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=format-app-version.sh
+source "$ROOT_DIR/scripts/format-app-version.sh"
 PROPS_FILE="$ROOT_DIR/gradle/app-version.properties"
 IOS_PLIST="$ROOT_DIR/iosApp/iosApp/Info.plist"
 
@@ -44,15 +46,11 @@ case "$MODE" in
     ;;
 esac
 
-if [[ "$version_candidate" -gt 0 ]]; then
-  display_name="${version_lts}-rc.${version_candidate}"
-else
-  display_name="${version_lts}"
-fi
+display_name="$(format_app_version "$version_lts" "$version_candidate")"
 
 cat > "$PROPS_FILE" <<EOF
 # Canonical app version (updated by CI on successful pipeline runs).
-# LTS: stable release on main. Candidate: rc build counter on feature branches.
+# LTS: stable release on main. Candidate: RC third segment on feature branches (1.0.X).
 version.lts=${version_lts}
 version.candidate=${version_candidate}
 version.code=${version_code}

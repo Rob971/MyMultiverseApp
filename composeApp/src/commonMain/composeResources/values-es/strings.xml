@@ -90,6 +90,8 @@
     <string name="nutrition_ai_suggestion_protein_plan">Comidas altas en proteína</string>
     <string name="nutrition_ai_suggestion_budget_plan">Plan de comidas económico</string>
     <string name="home_refresh_inspirations">Actualizar Inspiraciones</string>
+    <string name="home_app_version">Versión %1$s</string>
+    <string name="home_app_version_rc">Versión %1$s (RC)</string>
     <string name="edit_dream_architect_title">Arquitecto de Sueños</string>
     <string name="edit_dream_edit_title">Editar Sueño</string>
     <string name="action_back">Volver</string>

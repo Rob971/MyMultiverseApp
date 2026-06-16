@@ -21,9 +21,36 @@ val appVersionLts = appVersionProperties.getProperty("version.lts")
 val appVersionCandidate = appVersionProperties.getProperty("version.candidate", "0").toInt()
 val appVersionCode = appVersionProperties.getProperty("version.code", "1").toInt()
 val appVersionName = if (appVersionCandidate > 0) {
-    "$appVersionLts-rc.$appVersionCandidate"
+    val ltsParts = appVersionLts.split(".")
+    val major = ltsParts.getOrElse(0) { "0" }
+    val minor = ltsParts.getOrElse(1) { "0" }
+    "$major.$minor.$appVersionCandidate"
 } else {
     appVersionLts
+}
+
+val generateAppBuildInfo = tasks.register("generateAppBuildInfo") {
+    val versionFile = rootProject.layout.projectDirectory.file("gradle/app-version.properties")
+    val outputDir = layout.buildDirectory.dir("generated/appinfo/kotlin/app/mymultiverse/kmp/domain")
+
+    inputs.file(versionFile).withPathSensitivity(PathSensitivity.NONE)
+    outputs.dir(outputDir)
+
+    doLast {
+        val dir = outputDir.get().asFile
+        dir.mkdirs()
+        dir.resolve("AppBuildInfo.kt").writeText(
+            """
+            package app.mymultiverse.kmp.domain
+
+            internal object AppBuildInfo {
+                const val VERSION_NAME: String = ${appVersionName.quoteForKotlin()}
+                const val VERSION_CODE: Int = $appVersionCode
+                const val IS_RELEASE_CANDIDATE: Boolean = ${appVersionCandidate > 0}
+            }
+            """.trimIndent(),
+        )
+    }
 }
 
 val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
@@ -149,12 +176,13 @@ kotlin {
 
     sourceSets.named("commonMain") {
         kotlin.srcDir(layout.buildDirectory.dir("generated/supabase/kotlin"))
+        kotlin.srcDir(layout.buildDirectory.dir("generated/appinfo/kotlin"))
     }
 }
 
 tasks.matching { it.name.contains("compile", ignoreCase = true) && it.name.contains("Kotlin") }
     .configureEach {
-        dependsOn(generateSupabaseSecrets)
+        dependsOn(generateSupabaseSecrets, generateAppBuildInfo)
     }
 
 android {

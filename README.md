@@ -177,7 +177,7 @@ Canonical version: [`gradle/app-version.properties`](gradle/app-version.properti
 
 | Event | Bump | Example `versionName` |
 |-------|------|------------------------|
-| Successful **push** to `feature/**` | Candidate +1, `version.code` +1 | `1.0.0-rc.3` |
+| Successful **push** to `feature/**` | Candidate +1, `version.code` +1 | `1.0.5` (RC; third segment) |
 | Successful **push** to `main` / `master` (merge) | LTS patch +1, candidate reset | `1.0.1` |
 
 CI commits bumps with `chore(version): … [skip ci]` so only user pushes run the full pipeline.
