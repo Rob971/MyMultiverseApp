@@ -68,12 +68,14 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 
       - name: Ensure Gradle wrapper is executable
         run: chmod +x ./gradlew
 
       - name: Run Android unit tests
-        run: ./gradlew :composeApp:testDebugUnitTest
+        run: ./gradlew :composeApp:testDebugUnitTest --build-cache --parallel
 
   android-instrumented-tests:
     name: Android Instrumented UI Tests
@@ -98,6 +100,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 
       - name: Ensure Gradle wrapper is executable
         run: chmod +x ./gradlew
@@ -108,16 +112,41 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api-34-x86_64-${{ hashFiles('.github/workflows/kmp-ci.yml', 'composeApp/build.gradle.kts') }}
+          restore-keys: |
+            avd-api-34-x86_64-
+
+      - name: Create AVD snapshot for cache
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          cores: 4
+          force-avd-creation: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
       - name: Run instrumented tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           arch: x86_64
           cores: 4
+          force-avd-creation: false
           emulator-boot-timeout: 900
           disable-animations: true
           disable-spellchecker: true
-          script: ./gradlew :composeApp:connectedDebugAndroidTest --build-cache
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: ./gradlew :composeApp:connectedDebugAndroidTest --build-cache --parallel
 
   android-apk:
     name: Android Debug APK
@@ -142,15 +171,17 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 
       - name: Ensure Gradle wrapper is executable
         run: chmod +x ./gradlew
 
       - name: Compile Android debug Kotlin
-        run: ./gradlew :composeApp:compileDebugKotlinAndroid
+        run: ./gradlew :composeApp:compileDebugKotlinAndroid --build-cache --parallel
 
       - name: Assemble Android debug APK
-        run: ./gradlew :composeApp:assembleDebug
+        run: ./gradlew :composeApp:assembleDebug --build-cache --parallel
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -363,12 +394,14 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 
       - name: Ensure Gradle wrapper is executable
         run: chmod +x ./gradlew
 
       - name: Compile iOS simulator Kotlin
-        run: ./gradlew :composeApp:compileKotlinIosSimulatorArm64
+        run: ./gradlew :composeApp:compileKotlinIosSimulatorArm64 --build-cache --parallel
 
   bump-version:
     name: Bump Application Version
