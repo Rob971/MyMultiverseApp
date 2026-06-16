@@ -111,6 +111,7 @@ fun String.quoteForKotlin(): String = buildString {
 configurations.configureEach {
     resolutionStrategy {
         force("androidx.browser:browser:1.8.0")
+        force("androidx.tracing:tracing:1.1.0")
         force("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
     }
 }
