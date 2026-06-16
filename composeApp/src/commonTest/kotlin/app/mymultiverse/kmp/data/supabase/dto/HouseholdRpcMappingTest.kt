@@ -33,8 +33,24 @@ class HouseholdRpcMappingTest {
                 NutritionSharingFeature.MealPlan,
                 NutritionSharingFeature.AiAdvice,
             ),
-            row.features.mapNotNull { it.toNutritionFeature() }.toSet(),
+            (row.features ?: emptyList()).mapNotNull { it.toNutritionFeature() }.toSet(),
         )
+    }
+
+    @Test
+    fun decodesNullFeaturesAsEmptyList() {
+        val row = json.decodeFromString<HouseholdRpcRow>(
+            """
+            {
+              "space_id": "space-1",
+              "space_name": "Home",
+              "owner_id": "owner-1",
+              "features": null
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals(null, row.features)
     }
 
     @Test
@@ -50,7 +66,7 @@ class HouseholdRpcMappingTest {
             """.trimIndent(),
         )
 
-        assertTrue(row.features.isEmpty())
+        assertTrue(row.features.isNullOrEmpty())
     }
 
     private fun String.toNutritionFeature(): NutritionSharingFeature? =

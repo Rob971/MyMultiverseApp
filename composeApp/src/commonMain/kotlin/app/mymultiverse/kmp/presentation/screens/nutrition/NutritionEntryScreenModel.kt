@@ -41,21 +41,20 @@ class NutritionEntryScreenModel(
     fun ensureHousehold() {
         scope.launch {
             _state.value = NutritionEntryState.Loading
-            householdRepository.ensureHousehold()
-                .onSuccess { household ->
-                    val context = household.toSpaceContext()
-                    selectionStore.setActiveSpaceId(context.id)
-                    sessionCoordinator.activateSpace(context.id)
-                    _state.value = NutritionEntryState.Ready(context)
-                }
-                .onFailure { throwable ->
-                    logger.recordError(
-                        tag = "NutritionEntry",
-                        message = "ensure_household_failed",
-                        throwable = throwable,
-                    )
-                    _state.value = NutritionEntryState.Error(mapFailure(throwable))
-                }
+            try {
+                val household = householdRepository.ensureHousehold().getOrElse { throw it }
+                val context = household.toSpaceContext()
+                selectionStore.setActiveSpaceId(context.id)
+                sessionCoordinator.activateSpace(context.id)
+                _state.value = NutritionEntryState.Ready(context)
+            } catch (throwable: Throwable) {
+                logger.recordError(
+                    tag = "NutritionEntry",
+                    message = "ensure_household_failed: ${throwable.message}",
+                    throwable = throwable,
+                )
+                _state.value = NutritionEntryState.Error(mapFailure(throwable))
+            }
         }
     }
 

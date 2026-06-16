@@ -1,5 +1,6 @@
 package app.mymultiverse.kmp.data.supabase
 
+import app.mymultiverse.kmp.data.supabase.dto.HouseholdRpcDecoder
 import app.mymultiverse.kmp.data.supabase.dto.HouseholdRpcRow
 import app.mymultiverse.kmp.domain.model.sharing.Household
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
@@ -24,9 +25,9 @@ class SupabaseHouseholdRepository(
         client.auth.awaitInitialization()
         requireUserId()
 
-        val row = client.postgrest
-            .rpc("ensure_household")
-            .decodeSingle<HouseholdRpcRow>()
+        val row = HouseholdRpcDecoder.decode(
+            client.postgrest.rpc("ensure_household"),
+        )
 
         row.toDomain().also { resolved ->
             household.update { resolved }
@@ -34,7 +35,9 @@ class SupabaseHouseholdRepository(
     }
 
     private suspend fun requireUserId(): String =
-        client.auth.currentUserOrNull()?.id ?: throw IllegalStateException("auth_required")
+        client.auth.currentUserOrNull()?.id
+            ?: client.auth.currentSessionOrNull()?.user?.id
+            ?: throw IllegalStateException("auth_required")
 
     private fun HouseholdRpcRow.toDomain(): Household =
         Household(
@@ -42,7 +45,7 @@ class SupabaseHouseholdRepository(
             name = spaceName,
             ownerId = ownerId,
             ownerDisplayName = ownerDisplayName?.takeIf { it.isNotBlank() },
-            nutritionFeatures = features.mapNotNull { it.toNutritionFeature() }.toSet(),
+            nutritionFeatures = (features ?: emptyList()).mapNotNull { it.toNutritionFeature() }.toSet(),
         )
 
     private fun String.toNutritionFeature(): NutritionSharingFeature? =
