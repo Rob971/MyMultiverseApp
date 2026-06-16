@@ -113,7 +113,9 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
-          script: ./gradlew :composeApp:connectedDebugAndroidTest
+          disable-animations: true
+          emulator-options: -no-snapshot-save -no-boot-anim -gpu swiftshader_indirect -no-audio
+          script: ./gradlew :composeApp:connectedDebugAndroidTest --build-cache
 
   android-apk:
     name: Android Debug APK

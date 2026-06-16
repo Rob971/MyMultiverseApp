@@ -22,8 +22,10 @@ alwaysApply: false
 ## Instrumented tests
 
 - Use `createAndroidComposeRule`, `AppTheme`, and inject `NutritionScreenModel` with `InstrumentedNutrition*` fakes.
-- Prefer `onNodeWithTag` over text for stability; use `performScrollTo` before off-screen nodes.
-- Cover: navigation entry, CRUD, AI flows, meal-plan per-meal grocery generation when touching those screens.
+- Prefer `onNodeWithTag` over text; use `performScrollTo` before off-screen nodes.
+- Use `InstrumentedComposeTest.waitFor` / `waitUntil` (no `Thread.sleep` polling).
+- Keep instrumented scope to **AppCompat + Compose integration smoke** per screen; CRUD and screen-model rules belong in `NutritionScreenModelTest` / domain unit tests.
+- Cover: grocery add, meal-plan AI grocery button, AI advice UI, hub navigation, home + Koin tap, `FamilyLogisticCard` enabled/disabled.
 
 ## Manual QA (Firebase)
 
