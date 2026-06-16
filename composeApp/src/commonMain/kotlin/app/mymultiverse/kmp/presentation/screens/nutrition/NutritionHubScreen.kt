@@ -49,7 +49,6 @@ object NutritionHubTestTags {
     const val GROCERY_CARD = "nutrition_hub_grocery"
     const val MEAL_PLAN_CARD = "nutrition_hub_meal_plan"
     const val AI_CARD = "nutrition_hub_ai"
-    const val MEMBERS_CARD = "nutrition_hub_members"
 }
 
 @Composable
@@ -158,17 +157,6 @@ fun NutritionHubScreen(
                         onClick = { onOpenSection(NutritionSection.AiAdvice) },
                     )
                 }
-            }
-
-            item {
-                FamilyLogisticCard(
-                    title = stringResource(Res.string.sharing_hub_manage_members),
-                    description = stringResource(Res.string.sharing_members_subtitle),
-                    accentColor = SharedJourneyColors.MediterraneanTeal,
-                    icon = AppIcons.Person,
-                    modifier = Modifier.testTag(NutritionHubTestTags.MEMBERS_CARD),
-                    onClick = { onOpenSection(NutritionSection.Members) },
-                )
             }
         }
     }

@@ -86,6 +86,12 @@ data class SpaceInviteUpdateRow(
 )
 
 @Serializable
+data class SpaceInvitePendingUpdateRow(
+    val role: String,
+    @SerialName("invited_by") val invitedBy: String,
+)
+
+@Serializable
 data class FindProfileByEmailParams(
     @SerialName("p_email") val email: String,
 )

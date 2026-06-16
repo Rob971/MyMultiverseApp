@@ -246,27 +246,34 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun nutritionHub_showsMembersCardAfterCategories() {
-        val screenModel = nutritionScreenModel()
+    fun homeContent_tapHouseholdCard_invokesCallback() {
+        var openedHousehold = false
 
         composeRule.setContent {
             AppTheme {
-                NutritionHubScreen(
-                    spaceName = "Test space",
-                    enabledFeatures = setOf(
-                        NutritionSharingFeature.Grocery,
-                        NutritionSharingFeature.MealPlan,
-                        NutritionSharingFeature.AiAdvice,
-                    ),
-                    onBack = {},
-                    onOpenSection = {},
-                    screenModel = screenModel,
-                )
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = Greeting("Hello"),
+                        userDisplayName = "Test User",
+                        householdName = "Our household",
+                        isRefreshing = false,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onOpenHouseholdMembers = { openedHousehold = true },
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                    )
+                }
             }
         }
 
-        composeRule.onNodeWithTag(NutritionHubTestTags.GROCERY_CARD).performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithTag(NutritionHubTestTags.MEMBERS_CARD).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(HomeTestTags.HOUSEHOLD_CARD)
+            .performScrollTo()
+            .performClick()
+
+        assertTrue(openedHousehold)
     }
 
     @Test
@@ -279,10 +286,12 @@ class NutritionUxInstrumentedTest {
                     HomeContent(
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
+                        householdName = null,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = { openedNutrition = true },
+                        onOpenHouseholdMembers = {},
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
@@ -306,10 +315,12 @@ class NutritionUxInstrumentedTest {
                     HomeContent(
                         greeting = Greeting("ready"),
                         userDisplayName = "Roberto",
+                        householdName = null,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
@@ -330,10 +341,12 @@ class NutritionUxInstrumentedTest {
                     HomeContent(
                         greeting = Greeting("ready"),
                         userDisplayName = "maria",
+                        householdName = null,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
@@ -353,10 +366,12 @@ class NutritionUxInstrumentedTest {
                     HomeContent(
                         greeting = Greeting("ready"),
                         userDisplayName = null,
+                        householdName = null,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
@@ -377,10 +392,12 @@ class NutritionUxInstrumentedTest {
                     HomeContent(
                         greeting = null,
                         userDisplayName = "Roberto",
+                        householdName = null,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
@@ -401,10 +418,12 @@ class NutritionUxInstrumentedTest {
                     HomeContent(
                         greeting = null,
                         userDisplayName = null,
+                        householdName = null,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
@@ -424,10 +443,12 @@ class NutritionUxInstrumentedTest {
                     HomeContent(
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
+                        householdName = null,
                         isRefreshing = true,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},

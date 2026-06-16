@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.kmp.presentation.di.FakeAuthRepository
+import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
 import app.mymultiverse.kmp.presentation.di.FakeSpaceCollaborationRepository
 import com.russhwolf.settings.MapSettings
@@ -58,6 +59,7 @@ class HomeScreenModelTest {
         HomeScreenModel(
             getGreetingUseCase = GetGreetingUseCase(repository),
             authRepository = authRepository,
+            householdRepository = FakeHouseholdRepository(),
             collaborationRepository = FakeSpaceCollaborationRepository(),
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
@@ -209,6 +211,7 @@ class HomeScreenModelTest {
                     AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),
                 ),
             ),
+            householdRepository = FakeHouseholdRepository(),
             collaborationRepository = HangingSpaceCollaborationRepository(),
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
@@ -232,6 +235,7 @@ class HomeScreenModelTest {
                     AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),
                 ),
             ),
+            householdRepository = FakeHouseholdRepository(),
             collaborationRepository = collaborationRepository,
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
@@ -253,11 +257,16 @@ private class HangingSpaceCollaborationRepository : SpaceCollaborationRepository
 
     override fun observePendingInvites(): Flow<List<SpaceInvite>> = pendingInvites.asStateFlow()
 
+    override fun observeOutboundInvites(spaceId: String): Flow<List<SpaceInvite>> =
+        MutableStateFlow<List<SpaceInvite>>(emptyList()).asStateFlow()
+
     override suspend fun refreshMembers(spaceId: String, ownerId: String, ownerDisplayName: String) = Unit
 
     override suspend fun refreshPendingInvites() {
         suspendCancellableCoroutine<Unit> { }
     }
+
+    override suspend fun refreshOutboundInvites(spaceId: String) = Unit
 
     override suspend fun addMemberByEmail(
         spaceId: String,

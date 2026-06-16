@@ -30,7 +30,8 @@ import app.mymultiverse.kmp.presentation.screens.auth.LoginScreenModel
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionEntryScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionScreenModel
-import app.mymultiverse.kmp.presentation.screens.nutrition.spaces.NutritionSpaceMembersScreenModel
+import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersEntryScreenModel
+import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersScreenModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -97,7 +98,8 @@ private val presentationModule = module {
     singleOf(::HomeScreenModel)
     singleOf(::LoginScreenModel)
     singleOf(::NutritionEntryScreenModel)
-    singleOf(::NutritionSpaceMembersScreenModel)
+    singleOf(::HouseholdMembersEntryScreenModel)
+    singleOf(::HouseholdMembersScreenModel)
     single {
         NutritionScreenModel(
             session = get(),

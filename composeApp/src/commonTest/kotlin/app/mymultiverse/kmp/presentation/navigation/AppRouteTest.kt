@@ -22,10 +22,10 @@ class AppRouteTest {
     }
 
     @Test
-    fun nutritionRoute_storesMembersSection() {
-        val route = AppRoute.Nutrition(section = NutritionSection.Members)
+    fun householdMembersRoute_defaultsToGateWhenHouseholdMissing() {
+        val route = AppRoute.HouseholdMembers()
 
-        assertEquals(NutritionSection.Members, route.section)
+        assertEquals(null, route.household)
     }
 
     @Test

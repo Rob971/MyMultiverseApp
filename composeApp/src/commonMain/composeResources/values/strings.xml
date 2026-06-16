@@ -7,6 +7,9 @@
     <string name="home_dreams_title">our Family logistics</string>
     <string name="home_logistics_nutrition_title">Nutrition</string>
     <string name="home_logistics_nutrition_description">Meals, groceries, and weekly planning for the family.</string>
+    <string name="home_household_title">Household</string>
+    <string name="home_household_description">Invite people to collaborate on nutrition, adventures, and budget.</string>
+    <string name="home_household_description_named">Manage people in %1$s — shared across nutrition, adventures, and budget.</string>
     <string name="home_logistics_adventures_title">Adventures</string>
     <string name="home_logistics_adventures_description">Trips, outings, and experiences we plan together.</string>
     <string name="home_logistics_budget_title">Budget</string>
@@ -650,9 +653,9 @@
     <string name="sharing_nutrition_spaces_error_not_configured">Supabase is not configured on this build.</string>
     <string name="sharing_nutrition_spaces_loading">Loading sharing spaces...</string>
     <string name="sharing_hub_manage_members">People and groups</string>
-    <string name="sharing_members_title">Sharing members</string>
-    <string name="sharing_members_subtitle">Invite people by email or add a group to this nutrition space.</string>
-    <string name="sharing_members_empty">No members yet. Add someone or a group to start sharing.</string>
+    <string name="sharing_members_title">Household members</string>
+    <string name="sharing_members_subtitle">Invite people by email. Editors can change shared lists and plans; viewers can read them. This household applies to nutrition, adventures, and budget.</string>
+    <string name="sharing_members_empty">No members yet. Add someone to start sharing.</string>
     <string name="sharing_members_add_person">Add person</string>
     <string name="sharing_members_add_group">Add group</string>
     <string name="sharing_members_email_label">Email address</string>
@@ -696,6 +699,9 @@
     <string name="sharing_members_event_expires_required">Pick an end date for trip or event groups.</string>
     <string name="sharing_members_group_expired">Expired</string>
     <string name="sharing_members_invite_sent">Invite sent. They can join after signing up.</string>
-    <string name="sharing_members_member_added">Member added to this space.</string>
+    <string name="sharing_members_member_added">Member added to your household.</string>
     <string name="sharing_members_select_role">Access level</string>
+    <string name="sharing_members_pending_invites_title">Pending invites</string>
+    <string name="sharing_members_pending_invite_label">Pending · %1$s</string>
+    <string name="sharing_members_read_only_hint">Only the household owner can invite or remove members.</string>
 </resources>

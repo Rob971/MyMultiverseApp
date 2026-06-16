@@ -5,11 +5,10 @@ version: 9
 updated: 2026-06-16
 
 summary: |
-  Verify auth, single household bootstrap, nutrition hub (grocery / meal plan / AI adviser / members),
-  CRUD on shared week data, sync status, Crashlytics on tester builds, and sign-out.
+  Verify auth, household members on Home (shared across nutrition, adventures, budget),
+  nutrition hub (grocery / meal plan / AI adviser), CRUD on shared week data, sync status,
+  Crashlytics on tester builds, and sign-out.
   Adventures and Budget cards on Home remain coming soon but use the same household when shipped.
-
-test_cases:
   - id: auth-sign-in
     title: Email sign-in and sign-up
     steps:
@@ -61,16 +60,23 @@ test_cases:
       - Nutrition hub opens directly (no space picker).
       - Household is auto-created on first access with grocery, meal plan, and AI advice enabled.
 
-  - id: nutrition-household-members
-    title: Invite household members
+  - id: home-household-members
+    title: Invite household members from Home
     steps:
-      - From the nutrition hub, open Household members.
+      - From Home, tap the Household card (below pending invites, above topic cards).
       - Add a second person by email (existing account) or send an invite (unknown email).
-      - Add a third member if available.
     expected:
-      - Members list shows owner and invited people only (no groups).
-      - Household supports two or more members without an upper limit.
-      - Invite sent message for unknown emails.
+      - Members screen explains the household is shared across nutrition, adventures, and budget.
+      - Owner can invite; editors/viewers see read-only member list.
+      - Pending invites appear on the members screen until accepted.
+      - Snackbar confirms invite sent or member added.
+
+  - id: nutrition-household-members
+    title: Invite household members (legacy note)
+    steps:
+      - Use Home → Household card (members moved from nutrition hub).
+    expected:
+      - Same as home-household-members.
 
   - id: nutrition-sync-status
     title: Shared nutrition sync indicator
@@ -85,7 +91,7 @@ test_cases:
       - Launch the app and go to Home.
       - Scroll to the Family Logistics / Nutrition card and tap it.
     expected:
-      - Nutrition hub opens with Grocery, Meal plan, and AI adviser cards above Household members.
+      - Nutrition hub opens with Grocery, Meal plan, and AI adviser cards.
 
   - id: hub-layout-order
     title: Nutrition hub section order
@@ -93,7 +99,7 @@ test_cases:
       - Open the nutrition hub on a household with all features enabled.
       - Scroll through the hub cards top to bottom.
     expected:
-      - Grocery, Weekly meal plan, and AI adviser appear before Household members.
+      - Grocery, Weekly meal plan, and AI adviser cards are shown.
       - Each category card shows a progress or status line when data exists.
 
   - id: hub-meal-plan-navigation
@@ -112,11 +118,11 @@ test_cases:
       - AI screen shows mode chips (Advice, Grocery, Meal plan) and a criteria field.
 
   - id: hub-members-navigation
-    title: Open household members from hub
+    title: Open household members from Home
     steps:
-      - From Nutrition hub, scroll to Household members and tap the card.
+      - From Home, tap the Household card.
     expected:
-      - Members screen lists the owner and invited household members.
+      - Members screen lists the owner, active members, and pending invites.
 
   - id: nutrition-section-back
     title: Back from nutrition section to hub

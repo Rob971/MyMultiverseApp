@@ -6,6 +6,9 @@
     <string name="home_banner_description">مساحة مشتركة لتنمية أحلام عائلتنا، وتتبع أهداف S.M.A.R.T. وتقوية روابطنا اليومية.</string>
     <string name="home_dreams_title">لوجستيات عائلتنا</string>
     <string name="home_logistics_nutrition_title">التغذية</string>
+    <string name="home_household_title">الأسرة</string>
+    <string name="home_household_description">ادعُ أشخاصًا للتعاون في التغذية والمغامرات والميزانية.</string>
+    <string name="home_household_description_named">إدارة الأشخاص في %1$s — مشترك عبر التغذية والمغامرات والميزانية.</string>
     <string name="home_logistics_nutrition_description">الوجبات والتسوق والتخطيط الأسبوعي للعائلة.</string>
     <string name="home_logistics_adventures_title">المغامرات</string>
     <string name="home_logistics_adventures_description">الرحلات والخروج والتجارب التي نخطط لها معًا.</string>
@@ -649,9 +652,9 @@
     <string name="sharing_nutrition_spaces_error_not_configured">لم يتم إعداد Supabase في هذا الإصدار.</string>
     <string name="sharing_nutrition_spaces_loading">جارٍ تحميل المساحات...</string>
     <string name="sharing_hub_manage_members">الأشخاص والمجموعات</string>
-    <string name="sharing_members_title">أعضاء المشاركة</string>
-    <string name="sharing_members_subtitle">ادعُ أشخاصًا بالبريد الإلكتروني أو أضف مجموعة إلى مساحة التغذية هذه.</string>
-    <string name="sharing_members_empty">لا يوجد أعضاء بعد. أضف شخصًا أو مجموعة لبدء المشاركة.</string>
+    <string name="sharing_members_title">أعضاء الأسرة</string>
+    <string name="sharing_members_subtitle">ادعُ أشخاصًا بالبريد الإلكتروني. يمكن للمحررين تغيير القوائم والخطط المشتركة؛ ويمكن للمشاهدين قراءتها. تنطبق هذه الأسرة على التغذية والمغامرات والميزانية.</string>
+    <string name="sharing_members_empty">لا يوجد أعضاء بعد. أضف شخصًا لبدء المشاركة.</string>
     <string name="sharing_members_add_person">إضافة شخص</string>
     <string name="sharing_members_add_group">إضافة مجموعة</string>
     <string name="sharing_members_email_label">البريد الإلكتروني</string>
@@ -695,6 +698,9 @@
     <string name="sharing_members_event_expires_required">اختر تاريخ انتهاء لمجموعات الرحلات أو الأحداث.</string>
     <string name="sharing_members_group_expired">منتهٍ</string>
     <string name="sharing_members_invite_sent">تم إرسال الدعوة. يمكنهم الانضمام بعد التسجيل.</string>
-    <string name="sharing_members_member_added">تمت إضافة العضو إلى هذه المساحة.</string>
+    <string name="sharing_members_member_added">تمت إضافة العضو إلى أسرتك.</string>
+    <string name="sharing_members_pending_invites_title">دعوات قيد الانتظار</string>
+    <string name="sharing_members_pending_invite_label">قيد الانتظار · %1$s</string>
+    <string name="sharing_members_read_only_hint">يمكن لمالك الأسرة فقط دعوة الأعضاء أو إزالتهم.</string>
     <string name="sharing_members_select_role">مستوى الوصول</string>
 </resources>

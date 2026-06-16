@@ -24,7 +24,6 @@ class AppNavigationTest {
             NutritionSection.Grocery,
             NutritionSection.MealPlan,
             NutritionSection.AiAdvice,
-            NutritionSection.Members,
         )
 
         assertEquals(sections.size, sections.distinct().size)
@@ -37,17 +36,23 @@ class AppNavigationTest {
     }
 
     @Test
-    fun membersRoute_requiresSpaceContext() {
-        val space = NutritionSpaceContext(
+    fun householdMembersRoute_startsWithoutPreselectedHousehold() {
+        val route = AppRoute.HouseholdMembers()
+
+        assertEquals(null, route.household)
+    }
+
+    @Test
+    fun householdMembersRoute_storesHouseholdContext() {
+        val household = HouseholdContext(
             id = "space-1",
             name = "Family",
             ownerId = "owner-1",
-            features = setOf(app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature.Grocery),
+            ownerDisplayName = "Owner",
         )
-        val members = AppRoute.Nutrition(space = space, section = NutritionSection.Members)
+        val route = AppRoute.HouseholdMembers(household = household)
 
-        assertEquals(NutritionSection.Members, members.section)
-        assertEquals("space-1", members.space?.id)
+        assertEquals("space-1", route.household?.id)
     }
 
     @Test

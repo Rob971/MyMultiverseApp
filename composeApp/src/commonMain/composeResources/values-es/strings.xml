@@ -6,6 +6,9 @@
     <string name="home_banner_description">Un espacio compartido para cultivar los sueños de nuestra familia, trazar metas S.M.A.R.T. y fortalecer nuestros lazos diarios.</string>
     <string name="home_dreams_title">nuestra logística familiar</string>
     <string name="home_logistics_nutrition_title">Nutrición</string>
+    <string name="home_household_title">Hogar</string>
+    <string name="home_household_description">Invita a personas a colaborar en nutrición, aventuras y presupuesto.</string>
+    <string name="home_household_description_named">Gestiona las personas de %1$s — compartido en nutrición, aventuras y presupuesto.</string>
     <string name="home_logistics_nutrition_description">Comidas, compras y planificación semanal para la familia.</string>
     <string name="home_logistics_adventures_title">Aventuras</string>
     <string name="home_logistics_adventures_description">Viajes, salidas y experiencias que planificamos juntos.</string>
@@ -649,9 +652,9 @@
     <string name="sharing_nutrition_spaces_error_not_configured">Supabase no está configurado en esta build.</string>
     <string name="sharing_nutrition_spaces_loading">Cargando espacios...</string>
     <string name="sharing_hub_manage_members">Personas y grupos</string>
-    <string name="sharing_members_title">Miembros del espacio</string>
-    <string name="sharing_members_subtitle">Invita personas por correo o añade un grupo a este espacio de nutrición.</string>
-    <string name="sharing_members_empty">Aún no hay miembros. Añade a alguien o un grupo para empezar a compartir.</string>
+    <string name="sharing_members_title">Miembros del hogar</string>
+    <string name="sharing_members_subtitle">Invita personas por correo. Los editores pueden cambiar listas y planes compartidos; los lectores pueden verlos. Este hogar aplica a nutrición, aventuras y presupuesto.</string>
+    <string name="sharing_members_empty">Aún no hay miembros. Añade a alguien para empezar a compartir.</string>
     <string name="sharing_members_add_person">Añadir persona</string>
     <string name="sharing_members_add_group">Añadir grupo</string>
     <string name="sharing_members_email_label">Correo electrónico</string>
@@ -695,6 +698,9 @@
     <string name="sharing_members_event_expires_required">Elige una fecha de fin para grupos de viaje o evento.</string>
     <string name="sharing_members_group_expired">Caducado</string>
     <string name="sharing_members_invite_sent">Invitación enviada. Podrán unirse tras registrarse.</string>
-    <string name="sharing_members_member_added">Miembro añadido a este espacio.</string>
+    <string name="sharing_members_member_added">Miembro añadido a tu hogar.</string>
+    <string name="sharing_members_pending_invites_title">Invitaciones pendientes</string>
+    <string name="sharing_members_pending_invite_label">Pendiente · %1$s</string>
+    <string name="sharing_members_read_only_hint">Solo el propietario del hogar puede invitar o quitar miembros.</string>
     <string name="sharing_members_select_role">Nivel de acceso</string>
 </resources>

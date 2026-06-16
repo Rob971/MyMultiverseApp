@@ -16,9 +16,13 @@ class UnconfiguredSpaceCollaborationRepository : SpaceCollaborationRepository {
 
     override fun observePendingInvites(): Flow<List<SpaceInvite>> = emptyInvites.asStateFlow()
 
+    override fun observeOutboundInvites(spaceId: String): Flow<List<SpaceInvite>> = emptyInvites.asStateFlow()
+
     override suspend fun refreshMembers(spaceId: String, ownerId: String, ownerDisplayName: String) = Unit
 
     override suspend fun refreshPendingInvites() = Unit
+
+    override suspend fun refreshOutboundInvites(spaceId: String) = Unit
 
     override suspend fun addMemberByEmail(
         spaceId: String,

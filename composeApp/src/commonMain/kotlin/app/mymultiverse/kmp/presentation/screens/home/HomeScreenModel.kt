@@ -3,8 +3,10 @@ package app.mymultiverse.kmp.presentation.screens.home
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.auth.resolvedDisplayName
+import app.mymultiverse.kmp.domain.model.sharing.Household
 import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
 import app.mymultiverse.kmp.domain.repository.AuthRepository
+import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
@@ -22,12 +24,16 @@ import kotlinx.coroutines.launch
 class HomeScreenModel(
     private val getGreetingUseCase: GetGreetingUseCase,
     private val authRepository: AuthRepository,
+    private val householdRepository: HouseholdRepository,
     private val collaborationRepository: SpaceCollaborationRepository,
     private val sessionCoordinator: NutritionSessionCoordinator,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
     private val _greeting = MutableStateFlow<Greeting?>(null)
     val greeting: StateFlow<Greeting?> = _greeting.asStateFlow()
+
+    private val _household = MutableStateFlow<Household?>(null)
+    val household: StateFlow<Household?> = _household.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
@@ -60,6 +66,14 @@ class HomeScreenModel(
             }
         }
         refreshPendingInvitesInBackground()
+        refreshHouseholdInBackground()
+    }
+
+    private fun refreshHouseholdInBackground() {
+        scope.launch {
+            householdRepository.ensureHousehold()
+                .onSuccess { household -> _household.value = household }
+        }
     }
 
     private fun refreshPendingInvitesInBackground() {
@@ -78,6 +92,10 @@ class HomeScreenModel(
     fun acceptInvite(inviteId: String) {
         scope.launch {
             collaborationRepository.acceptInvite(inviteId)
+                .onSuccess {
+                    householdRepository.ensureHousehold()
+                        .onSuccess { household -> _household.value = household }
+                }
         }
     }
 

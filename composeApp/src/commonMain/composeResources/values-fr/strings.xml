@@ -6,6 +6,9 @@
     <string name="home_banner_description">Un espace partagé pour cultiver nos rêves de famille, suivre nos objectifs S.M.A.R.T. et renforcer nos liens quotidiens.</string>
     <string name="home_dreams_title">notre logistique familiale</string>
     <string name="home_logistics_nutrition_title">Nutrition</string>
+    <string name="home_household_title">Foyer</string>
+    <string name="home_household_description">Invitez des personnes à collaborer sur la nutrition, les aventures et le budget.</string>
+    <string name="home_household_description_named">Gérez les personnes de %1$s — partagé entre nutrition, aventures et budget.</string>
     <string name="home_logistics_nutrition_description">Repas, courses et planification hebdomadaire pour la famille.</string>
     <string name="home_logistics_adventures_title">Aventures</string>
     <string name="home_logistics_adventures_description">Voyages, sorties et expériences que nous planifions ensemble.</string>
@@ -649,9 +652,9 @@
     <string name="sharing_nutrition_spaces_error_not_configured">Supabase n'est pas configuré pour cette build.</string>
     <string name="sharing_nutrition_spaces_loading">Chargement des espaces...</string>
     <string name="sharing_hub_manage_members">Personnes et groupes</string>
-    <string name="sharing_members_title">Membres du partage</string>
-    <string name="sharing_members_subtitle">Invitez des personnes par e-mail ou ajoutez un groupe à cet espace nutrition.</string>
-    <string name="sharing_members_empty">Aucun membre pour l\'instant. Ajoutez quelqu\'un ou un groupe pour commencer à partager.</string>
+    <string name="sharing_members_title">Membres du foyer</string>
+    <string name="sharing_members_subtitle">Invitez des personnes par e-mail. Les éditeurs peuvent modifier les listes et plans partagés ; les lecteurs peuvent les consulter. Ce foyer s'applique à la nutrition, aux aventures et au budget.</string>
+    <string name="sharing_members_empty">Aucun membre pour l'instant. Ajoutez quelqu'un pour commencer à partager.</string>
     <string name="sharing_members_add_person">Ajouter une personne</string>
     <string name="sharing_members_add_group">Ajouter un groupe</string>
     <string name="sharing_members_email_label">Adresse e-mail</string>
@@ -695,6 +698,9 @@
     <string name="sharing_members_event_expires_required">Choisissez une date de fin pour les groupes événement.</string>
     <string name="sharing_members_group_expired">Expiré</string>
     <string name="sharing_members_invite_sent">Invitation envoyée. Ils pourront rejoindre après inscription.</string>
-    <string name="sharing_members_member_added">Membre ajouté à cet espace.</string>
+    <string name="sharing_members_member_added">Membre ajouté à votre foyer.</string>
+    <string name="sharing_members_pending_invites_title">Invitations en attente</string>
+    <string name="sharing_members_pending_invite_label">En attente · %1$s</string>
+    <string name="sharing_members_read_only_hint">Seul le propriétaire du foyer peut inviter ou retirer des membres.</string>
     <string name="sharing_members_select_role">Niveau d'accès</string>
 </resources>
