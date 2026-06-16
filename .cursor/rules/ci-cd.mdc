@@ -12,6 +12,7 @@ alwaysApply: false
 - **Manual dispatch** (`workflow_dispatch`): pick one job — `all`, `android-unit-tests`, `android-instrumented-tests`, `android-apk`, `firebase-release`, `ios-compatibility`.
 - **`firebase-release` only**: skips rebuild; requires a prior successful run on the same branch where unit tests, instrumented tests, and APK all passed. Optionally pass `source_run_id`; otherwise the latest qualifying run is used.
 - **Firebase distribute** (push, PR, `all`, or `firebase-release`): requires secrets (`FIREBASE_SERVICE_ACCOUNT_JSON`, testers/groups). In full runs, `firebase-release` waits for the three Android jobs in the same workflow.
+- **Supabase in CI**: `android-apk` and `android-instrumented-tests` write `local.properties` from `SUPABASE_URL` and `SUPABASE_ANON_KEY` before Gradle (not committed; `generateSupabaseSecrets` embeds them at compile time).
 - **Version bump** (`bump-version` job, push only): after a successful full pipeline, bumps `gradle/app-version.properties` and iOS `Info.plist`. Feature branches get a **candidate** increment (`1.0.0-rc.1`, `1.0.0-rc.2`, …). `main` / `master` get an **LTS patch** bump (`1.0.0` → `1.0.1`, candidate reset). Commits use `[skip ci]` to avoid loops.
 
 ## Change guidelines
