@@ -1,7 +1,9 @@
 package app.mymultiverse.kmp.presentation.screens.nutrition.spaces
 
-import app.mymultiverse.kmp.domain.model.sharing.GroupLifecycle
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.sharing.HOUSEHOLD_RECOMMENDED_MIN_MEMBERS
+import app.mymultiverse.kmp.domain.sharing.householdMemberCount
+import app.mymultiverse.kmp.domain.sharing.isHouseholdReadyForCollaboration
 import app.mymultiverse.kmp.presentation.di.FakeSpaceCollaborationRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -53,54 +55,32 @@ class NutritionSpaceMembersScreenModelTest {
     }
 
     @Test
-    fun submitCreateEventGroup_withoutExpiry_setsError() = runTest(testDispatcher) {
+    fun submitAddPerson_withKnownEmail_addsMember() = runTest(testDispatcher) {
         model.bindSpace("space-1", ownerId = "owner", ownerDisplayName = "Owner")
-        advanceUntilIdle()
-        model.openCreateGroupDialog()
-        model.onGroupNameChange("Ski trip")
-        model.onGroupLifecycleChange(GroupLifecycle.Event)
+        model.openAddPersonDialog()
+        model.onEmailChange("member@example.com")
 
-        model.submitCreateGroup("space-1")
+        model.submitAddPerson("space-1")
         advanceUntilIdle()
 
-        assertEquals(SpaceMembersError.EventExpiresRequired, model.uiState.value.error)
+        assertEquals(SpaceMembersSuccess.MemberAdded, model.uiState.value.successMessageKey)
+        assertFalse(model.uiState.value.showAddPersonDialog)
     }
 
     @Test
-    fun submitCreateEventGroup_withExpiry_createsGroup() = runTest(testDispatcher) {
-        model.bindSpace("space-1", ownerId = "owner", ownerDisplayName = "Owner")
-        model.openCreateGroupDialog()
-        model.onGroupNameChange("Ski trip")
-        model.onGroupLifecycleChange(GroupLifecycle.Event)
-        model.onGroupExpiresChange("2030-12-31")
-
-        model.submitCreateGroup("space-1")
+    fun household_withOwnerOnly_isNotReadyUntilSecondMemberJoins() = runTest(testDispatcher) {
+        model.bindSpace("household-1", ownerId = "owner", ownerDisplayName = "Owner")
         advanceUntilIdle()
 
-        assertTrue(model.uiState.value.groups.any { it.name == "Ski trip" })
-        assertFalse(model.uiState.value.showCreateGroupDialog)
-    }
+        assertEquals(1, householdMemberCount(model.uiState.value.members))
+        assertFalse(isHouseholdReadyForCollaboration(model.uiState.value.members))
 
-    @Test
-    fun refreshMembers_includesOwnerRow() = runTest(testDispatcher) {
-        model.bindSpace("space-1", ownerId = "owner", ownerDisplayName = "Owner")
+        model.openAddPersonDialog()
+        model.onEmailChange("partner@example.com")
+        model.submitAddPerson("household-1")
         advanceUntilIdle()
 
-        val owner = model.uiState.value.members.single()
-        assertEquals(SpaceMemberRole.Owner, owner.role)
-        assertEquals("owner-owner", owner.id)
-    }
-
-    @Test
-    fun submitAddGroupMember_addsToGroup() = runTest(testDispatcher) {
-        model.bindSpace("space-1", ownerId = "owner", ownerDisplayName = "Owner")
-        model.openManageGroupDialog("group-1")
-        model.onGroupMemberEmailChange("friend@example.com")
-
-        model.submitAddGroupMember()
-        advanceUntilIdle()
-
-        assertEquals(SpaceMembersSuccess.GroupMemberAdded, model.uiState.value.successMessageKey)
-        assertEquals(1, model.uiState.value.groupMembers.size)
+        assertEquals(HOUSEHOLD_RECOMMENDED_MIN_MEMBERS, householdMemberCount(model.uiState.value.members))
+        assertTrue(isHouseholdReadyForCollaboration(model.uiState.value.members))
     }
 }

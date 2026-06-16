@@ -47,11 +47,16 @@ class InstrumentedNutritionSessionCoordinator(
 ) : NutritionSessionCoordinator {
     private val _nutrition = MutableStateFlow<NutritionRepository>(repository)
 
+    var activatedSpaceId: String? = null
+        private set
+
     override val nutrition = _nutrition.asStateFlow()
 
     override fun observeSyncStatus(): Flow<NutritionSyncStatus> = flowOf(NutritionSyncStatus.Idle)
 
-    override suspend fun activateSpace(spaceId: String) = Unit
+    override suspend fun activateSpace(spaceId: String) {
+        activatedSpaceId = spaceId
+    }
 
     override fun deactivate() = Unit
 }

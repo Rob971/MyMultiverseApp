@@ -12,6 +12,10 @@
     <string name="home_logistics_budget_title">Budget</string>
     <string name="home_logistics_budget_description">Ausgaben, Sparen und gemeinsame Familienfinanzen.</string>
     <string name="nutrition_hub_title">Ernährung</string>
+    <string name="nutrition_entry_loading">Haushalts-Ernährungsbereich wird geöffnet...</string>
+    <string name="nutrition_entry_error_generic">Ernährung konnte nicht geöffnet werden. Bitte erneut versuchen.</string>
+    <string name="nutrition_entry_error_not_configured">Supabase ist in diesem Build nicht konfiguriert.</string>
+    <string name="nutrition_entry_retry">Erneut versuchen</string>
     <string name="nutrition_hub_subtitle">Wöchentliche Einkäufe, Mahlzeiten und passende Tipps für die Familie.</string>
     <string name="nutrition_hub_sections_title">Diese Woche</string>
     <string name="nutrition_meal_plan_section_today">Heute</string>

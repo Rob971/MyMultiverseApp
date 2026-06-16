@@ -2,9 +2,6 @@ package app.mymultiverse.kmp.presentation.screens.home
 
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.model.sharing.AddMemberResult
-import app.mymultiverse.kmp.domain.model.sharing.ContactGroup
-import app.mymultiverse.kmp.domain.model.sharing.GroupLifecycle
-import app.mymultiverse.kmp.domain.model.sharing.GroupMember
 import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
@@ -142,19 +139,9 @@ private class HangingSpaceCollaborationRepository : SpaceCollaborationRepository
     override fun observeMembers(spaceId: String): Flow<List<SpaceMember>> =
         MutableStateFlow<List<SpaceMember>>(emptyList()).asStateFlow()
 
-    override fun observeGroups(): Flow<List<ContactGroup>> =
-        MutableStateFlow<List<ContactGroup>>(emptyList()).asStateFlow()
-
-    override fun observeGroupMembers(groupId: String): Flow<List<GroupMember>> =
-        MutableStateFlow<List<GroupMember>>(emptyList()).asStateFlow()
-
     override fun observePendingInvites(): Flow<List<SpaceInvite>> = pendingInvites.asStateFlow()
 
     override suspend fun refreshMembers(spaceId: String, ownerId: String, ownerDisplayName: String) = Unit
-
-    override suspend fun refreshGroups() = Unit
-
-    override suspend fun refreshGroupMembers(groupId: String) = Unit
 
     override suspend fun refreshPendingInvites() {
         suspendCancellableCoroutine<Unit> { }
@@ -166,21 +153,7 @@ private class HangingSpaceCollaborationRepository : SpaceCollaborationRepository
         role: SpaceMemberRole,
     ): Result<AddMemberResult> = Result.failure(UnsupportedOperationException())
 
-    override suspend fun addGroupToSpace(spaceId: String, groupId: String): Result<Unit> =
-        Result.failure(UnsupportedOperationException())
-
     override suspend fun removeMember(memberId: String): Result<Unit> =
-        Result.failure(UnsupportedOperationException())
-
-    override suspend fun createGroup(
-        name: String,
-        lifecycle: GroupLifecycle,
-        eventLabel: String?,
-        startsAtEpochMillis: Long?,
-        expiresAtEpochMillis: Long?,
-    ): Result<ContactGroup> = Result.failure(UnsupportedOperationException())
-
-    override suspend fun addUserToGroup(groupId: String, email: String): Result<Unit> =
         Result.failure(UnsupportedOperationException())
 
     override suspend fun acceptInvite(inviteId: String): Result<Unit> =

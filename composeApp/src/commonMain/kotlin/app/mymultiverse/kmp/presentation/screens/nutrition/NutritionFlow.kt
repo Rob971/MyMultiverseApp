@@ -6,7 +6,6 @@ import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.navigation.NutritionSpaceContext
 import app.mymultiverse.kmp.presentation.screens.nutrition.spaces.NutritionSpaceMembersScreen
-import app.mymultiverse.kmp.presentation.screens.nutrition.spaces.NutritionSpacesScreen
 import org.koin.compose.koinInject
 
 @Composable
@@ -17,58 +16,53 @@ fun NutritionFlow(
     onOpenSection: (NutritionSection) -> Unit,
     onSpaceSelected: (NutritionSpaceContext) -> Unit,
 ) {
+    if (space == null) {
+        NutritionEntryGate(
+            onBack = onBack,
+            onReady = onSpaceSelected,
+        )
+        return
+    }
+
     val nutritionScreenModel = koinInject<NutritionScreenModel>()
 
     when (section) {
-        NutritionSection.Spaces -> NutritionSpacesScreen(
-            onBack = onBack,
-            onSpaceSelected = onSpaceSelected,
-        )
-
         NutritionSection.Members -> {
-            val activeSpace = requireNotNull(space) { "Members screen requires an active sharing space" }
             NutritionSpaceMembersScreen(
-                space = activeSpace,
+                space = space,
                 onBack = onBack,
             )
         }
 
         NutritionSection.Hub -> {
-            val activeSpace = requireNotNull(space) { "Nutrition hub requires an active sharing space" }
-            LaunchedEffect(activeSpace.id) {
-                nutritionScreenModel.activateSpace(activeSpace.id)
+            LaunchedEffect(space.id) {
+                nutritionScreenModel.activateSpace(space.id)
             }
             NutritionHubScreen(
-                spaceName = activeSpace.name,
-                enabledFeatures = activeSpace.features,
+                spaceName = space.name,
+                enabledFeatures = space.features,
                 onBack = onBack,
                 onOpenSection = onOpenSection,
             )
         }
 
         NutritionSection.Grocery -> {
-            space?.let { activeSpace ->
-                LaunchedEffect(activeSpace.id) {
-                    nutritionScreenModel.activateSpace(activeSpace.id)
-                }
+            LaunchedEffect(space.id) {
+                nutritionScreenModel.activateSpace(space.id)
             }
             GroceryShoppingScreen(onBack = onBack)
         }
 
         NutritionSection.MealPlan -> {
-            space?.let { activeSpace ->
-                LaunchedEffect(activeSpace.id) {
-                    nutritionScreenModel.activateSpace(activeSpace.id)
-                }
+            LaunchedEffect(space.id) {
+                nutritionScreenModel.activateSpace(space.id)
             }
             WeeklyMealPlanScreen(onBack = onBack)
         }
 
         NutritionSection.AiAdvice -> {
-            space?.let { activeSpace ->
-                LaunchedEffect(activeSpace.id) {
-                    nutritionScreenModel.activateSpace(activeSpace.id)
-                }
+            LaunchedEffect(space.id) {
+                nutritionScreenModel.activateSpace(space.id)
             }
             NutritionAiAdviceScreen(onBack = onBack)
         }

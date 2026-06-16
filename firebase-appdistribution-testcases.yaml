@@ -1,12 +1,13 @@
 # Manual QA checklist for Firebase App Distribution testers.
-# Aligns with Nutrition / Family Logistics flows (weekly meal plan, grocery, AI adviser).
+# Single-household model: Nutrition, Adventures, and Budget share one household (2+ members).
 
-version: 5
-updated: 2026-06-15
+version: 6
+updated: 2026-06-16
 
 summary: |
-  Verify auth, sharing spaces, members/groups, pending invites, sign-out, and nutrition
-  hub sync status. Core grocery, meal plan, and AI flows remain as before.
+  Verify auth, single household bootstrap, household members (invite by email),
+  pending invites, sign-out, and nutrition hub sync. Adventures and Budget cards on Home
+  remain coming soon but use the same household when shipped.
 
 test_cases:
   - id: auth-sign-in
@@ -35,34 +36,37 @@ test_cases:
       - Login screen returns.
 
   - id: home-pending-invite
-    title: Accept a pending space invite
+    title: Accept a pending household invite
     steps:
-      - Sign in as a user who has a pending nutrition space invite.
+      - Sign in as a user who has a pending household invite.
       - On Home, tap Accept on the invite card.
     expected:
-      - Invite card disappears; user can open Nutrition and see the shared space.
+      - Invite card disappears; opening Nutrition lands on the shared household hub.
 
-  - id: nutrition-sharing-spaces
-    title: Open nutrition sharing spaces
+  - id: nutrition-household-bootstrap
+    title: Open nutrition (single household)
     steps:
-      - From Home, open Nutrition.
-      - View the list of sharing spaces or create a new one with at least Grocery enabled.
+      - From Home, open Nutrition on a fresh account (no household yet).
+      - Wait for the loading state to finish.
     expected:
-      - Space list loads; new space opens the nutrition hub.
+      - Nutrition hub opens directly (no space picker).
+      - Household is auto-created on first access with grocery, meal plan, and AI advice enabled.
 
-  - id: nutrition-members
-    title: Manage space members
+  - id: nutrition-household-members
+    title: Invite household members
     steps:
-      - From a sharing space hub, open People and groups.
-      - Add a person by email (existing account) or send an invite (unknown email).
-      - Create a trip/event group with an end date and add it to the space.
+      - From the nutrition hub, open Household members.
+      - Add a second person by email (existing account) or send an invite (unknown email).
+      - Add a third member if available.
     expected:
-      - Members list shows owner, people, and groups; invite sent message for unknown emails.
+      - Members list shows owner and invited people only (no groups).
+      - Household supports two or more members without an upper limit.
+      - Invite sent message for unknown emails.
 
   - id: nutrition-sync-status
     title: Shared nutrition sync indicator
     steps:
-      - Open a sharing space hub while online, then toggle airplane mode and edit grocery.
+      - Open the nutrition hub while online, then toggle airplane mode and edit grocery.
     expected:
       - Hub shows syncing, pending, or offline status when shared sync is not idle.
 
@@ -92,6 +96,7 @@ test_cases:
     expected:
       - Items appear under To buy / Checked off as appropriate.
       - Changes persist after leaving and returning to the screen.
+      - Second household member sees the same grocery list after sync.
 
   - id: grocery-ai-readonly
     title: AI grocery on grocery screen (read-only)
@@ -155,3 +160,12 @@ test_cases:
       - Revisit Nutrition hub and meal plan strings.
     expected:
       - Nutrition strings update for the selected locale (EN, FR, ES, DE, IT, Napoli, AR).
+
+  - id: supabase-persistence-smoke
+    title: Supabase household persistence (two accounts)
+    steps:
+      - Account A signs in, opens Nutrition, adds a grocery item online.
+      - Account B (invited household member) signs in on another device, opens Nutrition.
+    expected:
+      - Account B sees the same household hub and synced grocery item after refresh.
+      - Run scripts/verify-supabase-household.sh locally before distributing if you are the release owner.

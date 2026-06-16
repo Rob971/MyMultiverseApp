@@ -1,7 +1,6 @@
 package app.mymultiverse.kmp.presentation.navigation
 
 sealed class NutritionSection {
-    data object Spaces : NutritionSection()
     data object Members : NutritionSection()
     data object Hub : NutritionSection()
     data object Grocery : NutritionSection()
@@ -14,6 +13,6 @@ sealed class AppRoute {
 
     data class Nutrition(
         val space: NutritionSpaceContext? = null,
-        val section: NutritionSection = NutritionSection.Spaces,
+        val section: NutritionSection = NutritionSection.Hub,
     ) : AppRoute()
 }
