@@ -148,9 +148,11 @@ GitHub Actions workflow: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-
 |---------|------|
 | **Push** to `main`, `master`, or `feature/**` | Unit tests, instrumented tests, debug APK, iOS compile signal, Firebase App Distribution |
 | **Pull request** into `main` or `master` (opened / reopened) | Same jobs including Firebase; later commits run via feature-branch push |
-| **Manual dispatch** | Choose `all`, `android`, `android-instrumented-tests`, `ios`, `firebase`, etc. |
+| **Manual dispatch** | Pick one job: `all`, `android-unit-tests`, `android-instrumented-tests`, `android-apk`, `firebase-release`, `ios-compatibility` |
 
-Firebase App Distribution runs on every **push**, **pull request** (opened / reopened), and manual `firebase` / `firebase-release` dispatch.
+**Manual dispatch:** run any single job from Actions → KMP CI → Run workflow. For `firebase-release` only, the workflow reuses the APK from the latest successful pipeline on that branch (unit + instrumented + APK must have passed). Optionally set `source_run_id` to a specific run.
+
+Firebase App Distribution runs on every **push**, **pull request** (opened / reopened), manual `all`, and manual `firebase-release`.
 
 ## Project layout
 

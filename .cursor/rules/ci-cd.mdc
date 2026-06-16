@@ -8,10 +8,10 @@ alwaysApply: false
 
 ## Workflow (`.github/workflows/kmp-ci.yml`)
 
-- **Push** to `main` / `master` / `feature/**`: unit tests, instrumented UI tests, debug APK, iOS signal, Firebase distribute.
-- **Pull request** into `main` / `master` (`opened` / `reopened` only): same jobs including Firebase; further commits rely on the feature-branch **push** trigger (avoids duplicate runs on `synchronize`).
-- **Instrumented tests** (also on manual dispatch): targets `all`, `android`, `android-instrumented-tests`, `firebase`, or `firebase-release`.
-- **Firebase distribute**: targets `firebase` or `firebase-release`; requires secrets (`FIREBASE_SERVICE_ACCOUNT_JSON`, testers/groups). `firebase-release` waits for unit tests, instrumented UI tests, and the debug APK job.
+- **Push** to `main` / `master` / `feature/**` and **pull request** (`opened` / `reopened`): full pipeline (all jobs).
+- **Manual dispatch** (`workflow_dispatch`): pick one job — `all`, `android-unit-tests`, `android-instrumented-tests`, `android-apk`, `firebase-release`, `ios-compatibility`.
+- **`firebase-release` only**: skips rebuild; requires a prior successful run on the same branch where unit tests, instrumented tests, and APK all passed. Optionally pass `source_run_id`; otherwise the latest qualifying run is used.
+- **Firebase distribute** (push, PR, `all`, or `firebase-release`): requires secrets (`FIREBASE_SERVICE_ACCOUNT_JSON`, testers/groups). In full runs, `firebase-release` waits for the three Android jobs in the same workflow.
 
 ## Change guidelines
 

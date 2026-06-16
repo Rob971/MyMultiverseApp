@@ -15,20 +15,22 @@ on:
       - reopened
   workflow_dispatch:
     inputs:
-      target:
-        description: "Which pipeline section should run?"
+      job:
+        description: "Job to run (use all for the full pipeline)"
         required: true
         default: all
         type: choice
         options:
           - all
-          - android
-          - android-tests
+          - android-unit-tests
           - android-instrumented-tests
-          - android-build
-          - ios
-          - firebase
+          - android-apk
           - firebase-release
+          - ios-compatibility
+      source_run_id:
+        description: "Optional workflow run ID for firebase-release-only (reuses APK after unit, instrumented, and APK jobs succeeded). Defaults to the latest successful pipeline on this branch."
+        required: false
+        type: string
 
 concurrency:
   group: kmp-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -36,6 +38,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 env:
   FIREBASE_APP_ID: "1:37917280954:android:f25a8ccc787de9f3f91083"
@@ -49,7 +52,8 @@ jobs:
     if: >-
       ${{ github.event_name == 'push' ||
           github.event_name == 'pull_request' ||
-          contains(fromJSON('["all", "android", "android-tests", "firebase", "firebase-release"]'), github.event.inputs.target) }}
+          (github.event_name == 'workflow_dispatch' &&
+            (github.event.inputs.job == 'all' || github.event.inputs.job == 'android-unit-tests')) }}
 
     steps:
       - name: Checkout
@@ -78,7 +82,8 @@ jobs:
     if: >-
       ${{ github.event_name == 'push' ||
           github.event_name == 'pull_request' ||
-          contains(fromJSON('["all", "android", "android-instrumented-tests", "firebase", "firebase-release"]'), github.event.inputs.target) }}
+          (github.event_name == 'workflow_dispatch' &&
+            (github.event.inputs.job == 'all' || github.event.inputs.job == 'android-instrumented-tests')) }}
 
     steps:
       - name: Checkout
@@ -117,7 +122,8 @@ jobs:
     if: >-
       ${{ github.event_name == 'push' ||
           github.event_name == 'pull_request' ||
-          contains(fromJSON('["all", "android", "android-tests", "android-build", "firebase", "firebase-release"]'), github.event.inputs.target) }}
+          (github.event_name == 'workflow_dispatch' &&
+            (github.event.inputs.job == 'all' || github.event.inputs.job == 'android-apk')) }}
 
     steps:
       - name: Checkout
@@ -158,20 +164,90 @@ jobs:
       - android-instrumented-tests
       - android-apk
     if: >-
-      ${{ github.event_name == 'push' ||
-          github.event_name == 'pull_request' ||
-          contains(fromJSON('["all", "firebase", "firebase-release"]'), github.event.inputs.target) }}
+      ${{ always() && (
+          ((github.event_name == 'push' || github.event_name == 'pull_request') &&
+            needs.android-tests.result == 'success' &&
+            needs.android-instrumented-tests.result == 'success' &&
+            needs.android-apk.result == 'success') ||
+          (github.event_name == 'workflow_dispatch' &&
+            github.event.inputs.job == 'all' &&
+            needs.android-tests.result == 'success' &&
+            needs.android-instrumented-tests.result == 'success' &&
+            needs.android-apk.result == 'success') ||
+          (github.event_name == 'workflow_dispatch' &&
+            github.event.inputs.job == 'firebase-release')
+        ) }}
 
     steps:
+      - name: Checkout
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'firebase-release'
+        uses: actions/checkout@v4
+
+      - name: Resolve prior successful pipeline run
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'firebase-release'
+        id: source-run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          run_has_prerequisites() {
+            gh run view "$1" --json jobs --jq '
+              ([.jobs[] | select(.name == "Android Unit Tests" and .conclusion == "success")] | length > 0) and
+              ([.jobs[] | select(.name == "Android Instrumented UI Tests" and .conclusion == "success")] | length > 0) and
+              ([.jobs[] | select(.name == "Android Debug APK" and .conclusion == "success")] | length > 0)
+            '
+          }
+
+          RUN_ID="${{ github.event.inputs.source_run_id }}"
+          if [ -n "$RUN_ID" ]; then
+            if [ "$(run_has_prerequisites "$RUN_ID")" != "true" ]; then
+              echo "Run $RUN_ID is missing a successful unit test, instrumented test, or APK job."
+              exit 1
+            fi
+            echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          RUN_ID=$(gh run list \
+            --workflow=kmp-ci.yml \
+            --branch="$BRANCH" \
+            --status=success \
+            --limit=30 \
+            --json databaseId,jobs \
+            --jq '[.[] | select(
+              ([.jobs[] | select(.name == "Android Unit Tests" and .conclusion == "success")] | length > 0) and
+              ([.jobs[] | select(.name == "Android Instrumented UI Tests" and .conclusion == "success")] | length > 0) and
+              ([.jobs[] | select(.name == "Android Debug APK" and .conclusion == "success")] | length > 0)
+            )] | first | .databaseId // empty')
+
+          if [ -z "$RUN_ID" ]; then
+            echo "No successful pipeline with unit tests, instrumented tests, and APK was found on branch $BRANCH."
+            exit 1
+          fi
+
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
       - name: Set up Node.js for Firebase CLI
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      - name: Download debug APK
+      - name: Download debug APK from current run
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.job != 'firebase-release'
         uses: actions/download-artifact@v4
         with:
           name: composeApp-debug-apk
+          path: dist-apk
+
+      - name: Download debug APK from prior successful run
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'firebase-release'
+        uses: actions/download-artifact@v4
+        with:
+          name: composeApp-debug-apk
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ steps.source-run.outputs.run_id }}
           path: dist-apk
 
       - name: Write Firebase service account
@@ -257,8 +333,8 @@ jobs:
     if: >-
       ${{ github.event_name == 'push' ||
           github.event_name == 'pull_request' ||
-          github.event.inputs.target == 'all' ||
-          github.event.inputs.target == 'ios' }}
+          (github.event_name == 'workflow_dispatch' &&
+            (github.event.inputs.job == 'all' || github.event.inputs.job == 'ios-compatibility')) }}
 
     steps:
       - name: Checkout
