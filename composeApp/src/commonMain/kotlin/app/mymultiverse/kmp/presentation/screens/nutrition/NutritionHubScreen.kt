@@ -119,17 +119,6 @@ fun NutritionHubScreen(
                 )
             }
 
-            item {
-                FamilyLogisticCard(
-                    title = stringResource(Res.string.sharing_hub_manage_members),
-                    description = stringResource(Res.string.sharing_members_subtitle),
-                    accentColor = SharedJourneyColors.MediterraneanTeal,
-                    icon = AppIcons.Person,
-                    modifier = Modifier.testTag(NutritionHubTestTags.MEMBERS_CARD),
-                    onClick = { onOpenSection(NutritionSection.Members) },
-                )
-            }
-
             if (NutritionSharingFeature.Grocery in enabledFeatures) {
                 item {
                     FamilyLogisticCard(
@@ -169,6 +158,17 @@ fun NutritionHubScreen(
                         onClick = { onOpenSection(NutritionSection.AiAdvice) },
                     )
                 }
+            }
+
+            item {
+                FamilyLogisticCard(
+                    title = stringResource(Res.string.sharing_hub_manage_members),
+                    description = stringResource(Res.string.sharing_members_subtitle),
+                    accentColor = SharedJourneyColors.MediterraneanTeal,
+                    icon = AppIcons.Person,
+                    modifier = Modifier.testTag(NutritionHubTestTags.MEMBERS_CARD),
+                    onClick = { onOpenSection(NutritionSection.Members) },
+                )
             }
         }
     }

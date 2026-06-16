@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: Nutrition, Adventures, and Budget share one household (2+ members).
 
-version: 6
+version: 7
 updated: 2026-06-16
 
 summary: |
@@ -77,6 +77,15 @@ test_cases:
       - Scroll to the Family Logistics / Nutrition card and tap it.
     expected:
       - Nutrition hub opens with Grocery, Meal plan, and AI adviser cards.
+
+  - id: crashlytics-smoke
+    title: Firebase Crashlytics (tester builds with google-services)
+    steps:
+      - Install a CI or local debug APK built with google-services.json configured.
+      - Use the app normally (sign in, open Nutrition, edit grocery).
+      - Optional: trigger a non-fatal path (e.g. airplane mode during sync) and confirm no user-visible crash.
+    expected:
+      - Crashes and non-fatal errors appear in Firebase Console → Crashlytics with app version, user id (after sign-in), and breadcrumbs (session_start, nutrition_space_activated).
 
   - id: hub-grocery-navigation
     title: Open editable grocery list

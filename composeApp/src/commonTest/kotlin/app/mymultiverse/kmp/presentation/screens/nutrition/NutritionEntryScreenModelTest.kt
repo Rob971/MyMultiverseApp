@@ -1,5 +1,8 @@
 package app.mymultiverse.kmp.presentation.screens.nutrition
 
+import app.mymultiverse.kmp.domain.model.sharing.Household
+import app.mymultiverse.kmp.domain.sharing.DefaultNutritionSharingFeatures
+import app.mymultiverse.kmp.data.observability.TestObservability
 import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
 import app.mymultiverse.kmp.presentation.screens.nutrition.spaces.FakeNutritionSpaceSelectionStore
@@ -44,6 +47,7 @@ class NutritionEntryScreenModelTest {
             householdRepository = householdRepository,
             selectionStore = selectionStore,
             sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
 
@@ -59,6 +63,37 @@ class NutritionEntryScreenModelTest {
     }
 
     @Test
+    fun ensureHousehold_appliesDefaultFeaturesWhenHouseholdReturnsEmpty() = runTest(testDispatcher) {
+        val householdRepository = FakeHouseholdRepository(
+            household = Household(
+                id = "household-space-1",
+                name = "Legacy household",
+                ownerId = "test-user",
+                ownerDisplayName = "Test User",
+                nutritionFeatures = emptySet(),
+            ),
+        )
+        val model = NutritionEntryScreenModel(
+            householdRepository = householdRepository,
+            selectionStore = FakeNutritionSpaceSelectionStore(),
+            sessionCoordinator = FakeNutritionSessionCoordinator(
+                initialRepository = app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl(
+                    com.russhwolf.settings.MapSettings(),
+                ),
+            ),
+            logger = TestObservability.logger,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+
+        model.ensureHousehold()
+        advanceUntilIdle()
+
+        val ready = model.state.value
+        assertIs<NutritionEntryState.Ready>(ready)
+        assertEquals(DefaultNutritionSharingFeatures, ready.space.features)
+    }
+
+    @Test
     fun ensureHousehold_onFailure_setsErrorState() = runTest(testDispatcher) {
         val model = NutritionEntryScreenModel(
             householdRepository = FakeHouseholdRepository(
@@ -70,6 +105,7 @@ class NutritionEntryScreenModelTest {
                     com.russhwolf.settings.MapSettings(),
                 ),
             ),
+            logger = TestObservability.logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
 

@@ -87,6 +87,7 @@ private val dataModule = module {
             outbox = get(),
             realtimeSync = client?.let { NutritionSpaceRealtimeSync(it, get()) },
             logger = get(),
+            diagnostics = get(),
         )
     }
     single<NutritionAiAssistantService> { LocalNutritionAiAssistantService() }

@@ -7,6 +7,9 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.mymultiverse.kmp.data.observability.AppLogger
+import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
+import app.mymultiverse.kmp.domain.observability.DiagnosticsContext
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.NutritionSpaceSelectionStore
@@ -30,6 +33,8 @@ class HouseholdEntryInstrumentedTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
+    private val logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "instrumented"))
+
     @Test
     fun nutritionEntryGate_loadsHouseholdAndNavigatesToHub() {
         val householdRepository = InstrumentedHouseholdRepository()
@@ -41,6 +46,7 @@ class HouseholdEntryInstrumentedTest {
             householdRepository = householdRepository,
             selectionStore = selectionStore,
             sessionCoordinator = sessionCoordinator,
+            logger = logger,
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
         )
         var resolvedHouseholdId: String? = null
@@ -78,6 +84,7 @@ class HouseholdEntryInstrumentedTest {
             sessionCoordinator = InstrumentedNutritionSessionCoordinator(
                 repository = InstrumentedNutritionRepository(weekKey = "2026-06-16"),
             ),
+            logger = logger,
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
         )
 

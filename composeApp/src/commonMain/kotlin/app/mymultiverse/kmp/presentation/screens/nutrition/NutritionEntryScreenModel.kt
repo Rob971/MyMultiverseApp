@@ -1,7 +1,9 @@
 package app.mymultiverse.kmp.presentation.screens.nutrition
 
 import app.mymultiverse.kmp.domain.model.sharing.Household
+import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
+import app.mymultiverse.kmp.domain.sharing.orDefaultNutritionFeatures
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.NutritionSpaceSelectionStore
 import app.mymultiverse.kmp.presentation.navigation.NutritionSpaceContext
@@ -30,6 +32,7 @@ class NutritionEntryScreenModel(
     private val householdRepository: HouseholdRepository,
     private val selectionStore: NutritionSpaceSelectionStore,
     private val sessionCoordinator: NutritionSessionCoordinator,
+    private val logger: AppLogger,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
     private val _state = MutableStateFlow<NutritionEntryState>(NutritionEntryState.Loading)
@@ -46,6 +49,11 @@ class NutritionEntryScreenModel(
                     _state.value = NutritionEntryState.Ready(context)
                 }
                 .onFailure { throwable ->
+                    logger.recordError(
+                        tag = "NutritionEntry",
+                        message = "ensure_household_failed",
+                        throwable = throwable,
+                    )
                     _state.value = NutritionEntryState.Error(mapFailure(throwable))
                 }
         }
@@ -57,7 +65,7 @@ class NutritionEntryScreenModel(
             name = name,
             ownerId = ownerId,
             ownerDisplayName = ownerDisplayName,
-            features = nutritionFeatures,
+            features = nutritionFeatures.orDefaultNutritionFeatures(),
         )
 
     private fun mapFailure(throwable: Throwable): NutritionEntryError =

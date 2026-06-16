@@ -137,6 +137,31 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun nutritionHub_showsAllThreeCategoryCards() {
+        val screenModel = nutritionScreenModel()
+
+        composeRule.setContent {
+            AppTheme {
+                NutritionHubScreen(
+                    spaceName = "Test space",
+                    enabledFeatures = setOf(
+                        NutritionSharingFeature.Grocery,
+                        NutritionSharingFeature.MealPlan,
+                        NutritionSharingFeature.AiAdvice,
+                    ),
+                    onBack = {},
+                    onOpenSection = {},
+                    screenModel = screenModel,
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(NutritionHubTestTags.GROCERY_CARD).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(NutritionHubTestTags.MEAL_PLAN_CARD).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(NutritionHubTestTags.AI_CARD).performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
     fun nutritionHub_tapGroceryCard_opensGrocerySection() {
         val screenModel = nutritionScreenModel()
         var opened: NutritionSection? = null

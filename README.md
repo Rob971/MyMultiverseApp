@@ -95,9 +95,9 @@ Without a key, auth and sharing screens show a “not configured” state; local
 | Local file | Template | Purpose |
 |------------|----------|---------|
 | `local.properties` | `local.properties.example` | Supabase URL + anon key (required for auth/sharing) |
-| `composeApp/google-services.json` | `composeApp/google-services.json.example` | Firebase Android config when you add the Google Services plugin |
+| `composeApp/google-services.json` | `composeApp/google-services.json.example` | Firebase Android config (Crashlytics + App Distribution); required for crash reports on tester APKs |
 
-CI builds use GitHub Secrets `SUPABASE_URL` and `SUPABASE_ANON_KEY` instead of `local.properties`.
+CI builds use GitHub Secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GOOGLE_SERVICES_JSON` (full contents of `composeApp/google-services.json` for Firebase Crashlytics on tester APKs) instead of local files.
 
 ### 2. Apply database migrations
 

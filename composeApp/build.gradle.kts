@@ -11,9 +11,31 @@ plugins {
 }
 
 val googleServicesFile = layout.projectDirectory.file("google-services.json").asFile
-if (googleServicesFile.exists()) {
+val firebaseCrashlyticsEnabled = googleServicesFile.exists()
+if (firebaseCrashlyticsEnabled) {
     apply(plugin = libs.plugins.google.services.get().pluginId)
     apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
+}
+
+val generateFirebaseBuildFlags = tasks.register("generateFirebaseBuildFlags") {
+    val outputDir = layout.buildDirectory.dir("generated/firebase/kotlin/app/mymultiverse/kmp/data/observability")
+
+    inputs.property("crashlyticsEnabled", firebaseCrashlyticsEnabled)
+    outputs.dir(outputDir)
+
+    doLast {
+        val dir = outputDir.get().asFile
+        dir.mkdirs()
+        dir.resolve("FirebaseBuildFlags.kt").writeText(
+            """
+            package app.mymultiverse.kmp.data.observability
+
+            internal object FirebaseBuildFlags {
+                const val CRASHLYTICS_ENABLED: Boolean = $firebaseCrashlyticsEnabled
+            }
+            """.trimIndent(),
+        )
+    }
 }
 
 val defaultSupabaseUrl = "https://ivjdzreazvkrrirecznk.supabase.co"
@@ -139,6 +161,9 @@ kotlin {
             implementation(libs.ktor.client.android)
             implementation(libs.firebase.crashlytics)
         }
+        androidMain {
+            kotlin.srcDir(layout.buildDirectory.dir("generated/firebase/kotlin"))
+        }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
@@ -191,7 +216,7 @@ kotlin {
 
 tasks.matching { it.name.contains("compile", ignoreCase = true) && it.name.contains("Kotlin") }
     .configureEach {
-        dependsOn(generateSupabaseSecrets, generateAppBuildInfo)
+        dependsOn(generateSupabaseSecrets, generateAppBuildInfo, generateFirebaseBuildFlags)
     }
 
 android {

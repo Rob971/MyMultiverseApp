@@ -81,6 +81,7 @@ jobs:
         with:
           supabase-url: ${{ secrets.SUPABASE_URL }}
           supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
 
       - name: Require Supabase secrets
         if: github.event_name != 'workflow_dispatch' || github.event.inputs.job != 'android-unit-tests'
@@ -143,6 +144,7 @@ jobs:
         with:
           supabase-url: ${{ secrets.SUPABASE_URL }}
           supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
 
       - name: Require Supabase secrets
         env:
@@ -236,6 +238,7 @@ jobs:
         with:
           supabase-url: ${{ secrets.SUPABASE_URL }}
           supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
 
       - name: Require Supabase secrets
         env:

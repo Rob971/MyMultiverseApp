@@ -6,6 +6,7 @@ import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
+import app.mymultiverse.kmp.domain.observability.DiagnosticsContext
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
@@ -19,6 +20,8 @@ class NutritionSessionCoordinatorImpl(
     private val remoteApi: NutritionRemoteDataSource?,
     private val syncEngine: NutritionSyncEngine,
     private val realtimeSync: NutritionSpaceRealtimeSync?,
+    private val diagnostics: DiagnosticsContext,
+    private val logger: AppLogger,
 ) : NutritionSessionCoordinator {
 
     private val personalRepository = NutritionRepositoryImpl(settings)
@@ -30,6 +33,8 @@ class NutritionSessionCoordinatorImpl(
 
     override suspend fun activateSpace(spaceId: String) {
         realtimeSync?.stop()
+        diagnostics.activeSpaceId = spaceId
+        logger.breadcrumb("nutrition_space_activated space_id=$spaceId")
         val weekKey = WeekCalendar.currentWeekKey()
         val repository = OfflineFirstNutritionRepository(
             localStore = NutritionLocalStore(
@@ -55,6 +60,7 @@ class NutritionSessionCoordinatorImpl(
     override fun deactivate() {
         realtimeSync?.stop()
         syncEngine.markIdle()
+        diagnostics.activeSpaceId = null
         _nutrition.value = personalRepository
     }
 
@@ -65,12 +71,15 @@ class NutritionSessionCoordinatorImpl(
             outbox: NutritionSyncOutbox,
             realtimeSync: NutritionSpaceRealtimeSync?,
             logger: AppLogger,
+            diagnostics: DiagnosticsContext,
         ): NutritionSessionCoordinatorImpl =
             NutritionSessionCoordinatorImpl(
                 settings = settings,
                 remoteApi = remoteApi,
                 syncEngine = NutritionSyncEngine(remoteApi, outbox, logger),
                 realtimeSync = realtimeSync,
+                diagnostics = diagnostics,
+                logger = logger,
             )
     }
 }

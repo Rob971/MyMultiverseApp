@@ -45,6 +45,7 @@ class NutritionSessionCoordinatorImplTest {
             outbox = NutritionSyncOutbox(settings),
             realtimeSync = null,
             logger = TestObservability.logger,
+            diagnostics = TestObservability.diagnostics,
         )
 
         coordinator.activateSpace("space-offline")
@@ -65,6 +66,7 @@ class NutritionSessionCoordinatorImplTest {
             outbox = NutritionSyncOutbox(settings),
             realtimeSync = null,
             logger = TestObservability.logger,
+            diagnostics = TestObservability.diagnostics,
         )
 
         coordinator.activateSpace("space-family")
@@ -82,6 +84,7 @@ class NutritionSessionCoordinatorImplTest {
             outbox = NutritionSyncOutbox(settings),
             realtimeSync = null,
             logger = TestObservability.logger,
+            diagnostics = TestObservability.diagnostics,
         )
 
         coordinator.activateSpace("space-family")
@@ -97,6 +100,7 @@ class NutritionSessionCoordinatorImplTest {
             outbox = NutritionSyncOutbox(MapSettings()),
             realtimeSync = null,
             logger = TestObservability.logger,
+            diagnostics = TestObservability.diagnostics,
         )
 
     private suspend fun advance() {
