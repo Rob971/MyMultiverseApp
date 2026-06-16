@@ -97,18 +97,23 @@ class SupabaseSharingSpaceRepository(
         }
         client.postgrest["space_nutrition_features"].insert(featureRows)
 
-        refreshNutritionSpaces()
-
-        SharingSpace(
+        val sharingSpace = SharingSpace(
             id = created.id,
             topic = AppTopic.Nutrition,
             name = created.name,
             ownerId = created.ownerId,
             features = features,
         )
+        upsertLocalSpace(sharingSpace)
+        runCatching { refreshNutritionSpaces() }
+
+        sharingSpace
     }
 
     private suspend fun ensureProfile(userId: String) {
+        val rpcResult = runCatching { client.postgrest.rpc("ensure_current_profile") }
+        if (rpcResult.isSuccess) return
+
         val email = client.auth.currentUserOrNull()?.email
         client.postgrest["profiles"]
             .upsert(
@@ -120,6 +125,13 @@ class SupabaseSharingSpaceRepository(
             ) {
                 onConflict = "id"
             }
+    }
+
+    private fun upsertLocalSpace(space: SharingSpace) {
+        nutritionSpaces.update { current ->
+            (current.filterNot { it.id == space.id } + space)
+                .sortedBy { it.name.lowercase() }
+        }
     }
 
     private suspend fun requireUserId(): String {

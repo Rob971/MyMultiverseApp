@@ -80,6 +80,26 @@ class NutritionSpacesScreenModelTest {
         assertEquals("Family", model.uiState.value.spaces.single().name)
     }
 
+    @Test
+    fun submitCreateSpace_successStillWorksAfterRefreshError() = runTest(testDispatcher) {
+        val selectionStore = FakeNutritionSpaceSelectionStore()
+        val model = model(
+            FakeSharingSpaceRepository(refreshFailure = IllegalStateException("network")),
+            selectionStore,
+        )
+        advanceUntilIdle()
+
+        model.openCreateDialog()
+        model.onCreateNameChange("Offline family")
+        model.submitCreateSpace {}
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.showCreateDialog)
+        assertEquals(NutritionSpacesError.Generic, model.uiState.value.loadError)
+        assertEquals(null, model.uiState.value.createError)
+        assertEquals("space-1", selectionStore.activeSpaceId.value)
+    }
+
     private fun model(
         repository: FakeSharingSpaceRepository,
         selectionStore: FakeNutritionSpaceSelectionStore = FakeNutritionSpaceSelectionStore(),

@@ -57,6 +57,9 @@ class NutritionRemoteApi(
     }
 
     private suspend fun ensureProfile(userId: String) {
+        val rpcResult = runCatching { client.postgrest.rpc("ensure_current_profile") }
+        if (rpcResult.isSuccess) return
+
         val email = client.auth.currentUserOrNull()?.email
         client.postgrest["profiles"]
             .upsert(
