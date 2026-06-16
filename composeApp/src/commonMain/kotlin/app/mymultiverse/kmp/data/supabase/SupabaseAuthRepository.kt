@@ -58,12 +58,12 @@ class SupabaseAuthRepository(
 
     override suspend fun signInWithGoogle(): Result<Unit> =
         runCatching {
-            client.auth.signInWith(Google)
+            client.auth.signInWith(Google, redirectUrl = AuthRedirectUrls.REDIRECT)
         }
 
     override suspend fun signInWithApple(): Result<Unit> =
         runCatching {
-            client.auth.signInWith(Apple)
+            client.auth.signInWith(Apple, redirectUrl = AuthRedirectUrls.REDIRECT)
         }
 
     override suspend fun signOut() {
