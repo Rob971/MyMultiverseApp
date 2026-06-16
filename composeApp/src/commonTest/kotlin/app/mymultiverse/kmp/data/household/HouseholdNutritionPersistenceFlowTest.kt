@@ -4,6 +4,7 @@ import app.mymultiverse.kmp.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.kmp.data.supabase.dto.NutritionWeekDataRow
+import app.mymultiverse.kmp.data.observability.TestObservability
 import app.mymultiverse.kmp.data.sync.NutritionSyncEngine
 import app.mymultiverse.kmp.data.sync.OfflineFirstNutritionRepository
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
@@ -47,7 +48,7 @@ class HouseholdNutritionPersistenceFlowTest {
         val store = NutritionLocalStore(settings, householdId, weekKey)
         val repository = OfflineFirstNutritionRepository(
             localStore = store,
-            syncEngine = NutritionSyncEngine(remote, outbox),
+            syncEngine = NutritionSyncEngine(remote, outbox, TestObservability.logger),
             spaceId = householdId,
             weekKey = weekKey,
             remoteEnabled = true,
@@ -78,7 +79,7 @@ class HouseholdNutritionPersistenceFlowTest {
         )
         val repository = OfflineFirstNutritionRepository(
             localStore = store,
-            syncEngine = NutritionSyncEngine(remote, NutritionSyncOutbox(settings)),
+            syncEngine = NutritionSyncEngine(remote, NutritionSyncOutbox(settings), TestObservability.logger),
             spaceId = householdId,
             weekKey = weekKey,
             remoteEnabled = true,

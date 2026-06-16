@@ -1,5 +1,6 @@
 package app.mymultiverse.kmp.data.sync
 
+import app.mymultiverse.kmp.data.observability.TestObservability
 import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.kmp.data.supabase.dto.NutritionWeekDataRow
@@ -43,6 +44,7 @@ class NutritionSessionCoordinatorImplTest {
             remoteApi = null,
             outbox = NutritionSyncOutbox(settings),
             realtimeSync = null,
+            logger = TestObservability.logger,
         )
 
         coordinator.activateSpace("space-offline")
@@ -62,6 +64,7 @@ class NutritionSessionCoordinatorImplTest {
             remoteApi = remote,
             outbox = NutritionSyncOutbox(settings),
             realtimeSync = null,
+            logger = TestObservability.logger,
         )
 
         coordinator.activateSpace("space-family")
@@ -78,6 +81,7 @@ class NutritionSessionCoordinatorImplTest {
             remoteApi = FailingFetchRemote,
             outbox = NutritionSyncOutbox(settings),
             realtimeSync = null,
+            logger = TestObservability.logger,
         )
 
         coordinator.activateSpace("space-family")
@@ -92,6 +96,7 @@ class NutritionSessionCoordinatorImplTest {
             remoteApi = null,
             outbox = NutritionSyncOutbox(MapSettings()),
             realtimeSync = null,
+            logger = TestObservability.logger,
         )
 
     private suspend fun advance() {

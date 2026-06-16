@@ -10,6 +10,12 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+val googleServicesFile = layout.projectDirectory.file("google-services.json").asFile
+if (googleServicesFile.exists()) {
+    apply(plugin = libs.plugins.google.services.get().pluginId)
+    apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
+}
+
 val defaultSupabaseUrl = "https://ivjdzreazvkrrirecznk.supabase.co"
 
 val appVersionProperties = Properties().apply {
@@ -130,6 +136,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.androidx.appcompat)
             implementation(libs.ktor.client.android)
+            implementation(libs.firebase.crashlytics)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -154,6 +161,7 @@ kotlin {
             implementation(libs.supabase.auth)
             implementation(libs.supabase.postgrest)
             implementation(libs.supabase.realtime)
+            implementation(libs.kermit)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

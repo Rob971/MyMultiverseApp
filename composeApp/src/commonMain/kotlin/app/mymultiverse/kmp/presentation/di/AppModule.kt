@@ -13,6 +13,8 @@ import app.mymultiverse.kmp.data.supabase.SupabaseSpaceCollaborationRepository
 import app.mymultiverse.kmp.data.supabase.UnconfiguredAuthRepository
 import app.mymultiverse.kmp.data.supabase.UnconfiguredHouseholdRepository
 import app.mymultiverse.kmp.data.supabase.UnconfiguredSpaceCollaborationRepository
+import app.mymultiverse.kmp.data.observability.AppLogger
+import app.mymultiverse.kmp.domain.observability.DiagnosticsContext
 import app.mymultiverse.kmp.data.sync.NutritionSessionCoordinatorImpl
 import app.mymultiverse.kmp.data.sync.NutritionSpaceRealtimeSync
 import app.mymultiverse.kmp.domain.repository.AuthRepository
@@ -35,6 +37,11 @@ import kotlinx.coroutines.SupervisorJob
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
+
+private val observabilityModule = module {
+    single { DiagnosticsContext() }
+    single { AppLogger(get(), get()) }
+}
 
 private val domainModule = module {
     factoryOf(::GetGreetingUseCase)
@@ -79,6 +86,7 @@ private val dataModule = module {
             remoteApi = client?.let { NutritionRemoteApi(it) },
             outbox = get(),
             realtimeSync = client?.let { NutritionSpaceRealtimeSync(it, get()) },
+            logger = get(),
         )
     }
     single<NutritionAiAssistantService> { LocalNutritionAiAssistantService() }
@@ -98,7 +106,7 @@ private val presentationModule = module {
 }
 
 /** Core modules without platform bindings; used by unit tests with a test platform module. */
-internal fun coreKoinModules() = listOf(domainModule, dataModule, presentationModule)
+internal fun coreKoinModules() = listOf(observabilityModule, domainModule, dataModule, presentationModule)
 
 val appModule = module {
     includes(coreKoinModules())
