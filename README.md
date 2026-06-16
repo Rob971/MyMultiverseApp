@@ -154,6 +154,17 @@ GitHub Actions workflow: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-
 
 Firebase App Distribution runs on every **push**, **pull request** (opened / reopened), manual `all`, and manual `firebase-release`.
 
+## App versioning
+
+Canonical version: [`gradle/app-version.properties`](gradle/app-version.properties) (read by `composeApp/build.gradle.kts` and synced to iOS `Info.plist`).
+
+| Event | Bump | Example `versionName` |
+|-------|------|------------------------|
+| Successful **push** to `feature/**` | Candidate +1, `version.code` +1 | `1.0.0-rc.3` |
+| Successful **push** to `main` / `master` (merge) | LTS patch +1, candidate reset | `1.0.1` |
+
+CI commits bumps with `chore(version): … [skip ci]` so only user pushes run the full pipeline.
+
 ## Project layout
 
 ```

@@ -11,6 +11,20 @@ plugins {
 
 val defaultSupabaseUrl = "https://ivjdzreazvkrrirecznk.supabase.co"
 
+val appVersionProperties = Properties().apply {
+    val versionFile = rootProject.file("gradle/app-version.properties")
+    check(versionFile.exists()) { "Missing gradle/app-version.properties" }
+    versionFile.inputStream().use { load(it) }
+}
+val appVersionLts = appVersionProperties.getProperty("version.lts")
+val appVersionCandidate = appVersionProperties.getProperty("version.candidate", "0").toInt()
+val appVersionCode = appVersionProperties.getProperty("version.code", "1").toInt()
+val appVersionName = if (appVersionCandidate > 0) {
+    "$appVersionLts-rc.$appVersionCandidate"
+} else {
+    appVersionLts
+}
+
 val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
     val localPropsFile = rootProject.file("local.properties")
     val outputDir = layout.buildDirectory.dir("generated/supabase/kotlin/app/mymultiverse/kmp/data/supabase")
@@ -151,8 +165,8 @@ android {
         applicationId = "app.mymultiverse.kmp"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     packaging {
