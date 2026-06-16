@@ -111,7 +111,7 @@ jobs:
       - name: Install emulator runtime libraries
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libpulse0
+          sudo apt-get install -y --no-install-recommends libpulse0 libxcb-cursor0
 
       - name: Run instrumented tests
         uses: reactivecircus/android-emulator-runner@v2
@@ -119,7 +119,7 @@ jobs:
           api-level: 34
           arch: x86_64
           disable-animations: true
-          emulator-options: -no-snapshot-save -no-boot-anim -gpu swiftshader_indirect -no-audio
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-metrics -camera-back none
           script: ./gradlew :composeApp:connectedDebugAndroidTest --build-cache
 
   android-apk:
