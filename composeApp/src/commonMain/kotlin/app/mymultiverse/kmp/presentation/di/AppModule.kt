@@ -1,5 +1,6 @@
 package app.mymultiverse.kmp.presentation.di
 
+import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteApi
 import app.mymultiverse.kmp.data.repository.GreetingRepositoryImpl
@@ -13,10 +14,9 @@ import app.mymultiverse.kmp.data.supabase.SupabaseSpaceCollaborationRepository
 import app.mymultiverse.kmp.data.supabase.UnconfiguredAuthRepository
 import app.mymultiverse.kmp.data.supabase.UnconfiguredHouseholdRepository
 import app.mymultiverse.kmp.data.supabase.UnconfiguredSpaceCollaborationRepository
-import app.mymultiverse.kmp.data.observability.AppLogger
-import app.mymultiverse.kmp.domain.observability.DiagnosticsContext
 import app.mymultiverse.kmp.data.sync.NutritionSessionCoordinatorImpl
 import app.mymultiverse.kmp.data.sync.NutritionSpaceRealtimeSync
+import app.mymultiverse.kmp.domain.observability.DiagnosticsContext
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.GreetingRepository
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository

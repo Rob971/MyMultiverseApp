@@ -1,6 +1,6 @@
 package app.mymultiverse.kmp.presentation.di
 
-import app.mymultiverse.kmp.data.observability.IosCrashReporter
+import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
 import app.mymultiverse.kmp.domain.manager.IOSLanguageManager
 import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.domain.observability.CrashReporter
@@ -13,5 +13,6 @@ import platform.Foundation.NSUserDefaults
 actual fun platformModule(): Module = module {
     single<Settings> { NSUserDefaultsSettings(NSUserDefaults.standardUserDefaults) }
     single<LanguageManager> { IOSLanguageManager(get()) }
-    single<CrashReporter> { IosCrashReporter() }
+    // iOS Crashlytics pending Firebase CocoaPods + GoogleService-Info.plist setup.
+    single<CrashReporter> { NoOpCrashReporter() }
 }

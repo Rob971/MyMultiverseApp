@@ -12,10 +12,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import app.mymultiverse.kmp.data.observability.AppLogger
-import app.mymultiverse.kmp.data.observability.ObservabilityInitializer
 import app.mymultiverse.kmp.domain.model.auth.AuthState
-import app.mymultiverse.kmp.domain.observability.CrashReporter
-import app.mymultiverse.kmp.domain.observability.DiagnosticsContext
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
 import app.mymultiverse.kmp.presentation.navigation.AppRoute
@@ -33,27 +30,14 @@ fun App() {
     AppTheme {
         val authRepository = koinInject<AuthRepository>()
         val logger = koinInject<AppLogger>()
-        val crashReporter = koinInject<CrashReporter>()
-        val diagnostics = koinInject<DiagnosticsContext>()
         val authState by authRepository.authState.collectAsState(initial = AuthState.Loading)
 
         LaunchedEffect(Unit) {
-            ObservabilityInitializer.start(logger, crashReporter, diagnostics)
+            logger.startSession()
         }
 
         LaunchedEffect(authState) {
-            when (val state = authState) {
-                is AuthState.Authenticated -> {
-                    diagnostics.userId = state.user.id
-                    crashReporter.setUserId(state.user.id)
-                    logger.breadcrumb("auth_authenticated")
-                }
-                AuthState.Unauthenticated -> {
-                    diagnostics.userId = null
-                    crashReporter.setUserId(null)
-                }
-                else -> Unit
-            }
+            logger.onAuthStateChanged(authState)
         }
 
         LaunchedEffect(authRepository) {

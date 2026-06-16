@@ -1,14 +1,15 @@
+@file:OptIn(kotlin.uuid.ExperimentalUuidApi::class)
+
 package app.mymultiverse.kmp.domain.observability
 
 import app.mymultiverse.kmp.domain.AppBuildInfo
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
  * Session-scoped diagnostic metadata attached to logs and crash reports.
  * Do not store PII beyond opaque user/space identifiers.
  */
-class DiagnosticsContext @OptIn(ExperimentalUuidApi::class) constructor(
+class DiagnosticsContext(
     val sessionId: String = Uuid.random().toString(),
 ) {
     var userId: String? = null

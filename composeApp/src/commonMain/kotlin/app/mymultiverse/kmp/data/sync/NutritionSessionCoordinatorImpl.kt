@@ -2,8 +2,8 @@ package app.mymultiverse.kmp.data.sync
 
 import app.mymultiverse.kmp.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
-import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.kmp.data.observability.AppLogger
+import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
