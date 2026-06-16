@@ -4,6 +4,7 @@ import app.mymultiverse.kmp.data.supabase.dto.ContactGroupInsertRow
 import app.mymultiverse.kmp.data.supabase.dto.ContactGroupRow
 import app.mymultiverse.kmp.data.supabase.dto.GroupMemberInsertRow
 import app.mymultiverse.kmp.data.supabase.dto.GroupMemberRow
+import app.mymultiverse.kmp.data.supabase.dto.ProfileInsertRow
 import app.mymultiverse.kmp.data.supabase.dto.ProfileRow
 import app.mymultiverse.kmp.data.supabase.dto.SpaceInviteInsertRow
 import app.mymultiverse.kmp.data.supabase.dto.SpaceInviteRow
@@ -225,6 +226,7 @@ class SupabaseSpaceCollaborationRepository(
 
         val profileId = findProfileIdByEmail(trimmed)
         val currentUserId = requireUserId()
+        ensureProfile(currentUserId)
 
         if (profileId == null) {
             client.postgrest["space_invites"]
@@ -264,6 +266,8 @@ class SupabaseSpaceCollaborationRepository(
                     role = SpaceMemberRole.Editor.wireName(),
                 ),
             )
+        val groupName = groups.value.firstOrNull { it.id == groupId }?.name ?: groupId
+        upsertLocalGroupMember(spaceId, groupId, groupName)
     }
 
     override suspend fun removeMember(memberId: String): Result<Unit> = runCatching {
@@ -290,13 +294,15 @@ class SupabaseSpaceCollaborationRepository(
         if (lifecycle == GroupLifecycle.Event) {
             require(expiresAtEpochMillis != null) { "event_expires_required" }
         }
+        val userId = requireUserId()
+        ensureProfile(userId)
 
         val created = client.postgrest["contact_groups"]
             .insert(
                 ContactGroupInsertRow(
                     name = trimmed,
                     lifecycle = lifecycle.wireName(),
-                    ownerId = requireUserId(),
+                    ownerId = userId,
                     eventLabel = eventLabel?.trim()?.takeIf { it.isNotEmpty() },
                     startsAt = startsAtEpochMillis?.toIsoString(),
                     expiresAt = expiresAtEpochMillis?.toIsoString(),
@@ -306,8 +312,10 @@ class SupabaseSpaceCollaborationRepository(
             }
             .decodeSingle<ContactGroupRow>()
 
-        refreshGroups()
-        created.toContactGroup()
+        val group = created.toContactGroup()
+        upsertLocalGroup(group)
+        runCatching { refreshGroups() }
+        group
     }
 
     override suspend fun addUserToGroup(groupId: String, email: String): Result<Unit> = runCatching {
@@ -361,11 +369,53 @@ class SupabaseSpaceCollaborationRepository(
             .decodeSingleOrNull<ProfileRow>()
     }
 
+    private suspend fun ensureProfile(userId: String) {
+        val rpcResult = runCatching { client.postgrest.rpc("ensure_current_profile") }
+        if (rpcResult.isSuccess) return
+
+        val email = client.auth.currentUserOrNull()?.email
+        client.postgrest["profiles"]
+            .upsert(
+                ProfileInsertRow(
+                    id = userId,
+                    email = email,
+                    displayName = email?.substringBefore("@"),
+                ),
+            ) {
+                onConflict = "id"
+            }
+    }
+
     private fun membersFlow(spaceId: String): MutableStateFlow<List<SpaceMember>> =
         membersBySpace.getOrPut(spaceId) { MutableStateFlow(emptyList()) }
 
     private fun groupMembersFlow(groupId: String): MutableStateFlow<List<GroupMember>> =
         groupMembersByGroup.getOrPut(groupId) { MutableStateFlow(emptyList()) }
+
+    private fun upsertLocalGroup(group: ContactGroup) {
+        groups.update { current ->
+            (current.filterNot { it.id == group.id } + group)
+                .activeOnly()
+                .sortedBy { it.name.lowercase() }
+        }
+    }
+
+    private fun upsertLocalGroupMember(spaceId: String, groupId: String, groupName: String) {
+        membersFlow(spaceId).update { current ->
+            if (current.any { it.kind == SpaceMemberKind.Group && it.referenceId == groupId }) {
+                current
+            } else {
+                current + SpaceMember(
+                    id = "group-$spaceId-$groupId",
+                    spaceId = spaceId,
+                    kind = SpaceMemberKind.Group,
+                    displayName = groupName,
+                    role = SpaceMemberRole.Editor,
+                    referenceId = groupId,
+                )
+            }
+        }
+    }
 
     private suspend fun requireUserId(): String {
         client.auth.awaitInitialization()

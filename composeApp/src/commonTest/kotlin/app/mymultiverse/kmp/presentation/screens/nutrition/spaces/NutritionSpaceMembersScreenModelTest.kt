@@ -14,6 +14,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -77,6 +78,7 @@ class NutritionSpaceMembersScreenModelTest {
         advanceUntilIdle()
 
         assertTrue(model.uiState.value.groups.any { it.name == "Ski trip" })
+        assertFalse(model.uiState.value.showCreateGroupDialog)
     }
 
     @Test

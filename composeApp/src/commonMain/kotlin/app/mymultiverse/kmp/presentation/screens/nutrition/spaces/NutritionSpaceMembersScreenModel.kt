@@ -256,15 +256,18 @@ class NutritionSpaceMembersScreenModel(
                 eventLabel = _uiState.value.groupEventLabelInput,
                 expiresAtEpochMillis = expiresAt,
             )
-            created.onSuccess { group ->
+            val addResult = created.getOrNull()?.let { group ->
                 collaborationRepository.addGroupToSpace(spaceId, group.id)
-                collaborationRepository.refreshMembers(spaceId, activeOwnerId, activeOwnerDisplayName)
             }
+            if (addResult?.isSuccess == true) {
+                runCatching { collaborationRepository.refreshMembers(spaceId, activeOwnerId, activeOwnerDisplayName) }
+            }
+            val isSuccess = created.isSuccess && addResult?.isSuccess == true
             _uiState.update { state ->
                 state.copy(
                     isSaving = false,
-                    showCreateGroupDialog = created.isSuccess,
-                    error = created.exceptionOrNull()?.let { mapFailure(it) },
+                    showCreateGroupDialog = !isSuccess,
+                    error = (created.exceptionOrNull() ?: addResult?.exceptionOrNull())?.let { mapFailure(it) },
                 )
             }
         }
