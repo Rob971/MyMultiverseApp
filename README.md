@@ -115,7 +115,14 @@ Or with the Supabase CLI linked to your project:
 ./scripts/apply-supabase-migrations.sh
 ```
 
-Configure **Auth → URL configuration** in Supabase Dashboard: add redirect URL `app.mymultiverse.kmp://auth/callback` and enable Google/Apple providers when using OAuth.
+Configure **Auth → URL configuration** in Supabase Dashboard:
+
+| Field | Value |
+|-------|--------|
+| **Site URL** | `https://mymultiverse.app` (plain URL only — no markdown) |
+| **Redirect URLs** | `app.mymultiverse.kmp://auth/callback` |
+
+Enable Google/Apple providers when using OAuth. A Site URL like `[https://mymultiverse.app](https://mymultiverse.app)` breaks OAuth `/callback` with HTTP 500 `unexpected_failure`.
 
 Ensure **Realtime** is enabled for the project (Database → Replication). The last migration adds the table to the `supabase_realtime` publication.
 

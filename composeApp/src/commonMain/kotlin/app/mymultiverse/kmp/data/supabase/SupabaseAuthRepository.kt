@@ -9,14 +9,12 @@ import io.github.jan.supabase.auth.providers.Apple
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
-import io.github.jan.supabase.auth.user.UserInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
 
 class SupabaseAuthRepository(
     private val client: SupabaseClient,
@@ -28,16 +26,18 @@ class SupabaseAuthRepository(
 
     init {
         client.auth.sessionStatus
-            .onEach { status -> _authState.update { mapSessionStatus(status) } }
+            .onEach { status -> _authState.value = mapSessionStatus(status) }
             .launchIn(scope)
 
         AuthRedirectEvents.urls
-            .onEach { url -> handleAuthDeeplink(client, url) }
+            .onEach { url -> processOAuthRedirect(url) }
             .launchIn(scope)
     }
 
     override suspend fun restoreSession() {
         client.auth.awaitInitialization()
+        AuthRedirectEvents.consumePending()?.let { processOAuthRedirect(it) }
+        syncAuthStateFromCurrentSession()
     }
 
     override suspend fun signInWithEmail(email: String, password: String): Result<Unit> =
@@ -70,26 +70,25 @@ class SupabaseAuthRepository(
         client.auth.signOut()
     }
 
-    private fun mapSessionStatus(status: SessionStatus): AuthState =
-        when (status) {
-            is SessionStatus.Initializing -> AuthState.Loading
-            is SessionStatus.Authenticated -> {
-                val user = status.session.user
-                if (user != null) {
-                    AuthState.Authenticated(user.toAuthUser())
-                } else {
-                    AuthState.Unauthenticated
-                }
-            }
-            is SessionStatus.NotAuthenticated -> AuthState.Unauthenticated
-            is SessionStatus.RefreshFailure -> AuthState.Unauthenticated
-        }
+    private suspend fun processOAuthRedirect(url: String) {
+        if (!AuthRedirectEvents.isAuthRedirect(url)) return
 
-    private fun UserInfo.toAuthUser(): AuthUser =
-        AuthUser(
-            id = id,
-            email = email,
-            displayName = userMetadata?.get("full_name")?.toString()
-                ?: userMetadata?.get("name")?.toString(),
-        )
+        if (currentAuthUser() == null) {
+            _authState.value = AuthState.Loading
+        }
+        client.auth.awaitInitialization()
+        runCatching { handleAuthDeeplink(client, url) }
+        syncAuthStateFromCurrentSession()
+    }
+
+    private fun syncAuthStateFromCurrentSession() {
+        val user = currentAuthUser() ?: return
+        _authState.value = AuthState.Authenticated(user)
+    }
+
+    private fun mapSessionStatus(status: SessionStatus): AuthState =
+        mapSupabaseSessionToAuthState(status, currentAuthUser())
+
+    private fun currentAuthUser(): AuthUser? =
+        client.auth.currentSessionOrNull()?.user?.toAuthUser()
 }
