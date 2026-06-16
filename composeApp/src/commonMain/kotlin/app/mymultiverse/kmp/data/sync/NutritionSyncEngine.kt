@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 /**
  * Coordinates pull from Supabase, push with offline outbox, and exposes sync status.
@@ -37,7 +38,7 @@ class NutritionSyncEngine(
             markRemoteFailure(spaceId, weekKey)
             return
         }
-        rows.forEach(applyRow)
+        rows.latestByDataKind().forEach(applyRow)
         refreshStatus(spaceId, weekKey)
     }
 
@@ -116,4 +117,18 @@ class NutritionSyncEngine(
             NutritionSyncStatus.RemoteUnavailable
         }
     }
+
+    private fun List<NutritionWeekDataRow>.latestByDataKind(): List<NutritionWeekDataRow> =
+        groupBy { it.dataKind }
+            .values
+            .mapNotNull { rows ->
+                rows.maxWithOrNull(
+                    compareBy<NutritionWeekDataRow> { it.updatedAtEpochMilliseconds() },
+                )
+            }
+
+    private fun NutritionWeekDataRow.updatedAtEpochMilliseconds(): Long =
+        updatedAt
+            ?.let { raw -> runCatching { Instant.parse(raw).toEpochMilliseconds() }.getOrNull() }
+            ?: Long.MIN_VALUE
 }

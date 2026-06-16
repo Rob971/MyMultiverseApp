@@ -5,6 +5,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
+import kotlinx.datetime.Clock
 
 /**
  * Supabase PostgREST access for shared nutrition week payloads.
@@ -36,6 +37,7 @@ class NutritionRemoteApi(
                     weekKey = weekKey,
                     dataKind = dataKind,
                     payload = payload,
+                    updatedAt = Clock.System.now().toString(),
                     updatedBy = client.auth.currentUserOrNull()?.id,
                 ),
             ) {

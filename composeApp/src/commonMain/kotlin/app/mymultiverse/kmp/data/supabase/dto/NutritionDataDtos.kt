@@ -9,5 +9,6 @@ data class NutritionWeekDataRow(
     @SerialName("week_key") val weekKey: String,
     @SerialName("data_kind") val dataKind: String,
     val payload: String,
+    @SerialName("updated_at") val updatedAt: String? = null,
     @SerialName("updated_by") val updatedBy: String? = null,
 )

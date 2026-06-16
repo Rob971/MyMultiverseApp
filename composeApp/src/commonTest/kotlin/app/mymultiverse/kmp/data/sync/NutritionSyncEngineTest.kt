@@ -63,6 +63,43 @@ class NutritionSyncEngineTest {
         assertEquals(NutritionSyncStatus.RemoteUnavailable, engine.observeStatus().first())
     }
 
+    @Test
+    fun pullRemote_appliesLatestRowForEachDataKind() = runTest {
+        val remote = StaticRemote(
+            listOf(
+                NutritionWeekDataRow(
+                    spaceId = "space-1",
+                    weekKey = "2025-W24",
+                    dataKind = "grocery",
+                    payload = "old-grocery",
+                    updatedAt = "2026-06-16T10:00:00Z",
+                ),
+                NutritionWeekDataRow(
+                    spaceId = "space-1",
+                    weekKey = "2025-W24",
+                    dataKind = "meal_plan",
+                    payload = "latest-meal-plan",
+                    updatedAt = "2026-06-16T10:30:00Z",
+                ),
+                NutritionWeekDataRow(
+                    spaceId = "space-1",
+                    weekKey = "2025-W24",
+                    dataKind = "grocery",
+                    payload = "latest-grocery",
+                    updatedAt = "2026-06-16T11:00:00Z",
+                ),
+            ),
+        )
+        val engine = NutritionSyncEngine(remote, NutritionSyncOutbox(MapSettings()))
+        val applied = mutableListOf<NutritionWeekDataRow>()
+
+        engine.pullRemote("space-1", "2025-W24") { row ->
+            applied += row
+        }
+
+        assertEquals(listOf("latest-grocery", "latest-meal-plan"), applied.map { it.payload }.sorted())
+    }
+
     private object FailingRemote : NutritionRemoteDataSource {
         override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
 
@@ -87,5 +124,13 @@ class NutritionSyncEngineTest {
         override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) {
             upsertCount++
         }
+    }
+
+    private class StaticRemote(
+        private val rows: List<NutritionWeekDataRow>,
+    ) : NutritionRemoteDataSource {
+        override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> = rows
+
+        override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
 }
