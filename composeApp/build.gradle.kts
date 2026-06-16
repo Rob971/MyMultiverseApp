@@ -57,7 +57,7 @@ val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
     val localPropsFile = rootProject.layout.projectDirectory.file("local.properties")
     val outputDir = layout.buildDirectory.dir("generated/supabase/kotlin/app/mymultiverse/kmp/data/supabase")
 
-    inputs.file(localPropsFile).optional().withPathSensitivity(PathSensitivity.NONE)
+    inputs.files(localPropsFile).optional().withPathSensitivity(PathSensitivity.NONE)
     outputs.dir(outputDir)
 
     doLast {

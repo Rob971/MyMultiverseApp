@@ -12,6 +12,6 @@ sealed class NutritionSyncStatus {
     /** Local edits are saved; one or more pushes are waiting for connectivity. */
     data class PendingPush(val pendingCount: Int) : NutritionSyncStatus()
 
-    /** Remote API is unavailable (Supabase not configured). */
+    /** Remote API is unavailable (Supabase not configured or currently unreachable). */
     data object RemoteUnavailable : NutritionSyncStatus()
 }

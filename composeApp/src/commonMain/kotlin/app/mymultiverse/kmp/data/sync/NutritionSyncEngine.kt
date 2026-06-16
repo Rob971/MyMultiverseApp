@@ -31,11 +31,14 @@ class NutritionSyncEngine(
             return
         }
         _status.value = NutritionSyncStatus.Syncing
-        try {
-            api.fetchWeek(spaceId, weekKey).forEach(applyRow)
-        } finally {
-            refreshStatus(spaceId, weekKey)
+        val rows = try {
+            api.fetchWeek(spaceId, weekKey)
+        } catch (_: Exception) {
+            markRemoteFailure(spaceId, weekKey)
+            return
         }
+        rows.forEach(applyRow)
+        refreshStatus(spaceId, weekKey)
     }
 
     suspend fun pushNowOrEnqueue(
@@ -102,6 +105,15 @@ class NutritionSyncEngine(
             remote == null -> NutritionSyncStatus.RemoteUnavailable
             pendingCount > 0 -> NutritionSyncStatus.PendingPush(pendingCount)
             else -> NutritionSyncStatus.Idle
+        }
+    }
+
+    private fun markRemoteFailure(spaceId: String, weekKey: String) {
+        val pendingCount = outbox.pendingFor(spaceId, weekKey).size
+        _status.value = if (pendingCount > 0) {
+            NutritionSyncStatus.PendingPush(pendingCount)
+        } else {
+            NutritionSyncStatus.RemoteUnavailable
         }
     }
 }

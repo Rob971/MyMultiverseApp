@@ -41,8 +41,8 @@ class NutritionSessionCoordinatorImpl(
             weekKey = weekKey,
             remoteEnabled = remoteApi != null,
         )
-        repository.refreshFromRemote()
         _nutrition.value = repository
+        repository.refreshFromRemote()
         realtimeSync?.start(
             spaceId = spaceId,
             weekKey = weekKey,

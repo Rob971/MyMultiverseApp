@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 
 class NutritionSyncEngineTest {
@@ -49,12 +50,33 @@ class NutritionSyncEngineTest {
         assertEquals(NutritionSyncStatus.Idle, engine.observeStatus().first())
     }
 
+    @Test
+    fun pullRemote_reportsRemoteUnavailableWhenFetchFails() = runTest {
+        val engine = NutritionSyncEngine(FailingFetchRemote, NutritionSyncOutbox(MapSettings()))
+        var applied = false
+
+        engine.pullRemote("space-1", "2025-W24") {
+            applied = true
+        }
+
+        assertFalse(applied)
+        assertEquals(NutritionSyncStatus.RemoteUnavailable, engine.observeStatus().first())
+    }
+
     private object FailingRemote : NutritionRemoteDataSource {
         override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
 
         override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) {
             throw IllegalStateException("offline")
         }
+    }
+
+    private object FailingFetchRemote : NutritionRemoteDataSource {
+        override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> {
+            throw IllegalStateException("offline")
+        }
+
+        override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
 
     private class RecordingRemote : NutritionRemoteDataSource {

@@ -4,7 +4,9 @@ import app.mymultiverse.kmp.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.kmp.data.supabase.dto.NutritionWeekDataRow
+import app.mymultiverse.kmp.domain.model.nutrition.DayMeals
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
+import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -43,6 +45,48 @@ class OfflineFirstNutritionRepositoryTest {
 
         assertEquals("Bread", repository.observeGroceryItems().first().single().label)
         assertEquals(1, outbox.pendingFor(spaceId, weekKey).size)
+    }
+
+    @Test
+    fun refreshFromRemote_appliesFetchedSupabaseRowsToLocalCache() = runTest {
+        val settings = MapSettings()
+        val store = NutritionLocalStore(settings, spaceId, weekKey)
+        val plan = WeeklyMealPlan(
+            weekKey = weekKey,
+            days = List(WeeklyMealPlan.DAYS_IN_WEEK) { index ->
+                if (index == 0) DayMeals(lunch = "Remote lunch", dinner = "Remote dinner") else DayMeals()
+            },
+        )
+        val remote = StaticRemote(
+            listOf(
+                NutritionWeekDataRow(
+                    spaceId = spaceId,
+                    weekKey = weekKey,
+                    dataKind = "grocery",
+                    payload = store.encodeGrocery(listOf(GroceryItem("r1", "Remote rice", false))),
+                ),
+                NutritionWeekDataRow(
+                    spaceId = spaceId,
+                    weekKey = weekKey,
+                    dataKind = "ai_grocery",
+                    payload = store.encodeGrocery(listOf(GroceryItem("ai1", "AI lentils", true))),
+                ),
+                NutritionWeekDataRow(
+                    spaceId = spaceId,
+                    weekKey = weekKey,
+                    dataKind = "meal_plan",
+                    payload = store.encodeMealPlan(plan),
+                ),
+            ),
+        )
+        val repository = repository(settings, store = store, remote = remote, remoteEnabled = true)
+
+        repository.refreshFromRemote()
+
+        assertEquals("Remote rice", repository.observeGroceryItems().first().single().label)
+        assertEquals("AI lentils", repository.observeAiGroceryItems().first().single().label)
+        assertEquals("Remote lunch", repository.observeMealPlan().first().days.first().lunch)
+        assertEquals(1, remote.fetchCount)
     }
 
     @Test
@@ -104,5 +148,18 @@ class OfflineFirstNutritionRepositoryTest {
         override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) {
             throw IllegalStateException("offline")
         }
+    }
+
+    private class StaticRemote(
+        private val rows: List<NutritionWeekDataRow>,
+    ) : NutritionRemoteDataSource {
+        var fetchCount = 0
+
+        override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> {
+            fetchCount++
+            return rows
+        }
+
+        override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
 }
