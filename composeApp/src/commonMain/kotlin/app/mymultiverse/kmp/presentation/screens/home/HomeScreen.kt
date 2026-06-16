@@ -34,6 +34,7 @@ object HomeTestTags {
     const val NUTRITION_CARD = "home_nutrition_card"
     const val SIGN_OUT_BUTTON = "home_sign_out_button"
     const val APP_VERSION_LABEL = "home_app_version_label"
+    const val LOADING_INDICATOR = "home_loading_indicator"
 }
 
 @Composable
@@ -128,7 +129,9 @@ fun HomeContent(
                         CircularProgressIndicator(
                             color = SharedJourneyColors.MediterraneanTeal,
                             strokeWidth = 3.dp,
-                            modifier = Modifier.size(32.dp),
+                            modifier = Modifier
+                                .size(32.dp)
+                                .testTag(HomeTestTags.LOADING_INDICATOR),
                         )
                     }
                 }

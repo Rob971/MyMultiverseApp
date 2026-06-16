@@ -116,17 +116,23 @@ class HomeScreenModelTest {
         assertEquals("Welcome home", screenModel.greeting.value?.text)
         assertFalse(screenModel.isRefreshing.value)
     }
-}
 
-private class FakeGreetingRepository(
-    initial: Greeting,
-) : GreetingRepository {
-    var nextGreeting: Greeting = initial
-    var failOnLoad: Boolean = false
+    @Test
+    fun refresh_stillLoadsPendingInvitesInBackground() = runTest(testDispatcher) {
+        val collaborationRepository = TrackingSpaceCollaborationRepository()
+        val screenModel = HomeScreenModel(
+            getGreetingUseCase = GetGreetingUseCase(FakeGreetingRepository(Greeting("Welcome home"))),
+            authRepository = FakeAuthRepository(),
+            collaborationRepository = collaborationRepository,
+            sessionCoordinator = FakeNutritionSessionCoordinator(
+                initialRepository = NutritionRepositoryImpl(MapSettings()),
+            ),
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
 
-    override suspend fun loadGreeting(): Greeting {
-        if (failOnLoad) error("load failed")
-        return nextGreeting
+        advanceUntilIdle()
+
+        assertEquals(1, collaborationRepository.refreshPendingInvitesCalls)
     }
 }
 
@@ -182,4 +188,25 @@ private class HangingSpaceCollaborationRepository : SpaceCollaborationRepository
 
     override suspend fun declineInvite(inviteId: String): Result<Unit> =
         Result.failure(UnsupportedOperationException())
+}
+
+private class FakeGreetingRepository(
+    initial: Greeting,
+) : GreetingRepository {
+    var nextGreeting: Greeting = initial
+    var failOnLoad: Boolean = false
+
+    override suspend fun loadGreeting(): Greeting {
+        if (failOnLoad) error("load failed")
+        return nextGreeting
+    }
+}
+
+private class TrackingSpaceCollaborationRepository :
+    SpaceCollaborationRepository by FakeSpaceCollaborationRepository() {
+    var refreshPendingInvitesCalls = 0
+
+    override suspend fun refreshPendingInvites() {
+        refreshPendingInvitesCalls++
+    }
 }

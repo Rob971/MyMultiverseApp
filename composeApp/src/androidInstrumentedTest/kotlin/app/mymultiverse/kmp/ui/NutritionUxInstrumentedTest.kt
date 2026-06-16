@@ -191,4 +191,51 @@ class NutritionUxInstrumentedTest {
 
         assertTrue(openedNutrition)
     }
+
+    @Test
+    fun homeContent_withoutGreeting_showsLoadingIndicator() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = null,
+                        isRefreshing = false,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.LOADING_INDICATOR).assertIsDisplayed()
+    }
+
+    @Test
+    fun homeContent_withGreetingWhileRefreshing_hidesLoadingIndicator() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = Greeting("Hello"),
+                        isRefreshing = true,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.LOADING_INDICATOR).assertDoesNotExist()
+        composeRule.onNodeWithTag(HomeTestTags.NUTRITION_CARD)
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
 }
