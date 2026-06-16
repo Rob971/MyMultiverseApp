@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: Nutrition, Adventures, and Budget share one household (2+ members).
 
-version: 8
+version: 9
 updated: 2026-06-16
 
 summary: |
@@ -42,6 +42,15 @@ test_cases:
       - On Home, tap Accept on the invite card.
     expected:
       - Invite card disappears; opening Nutrition lands on the shared household hub.
+
+  - id: home-personalized-greeting
+    title: Personalized home greeting after sign-in
+    steps:
+      - Sign in with an account that has a display name (or use email if no profile name).
+      - Land on Home and wait for the banner to finish loading.
+    expected:
+      - Banner supporting line greets you by name (e.g. Hello, Roberto).
+      - Greeting persists while you stay signed in and navigate back to Home.
 
   - id: nutrition-household-bootstrap
     title: Open nutrition (single household)

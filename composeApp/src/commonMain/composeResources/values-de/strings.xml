@@ -261,6 +261,7 @@
     <string name="category_long_term_ai_action">Meilensteinplan erstellen</string>
     <string name="category_long_term_plan_title">Meilensteinplan</string>
     <string name="home_greeting">Das schlagende Herz unserer Familie.</string>
+    <string name="home_greeting_personalized">Hallo, %1$s</string>
     <string name="calendar_weekday_mon">Mo</string>
     <string name="calendar_weekday_tue">Di</string>
     <string name="calendar_weekday_wed">Mi</string>

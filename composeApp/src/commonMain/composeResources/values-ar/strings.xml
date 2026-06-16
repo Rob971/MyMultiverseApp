@@ -261,6 +261,7 @@
     <string name="category_long_term_ai_action">إنشاء مخطط معلم</string>
     <string name="category_long_term_plan_title">مخطط المعلم</string>
     <string name="home_greeting">قلب عائلتنا النابض.</string>
+    <string name="home_greeting_personalized">مرحباً، %1$s</string>
     <string name="calendar_weekday_mon">الإثنين</string>
     <string name="calendar_weekday_tue">الثلاثاء</string>
     <string name="calendar_weekday_wed">الأربعاء</string>

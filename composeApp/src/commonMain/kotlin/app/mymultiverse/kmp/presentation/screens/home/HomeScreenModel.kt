@@ -1,6 +1,8 @@
 package app.mymultiverse.kmp.presentation.screens.home
 
 import app.mymultiverse.kmp.domain.model.Greeting
+import app.mymultiverse.kmp.domain.model.auth.AuthState
+import app.mymultiverse.kmp.domain.auth.resolvedDisplayName
 import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
@@ -13,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -32,6 +35,14 @@ class HomeScreenModel(
     val pendingInvites: StateFlow<List<SpaceInvite>> = collaborationRepository
         .observePendingInvites()
         .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val userDisplayName: StateFlow<String?> = authRepository.authState
+        .map(::displayNameForAuthState)
+        .stateIn(
+            scope,
+            SharingStarted.Eagerly,
+            displayNameForAuthState(authRepository.authState.value),
+        )
 
     init {
         refresh()
@@ -75,4 +86,10 @@ class HomeScreenModel(
             collaborationRepository.declineInvite(inviteId)
         }
     }
+
+    private fun displayNameForAuthState(state: AuthState): String? =
+        when (state) {
+            is AuthState.Authenticated -> state.user.resolvedDisplayName()
+            else -> null
+        }
 }

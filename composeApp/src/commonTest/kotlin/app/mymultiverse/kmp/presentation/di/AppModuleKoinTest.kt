@@ -90,6 +90,15 @@ class AppModuleKoinTest : KoinTest {
     }
 
     @Test
+    fun homeScreenModel_resolvesAndLoadsGreeting() = runTest(testDispatcher) {
+        val model = get<HomeScreenModel>()
+
+        advanceUntilIdle()
+
+        assertNotNull(model.greeting.value)
+    }
+
+    @Test
     fun nutritionScreenModel_resolvesWithRepositoryAndAdviceService() {
         val model = get<NutritionScreenModel>()
         val repository = get<NutritionRepository>()
@@ -111,15 +120,6 @@ class AppModuleKoinTest : KoinTest {
         val items = model.groceryItems.first()
         assertEquals(1, items.size)
         assertEquals("Tomatoes", items.single().label)
-    }
-
-    @Test
-    fun homeScreenModel_resolvesAndLoadsGreeting() = runTest(testDispatcher) {
-        val model = get<HomeScreenModel>()
-
-        advanceUntilIdle()
-
-        assertNotNull(model.greeting.value)
     }
 
     @Test

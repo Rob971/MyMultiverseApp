@@ -261,6 +261,7 @@
     <string name="category_long_term_ai_action">Générer le plan de jalon</string>
     <string name="category_long_term_plan_title">Plan de jalon</string>
     <string name="home_greeting">Le cœur battant de notre famille.</string>
+    <string name="home_greeting_personalized">Bonjour, %1$s</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>

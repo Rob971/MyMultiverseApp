@@ -35,6 +35,7 @@ object HomeTestTags {
     const val SIGN_OUT_BUTTON = "home_sign_out_button"
     const val APP_VERSION_LABEL = "home_app_version_label"
     const val LOADING_INDICATOR = "home_loading_indicator"
+    const val GREETING_LINE = "home_greeting_line"
 }
 
 @Composable
@@ -43,11 +44,13 @@ fun HomeScreen(
 ) {
     val screenModel = koinInject<HomeScreenModel>()
     val greeting by screenModel.greeting.collectAsState()
+    val userDisplayName by screenModel.userDisplayName.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val pendingInvites by screenModel.pendingInvites.collectAsState()
 
     HomeContent(
         greeting = greeting,
+        userDisplayName = userDisplayName,
         isRefreshing = isRefreshing,
         pendingInvites = pendingInvites,
         onRefreshClick = { screenModel.refresh() },
@@ -61,6 +64,7 @@ fun HomeScreen(
 @Composable
 fun HomeContent(
     greeting: Greeting?,
+    userDisplayName: String?,
     isRefreshing: Boolean,
     pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.SpaceInvite>,
     onRefreshClick: () -> Unit,
@@ -70,6 +74,18 @@ fun HomeContent(
     onDeclineInvite: (String) -> Unit,
 ) {
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
+    val greetingSelection = HomeGreetingSelection.select(
+        greetingReady = greeting != null,
+        userDisplayName = userDisplayName,
+    )
+    val supportingLine = when (greetingSelection) {
+        HomeGreetingSelection.Loading -> stringResource(Res.string.home_banner_loading)
+        is HomeGreetingSelection.Personalized -> stringResource(
+            Res.string.home_greeting_personalized,
+            greetingSelection.name,
+        )
+        HomeGreetingSelection.Generic -> stringResource(Res.string.home_greeting)
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
@@ -103,12 +119,9 @@ fun HomeContent(
             item {
                 JourneyBanner(
                     headline = stringResource(Res.string.home_banner_headline),
-                    supportingLine =
-                        when (greeting) {
-                            null -> stringResource(Res.string.home_banner_loading)
-                            else -> stringResource(Res.string.home_greeting)
-                        },
+                    supportingLine = supportingLine,
                     description = stringResource(Res.string.home_banner_description),
+                    supportingLineTestTag = HomeTestTags.GREETING_LINE,
                 )
             }
 

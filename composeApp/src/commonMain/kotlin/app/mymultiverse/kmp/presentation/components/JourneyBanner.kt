@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -21,6 +22,7 @@ fun JourneyBanner(
     headline: String,
     supportingLine: String?,
     description: String? = null,
+    supportingLineTestTag: String? = null,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(32.dp)
@@ -81,7 +83,11 @@ fun JourneyBanner(
                                 color = SharedJourneyColors.TerracottaOrange,
                                 fontWeight = FontWeight.SemiBold,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(top = 8.dp)
+                                modifier = Modifier
+                                    .padding(top = 8.dp)
+                                    .then(
+                                        supportingLineTestTag?.let { Modifier.testTag(it) } ?: Modifier,
+                                    ),
                             )
                         }
                     }

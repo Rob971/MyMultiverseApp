@@ -278,6 +278,7 @@ class NutritionUxInstrumentedTest {
                 InstrumentedKoinHost {
                     HomeContent(
                         greeting = Greeting("Hello"),
+                        userDisplayName = "Test User",
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
@@ -298,12 +299,108 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun homeContent_withUserDisplayName_showsPersonalizedGreeting() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = Greeting("ready"),
+                        userDisplayName = "Roberto",
+                        isRefreshing = false,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.GREETING_LINE).assertIsDisplayed()
+        composeRule.onNodeWithText("Hello, Roberto").assertIsDisplayed()
+    }
+
+    @Test
+    fun homeContent_withEmailDerivedDisplayName_showsPersonalizedGreeting() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = Greeting("ready"),
+                        userDisplayName = "maria",
+                        isRefreshing = false,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithText("Hello, maria").assertIsDisplayed()
+    }
+
+    @Test
+    fun homeContent_withoutDisplayName_showsGenericGreeting() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = Greeting("ready"),
+                        userDisplayName = null,
+                        isRefreshing = false,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.GREETING_LINE).assertIsDisplayed()
+        composeRule.onNodeWithText("The beating heart of our family.").assertIsDisplayed()
+    }
+
+    @Test
+    fun homeContent_withoutGreeting_showsLoadingBannerLine() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = null,
+                        userDisplayName = "Roberto",
+                        isRefreshing = false,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.LOADING_INDICATOR).assertIsDisplayed()
+        composeRule.onNodeWithText("Loading your family space...").assertIsDisplayed()
+    }
+
+    @Test
     fun homeContent_withoutGreeting_showsLoadingIndicator() {
         composeRule.setContent {
             AppTheme {
                 InstrumentedKoinHost {
                     HomeContent(
                         greeting = null,
+                        userDisplayName = null,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
@@ -326,6 +423,7 @@ class NutritionUxInstrumentedTest {
                 InstrumentedKoinHost {
                     HomeContent(
                         greeting = Greeting("Hello"),
+                        userDisplayName = "Test User",
                         isRefreshing = true,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},

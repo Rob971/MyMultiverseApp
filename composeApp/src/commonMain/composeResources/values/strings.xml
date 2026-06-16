@@ -261,6 +261,7 @@
     <string name="category_long_term_ai_action">Generate milestone blueprint</string>
     <string name="category_long_term_plan_title">Milestone Blueprint</string>
     <string name="home_greeting">The beating heart of our family.</string>
+    <string name="home_greeting_personalized">Hello, %1$s</string>
     <string name="calendar_weekday_mon">Mon</string>
     <string name="calendar_weekday_tue">Tue</string>
     <string name="calendar_weekday_wed">Wed</string>
