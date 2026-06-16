@@ -69,7 +69,15 @@ fun NutritionSpacesScreen(
     screenModel: NutritionSpacesScreenModel = koinInject(),
 ) {
     val uiState by screenModel.uiState.collectAsState()
-    val errorMessage = uiState.error?.let { error ->
+    val loadErrorMessage = uiState.loadError?.let { error ->
+        when (error) {
+            NutritionSpacesError.Generic -> stringResource(Res.string.sharing_nutrition_spaces_error_generic)
+            NutritionSpacesError.NameRequired -> stringResource(Res.string.sharing_nutrition_spaces_error_name_required)
+            NutritionSpacesError.FeaturesRequired -> stringResource(Res.string.sharing_nutrition_spaces_error_features_required)
+            NutritionSpacesError.NotConfigured -> stringResource(Res.string.sharing_nutrition_spaces_error_not_configured)
+        }
+    }
+    val createErrorMessage = uiState.createError?.let { error ->
         when (error) {
             NutritionSpacesError.Generic -> stringResource(Res.string.sharing_nutrition_spaces_error_generic)
             NutritionSpacesError.NameRequired -> stringResource(Res.string.sharing_nutrition_spaces_error_name_required)
@@ -124,7 +132,7 @@ fun NutritionSpacesScreen(
                         }
                     }
 
-                    if (uiState.spaces.isEmpty()) {
+                    if (uiState.spaces.isEmpty() && loadErrorMessage == null) {
                         item {
                             Text(
                                 text = stringResource(Res.string.sharing_nutrition_spaces_empty),
@@ -144,10 +152,10 @@ fun NutritionSpacesScreen(
                         }
                     }
 
-                    if (errorMessage != null) {
+                    if (loadErrorMessage != null) {
                         item {
                             Text(
-                                text = errorMessage,
+                                text = loadErrorMessage,
                                 color = SharedJourneyColors.TerracottaOrange,
                             )
                         }
@@ -161,7 +169,7 @@ fun NutritionSpacesScreen(
         CreateNutritionSpaceDialog(
             draft = uiState.createDraft,
             isCreating = uiState.isCreating,
-            errorMessage = errorMessage,
+            errorMessage = createErrorMessage,
             onNameChange = screenModel::onCreateNameChange,
             onFeatureToggle = screenModel::onCreateFeatureToggle,
             onDismiss = screenModel::dismissCreateDialog,

@@ -36,7 +36,8 @@ data class NutritionSpacesUiState(
     val isCreating: Boolean = false,
     val showCreateDialog: Boolean = false,
     val createDraft: CreateNutritionSpaceDraft = CreateNutritionSpaceDraft(),
-    val error: NutritionSpacesError? = null,
+    val loadError: NutritionSpacesError? = null,
+    val createError: NutritionSpacesError? = null,
 )
 
 class NutritionSpacesScreenModel(
@@ -58,18 +59,18 @@ class NutritionSpacesScreenModel(
 
     fun refresh() {
         scope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, loadError = null) }
             runCatching { sharingSpaceRepository.refreshNutritionSpaces() }
                 .onFailure { throwable ->
                     _uiState.update { state ->
                         state.copy(
                             isLoading = false,
-                            error = mapFailure(throwable),
+                            loadError = mapFailure(throwable),
                         )
                     }
                 }
                 .onSuccess {
-                    _uiState.update { state -> state.copy(isLoading = false) }
+                    _uiState.update { state -> state.copy(isLoading = false, loadError = null) }
                 }
         }
     }
@@ -79,18 +80,18 @@ class NutritionSpacesScreenModel(
             it.copy(
                 showCreateDialog = true,
                 createDraft = CreateNutritionSpaceDraft(),
-                error = null,
+                createError = null,
             )
         }
     }
 
     fun dismissCreateDialog() {
-        _uiState.update { it.copy(showCreateDialog = false, error = null) }
+        _uiState.update { it.copy(showCreateDialog = false, createError = null) }
     }
 
     fun onCreateNameChange(value: String) {
         _uiState.update { state ->
-            state.copy(createDraft = state.createDraft.copy(name = value), error = null)
+            state.copy(createDraft = state.createDraft.copy(name = value), createError = null)
         }
     }
 
@@ -102,7 +103,7 @@ class NutritionSpacesScreenModel(
                 NutritionSharingFeature.MealPlan -> draft.copy(mealPlanEnabled = enabled)
                 NutritionSharingFeature.AiAdvice -> draft.copy(aiAdviceEnabled = enabled)
             }
-            state.copy(createDraft = updated, error = null)
+            state.copy(createDraft = updated, createError = null)
         }
     }
 
@@ -110,22 +111,22 @@ class NutritionSpacesScreenModel(
         val draft = _uiState.value.createDraft
         val features = draft.selectedFeatures()
         if (draft.name.isBlank()) {
-            _uiState.update { it.copy(error = NutritionSpacesError.NameRequired) }
+            _uiState.update { it.copy(createError = NutritionSpacesError.NameRequired) }
             return
         }
         if (features.isEmpty()) {
-            _uiState.update { it.copy(error = NutritionSpacesError.FeaturesRequired) }
+            _uiState.update { it.copy(createError = NutritionSpacesError.FeaturesRequired) }
             return
         }
 
         scope.launch {
-            _uiState.update { it.copy(isCreating = true, error = null) }
+            _uiState.update { it.copy(isCreating = true, createError = null) }
             val result = sharingSpaceRepository.createNutritionSpace(draft.name, features)
             _uiState.update { state ->
                 state.copy(
                     isCreating = false,
-                    showCreateDialog = result.isSuccess,
-                    error = result.exceptionOrNull()?.let { mapFailure(it) },
+                    showCreateDialog = !result.isSuccess,
+                    createError = result.exceptionOrNull()?.let { mapFailure(it) },
                 )
             }
             result.onSuccess { space ->
