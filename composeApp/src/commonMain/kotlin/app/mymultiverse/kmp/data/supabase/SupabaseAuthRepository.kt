@@ -38,6 +38,9 @@ class SupabaseAuthRepository(
         client.auth.awaitInitialization()
         AuthRedirectEvents.consumePending()?.let { processOAuthRedirect(it) }
         syncAuthStateFromCurrentSession()
+        if (_authState.value == AuthState.Loading && currentAuthUser() == null) {
+            _authState.value = AuthState.Unauthenticated
+        }
     }
 
     override suspend fun signInWithEmail(email: String, password: String): Result<Unit> =

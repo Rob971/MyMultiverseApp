@@ -35,7 +35,6 @@ class HomeScreenModel(
 
     init {
         refresh()
-        scope.launch { collaborationRepository.refreshPendingInvites() }
     }
 
     fun refresh() {
@@ -43,12 +42,18 @@ class HomeScreenModel(
             _isRefreshing.value = true
             try {
                 _greeting.value = getGreetingUseCase()
-                collaborationRepository.refreshPendingInvites()
             } catch (_: Throwable) {
                 // Keep the last greeting when refresh fails.
             } finally {
                 _isRefreshing.value = false
             }
+        }
+        refreshPendingInvitesInBackground()
+    }
+
+    private fun refreshPendingInvitesInBackground() {
+        scope.launch {
+            runCatching { collaborationRepository.refreshPendingInvites() }
         }
     }
 

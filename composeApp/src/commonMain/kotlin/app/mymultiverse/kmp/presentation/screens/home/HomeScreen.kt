@@ -120,7 +120,7 @@ fun HomeContent(
             }
 
             item {
-                if (greeting == null || isRefreshing) {
+                if (greeting == null) {
                     Box(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center,

@@ -171,45 +171,48 @@ class SupabaseSpaceCollaborationRepository(
     }
 
     override suspend fun refreshPendingInvites() {
-        val profile = currentProfile() ?: run {
-            pendingInvites.value = emptyList()
-            return
-        }
-        val email = profile.email?.trim()?.lowercase().orEmpty()
-        if (email.isEmpty()) {
-            pendingInvites.value = emptyList()
-            return
-        }
-
-        val rows = client.postgrest["space_invites"]
-            .select(Columns.ALL) {
-                filter { eq("email", email) }
+        runCatching {
+            val profile = currentProfile() ?: run {
+                pendingInvites.value = emptyList()
+                return
             }
-            .decodeList<SpaceInviteRow>()
-            .filter { row -> row.acceptedAt == null && row.declinedAt == null }
+            val email = profile.email?.trim()?.lowercase().orEmpty()
+            if (email.isEmpty()) {
+                pendingInvites.value = emptyList()
+                return
+            }
 
-        val spaceIds = rows.map { it.spaceId }.distinct()
-        val spaceNames = if (spaceIds.isEmpty()) {
-            emptyMap()
-        } else {
-            client.postgrest["sharing_spaces"]
+            val rows = client.postgrest["space_invites"]
                 .select(Columns.ALL) {
-                    filter { isIn("id", spaceIds) }
+                    filter { eq("email", email) }
                 }
-                .decodeList<SharingSpaceRow>()
-                .associateBy({ it.id }, { it.name })
-        }
+                .decodeList<SpaceInviteRow>()
+                .filter { row -> row.acceptedAt == null && row.declinedAt == null }
 
-        pendingInvites.value = rows.map { row ->
-            SpaceInvite(
-                id = row.id,
-                spaceId = row.spaceId,
-                spaceName = spaceNames[row.spaceId] ?: row.spaceId,
-                email = row.email,
-                role = row.role.toSpaceMemberRole(),
-                expiresAtEpochMillis = row.expiresAt?.toEpochMillis(),
-            )
-        }.sortedBy { it.spaceName.lowercase() }
+            val spaceIds = rows.map { it.spaceId }.distinct()
+            val spaceNames = if (spaceIds.isEmpty()) {
+                emptyMap()
+            } else {
+                client.postgrest["sharing_spaces"]
+                    .select(Columns.ALL) {
+                        filter { isIn("id", spaceIds) }
+                    }
+                    .decodeList<SharingSpaceRow>()
+                    .associateBy({ it.id }, { it.name })
+            }
+
+            pendingInvites.value = rows.map { row ->
+                SpaceInvite(
+                    id = row.id,
+                    spaceId = row.spaceId,
+                    spaceName = spaceNames[row.spaceId] ?: row.spaceId,
+                    email = row.email,
+                    role = row.role.toSpaceMemberRole(),
+                    expiresAtEpochMillis = row.expiresAt?.toEpochMillis(),
+                )
+            }.sortedBy { it.spaceName.lowercase() }
+        }
+        // Keep the last known invites when the network call fails.
     }
 
     override suspend fun addMemberByEmail(
