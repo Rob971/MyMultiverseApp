@@ -1,6 +1,7 @@
 package app.mymultiverse.kmp.ui
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -29,35 +30,33 @@ class FamilyLogisticCardInstrumentedTest {
     @Test
     fun familyLogisticCard_respectsEnabledState_underAppCompatTheme() {
         var enabledClicked = false
+        var disabledClicked = false
+
         composeRule.setContent {
             AppTheme {
-                FamilyLogisticCard(
-                    title = "Nutrition",
-                    description = "Meals and groceries",
-                    accentColor = SharedJourneyColors.SageSoft,
-                    icon = AppIcons.Restaurant,
-                    onClick = { enabledClicked = true },
-                )
+                Column {
+                    FamilyLogisticCard(
+                        title = "Nutrition",
+                        description = "Meals and groceries",
+                        accentColor = SharedJourneyColors.SageSoft,
+                        icon = AppIcons.Restaurant,
+                        onClick = { enabledClicked = true },
+                    )
+                    FamilyLogisticCard(
+                        title = "Adventures",
+                        description = "Coming later",
+                        accentColor = SharedJourneyColors.TerracottaOrange,
+                        icon = AppIcons.Explore,
+                        enabled = false,
+                        badge = "Coming soon",
+                        onClick = { disabledClicked = true },
+                    )
+                }
             }
         }
 
         composeRule.onNodeWithText("Nutrition").assertIsDisplayed().performClick()
         assertTrue(enabledClicked)
-
-        var disabledClicked = false
-        composeRule.setContent {
-            AppTheme {
-                FamilyLogisticCard(
-                    title = "Adventures",
-                    description = "Coming later",
-                    accentColor = SharedJourneyColors.TerracottaOrange,
-                    icon = AppIcons.Explore,
-                    enabled = false,
-                    badge = "Coming soon",
-                    onClick = { disabledClicked = true },
-                )
-            }
-        }
 
         composeRule.onNodeWithText("Adventures").performClick()
         assertFalse(disabledClicked)
