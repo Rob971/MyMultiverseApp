@@ -14,6 +14,7 @@ import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
+import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionEntryScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionScreenModel
 import com.russhwolf.settings.MapSettings
 import com.russhwolf.settings.Settings
@@ -159,6 +160,12 @@ class AppModuleKoinTest : KoinTest {
         val repositoryDirect = get<NutritionRepository>().weekKey
 
         assertEquals(repositoryDirect, repositoryFromModel)
+    }
+
+    @Test
+    fun nutritionEntryScreenModel_resolvesFromKoinGraph() {
+        val model = get<NutritionEntryScreenModel>()
+        assertNotNull(model)
     }
 
     @Test

@@ -1,13 +1,13 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: Nutrition, Adventures, and Budget share one household (2+ members).
 
-version: 7
+version: 8
 updated: 2026-06-16
 
 summary: |
-  Verify auth, single household bootstrap, household members (invite by email),
-  pending invites, sign-out, and nutrition hub sync. Adventures and Budget cards on Home
-  remain coming soon but use the same household when shipped.
+  Verify auth, single household bootstrap, nutrition hub (grocery / meal plan / AI adviser / members),
+  CRUD on shared week data, sync status, Crashlytics on tester builds, and sign-out.
+  Adventures and Budget cards on Home remain coming soon but use the same household when shipped.
 
 test_cases:
   - id: auth-sign-in
@@ -76,7 +76,46 @@ test_cases:
       - Launch the app and go to Home.
       - Scroll to the Family Logistics / Nutrition card and tap it.
     expected:
-      - Nutrition hub opens with Grocery, Meal plan, and AI adviser cards.
+      - Nutrition hub opens with Grocery, Meal plan, and AI adviser cards above Household members.
+
+  - id: hub-layout-order
+    title: Nutrition hub section order
+    steps:
+      - Open the nutrition hub on a household with all features enabled.
+      - Scroll through the hub cards top to bottom.
+    expected:
+      - Grocery, Weekly meal plan, and AI adviser appear before Household members.
+      - Each category card shows a progress or status line when data exists.
+
+  - id: hub-meal-plan-navigation
+    title: Open weekly meal plan from hub
+    steps:
+      - From Nutrition hub, tap the Weekly meal plan card.
+    expected:
+      - Meal plan screen shows the current week label and today highlighted.
+      - Days can expand to edit lunch and dinner.
+
+  - id: hub-ai-navigation
+    title: Open AI adviser from hub
+    steps:
+      - From Nutrition hub, tap the AI adviser card.
+    expected:
+      - AI screen shows mode chips (Advice, Grocery, Meal plan) and a criteria field.
+
+  - id: hub-members-navigation
+    title: Open household members from hub
+    steps:
+      - From Nutrition hub, scroll to Household members and tap the card.
+    expected:
+      - Members screen lists the owner and invited household members.
+
+  - id: nutrition-section-back
+    title: Back from nutrition section to hub
+    steps:
+      - From the hub, open Grocery (or Meal plan / AI adviser).
+      - Tap the back control in the top bar.
+    expected:
+      - Returns to the nutrition hub with the same household context (no space picker).
 
   - id: crashlytics-smoke
     title: Firebase Crashlytics (tester builds with google-services)

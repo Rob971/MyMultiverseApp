@@ -31,6 +31,12 @@ class AppNavigationTest {
     }
 
     @Test
+    fun nutritionRoute_storesMealPlanAndAiSections() {
+        assertEquals(NutritionSection.MealPlan, AppRoute.Nutrition(section = NutritionSection.MealPlan).section)
+        assertEquals(NutritionSection.AiAdvice, AppRoute.Nutrition(section = NutritionSection.AiAdvice).section)
+    }
+
+    @Test
     fun membersRoute_requiresSpaceContext() {
         val space = NutritionSpaceContext(
             id = "space-1",

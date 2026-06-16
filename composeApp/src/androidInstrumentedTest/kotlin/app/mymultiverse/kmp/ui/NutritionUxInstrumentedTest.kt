@@ -190,6 +190,86 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun nutritionHub_tapMealPlanCard_opensMealPlanSection() {
+        val screenModel = nutritionScreenModel()
+        var opened: NutritionSection? = null
+
+        composeRule.setContent {
+            AppTheme {
+                NutritionHubScreen(
+                    spaceName = "Test space",
+                    enabledFeatures = setOf(
+                        NutritionSharingFeature.Grocery,
+                        NutritionSharingFeature.MealPlan,
+                        NutritionSharingFeature.AiAdvice,
+                    ),
+                    onBack = {},
+                    onOpenSection = { opened = it },
+                    screenModel = screenModel,
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(NutritionHubTestTags.MEAL_PLAN_CARD)
+            .performScrollTo()
+            .performClick()
+
+        assertEquals(NutritionSection.MealPlan, opened)
+    }
+
+    @Test
+    fun nutritionHub_tapAiCard_opensAiAdviceSection() {
+        val screenModel = nutritionScreenModel()
+        var opened: NutritionSection? = null
+
+        composeRule.setContent {
+            AppTheme {
+                NutritionHubScreen(
+                    spaceName = "Test space",
+                    enabledFeatures = setOf(
+                        NutritionSharingFeature.Grocery,
+                        NutritionSharingFeature.MealPlan,
+                        NutritionSharingFeature.AiAdvice,
+                    ),
+                    onBack = {},
+                    onOpenSection = { opened = it },
+                    screenModel = screenModel,
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(NutritionHubTestTags.AI_CARD)
+            .performScrollTo()
+            .performClick()
+
+        assertEquals(NutritionSection.AiAdvice, opened)
+    }
+
+    @Test
+    fun nutritionHub_showsMembersCardAfterCategories() {
+        val screenModel = nutritionScreenModel()
+
+        composeRule.setContent {
+            AppTheme {
+                NutritionHubScreen(
+                    spaceName = "Test space",
+                    enabledFeatures = setOf(
+                        NutritionSharingFeature.Grocery,
+                        NutritionSharingFeature.MealPlan,
+                        NutritionSharingFeature.AiAdvice,
+                    ),
+                    onBack = {},
+                    onOpenSection = {},
+                    screenModel = screenModel,
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(NutritionHubTestTags.GROCERY_CARD).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(NutritionHubTestTags.MEMBERS_CARD).performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
     fun homeContent_tapNutritionCard_invokesCallback() {
         var openedNutrition = false
 
