@@ -1,27 +1,58 @@
-.gradle
-.kotlin
-build
-**/build
-.idea
-*.iml
-.DS_Store
-local.properties
-# Gradle daemon JVM pin (generated locally by updateDaemonJvm; breaks CI foojay downloads)
-gradle/gradle-daemon-jvm.properties
-captures
-.externalNativeBuild
-.cxx
-*.xcworkspace
-xcuserdata
-DerivedData
+# Gradle / Kotlin
+.gradle/
+.kotlin/
+build/
+**/build/
 
-# Python
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Android
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.hprof
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+
+# iOS / Xcode
+*.xcworkspace
+xcuserdata/
+DerivedData/
+*.ipa
+
+# Secrets & credentials (never commit)
+.env
+.env.*
+!.env.example
+*service-account*.json
+firebase-adminsdk-*.json
+
+# Firebase (download from console; keep *.example templates in repo)
+composeApp/google-services.json
+
+# Supabase
+# CLI local state (`supabase link`, branches)
+supabase/.temp/
+supabase/.branches/
+
+# Gradle daemon JVM pin (generated locally; breaks CI foojay downloads)
+gradle/gradle-daemon-jvm.properties
+
+# Cursor agent artifacts (local session output)
+.artifacts/
+
+# Python (scripts/)
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Firebase (download from console; never commit API keys)
-composeApp/google-services.json
-
-# Supabase CLI local link state (created by `supabase link`)
-supabase/.temp/

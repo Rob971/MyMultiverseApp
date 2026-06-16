@@ -90,6 +90,15 @@ The Gradle task `generateSupabaseSecrets` embeds both values into `commonMain` a
 
 Without a key, auth and sharing screens show a “not configured” state; local-only nutrition still works.
 
+**Local secrets (never commit)** — copy from the `*.example` templates; see `.gitignore` for the full list.
+
+| Local file | Template | Purpose |
+|------------|----------|---------|
+| `local.properties` | `local.properties.example` | Supabase URL + anon key (required for auth/sharing) |
+| `composeApp/google-services.json` | `composeApp/google-services.json.example` | Firebase Android config when you add the Google Services plugin |
+
+CI builds use GitHub Secrets `SUPABASE_URL` and `SUPABASE_ANON_KEY` instead of `local.properties`.
+
 ### 2. Apply database migrations
 
 SQL files live in `supabase/migrations/`. Apply them to your Supabase project (Dashboard SQL editor, Supabase CLI, or MCP):
@@ -146,11 +155,12 @@ GitHub Actions workflow: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-
 
 | Trigger | Jobs |
 |---------|------|
-| **Push** to `main`, `master`, or `feature/**` | Unit tests, instrumented tests, debug APK, iOS compile signal, Firebase App Distribution |
-| **Pull request** into `main` or `master` (opened / reopened) | Same jobs including Firebase; later commits run via feature-branch push |
-| **Manual dispatch** | Pick one job: `all`, `android-unit-tests`, `android-instrumented-tests`, `android-apk`, `firebase-release`, `ios-compatibility` |
+| **Push** to `feature/**` | **Fast:** unit tests + APK (~6 min target). Firebase distribute. Instrumented + iOS skipped. |
+| **Push** to `main` / `master` | Fast + instrumented UI tests + iOS compile + Firebase |
+| **Pull request** into `main` / `master` | Fast + instrumented + iOS + Firebase (merge gate) |
+| **Manual dispatch** | Pick one job: `all`, `android-unit-tests`, `android-instrumented-tests`, `android-apk` (APK only), `firebase-release`, `ios-compatibility` |
 
-**Manual dispatch:** run any single job from Actions → KMP CI → Run workflow. For `firebase-release` only, the workflow reuses the APK from the latest successful pipeline on that branch (unit + instrumented + APK must have passed). Optionally set `source_run_id` to a specific run.
+**Manual dispatch:** run any single job from Actions → KMP CI → Run workflow. For `firebase-release` only, the workflow reuses the APK from the latest successful pipeline on that branch (unit + instrumented must have passed). Optionally set `source_run_id` to a specific run.
 
 Firebase App Distribution runs on every **push**, **pull request** (opened / reopened), manual `all`, and manual `firebase-release`.
 

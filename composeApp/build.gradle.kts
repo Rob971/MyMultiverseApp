@@ -1,4 +1,5 @@
 import java.util.Properties
+import org.gradle.api.tasks.PathSensitivity
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -26,19 +27,17 @@ val appVersionName = if (appVersionCandidate > 0) {
 }
 
 val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
-    val localPropsFile = rootProject.file("local.properties")
+    val localPropsFile = rootProject.layout.projectDirectory.file("local.properties")
     val outputDir = layout.buildDirectory.dir("generated/supabase/kotlin/app/mymultiverse/kmp/data/supabase")
 
-    inputs.property(
-        "localPropertiesState",
-        if (localPropsFile.exists()) localPropsFile.readText() else "<missing>",
-    )
+    inputs.file(localPropsFile).optional().withPathSensitivity(PathSensitivity.NONE)
     outputs.dir(outputDir)
 
     doLast {
         val properties = Properties().apply {
-            if (localPropsFile.exists()) {
-                localPropsFile.inputStream().use { load(it) }
+            val file = localPropsFile.asFile
+            if (file.exists()) {
+                file.inputStream().use { load(it) }
             }
         }
         val supabaseUrl = properties.getProperty("supabase.url", defaultSupabaseUrl)

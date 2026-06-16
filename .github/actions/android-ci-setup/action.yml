@@ -1,0 +1,31 @@
+name: Android CI setup
+description: Shared Gradle bootstrap for Android workflow jobs
+
+inputs:
+  supabase-url:
+    description: Supabase project URL (optional; skips local.properties when empty)
+    required: false
+    default: ""
+  supabase-anon-key:
+    description: Supabase anon key (optional)
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Ensure Gradle wrapper is executable
+      shell: bash
+      run: chmod +x ./gradlew
+
+    - name: Create local.properties for CI build
+      if: inputs.supabase-url != '' && inputs.supabase-anon-key != ''
+      shell: bash
+      env:
+        SUPABASE_URL: ${{ inputs.supabase-url }}
+        SUPABASE_ANON_KEY: ${{ inputs.supabase-anon-key }}
+      run: |
+        {
+          echo "supabase.url=$SUPABASE_URL"
+          echo "supabase.anonKey=$SUPABASE_ANON_KEY"
+        } >> local.properties

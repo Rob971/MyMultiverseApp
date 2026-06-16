@@ -8,19 +8,21 @@ alwaysApply: false
 
 ## Workflow (`.github/workflows/kmp-ci.yml`)
 
-- **Push** to `main` / `master` / `feature/**` and **pull request** (`opened` / `reopened`): full pipeline (all jobs).
+- **Push** to `main` / `master` / `feature/**` and **pull request** (`opened` / `reopened`): tiered pipeline (see below).
+- **Fast lane (`Android Fast CI`, target &lt;6 min on `feature/**` push):** one Gradle invocation — unit tests + `assembleDebug` + APK artifact. This is the primary required check on feature pushes.
+- **Merge gate (`Android Instrumented UI Tests` + iOS signal):** runs on pull requests and `main` / `master` pushes, plus manual `all` / `android-instrumented-tests`. Skipped on `feature/**` pushes to keep feedback fast; emulator UI coverage still runs before merge.
 - **Manual dispatch** (`workflow_dispatch`): pick one job — `all`, `android-unit-tests`, `android-instrumented-tests`, `android-apk`, `firebase-release`, `ios-compatibility`.
-- **`firebase-release` only**: skips rebuild; requires a prior successful run on the same branch where unit tests, instrumented tests, and APK all passed. Optionally pass `source_run_id`; otherwise the latest qualifying run is used.
-- **Firebase distribute** (push, PR, `all`, or `firebase-release`): requires secrets (`FIREBASE_SERVICE_ACCOUNT_JSON`, testers/groups). In full runs, `firebase-release` waits for the three Android jobs in the same workflow.
-- **Supabase in CI**: `android-apk` and `android-instrumented-tests` write `local.properties` from `SUPABASE_URL` and `SUPABASE_ANON_KEY` before Gradle (not committed; `generateSupabaseSecrets` embeds them at compile time).
+- **`firebase-release` only**: skips rebuild; requires a prior successful run on the same branch where unit tests and instrumented tests (with APK artifact) passed. Optionally pass `source_run_id`; otherwise the latest qualifying run is used.
+- **Firebase distribute** (push, PR, `all`, or `firebase-release`): requires secrets (`FIREBASE_SERVICE_ACCOUNT_JSON`, testers/groups). In full runs, `firebase-release` waits for unit + instrumented jobs in the same workflow.
+- **Supabase in CI**: instrumented tests and manual `android-apk` write `local.properties` from `SUPABASE_URL` and `SUPABASE_ANON_KEY` before Gradle. Push/PR pipelines upload the debug APK from the instrumented job (no duplicate APK build).
 - **Version bump** (`bump-version` job, push only): after a successful full pipeline, bumps `gradle/app-version.properties` and iOS `Info.plist`. Feature branches get a **candidate** increment (`1.0.0-rc.1`, `1.0.0-rc.2`, …). `main` / `master` get an **LTS patch** bump (`1.0.0` → `1.0.1`, candidate reset). Commits use `[skip ci]` to avoid loops.
 
 ## Change guidelines
 
 - Do not break default push jobs when adding steps; use `if:` conditions consistent with existing `target` inputs.
-- Never commit secrets, `google-services.json` keys, or service account JSON; use GitHub Secrets.
+- Never commit secrets, `google-services.json` keys, or service account JSON; use GitHub Secrets. Keep templates (`*.example`) in repo; real files are listed in `.gitignore`.
 - Keep Gradle cache (`gradle/actions/setup-gradle`) and JDK 17 aligned with project.
-- **CI speed (safe):** `org.gradle.caching` / `parallel` in `gradle.properties`; AVD snapshot cache on instrumented job; `cache-read-only` on feature-branch Gradle cache writes; full `-no-window` emulator flags when overriding `emulator-options`.
+- **CI speed (safe):** `org.gradle.caching` / `parallel`; merged unit+APK job; tiered instrumented/iOS on merge only; AVD snapshot cache; shallow checkouts; Gradle cache via `setup-gradle` only; pinned `firebase-tools` with npm cache.
 - **Not used (QA or prior CI breakage):** partial `emulator-options` without `-no-window`, instrumented test sharding with only six tests, skipping Android/iOS jobs from path filters on feature pushes.
 
 ## Firebase App Distribution
