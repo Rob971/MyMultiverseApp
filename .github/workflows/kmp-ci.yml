@@ -74,7 +74,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
-          gradle-home-cache-cleanup: on-success
+          gradle-home-cache-cleanup: true
 
       - name: Android CI setup
         uses: ./.github/actions/android-ci-setup
@@ -136,7 +136,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
-          gradle-home-cache-cleanup: on-success
+          gradle-home-cache-cleanup: true
 
       - name: Android CI setup
         uses: ./.github/actions/android-ci-setup
@@ -229,7 +229,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
-          gradle-home-cache-cleanup: on-success
+          gradle-home-cache-cleanup: true
 
       - name: Android CI setup
         uses: ./.github/actions/android-ci-setup
@@ -475,7 +475,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
-          gradle-home-cache-cleanup: on-success
+          gradle-home-cache-cleanup: true
 
       - name: Android CI setup
         uses: ./.github/actions/android-ci-setup
