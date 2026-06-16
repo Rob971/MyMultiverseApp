@@ -43,6 +43,16 @@ class NutritionSyncOutbox(
         persist(peekAll().filterNot { it == item })
     }
 
+    fun removeFor(spaceId: String, weekKey: String, dataKind: String) {
+        persist(
+            peekAll().filterNot {
+                it.spaceId == spaceId &&
+                    it.weekKey == weekKey &&
+                    it.dataKind == dataKind
+            },
+        )
+    }
+
     fun clear() {
         settings.remove(NutritionStorageKeys.SYNC_OUTBOX)
     }

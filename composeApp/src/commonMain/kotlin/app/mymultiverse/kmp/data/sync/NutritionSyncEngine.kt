@@ -54,6 +54,7 @@ class NutritionSyncEngine(
         }
         try {
             api.upsert(spaceId, weekKey, dataKind, payload)
+            outbox.removeFor(spaceId, weekKey, dataKind)
             refreshStatus(spaceId, weekKey)
         } catch (_: Exception) {
             outbox.enqueue(

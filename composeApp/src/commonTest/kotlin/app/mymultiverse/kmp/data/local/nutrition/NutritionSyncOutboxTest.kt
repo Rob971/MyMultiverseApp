@@ -30,4 +30,19 @@ class NutritionSyncOutboxTest {
 
         assertTrue(outbox.peekAll().isEmpty())
     }
+
+    @Test
+    fun removeFor_clearsOnlyMatchingSpaceWeekAndKind() {
+        val outbox = NutritionSyncOutbox(MapSettings())
+        outbox.enqueue(PendingNutritionPush("s1", "2025-W24", "grocery", "old", 1L))
+        outbox.enqueue(PendingNutritionPush("s1", "2025-W24", "meal_plan", "plan", 2L))
+        outbox.enqueue(PendingNutritionPush("s2", "2025-W24", "grocery", "other", 3L))
+
+        outbox.removeFor("s1", "2025-W24", "grocery")
+
+        assertEquals(
+            listOf("plan", "other"),
+            outbox.peekAll().map { it.payload },
+        )
+    }
 }

@@ -51,6 +51,28 @@ class NutritionSyncEngineTest {
     }
 
     @Test
+    fun pushNowOrEnqueue_successClearsStalePendingForSameKind() = runTest {
+        val outbox = NutritionSyncOutbox(MapSettings())
+        outbox.enqueue(
+            PendingNutritionPush(
+                spaceId = "space-1",
+                weekKey = "2025-W24",
+                dataKind = "grocery",
+                payload = "stale",
+                enqueuedAtEpochMs = 1L,
+            ),
+        )
+        val remote = RecordingRemote()
+        val engine = NutritionSyncEngine(remote, outbox)
+
+        engine.pushNowOrEnqueue("space-1", "2025-W24", "grocery", "latest")
+
+        assertEquals(emptyList(), outbox.pendingFor("space-1", "2025-W24"))
+        assertEquals(listOf("latest"), remote.upserts.map { it.payload })
+        assertEquals(NutritionSyncStatus.Idle, engine.observeStatus().first())
+    }
+
+    @Test
     fun pullRemote_reportsRemoteUnavailableWhenFetchFails() = runTest {
         val engine = NutritionSyncEngine(FailingFetchRemote, NutritionSyncOutbox(MapSettings()))
         var applied = false
@@ -118,11 +140,19 @@ class NutritionSyncEngineTest {
 
     private class RecordingRemote : NutritionRemoteDataSource {
         var upsertCount = 0
+        val upserts = mutableListOf<PendingNutritionPush>()
 
         override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
 
         override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) {
             upsertCount++
+            upserts += PendingNutritionPush(
+                spaceId = spaceId,
+                weekKey = weekKey,
+                dataKind = dataKind,
+                payload = payload,
+                enqueuedAtEpochMs = 0L,
+            )
         }
     }
 
