@@ -12,6 +12,10 @@
     <string name="home_logistics_budget_title">Budget</string>
     <string name="home_logistics_budget_description">Spese, risparmio e finanza 'e famiglia.</string>
     <string name="nutrition_hub_title">Nutrizione</string>
+    <string name="nutrition_entry_loading">Apertura d''o spazio nutrizione d''a famiglia...</string>
+    <string name="nutrition_entry_error_generic">Nun se pò aprire a nutrizione. Próva arreto.</string>
+    <string name="nutrition_entry_error_not_configured">Supabase nun è configurato.</string>
+    <string name="nutrition_entry_retry">Próva arreto</string>
     <string name="nutrition_hub_subtitle">Spesa, pasti e consigli p' 'a famiglia.</string>
     <string name="nutrition_hub_sections_title">Chesta semmana</string>
     <string name="nutrition_meal_plan_section_today">Oggi</string>

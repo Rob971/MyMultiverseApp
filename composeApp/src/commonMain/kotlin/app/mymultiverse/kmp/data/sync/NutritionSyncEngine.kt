@@ -2,6 +2,7 @@ package app.mymultiverse.kmp.data.sync
 
 import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.kmp.data.local.nutrition.PendingNutritionPush
+import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.kmp.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
@@ -17,6 +18,7 @@ import kotlinx.datetime.Instant
 class NutritionSyncEngine(
     private val remote: NutritionRemoteDataSource?,
     private val outbox: NutritionSyncOutbox,
+    private val logger: AppLogger,
 ) {
     private val _status = MutableStateFlow<NutritionSyncStatus>(NutritionSyncStatus.Idle)
 
@@ -34,7 +36,13 @@ class NutritionSyncEngine(
         _status.value = NutritionSyncStatus.Syncing
         val rows = try {
             api.fetchWeek(spaceId, weekKey)
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            logger.recordError(
+                tag = TAG,
+                message = "pull_remote_failed",
+                throwable = error,
+                context = syncContext(spaceId, weekKey, "pull"),
+            )
             markRemoteFailure(spaceId, weekKey)
             return
         }
@@ -56,7 +64,13 @@ class NutritionSyncEngine(
             api.upsert(spaceId, weekKey, dataKind, payload)
             outbox.removeFor(spaceId, weekKey, dataKind)
             refreshStatus(spaceId, weekKey)
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            logger.recordError(
+                tag = TAG,
+                message = "push_failed_enqueue",
+                throwable = error,
+                context = syncContext(spaceId, weekKey, "push", dataKind),
+            )
             outbox.enqueue(
                 PendingNutritionPush(
                     spaceId = spaceId,
@@ -85,7 +99,13 @@ class NutritionSyncEngine(
             try {
                 api.upsert(item.spaceId, item.weekKey, item.dataKind, item.payload)
                 outbox.remove(item)
-            } catch (_: Exception) {
+            } catch (error: Exception) {
+                logger.recordError(
+                    tag = TAG,
+                    message = "flush_pending_failed",
+                    throwable = error,
+                    context = syncContext(spaceId, weekKey, "flush", item.dataKind),
+                )
                 refreshStatus(spaceId, weekKey)
                 return
             }
@@ -132,4 +152,20 @@ class NutritionSyncEngine(
         updatedAt
             ?.let { raw -> runCatching { Instant.parse(raw).toEpochMilliseconds() }.getOrNull() }
             ?: Long.MIN_VALUE
+
+    private fun syncContext(
+        spaceId: String,
+        weekKey: String,
+        operation: String,
+        dataKind: String? = null,
+    ): Map<String, String> = buildMap {
+        put("operation", operation)
+        put("space_id", spaceId)
+        put("week_key", weekKey)
+        dataKind?.let { put("data_kind", it) }
+    }
+
+    private companion object {
+        const val TAG = "NutritionSyncEngine"
+    }
 }

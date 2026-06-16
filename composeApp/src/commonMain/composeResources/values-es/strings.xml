@@ -12,6 +12,10 @@
     <string name="home_logistics_budget_title">Presupuesto</string>
     <string name="home_logistics_budget_description">Gastos, ahorro y finanzas familiares compartidas.</string>
     <string name="nutrition_hub_title">Nutrición</string>
+    <string name="nutrition_entry_loading">Abriendo el espacio de nutrición del hogar...</string>
+    <string name="nutrition_entry_error_generic">No se pudo abrir nutrición. Inténtalo de nuevo.</string>
+    <string name="nutrition_entry_error_not_configured">Supabase no está configurado en esta build.</string>
+    <string name="nutrition_entry_retry">Reintentar</string>
     <string name="nutrition_hub_subtitle">Compras, comidas y consejos adaptados para la familia.</string>
     <string name="nutrition_hub_sections_title">Esta semana</string>
     <string name="nutrition_meal_plan_section_today">Hoy</string>

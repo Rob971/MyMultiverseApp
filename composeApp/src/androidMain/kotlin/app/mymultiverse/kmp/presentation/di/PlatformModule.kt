@@ -1,8 +1,11 @@
 package app.mymultiverse.kmp.presentation.di
 
 import android.content.Context
+import app.mymultiverse.kmp.data.observability.FirebaseCrashReporter
+import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
 import app.mymultiverse.kmp.domain.manager.AndroidLanguageManager
 import app.mymultiverse.kmp.domain.manager.LanguageManager
+import app.mymultiverse.kmp.domain.observability.CrashReporter
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
 import org.koin.android.ext.koin.androidContext
@@ -15,4 +18,12 @@ actual fun platformModule(): Module = module {
         SharedPreferencesSettings(context.getSharedPreferences("app_settings", Context.MODE_PRIVATE))
     }
     single<LanguageManager> { AndroidLanguageManager(androidContext(), get()) }
+    single<CrashReporter> {
+        val context = androidContext()
+        if (FirebaseCrashReporter.isAvailable(context)) {
+            FirebaseCrashReporter()
+        } else {
+            NoOpCrashReporter()
+        }
+    }
 }

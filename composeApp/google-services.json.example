@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "YOUR_PROJECT_NUMBER",
-    "project_id": "YOUR_PROJECT_ID",
-    "storage_bucket": "YOUR_PROJECT_ID.firebasestorage.app"
+    "project_number": "37917280954",
+    "project_id": "mymultiverseapp",
+    "storage_bucket": "mymultiverseapp.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "YOUR_MOBILE_SDK_APP_ID",
+        "mobilesdk_app_id": "1:37917280954:android:f25a8ccc787de9f3f91083",
         "android_client_info": {
           "package_name": "app.mymultiverse.kmp"
         }

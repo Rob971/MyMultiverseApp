@@ -1,13 +1,15 @@
 package app.mymultiverse.kmp.presentation.di
 
 import app.mymultiverse.kmp.data.supabase.SupabaseRuntimeFlags
+import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
+import app.mymultiverse.kmp.domain.observability.CrashReporter
 import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.model.auth.AuthUser
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
-import app.mymultiverse.kmp.domain.repository.SharingSpaceRepository
+import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
@@ -48,6 +50,7 @@ class AppModuleKoinTest : KoinTest {
     private val testPlatformModule = module {
         single<Settings> { MapSettings() }
         single<LanguageManager> { FakeLanguageManager() }
+        single<CrashReporter> { NoOpCrashReporter() }
         single<AuthRepository> {
             FakeAuthRepository(
                 initialState = AuthState.Authenticated(
@@ -59,7 +62,7 @@ class AppModuleKoinTest : KoinTest {
                 ),
             )
         }
-        single<SharingSpaceRepository> { FakeSharingSpaceRepository() }
+        single<HouseholdRepository> { FakeHouseholdRepository() }
         single<SpaceCollaborationRepository> { FakeSpaceCollaborationRepository() }
     }
 

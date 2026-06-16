@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
+import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
@@ -28,7 +29,16 @@ import org.koin.compose.koinInject
 fun App() {
     AppTheme {
         val authRepository = koinInject<AuthRepository>()
+        val logger = koinInject<AppLogger>()
         val authState by authRepository.authState.collectAsState(initial = AuthState.Loading)
+
+        LaunchedEffect(Unit) {
+            logger.startSession()
+        }
+
+        LaunchedEffect(authState) {
+            logger.onAuthStateChanged(authState)
+        }
 
         LaunchedEffect(authRepository) {
             authRepository.restoreSession()

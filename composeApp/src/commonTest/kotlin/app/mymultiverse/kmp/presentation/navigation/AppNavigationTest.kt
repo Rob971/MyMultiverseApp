@@ -10,17 +10,16 @@ import kotlin.test.assertIs
 class AppNavigationTest {
 
     @Test
-    fun openNutritionFromHome_targetsSpacesByDefault() {
+    fun openNutritionFromHome_targetsHubByDefault() {
         val fromHome = AppRoute.Nutrition()
 
-        assertEquals(NutritionSection.Spaces, fromHome.section)
+        assertEquals(NutritionSection.Hub, fromHome.section)
         assertEquals(null, fromHome.space)
     }
 
     @Test
     fun nutritionSections_areDistinctDestinations() {
         val sections = listOf(
-            NutritionSection.Spaces,
             NutritionSection.Hub,
             NutritionSection.Grocery,
             NutritionSection.MealPlan,

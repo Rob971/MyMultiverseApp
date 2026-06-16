@@ -2,6 +2,7 @@ package app.mymultiverse.kmp.data.sync
 
 import app.mymultiverse.kmp.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
+import app.mymultiverse.kmp.data.observability.TestObservability
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.kmp.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.kmp.domain.model.nutrition.DayMeals
@@ -136,7 +137,7 @@ class OfflineFirstNutritionRepositoryTest {
     ): OfflineFirstNutritionRepository =
         OfflineFirstNutritionRepository(
             localStore = store,
-            syncEngine = NutritionSyncEngine(remote, outbox),
+            syncEngine = NutritionSyncEngine(remote, outbox, TestObservability.logger),
             spaceId = spaceId,
             weekKey = weekKey,
             remoteEnabled = remoteEnabled,

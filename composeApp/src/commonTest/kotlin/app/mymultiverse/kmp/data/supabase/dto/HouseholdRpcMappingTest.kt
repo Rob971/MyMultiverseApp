@@ -1,0 +1,63 @@
+package app.mymultiverse.kmp.data.supabase.dto
+
+import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
+import kotlinx.serialization.json.Json
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+
+class HouseholdRpcMappingTest {
+
+    private val json = Json { ignoreUnknownKeys = true }
+
+    @Test
+    fun decodesEnsureHouseholdRpcPayload() {
+        val row = json.decodeFromString<HouseholdRpcRow>(
+            """
+            {
+              "space_id": "11111111-1111-1111-1111-111111111111",
+              "space_name": "Rossi home",
+              "owner_id": "22222222-2222-2222-2222-222222222222",
+              "owner_display_name": "Roberto",
+              "features": ["grocery", "meal_plan", "ai_advice"]
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals("11111111-1111-1111-1111-111111111111", row.spaceId)
+        assertEquals("Rossi home", row.spaceName)
+        assertEquals("Roberto", row.ownerDisplayName)
+        assertEquals(
+            setOf(
+                NutritionSharingFeature.Grocery,
+                NutritionSharingFeature.MealPlan,
+                NutritionSharingFeature.AiAdvice,
+            ),
+            row.features.mapNotNull { it.toNutritionFeature() }.toSet(),
+        )
+    }
+
+    @Test
+    fun decodesEmptyFeaturesAsEmptyList() {
+        val row = json.decodeFromString<HouseholdRpcRow>(
+            """
+            {
+              "space_id": "space-1",
+              "space_name": "Home",
+              "owner_id": "owner-1",
+              "features": []
+            }
+            """.trimIndent(),
+        )
+
+        assertTrue(row.features.isEmpty())
+    }
+
+    private fun String.toNutritionFeature(): NutritionSharingFeature? =
+        when (this) {
+            "grocery" -> NutritionSharingFeature.Grocery
+            "meal_plan" -> NutritionSharingFeature.MealPlan
+            "ai_advice" -> NutritionSharingFeature.AiAdvice
+            else -> null
+        }
+}

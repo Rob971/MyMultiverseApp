@@ -2,6 +2,7 @@ package app.mymultiverse.kmp.data.sync
 
 import app.mymultiverse.kmp.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
+import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
@@ -63,11 +64,12 @@ class NutritionSessionCoordinatorImpl(
             remoteApi: NutritionRemoteDataSource?,
             outbox: NutritionSyncOutbox,
             realtimeSync: NutritionSpaceRealtimeSync?,
+            logger: AppLogger,
         ): NutritionSessionCoordinatorImpl =
             NutritionSessionCoordinatorImpl(
                 settings = settings,
                 remoteApi = remoteApi,
-                syncEngine = NutritionSyncEngine(remoteApi, outbox),
+                syncEngine = NutritionSyncEngine(remoteApi, outbox, logger),
                 realtimeSync = realtimeSync,
             )
     }

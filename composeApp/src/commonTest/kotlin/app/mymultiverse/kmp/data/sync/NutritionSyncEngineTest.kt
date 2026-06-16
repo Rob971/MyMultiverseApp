@@ -2,6 +2,7 @@ package app.mymultiverse.kmp.data.sync
 
 import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.kmp.data.local.nutrition.PendingNutritionPush
+import app.mymultiverse.kmp.data.observability.TestObservability
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.kmp.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
@@ -18,7 +19,7 @@ class NutritionSyncEngineTest {
     @Test
     fun pushNowOrEnqueue_queuesWhenRemoteFails() = runTest {
         val outbox = NutritionSyncOutbox(MapSettings())
-        val engine = NutritionSyncEngine(FailingRemote, outbox)
+        val engine = NutritionSyncEngine(FailingRemote, outbox, TestObservability.logger)
 
         engine.pushNowOrEnqueue("space-1", "2025-W24", "grocery", "payload")
 
@@ -41,7 +42,7 @@ class NutritionSyncEngineTest {
             ),
         )
         val remote = RecordingRemote()
-        val engine = NutritionSyncEngine(remote, outbox)
+        val engine = NutritionSyncEngine(remote, outbox, TestObservability.logger)
 
         engine.flushPending("space-1", "2025-W24")
 
@@ -63,7 +64,7 @@ class NutritionSyncEngineTest {
             ),
         )
         val remote = RecordingRemote()
-        val engine = NutritionSyncEngine(remote, outbox)
+        val engine = NutritionSyncEngine(remote, outbox, TestObservability.logger)
 
         engine.pushNowOrEnqueue("space-1", "2025-W24", "grocery", "latest")
 
@@ -74,7 +75,7 @@ class NutritionSyncEngineTest {
 
     @Test
     fun pullRemote_reportsRemoteUnavailableWhenFetchFails() = runTest {
-        val engine = NutritionSyncEngine(FailingFetchRemote, NutritionSyncOutbox(MapSettings()))
+        val engine = NutritionSyncEngine(FailingFetchRemote, NutritionSyncOutbox(MapSettings()), TestObservability.logger)
         var applied = false
 
         engine.pullRemote("space-1", "2025-W24") {
@@ -112,7 +113,7 @@ class NutritionSyncEngineTest {
                 ),
             ),
         )
-        val engine = NutritionSyncEngine(remote, NutritionSyncOutbox(MapSettings()))
+        val engine = NutritionSyncEngine(remote, NutritionSyncOutbox(MapSettings()), TestObservability.logger)
         val applied = mutableListOf<NutritionWeekDataRow>()
 
         engine.pullRemote("space-1", "2025-W24") { row ->

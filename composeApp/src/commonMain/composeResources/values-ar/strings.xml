@@ -12,6 +12,10 @@
     <string name="home_logistics_budget_title">الميزانية</string>
     <string name="home_logistics_budget_description">الإنفاق والادخار والمالية العائلية المشتركة.</string>
     <string name="nutrition_hub_title">التغذية</string>
+    <string name="nutrition_entry_loading">جارٍ فتح مساحة التغذية للأسرة...</string>
+    <string name="nutrition_entry_error_generic">تعذر فتح التغذية. حاول مرة أخرى.</string>
+    <string name="nutrition_entry_error_not_configured">لم يتم إعداد Supabase في هذا الإصدار.</string>
+    <string name="nutrition_entry_retry">حاول مرة أخرى</string>
     <string name="nutrition_hub_subtitle">مشتريات أسبوعية ووجبات ونصائح مخصصة للعائلة.</string>
     <string name="nutrition_hub_sections_title">هذا الأسبوع</string>
     <string name="nutrition_meal_plan_section_today">اليوم</string>
