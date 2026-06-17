@@ -11,12 +11,21 @@ internal object HouseholdRpcDecoder {
     }
 
     fun decode(result: PostgrestResult): HouseholdRpcRow =
-        runCatching { result.decodeSingle<HouseholdRpcRow>() }
-            .recoverCatching { result.decodeList<HouseholdRpcRow>().single() }
-            .recoverCatching { json.decodeFromString<HouseholdRpcRow>(result.data) }
+        decodePayload(result, "ensure_household_decode_failed")
+
+    fun decodeMembership(result: PostgrestResult): HouseholdMembershipRpcRow =
+        decodePayload(result, "household_membership_decode_failed")
+
+    private inline fun <reified T> decodePayload(
+        result: PostgrestResult,
+        failureLabel: String,
+    ): T =
+        runCatching { result.decodeSingle<T>() }
+            .recoverCatching { result.decodeList<T>().single() }
+            .recoverCatching { json.decodeFromString<T>(result.data) }
             .getOrElse { error ->
                 throw IllegalStateException(
-                    "ensure_household_decode_failed: ${error.message}",
+                    "$failureLabel: ${error.message}",
                     error,
                 )
             }

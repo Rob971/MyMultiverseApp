@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: Nutrition, Adventures, and Budget share one household (2+ members).
 
-version: 9
-updated: 2026-06-16
+version: 10
+updated: 2026-06-17
 
 summary: |
   Verify auth, household members on Home (shared across nutrition, adventures, budget),
@@ -51,14 +51,24 @@ summary: |
       - Banner supporting line greets you by name (e.g. Hello, Roberto).
       - Greeting persists while you stay signed in and navigate back to Home.
 
-  - id: nutrition-household-bootstrap
-    title: Open nutrition (single household)
+  - id: household-gate-onboarding
+    title: Household gate blocks modules until setup
     steps:
-      - From Home, open Nutrition on a fresh account (no household yet).
-      - Wait for the loading state to finish.
+      - Sign in with a new account that has no household and no pending invites.
+      - Observe the onboarding screen instead of the full Home module grid.
+      - Enter a household name and tap Create household.
+    expected:
+      - Full Home appears with Nutrition enabled after household is created.
+      - Adventures and Budget remain coming soon.
+
+  - id: nutrition-household-bootstrap
+    title: Open nutrition after household is active
+    steps:
+      - Complete household onboarding (create or accept invite).
+      - From Home, open Nutrition.
     expected:
       - Nutrition hub opens directly (no space picker).
-      - Household is auto-created on first access with grocery, meal plan, and AI advice enabled.
+      - Household must exist before Nutrition is reachable from Home.
 
   - id: home-household-members
     title: Invite household members from Home

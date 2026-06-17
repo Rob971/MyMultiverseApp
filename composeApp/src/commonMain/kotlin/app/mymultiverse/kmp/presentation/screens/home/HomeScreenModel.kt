@@ -4,6 +4,7 @@ import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.auth.resolvedDisplayName
 import app.mymultiverse.kmp.domain.model.sharing.Household
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
@@ -34,6 +35,11 @@ class HomeScreenModel(
 
     private val _household = MutableStateFlow<Household?>(null)
     val household: StateFlow<Household?> = _household.asStateFlow()
+
+    val hasActiveHousehold: StateFlow<Boolean> = householdRepository
+        .observeMembershipStatus()
+        .map { it is HouseholdMembershipStatus.Active }
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), false)
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
@@ -71,8 +77,14 @@ class HomeScreenModel(
 
     private fun refreshHouseholdInBackground() {
         scope.launch {
-            householdRepository.ensureHousehold()
-                .onSuccess { household -> _household.value = household }
+            householdRepository.refreshMembership()
+                .onSuccess { status ->
+                    if (status is HouseholdMembershipStatus.Active) {
+                        _household.value = status.household
+                    } else {
+                        _household.value = null
+                    }
+                }
         }
     }
 
@@ -93,8 +105,12 @@ class HomeScreenModel(
         scope.launch {
             collaborationRepository.acceptInvite(inviteId)
                 .onSuccess {
-                    householdRepository.ensureHousehold()
-                        .onSuccess { household -> _household.value = household }
+                    householdRepository.refreshMembership()
+                        .onSuccess { status ->
+                            if (status is HouseholdMembershipStatus.Active) {
+                                _household.value = status.household
+                            }
+                        }
                 }
         }
     }

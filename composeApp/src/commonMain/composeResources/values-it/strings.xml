@@ -9,6 +9,17 @@
     <string name="home_household_title">Famiglia</string>
     <string name="home_household_description">Invita persone a collaborare su nutrizione, avventure e budget.</string>
     <string name="home_household_description_named">Gestisci le persone di %1$s — condiviso tra nutrizione, avventure e budget.</string>
+    <string name="home_logistics_requires_household">Famiglia richiesta</string>
+    <string name="household_gate_title">Configura la tua famiglia</string>
+    <string name="household_gate_subtitle">Crea una famiglia o accetta un invito prima di usare Nutrizione, Avventure o Budget.</string>
+    <string name="household_gate_create_title">Crea una nuova famiglia</string>
+    <string name="household_gate_name_label">Nome della famiglia</string>
+    <string name="household_gate_create_button">Crea famiglia</string>
+    <string name="household_gate_loading">Verifica della famiglia...</string>
+    <string name="household_gate_error_generic">Impossibile caricare la famiglia. Riprova.</string>
+    <string name="household_gate_error_not_configured">Supabase non è configurato in questa build.</string>
+    <string name="household_gate_error_already_active">Appartieni già a una famiglia.</string>
+    <string name="household_gate_retry">Riprova</string>
     <string name="home_logistics_nutrition_description">Pasti, spesa e pianificazione settimanale per la famiglia.</string>
     <string name="home_logistics_adventures_title">Avventure</string>
     <string name="home_logistics_adventures_description">Viaggi, uscite ed esperienze che pianifichiamo insieme.</string>

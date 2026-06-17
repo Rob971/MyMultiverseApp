@@ -9,6 +9,17 @@
     <string name="home_household_title">Haushalt</string>
     <string name="home_household_description">Lade Personen ein, um gemeinsam Ernährung, Abenteuer und Budget zu planen.</string>
     <string name="home_household_description_named">Verwalte Personen in %1$s — geteilt für Ernährung, Abenteuer und Budget.</string>
+    <string name="home_logistics_requires_household">Haushalt erforderlich</string>
+    <string name="household_gate_title">Haushalt einrichten</string>
+    <string name="household_gate_subtitle">Erstelle einen Haushalt oder nimm eine Einladung an, bevor du Ernährung, Abenteuer oder Budget nutzt.</string>
+    <string name="household_gate_create_title">Neuen Haushalt erstellen</string>
+    <string name="household_gate_name_label">Haushaltsname</string>
+    <string name="household_gate_create_button">Haushalt erstellen</string>
+    <string name="household_gate_loading">Haushalt wird geprüft...</string>
+    <string name="household_gate_error_generic">Haushalt konnte nicht geladen werden. Bitte erneut versuchen.</string>
+    <string name="household_gate_error_not_configured">Supabase ist in diesem Build nicht konfiguriert.</string>
+    <string name="household_gate_error_already_active">Du gehörst bereits zu einem Haushalt.</string>
+    <string name="household_gate_retry">Erneut versuchen</string>
     <string name="home_logistics_nutrition_description">Mahlzeiten, Einkäufe und Wochenplanung für die Familie.</string>
     <string name="home_logistics_adventures_title">Abenteuer</string>
     <string name="home_logistics_adventures_description">Reisen, Ausflüge und Erlebnisse, die wir gemeinsam planen.</string>

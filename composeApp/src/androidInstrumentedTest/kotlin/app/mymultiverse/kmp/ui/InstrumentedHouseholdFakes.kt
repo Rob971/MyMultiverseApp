@@ -1,9 +1,9 @@
 package app.mymultiverse.kmp.ui
 
 import app.mymultiverse.kmp.domain.model.sharing.Household
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
-import app.mymultiverse.kmp.domain.repository.NutritionSpaceSelectionStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,30 +22,37 @@ class InstrumentedHouseholdRepository(
         ),
     ),
     private val ensureFailure: Throwable? = null,
+    private val refreshFailure: Throwable? = null,
 ) : HouseholdRepository {
     private val state = MutableStateFlow<Household?>(household)
+    private val membership = MutableStateFlow<HouseholdMembershipStatus>(
+        HouseholdMembershipStatus.Active(
+            app.mymultiverse.kmp.domain.model.sharing.HouseholdMembership(
+                household = household,
+                role = app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole.Owner,
+            ),
+        ),
+    )
     var ensureCalls = 0
+    var refreshCalls = 0
 
     override fun observeHousehold(): Flow<Household?> = state.asStateFlow()
+
+    override fun observeMembershipStatus(): Flow<HouseholdMembershipStatus> = membership.asStateFlow()
+
+    override suspend fun refreshMembership(): Result<HouseholdMembershipStatus> {
+        refreshCalls++
+        refreshFailure?.let { return Result.failure(it) }
+        return Result.success(membership.value)
+    }
+
+    override suspend fun createHousehold(name: String): Result<Household> =
+        Result.success(household.copy(name = name))
 
     override suspend fun ensureHousehold(): Result<Household> {
         ensureCalls++
         ensureFailure?.let { return Result.failure(it) }
         state.update { household }
         return Result.success(household)
-    }
-}
-
-class InstrumentedNutritionSpaceSelectionStore : NutritionSpaceSelectionStore {
-    val activeSpaceId = MutableStateFlow<String?>(null)
-
-    override fun observeActiveSpaceId(): Flow<String?> = activeSpaceId.asStateFlow()
-
-    override suspend fun setActiveSpaceId(spaceId: String) {
-        activeSpaceId.value = spaceId
-    }
-
-    override suspend fun clearActiveSpaceId() {
-        activeSpaceId.value = null
     }
 }

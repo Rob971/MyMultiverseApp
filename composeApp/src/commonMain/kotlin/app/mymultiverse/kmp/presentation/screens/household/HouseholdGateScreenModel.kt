@@ -1,0 +1,153 @@
+package app.mymultiverse.kmp.presentation.screens.household
+
+import app.mymultiverse.kmp.data.observability.AppLogger
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
+import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
+import app.mymultiverse.kmp.domain.repository.AuthRepository
+import app.mymultiverse.kmp.domain.repository.HouseholdRepository
+import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
+import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+
+data class HouseholdGateUiState(
+    val membershipStatus: HouseholdMembershipStatus = HouseholdMembershipStatus.Loading,
+    val householdNameInput: String = "",
+    val isCreating: Boolean = false,
+    val pendingInvites: List<SpaceInvite> = emptyList(),
+)
+
+class HouseholdGateScreenModel(
+    private val householdRepository: HouseholdRepository,
+    private val collaborationRepository: SpaceCollaborationRepository,
+    private val authRepository: AuthRepository,
+    private val sessionCoordinator: NutritionSessionCoordinator,
+    private val logger: AppLogger,
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+) {
+    private val _uiState = MutableStateFlow(HouseholdGateUiState())
+    val uiState: StateFlow<HouseholdGateUiState> = _uiState.asStateFlow()
+
+    val pendingInvites: StateFlow<List<SpaceInvite>> = collaborationRepository
+        .observePendingInvites()
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    init {
+        scope.launch {
+            pendingInvites.collect { invites ->
+                _uiState.value = _uiState.value.copy(pendingInvites = invites)
+            }
+        }
+        refreshMembership()
+    }
+
+    fun refreshMembership() {
+        scope.launch {
+            _uiState.value = _uiState.value.copy(
+                membershipStatus = HouseholdMembershipStatus.Loading,
+                isCreating = false,
+            )
+            runCatching { collaborationRepository.refreshPendingInvites() }
+            householdRepository.refreshMembership()
+                .onSuccess { status ->
+                    _uiState.value = _uiState.value.copy(membershipStatus = status)
+                }
+                .onFailure { throwable ->
+                    logger.recordError(
+                        tag = "HouseholdGate",
+                        message = "refresh_membership_failed: ${throwable.message}",
+                        throwable = throwable,
+                    )
+                    _uiState.value = _uiState.value.copy(
+                        membershipStatus = HouseholdMembershipStatus.Error(mapFailure(throwable)),
+                    )
+                }
+        }
+    }
+
+    fun onHouseholdNameChange(name: String) {
+        _uiState.value = _uiState.value.copy(householdNameInput = name)
+    }
+
+    fun createHousehold() {
+        val name = _uiState.value.householdNameInput.trim()
+        if (name.isEmpty() || _uiState.value.isCreating) return
+
+        scope.launch {
+            _uiState.value = _uiState.value.copy(isCreating = true)
+            householdRepository.createHousehold(name)
+                .onSuccess {
+                    householdRepository.refreshMembership()
+                        .onSuccess { status ->
+                            _uiState.value = _uiState.value.copy(
+                                membershipStatus = status,
+                                isCreating = false,
+                            )
+                        }
+                        .onFailure { throwable ->
+                            _uiState.value = _uiState.value.copy(
+                                membershipStatus = HouseholdMembershipStatus.Error(mapFailure(throwable)),
+                                isCreating = false,
+                            )
+                        }
+                }
+                .onFailure { throwable ->
+                    logger.recordError(
+                        tag = "HouseholdGate",
+                        message = "create_household_failed: ${throwable.message}",
+                        throwable = throwable,
+                    )
+                    _uiState.value = _uiState.value.copy(
+                        membershipStatus = HouseholdMembershipStatus.Error(mapFailure(throwable)),
+                        isCreating = false,
+                    )
+                }
+        }
+    }
+
+    fun acceptInvite(inviteId: String) {
+        scope.launch {
+            collaborationRepository.acceptInvite(inviteId)
+                .onSuccess { refreshMembership() }
+                .onFailure { throwable ->
+                    logger.recordError(
+                        tag = "HouseholdGate",
+                        message = "accept_invite_failed: ${throwable.message}",
+                        throwable = throwable,
+                    )
+                    _uiState.value = _uiState.value.copy(
+                        membershipStatus = HouseholdMembershipStatus.Error(mapFailure(throwable)),
+                    )
+                }
+        }
+    }
+
+    fun declineInvite(inviteId: String) {
+        scope.launch {
+            collaborationRepository.declineInvite(inviteId)
+        }
+    }
+
+    fun signOut() {
+        scope.launch {
+            sessionCoordinator.deactivate()
+            authRepository.signOut()
+        }
+    }
+
+    private fun mapFailure(throwable: Throwable): HouseholdGateError =
+        when (throwable.message) {
+            "supabase_not_configured" -> HouseholdGateError.NotConfigured
+            "household_already_active" -> HouseholdGateError.AlreadyActive
+            "household_required" -> HouseholdGateError.HouseholdRequired
+            else -> HouseholdGateError.Generic
+        }
+}

@@ -20,6 +20,9 @@ import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.navigation.rememberAppNavigator
 import app.mymultiverse.kmp.presentation.screens.auth.LoginScreen
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreen
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
+import app.mymultiverse.kmp.presentation.screens.household.HouseholdGateScreen
+import app.mymultiverse.kmp.presentation.screens.household.HouseholdGateScreenModel
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersFlow
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionFlow
 import app.mymultiverse.kmp.presentation.theme.AppTheme
@@ -75,6 +78,18 @@ fun App() {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun AuthenticatedApp() {
+    val gateScreenModel = koinInject<HouseholdGateScreenModel>()
+    val gateUiState by gateScreenModel.uiState.collectAsState()
+
+    when (gateUiState.membershipStatus) {
+        is HouseholdMembershipStatus.Active -> AuthenticatedMainApp()
+        else -> HouseholdGateScreen(screenModel = gateScreenModel)
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun AuthenticatedMainApp() {
     val navigator = rememberAppNavigator()
     val route = navigator.current
 

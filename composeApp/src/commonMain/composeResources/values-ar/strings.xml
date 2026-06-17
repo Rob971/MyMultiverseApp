@@ -9,6 +9,17 @@
     <string name="home_household_title">الأسرة</string>
     <string name="home_household_description">ادعُ أشخاصًا للتعاون في التغذية والمغامرات والميزانية.</string>
     <string name="home_household_description_named">إدارة الأشخاص في %1$s — مشترك عبر التغذية والمغامرات والميزانية.</string>
+    <string name="home_logistics_requires_household">الأسرة مطلوبة</string>
+    <string name="household_gate_title">إعداد أسرتك</string>
+    <string name="household_gate_subtitle">أنشئ أسرة أو اقبل دعوة قبل استخدام التغذية أو المغامرات أو الميزانية.</string>
+    <string name="household_gate_create_title">إنشاء أسرة جديدة</string>
+    <string name="household_gate_name_label">اسم الأسرة</string>
+    <string name="household_gate_create_button">إنشاء الأسرة</string>
+    <string name="household_gate_loading">جارٍ التحقق من أسرتك...</string>
+    <string name="household_gate_error_generic">تعذر تحميل أسرتك. حاول مرة أخرى.</string>
+    <string name="household_gate_error_not_configured">لم يتم تكوين Supabase في هذا الإصدار.</string>
+    <string name="household_gate_error_already_active">أنت بالفعل ضمن أسرة.</string>
+    <string name="household_gate_retry">حاول مرة أخرى</string>
     <string name="home_logistics_nutrition_description">الوجبات والتسوق والتخطيط الأسبوعي للعائلة.</string>
     <string name="home_logistics_adventures_title">المغامرات</string>
     <string name="home_logistics_adventures_description">الرحلات والخروج والتجارب التي نخطط لها معًا.</string>

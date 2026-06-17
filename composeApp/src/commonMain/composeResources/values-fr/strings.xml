@@ -9,6 +9,17 @@
     <string name="home_household_title">Foyer</string>
     <string name="home_household_description">Invitez des personnes à collaborer sur la nutrition, les aventures et le budget.</string>
     <string name="home_household_description_named">Gérez les personnes de %1$s — partagé entre nutrition, aventures et budget.</string>
+    <string name="home_logistics_requires_household">Foyer requis</string>
+    <string name="household_gate_title">Configurez votre foyer</string>
+    <string name="household_gate_subtitle">Créez un foyer ou acceptez une invitation avant d'utiliser Nutrition, Aventures ou Budget.</string>
+    <string name="household_gate_create_title">Créer un nouveau foyer</string>
+    <string name="household_gate_name_label">Nom du foyer</string>
+    <string name="household_gate_create_button">Créer le foyer</string>
+    <string name="household_gate_loading">Vérification de votre foyer...</string>
+    <string name="household_gate_error_generic">Impossible de charger votre foyer. Réessayez.</string>
+    <string name="household_gate_error_not_configured">Supabase n'est pas configuré sur cette version.</string>
+    <string name="household_gate_error_already_active">Vous appartenez déjà à un foyer.</string>
+    <string name="household_gate_retry">Réessayer</string>
     <string name="home_logistics_nutrition_description">Repas, courses et planification hebdomadaire pour la famille.</string>
     <string name="home_logistics_adventures_title">Aventures</string>
     <string name="home_logistics_adventures_description">Voyages, sorties et expériences que nous planifions ensemble.</string>

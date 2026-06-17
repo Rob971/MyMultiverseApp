@@ -9,6 +9,17 @@
     <string name="home_household_title">Famiglia</string>
     <string name="home_household_description">Invita a gente pe' collaborà ncopp'a nutrizione, avventure e budget.</string>
     <string name="home_household_description_named">Gestisce a gente 'e %1$s — condiviso pe' nutrizione, avventure e budget.</string>
+    <string name="home_logistics_requires_household">Famiglia richiesta</string>
+    <string name="household_gate_title">Configure a famiglia</string>
+    <string name="household_gate_subtitle">Crea 'na famiglia o accetta 'n invito primma 'e ausà Nutrizione, Avventure o Budget.</string>
+    <string name="household_gate_create_title">Crea 'na famiglia nova</string>
+    <string name="household_gate_name_label">Nomme d'â famiglia</string>
+    <string name="household_gate_create_button">Crea famiglia</string>
+    <string name="household_gate_loading">Sto verificanno a famiglia...</string>
+    <string name="household_gate_error_generic">Nun aggio caricato a famiglia. Prova arreto.</string>
+    <string name="household_gate_error_not_configured">Supabase nun è configurato ncopp'â stu build.</string>
+    <string name="household_gate_error_already_active">Sià faje parte 'e 'na famiglia.</string>
+    <string name="household_gate_retry">Prova arreto</string>
     <string name="home_logistics_nutrition_description">Pasti, spesa e pianificazione p' 'a famiglia.</string>
     <string name="home_logistics_adventures_title">Avventure</string>
     <string name="home_logistics_adventures_description">Viaggi, gite e esperienze ca planificammo insieme.</string>

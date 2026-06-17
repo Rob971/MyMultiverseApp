@@ -9,6 +9,17 @@
     <string name="home_household_title">Hogar</string>
     <string name="home_household_description">Invita a personas a colaborar en nutrición, aventuras y presupuesto.</string>
     <string name="home_household_description_named">Gestiona las personas de %1$s — compartido en nutrición, aventuras y presupuesto.</string>
+    <string name="home_logistics_requires_household">Hogar requerido</string>
+    <string name="household_gate_title">Configura tu hogar</string>
+    <string name="household_gate_subtitle">Crea un hogar o acepta una invitación antes de usar Nutrición, Aventuras o Presupuesto.</string>
+    <string name="household_gate_create_title">Crear un hogar nuevo</string>
+    <string name="household_gate_name_label">Nombre del hogar</string>
+    <string name="household_gate_create_button">Crear hogar</string>
+    <string name="household_gate_loading">Comprobando tu hogar...</string>
+    <string name="household_gate_error_generic">No se pudo cargar tu hogar. Inténtalo de nuevo.</string>
+    <string name="household_gate_error_not_configured">Supabase no está configurado en esta compilación.</string>
+    <string name="household_gate_error_already_active">Ya perteneces a un hogar.</string>
+    <string name="household_gate_retry">Reintentar</string>
     <string name="home_logistics_nutrition_description">Comidas, compras y planificación semanal para la familia.</string>
     <string name="home_logistics_adventures_title">Aventuras</string>
     <string name="home_logistics_adventures_description">Viajes, salidas y experiencias que planificamos juntos.</string>

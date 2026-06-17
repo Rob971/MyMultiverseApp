@@ -30,6 +30,7 @@ import app.mymultiverse.kmp.presentation.screens.auth.LoginScreenModel
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionEntryScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionScreenModel
+import app.mymultiverse.kmp.presentation.screens.household.HouseholdGateScreenModel
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersEntryScreenModel
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersScreenModel
 import kotlinx.coroutines.CoroutineScope
@@ -98,6 +99,7 @@ private val presentationModule = module {
     singleOf(::HomeScreenModel)
     singleOf(::LoginScreenModel)
     singleOf(::NutritionEntryScreenModel)
+    singleOf(::HouseholdGateScreenModel)
     singleOf(::HouseholdMembersEntryScreenModel)
     singleOf(::HouseholdMembersScreenModel)
     single {

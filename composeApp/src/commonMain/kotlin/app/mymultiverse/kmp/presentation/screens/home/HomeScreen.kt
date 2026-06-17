@@ -48,6 +48,7 @@ fun HomeScreen(
     val greeting by screenModel.greeting.collectAsState()
     val userDisplayName by screenModel.userDisplayName.collectAsState()
     val household by screenModel.household.collectAsState()
+    val hasActiveHousehold by screenModel.hasActiveHousehold.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val pendingInvites by screenModel.pendingInvites.collectAsState()
 
@@ -55,6 +56,7 @@ fun HomeScreen(
         greeting = greeting,
         userDisplayName = userDisplayName,
         householdName = household?.name,
+        hasActiveHousehold = hasActiveHousehold,
         isRefreshing = isRefreshing,
         pendingInvites = pendingInvites,
         onRefreshClick = { screenModel.refresh() },
@@ -71,6 +73,7 @@ fun HomeContent(
     greeting: Greeting?,
     userDisplayName: String?,
     householdName: String?,
+    hasActiveHousehold: Boolean,
     isRefreshing: Boolean,
     pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.SpaceInvite>,
     onRefreshClick: () -> Unit,
@@ -81,6 +84,7 @@ fun HomeContent(
     onDeclineInvite: (String) -> Unit,
 ) {
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
+    val requiresHouseholdLabel = stringResource(Res.string.home_logistics_requires_household)
     val greetingSelection = HomeGreetingSelection.select(
         greetingReady = greeting != null,
         userDisplayName = userDisplayName,
@@ -189,6 +193,8 @@ fun HomeContent(
                     accentColor = SharedJourneyColors.SageSoft,
                     icon = AppIcons.Restaurant,
                     modifier = Modifier.testTag(HomeTestTags.NUTRITION_CARD),
+                    enabled = hasActiveHousehold,
+                    badge = if (hasActiveHousehold) null else requiresHouseholdLabel,
                     onClick = onOpenNutrition,
                 )
             }
