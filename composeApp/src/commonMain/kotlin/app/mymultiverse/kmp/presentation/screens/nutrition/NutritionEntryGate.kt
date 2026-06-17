@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
-import app.mymultiverse.kmp.presentation.navigation.NutritionSpaceContext
+import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_entry_error_generic
@@ -36,7 +36,7 @@ object NutritionEntryTestTags {
 @Composable
 fun NutritionEntryGate(
     onBack: () -> Unit,
-    onReady: (NutritionSpaceContext) -> Unit,
+    onReady: (HouseholdContext) -> Unit,
     screenModel: NutritionEntryScreenModel = koinInject(),
 ) {
     val state by screenModel.state.collectAsState()
@@ -47,7 +47,7 @@ fun NutritionEntryGate(
 
     LaunchedEffect(state) {
         if (state is NutritionEntryState.Ready) {
-            onReady((state as NutritionEntryState.Ready).space)
+            onReady((state as NutritionEntryState.Ready).household)
         }
     }
 

@@ -120,7 +120,7 @@ summary: |
       - Complete household onboarding (create or accept invite).
       - From Home, open Nutrition.
     expected:
-      - Nutrition hub opens directly (no space picker).
+      - Nutrition hub opens directly (no household picker).
       - Household must exist before Nutrition is reachable from Home.
 
   - id: home-household-members
@@ -150,7 +150,36 @@ summary: |
       - Sign in and open Home.
       - Tap Export my data above the version label.
     expected:
-      - Success snackbar appears (profile + household affiliation metadata exported server-side).
+      - System share sheet opens with JSON export (profile + household affiliation metadata).
+      - Success snackbar appears when share completes; error snackbar if share is unavailable.
+
+  - id: home-delete-account
+    title: Delete account (GDPR)
+    steps:
+      - Sign in as a non-owner member (or sole owner with no other members).
+      - On Home, tap Delete account → confirm in the dialog.
+    expected:
+      - Account is removed; user returns to login.
+      - Household owner with other members sees an error to transfer ownership or dissolve first.
+
+  - id: household-add-dependant
+    title: Add household dependant (no login)
+    steps:
+      - Sign in as household owner or editor.
+      - Open Household members → Add dependant → enter display name → confirm.
+    expected:
+      - Dependant appears on the members list with a dependant badge.
+      - Dependant has no email/login; owner/editor can remove them.
+      - Dependant counts toward the 20-member household cap.
+
+  - id: household-invite-notification
+    title: Invite email / push notification (manual)
+    steps:
+      - Phone A invites Phone B by email (B already has an account with push token registered).
+      - Check B's email inbox and device notifications.
+    expected:
+      - B receives invite email when Resend is configured in Supabase secrets.
+      - B may receive a push notification when FCM/APNs tokens are registered (stub tokens log-only until production push is wired).
 
   - id: household-gate-create-with-invite
     title: Gate layout when pending invite exists
@@ -227,7 +256,7 @@ summary: |
       - From the hub, open Grocery (or Meal plan / AI adviser).
       - Tap the back control in the top bar.
     expected:
-      - Returns to the nutrition hub with the same household context (no space picker).
+      - Returns to the nutrition hub with the same household context (no household picker).
 
   - id: crashlytics-smoke
     title: Firebase Crashlytics (tester builds with google-services)
@@ -236,7 +265,7 @@ summary: |
       - Use the app normally (sign in, open Nutrition, edit grocery).
       - Optional: trigger a non-fatal path (e.g. airplane mode during sync) and confirm no user-visible crash.
     expected:
-      - Crashes and non-fatal errors appear in Firebase Console → Crashlytics with app version, user id (after sign-in), and breadcrumbs (session_start, nutrition_space_activated).
+      - Crashes and non-fatal errors appear in Firebase Console → Crashlytics with app version, user id (after sign-in), and breadcrumbs (session_start, nutrition_household_activated).
 
   - id: hub-grocery-navigation
     title: Open editable grocery list

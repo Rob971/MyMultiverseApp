@@ -5,18 +5,11 @@ enum class AddMemberResult {
     InviteSent,
 }
 
-data class GroupMember(
+data class HouseholdInvite(
     val id: String,
-    val groupId: String,
-    val userId: String,
-    val displayName: String,
-)
-
-data class SpaceInvite(
-    val id: String,
-    val spaceId: String,
-    val spaceName: String,
+    val householdId: String,
+    val householdName: String,
     val email: String,
-    val role: SpaceMemberRole,
+    val role: HouseholdMemberRole,
     val expiresAtEpochMillis: Long?,
 )

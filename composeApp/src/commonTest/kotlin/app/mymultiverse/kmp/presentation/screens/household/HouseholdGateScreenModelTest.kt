@@ -4,7 +4,7 @@ import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.model.auth.AuthUser
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.domain.model.sharing.Household
 import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
@@ -13,7 +13,7 @@ import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
 import app.mymultiverse.kmp.presentation.di.FakeAuthRepository
 import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
-import app.mymultiverse.kmp.presentation.di.FakeSpaceCollaborationRepository
+import app.mymultiverse.kmp.presentation.di.FakeHouseholdCollaborationRepository
 import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -102,12 +102,12 @@ class HouseholdGateScreenModelTest {
 
     @Test
     fun pendingInvites_visibleWhenMembershipIsNone() = runTest(testDispatcher) {
-        val collaboration = FakeSpaceCollaborationRepository()
+        val collaboration = FakeHouseholdCollaborationRepository()
         collaboration.inboundProfileEmail = "invitee@example.com"
         collaboration.addMemberByEmail(
-            spaceId = "household-space-1",
+            householdId = "household-1",
             email = "invitee@example.com",
-            role = SpaceMemberRole.Editor,
+            role = HouseholdMemberRole.Editor,
         )
 
         val householdRepository = FakeHouseholdRepository(
@@ -128,12 +128,12 @@ class HouseholdGateScreenModelTest {
 
     @Test
     fun acceptInvite_emitsJoinedMessage() = runTest(testDispatcher) {
-        val collaboration = FakeSpaceCollaborationRepository()
+        val collaboration = FakeHouseholdCollaborationRepository()
         collaboration.inboundProfileEmail = "invitee@example.com"
         collaboration.addMemberByEmail(
-            spaceId = "household-space-1",
+            householdId = "household-1",
             email = "invitee@example.com",
-            role = SpaceMemberRole.Editor,
+            role = HouseholdMemberRole.Editor,
         )
         collaboration.refreshPendingInvites()
 
@@ -153,7 +153,7 @@ class HouseholdGateScreenModelTest {
 
         val message = model.uiState.value.inviteActionMessage
         assertTrue(message is InviteActionMessage.Joined)
-        assertEquals("Test Space", (message as InviteActionMessage.Joined).householdName)
+        assertEquals("Test Household", (message as InviteActionMessage.Joined).householdName)
     }
 
     @Test
@@ -167,7 +167,7 @@ class HouseholdGateScreenModelTest {
         )
         val model = HouseholdGateScreenModel(
             householdRepository = householdRepository,
-            collaborationRepository = FakeSpaceCollaborationRepository(),
+            collaborationRepository = FakeHouseholdCollaborationRepository(),
             authRepository = FakeAuthRepository(
                 initialState = AuthState.Authenticated(
                     AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),
@@ -183,12 +183,12 @@ class HouseholdGateScreenModelTest {
         model.createHousehold()
         advanceUntilIdle()
 
-        assertEquals("household-space-1", sessionCoordinator.activatedSpaceId)
+        assertEquals("household-1", sessionCoordinator.activatedHouseholdId)
     }
 
     private fun model(
         householdRepository: FakeHouseholdRepository,
-        collaborationRepository: FakeSpaceCollaborationRepository = FakeSpaceCollaborationRepository(),
+        collaborationRepository: FakeHouseholdCollaborationRepository = FakeHouseholdCollaborationRepository(),
     ): HouseholdGateScreenModel =
         HouseholdGateScreenModel(
             householdRepository = householdRepository,

@@ -15,7 +15,7 @@ sealed class AppRoute {
     ) : AppRoute()
 
     data class Nutrition(
-        val space: NutritionSpaceContext? = null,
+        val household: HouseholdContext? = null,
         val section: NutritionSection = NutritionSection.Hub,
     ) : AppRoute()
 }

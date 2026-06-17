@@ -18,27 +18,27 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 
 /**
- * Subscribes to [nutrition_household_week_data] changes for a single space/week and
+ * Subscribes to [nutrition_household_week_data] changes for a single household/week and
  * forwards remote edits to the active [OfflineFirstNutritionRepository].
  */
-class NutritionSpaceRealtimeSync(
+class NutritionHouseholdRealtimeSync(
     private val client: SupabaseClient,
     private val scope: CoroutineScope,
 ) {
     private var subscriptionJob: Job? = null
 
     fun start(
-        spaceId: String,
+        householdId: String,
         weekKey: String,
         onUpdate: suspend (NutritionWeekDataRow) -> Unit,
     ) {
         stop()
         subscriptionJob = scope.launch {
-            val channel = client.channel("nutrition-$spaceId-$weekKey")
+            val channel = client.channel("nutrition-$householdId-$weekKey")
             try {
                 val collector = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
                     table = "nutrition_household_week_data"
-                    filter("household_id", FilterOperator.EQ, spaceId)
+                    filter("household_id", FilterOperator.EQ, householdId)
                     filter("week_key", FilterOperator.EQ, weekKey)
                 }.onEach { action ->
                     val record = when (action) {

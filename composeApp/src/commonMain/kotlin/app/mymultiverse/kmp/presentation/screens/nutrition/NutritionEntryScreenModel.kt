@@ -1,12 +1,11 @@
 package app.mymultiverse.kmp.presentation.screens.nutrition
 
-import app.mymultiverse.kmp.domain.model.sharing.Household
 import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
-import app.mymultiverse.kmp.domain.sharing.orDefaultNutritionFeatures
+import app.mymultiverse.kmp.domain.repository.NutritionHouseholdSelectionStore
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
-import app.mymultiverse.kmp.domain.repository.NutritionSpaceSelectionStore
-import app.mymultiverse.kmp.presentation.navigation.NutritionSpaceContext
+import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
+import app.mymultiverse.kmp.presentation.navigation.toNavigationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -23,14 +22,14 @@ sealed interface NutritionEntryError {
 sealed interface NutritionEntryState {
     data object Loading : NutritionEntryState
 
-    data class Ready(val space: NutritionSpaceContext) : NutritionEntryState
+    data class Ready(val household: HouseholdContext) : NutritionEntryState
 
     data class Error(val error: NutritionEntryError) : NutritionEntryState
 }
 
 class NutritionEntryScreenModel(
     private val householdRepository: HouseholdRepository,
-    private val selectionStore: NutritionSpaceSelectionStore,
+    private val selectionStore: NutritionHouseholdSelectionStore,
     private val sessionCoordinator: NutritionSessionCoordinator,
     private val logger: AppLogger,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
@@ -43,9 +42,9 @@ class NutritionEntryScreenModel(
             _state.value = NutritionEntryState.Loading
             try {
                 val household = householdRepository.ensureHousehold().getOrElse { throw it }
-                val context = household.toSpaceContext()
-                selectionStore.setActiveSpaceId(context.id)
-                sessionCoordinator.activateSpace(context.id)
+                val context = household.toNavigationContext()
+                selectionStore.setActiveHouseholdId(context.id)
+                sessionCoordinator.activateHousehold(context.id)
                 _state.value = NutritionEntryState.Ready(context)
             } catch (throwable: Throwable) {
                 logger.recordError(
@@ -57,15 +56,6 @@ class NutritionEntryScreenModel(
             }
         }
     }
-
-    private fun Household.toSpaceContext(): NutritionSpaceContext =
-        NutritionSpaceContext(
-            id = id,
-            name = name,
-            ownerId = ownerId,
-            ownerDisplayName = ownerDisplayName,
-            features = nutritionFeatures.orDefaultNutritionFeatures(),
-        )
 
     private fun mapFailure(throwable: Throwable): NutritionEntryError =
         when (throwable.message) {

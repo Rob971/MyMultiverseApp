@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * Presentation-facing port for nutrition data scoped to personal use or a sharing space.
+ * Presentation-facing port for nutrition data scoped to personal use or a household.
  * Hides local/remote/sync wiring from screen models.
  */
 interface NutritionSessionCoordinator {
@@ -13,7 +13,7 @@ interface NutritionSessionCoordinator {
 
     fun observeSyncStatus(): Flow<NutritionSyncStatus>
 
-    suspend fun activateSpace(spaceId: String)
+    suspend fun activateHousehold(householdId: String)
 
     fun deactivate()
 }

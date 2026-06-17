@@ -4,10 +4,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PendingSpaceInviteRpcRow(
+data class PendingHouseholdInviteRpcRow(
     val id: String,
-    @SerialName("space_id") val spaceId: String,
-    @SerialName("space_name") val spaceName: String,
+    @SerialName("household_id") val householdId: String,
+    @SerialName("household_name") val householdName: String,
     val email: String,
     val role: String,
     @SerialName("expires_at") val expiresAt: String? = null,

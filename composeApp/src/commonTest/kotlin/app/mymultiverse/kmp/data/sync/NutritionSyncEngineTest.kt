@@ -21,12 +21,12 @@ class NutritionSyncEngineTest {
         val outbox = NutritionSyncOutbox(MapSettings())
         val engine = NutritionSyncEngine(FailingRemote, outbox, TestObservability.logger)
 
-        engine.pushNowOrEnqueue("space-1", "2025-W24", "grocery", "payload")
+        engine.pushNowOrEnqueue("household-1", "2025-W24", "grocery", "payload")
 
         val status = engine.observeStatus().first()
         assertIs<NutritionSyncStatus.PendingPush>(status)
         assertEquals(1, status.pendingCount)
-        assertEquals(1, outbox.pendingFor("space-1", "2025-W24").size)
+        assertEquals(1, outbox.pendingFor("household-1", "2025-W24").size)
     }
 
     @Test
@@ -34,7 +34,7 @@ class NutritionSyncEngineTest {
         val outbox = NutritionSyncOutbox(MapSettings())
         outbox.enqueue(
             PendingNutritionPush(
-                spaceId = "space-1",
+                householdId = "household-1",
                 weekKey = "2025-W24",
                 dataKind = "grocery",
                 payload = "payload",
@@ -44,9 +44,9 @@ class NutritionSyncEngineTest {
         val remote = RecordingRemote()
         val engine = NutritionSyncEngine(remote, outbox, TestObservability.logger)
 
-        engine.flushPending("space-1", "2025-W24")
+        engine.flushPending("household-1", "2025-W24")
 
-        assertEquals(0, outbox.pendingFor("space-1", "2025-W24").size)
+        assertEquals(0, outbox.pendingFor("household-1", "2025-W24").size)
         assertEquals(1, remote.upsertCount)
         assertEquals(NutritionSyncStatus.Idle, engine.observeStatus().first())
     }
@@ -56,7 +56,7 @@ class NutritionSyncEngineTest {
         val outbox = NutritionSyncOutbox(MapSettings())
         outbox.enqueue(
             PendingNutritionPush(
-                spaceId = "space-1",
+                householdId = "household-1",
                 weekKey = "2025-W24",
                 dataKind = "grocery",
                 payload = "stale",
@@ -66,9 +66,9 @@ class NutritionSyncEngineTest {
         val remote = RecordingRemote()
         val engine = NutritionSyncEngine(remote, outbox, TestObservability.logger)
 
-        engine.pushNowOrEnqueue("space-1", "2025-W24", "grocery", "latest")
+        engine.pushNowOrEnqueue("household-1", "2025-W24", "grocery", "latest")
 
-        assertEquals(emptyList(), outbox.pendingFor("space-1", "2025-W24"))
+        assertEquals(emptyList(), outbox.pendingFor("household-1", "2025-W24"))
         assertEquals(listOf("latest"), remote.upserts.map { it.payload })
         assertEquals(NutritionSyncStatus.Idle, engine.observeStatus().first())
     }
@@ -78,7 +78,7 @@ class NutritionSyncEngineTest {
         val engine = NutritionSyncEngine(FailingFetchRemote, NutritionSyncOutbox(MapSettings()), TestObservability.logger)
         var applied = false
 
-        engine.pullRemote("space-1", "2025-W24") {
+        engine.pullRemote("household-1", "2025-W24") {
             applied = true
         }
 
@@ -91,21 +91,21 @@ class NutritionSyncEngineTest {
         val remote = StaticRemote(
             listOf(
                 NutritionWeekDataRow(
-                    spaceId = "space-1",
+                    householdId = "household-1",
                     weekKey = "2025-W24",
                     dataKind = "grocery",
                     payload = "old-grocery",
                     updatedAt = "2026-06-16T10:00:00Z",
                 ),
                 NutritionWeekDataRow(
-                    spaceId = "space-1",
+                    householdId = "household-1",
                     weekKey = "2025-W24",
                     dataKind = "meal_plan",
                     payload = "latest-meal-plan",
                     updatedAt = "2026-06-16T10:30:00Z",
                 ),
                 NutritionWeekDataRow(
-                    spaceId = "space-1",
+                    householdId = "household-1",
                     weekKey = "2025-W24",
                     dataKind = "grocery",
                     payload = "latest-grocery",
@@ -116,7 +116,7 @@ class NutritionSyncEngineTest {
         val engine = NutritionSyncEngine(remote, NutritionSyncOutbox(MapSettings()), TestObservability.logger)
         val applied = mutableListOf<NutritionWeekDataRow>()
 
-        engine.pullRemote("space-1", "2025-W24") { row ->
+        engine.pullRemote("household-1", "2025-W24") { row ->
             applied += row
         }
 
@@ -124,31 +124,31 @@ class NutritionSyncEngineTest {
     }
 
     private object FailingRemote : NutritionRemoteDataSource {
-        override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
+        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
 
-        override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) {
+        override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) {
             throw IllegalStateException("offline")
         }
     }
 
     private object FailingFetchRemote : NutritionRemoteDataSource {
-        override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> {
+        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
             throw IllegalStateException("offline")
         }
 
-        override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) = Unit
+        override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
 
     private class RecordingRemote : NutritionRemoteDataSource {
         var upsertCount = 0
         val upserts = mutableListOf<PendingNutritionPush>()
 
-        override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
+        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
 
-        override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) {
+        override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) {
             upsertCount++
             upserts += PendingNutritionPush(
-                spaceId = spaceId,
+                householdId = householdId,
                 weekKey = weekKey,
                 dataKind = dataKind,
                 payload = payload,
@@ -160,8 +160,8 @@ class NutritionSyncEngineTest {
     private class StaticRemote(
         private val rows: List<NutritionWeekDataRow>,
     ) : NutritionRemoteDataSource {
-        override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> = rows
+        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = rows
 
-        override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) = Unit
+        override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
 }

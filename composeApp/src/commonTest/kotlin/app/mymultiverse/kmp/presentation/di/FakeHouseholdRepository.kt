@@ -4,7 +4,7 @@ import app.mymultiverse.kmp.domain.model.sharing.Household
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembership
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.update
 
 class FakeHouseholdRepository(
     private val household: Household = Household(
-        id = "household-space-1",
+        id = "household-1",
         name = "Our household",
         ownerId = "test-user",
         ownerDisplayName = "Test User",
@@ -23,7 +23,7 @@ class FakeHouseholdRepository(
             NutritionSharingFeature.AiAdvice,
         ),
     ),
-    private val role: SpaceMemberRole = SpaceMemberRole.Owner,
+    private val role: HouseholdMemberRole = HouseholdMemberRole.Owner,
     private val initialMembershipStatus: HouseholdMembershipStatus? = null,
     private val ensureFailure: Throwable? = null,
     private val refreshFailure: Throwable? = null,
@@ -70,7 +70,7 @@ class FakeHouseholdRepository(
         createFailure?.let { return Result.failure(it) }
         val created = household.copy(name = name)
         val active = HouseholdMembershipStatus.Active(
-            HouseholdMembership(household = created, role = SpaceMemberRole.Owner),
+            HouseholdMembership(household = created, role = HouseholdMemberRole.Owner),
         )
         state.update { created }
         membership.update { active }
@@ -108,7 +108,7 @@ class FakeHouseholdRepository(
             val updated = current.household.copy(ownerId = newOwnerUserId)
             membership.update {
                 HouseholdMembershipStatus.Active(
-                    HouseholdMembership(household = updated, role = SpaceMemberRole.Editor),
+                    HouseholdMembership(household = updated, role = HouseholdMemberRole.Editor),
                 )
             }
             state.update { updated }

@@ -19,7 +19,7 @@ class NutritionSessionCoordinatorImpl(
     private val settings: Settings,
     private val remoteApi: NutritionRemoteDataSource?,
     private val syncEngine: NutritionSyncEngine,
-    private val realtimeSync: NutritionSpaceRealtimeSync?,
+    private val realtimeSync: NutritionHouseholdRealtimeSync?,
     private val diagnostics: DiagnosticsContext,
     private val logger: AppLogger,
 ) : NutritionSessionCoordinator {
@@ -31,26 +31,26 @@ class NutritionSessionCoordinatorImpl(
 
     override fun observeSyncStatus(): Flow<NutritionSyncStatus> = syncEngine.observeStatus()
 
-    override suspend fun activateSpace(spaceId: String) {
+    override suspend fun activateHousehold(householdId: String) {
         realtimeSync?.stop()
-        diagnostics.activeSpaceId = spaceId
-        logger.breadcrumb("nutrition_space_activated space_id=$spaceId")
+        diagnostics.activeHouseholdId = householdId
+        logger.breadcrumb("nutrition_household_activated household_id=$householdId")
         val weekKey = WeekCalendar.currentWeekKey()
         val repository = OfflineFirstNutritionRepository(
             localStore = NutritionLocalStore(
                 settings = settings,
-                spaceId = spaceId,
+                householdId = householdId,
                 weekKey = weekKey,
             ),
             syncEngine = syncEngine,
-            spaceId = spaceId,
+            householdId = householdId,
             weekKey = weekKey,
             remoteEnabled = remoteApi != null,
         )
         _nutrition.value = repository
         repository.refreshFromRemote()
         realtimeSync?.start(
-            spaceId = spaceId,
+            householdId = householdId,
             weekKey = weekKey,
         ) { row ->
             repository.applyRemoteWeekData(row)
@@ -60,7 +60,7 @@ class NutritionSessionCoordinatorImpl(
     override fun deactivate() {
         realtimeSync?.stop()
         syncEngine.markIdle()
-        diagnostics.activeSpaceId = null
+        diagnostics.activeHouseholdId = null
         _nutrition.value = personalRepository
     }
 
@@ -69,7 +69,7 @@ class NutritionSessionCoordinatorImpl(
             settings: Settings,
             remoteApi: NutritionRemoteDataSource?,
             outbox: NutritionSyncOutbox,
-            realtimeSync: NutritionSpaceRealtimeSync?,
+            realtimeSync: NutritionHouseholdRealtimeSync?,
             logger: AppLogger,
             diagnostics: DiagnosticsContext,
         ): NutritionSessionCoordinatorImpl =

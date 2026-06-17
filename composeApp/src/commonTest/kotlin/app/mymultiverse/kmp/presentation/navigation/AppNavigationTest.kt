@@ -15,7 +15,7 @@ class AppNavigationTest {
         val fromHome = AppRoute.Nutrition()
 
         assertEquals(NutritionSection.Hub, fromHome.section)
-        assertEquals(null, fromHome.space)
+        assertEquals(null, fromHome.household)
     }
 
     @Test
@@ -46,29 +46,35 @@ class AppNavigationTest {
     @Test
     fun householdMembersRoute_storesHouseholdContext() {
         val household = HouseholdContext(
-            id = "space-1",
+            id = "household-1",
             name = "Family",
             ownerId = "owner-1",
             ownerDisplayName = "Owner",
         )
         val route = AppRoute.HouseholdMembers(household = household)
 
-        assertEquals("space-1", route.household?.id)
+        assertEquals("household-1", route.household?.id)
     }
 
     @Test
     fun backToHub_preservesNutritionContainer() {
-        val space = NutritionSpaceContext(
-            id = "space-1",
+        val householdContext = HouseholdContext(
+            id = "household-1",
             name = "Home",
             ownerId = "owner-1",
-            features = setOf(app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature.Grocery),
+            nutritionFeatures = setOf(app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature.Grocery),
         )
-        val grocery = AppRoute.Nutrition(space = space, section = NutritionSection.Grocery)
-        val hub = AppRoute.Nutrition(space = space, section = NutritionSection.Hub)
+        val grocery = AppRoute.Nutrition(household = householdContext, section = NutritionSection.Grocery)
+        val hub = AppRoute.Nutrition(household = householdContext, section = NutritionSection.Hub)
 
         assertIs<AppRoute.Nutrition>(grocery)
         assertIs<AppRoute.Nutrition>(hub)
         assertEquals(NutritionSection.Hub, hub.section)
+        assertEquals(householdContext, grocery.household)
+        assertEquals(householdContext, hub.household)
+        assertEquals(
+            setOf(app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature.Grocery),
+            grocery.household?.nutritionFeatures,
+        )
     }
 }

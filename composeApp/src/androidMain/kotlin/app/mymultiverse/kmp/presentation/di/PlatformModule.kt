@@ -7,6 +7,12 @@ import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
 import app.mymultiverse.kmp.domain.manager.AndroidLanguageManager
 import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.domain.observability.CrashReporter
+import app.mymultiverse.kmp.data.platform.AndroidPersonalDataExporter
+import app.mymultiverse.kmp.data.platform.NoOpPushNotificationRegistrar
+import app.mymultiverse.kmp.data.platform.SupabasePushNotificationRegistrar
+import app.mymultiverse.kmp.data.supabase.SupabaseClientHolder
+import app.mymultiverse.kmp.domain.platform.PersonalDataExporter
+import app.mymultiverse.kmp.domain.platform.PushNotificationRegistrar
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
 import org.koin.android.ext.koin.androidContext
@@ -24,6 +30,18 @@ actual fun platformModule(): Module = module {
             FirebaseCrashReporter(androidContext())
         } else {
             NoOpCrashReporter()
+        }
+    }
+    single<PersonalDataExporter> { AndroidPersonalDataExporter(androidContext()) }
+    single<PushNotificationRegistrar> {
+        val client = get<SupabaseClientHolder>().client
+        if (client != null) {
+            val context = androidContext()
+            SupabasePushNotificationRegistrar(client, "android") {
+                "android-stub-${context.packageName}"
+            }
+        } else {
+            NoOpPushNotificationRegistrar()
         }
     }
 }

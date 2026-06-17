@@ -9,16 +9,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Device-local cache for one nutrition scope (personal or sharing space + week).
+ * Device-local cache for one nutrition scope (personal or household + week).
  */
 class NutritionLocalStore(
     private val settings: Settings,
-    val spaceId: String?,
+    val householdId: String?,
     val weekKey: String,
 ) {
-    private val groceryKey = NutritionStorageKeys.grocery(spaceId, weekKey)
-    private val aiGroceryKey = NutritionStorageKeys.aiGrocery(spaceId, weekKey)
-    private val mealPlanKey = NutritionStorageKeys.mealPlan(spaceId, weekKey)
+    private val groceryKey = NutritionStorageKeys.grocery(householdId, weekKey)
+    private val aiGroceryKey = NutritionStorageKeys.aiGrocery(householdId, weekKey)
+    private val mealPlanKey = NutritionStorageKeys.mealPlan(householdId, weekKey)
 
     private val _groceryItems = MutableStateFlow(loadGrocery())
     private val _aiGroceryItems = MutableStateFlow(loadAiGrocery())

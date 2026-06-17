@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 class NutritionSyncOutboxTest {
 
     @Test
-    fun enqueue_replacesSameKindForSpaceAndWeek() {
+    fun enqueue_replacesSameKindForHouseholdAndWeek() {
         val outbox = NutritionSyncOutbox(MapSettings())
         val first = PendingNutritionPush("s1", "2025-W24", "grocery", "a", 1L)
         val second = PendingNutritionPush("s1", "2025-W24", "grocery", "b", 2L)
@@ -32,7 +32,7 @@ class NutritionSyncOutboxTest {
     }
 
     @Test
-    fun removeFor_clearsOnlyMatchingSpaceWeekAndKind() {
+    fun removeFor_clearsOnlyMatchingHouseholdWeekAndKind() {
         val outbox = NutritionSyncOutbox(MapSettings())
         outbox.enqueue(PendingNutritionPush("s1", "2025-W24", "grocery", "old", 1L))
         outbox.enqueue(PendingNutritionPush("s1", "2025-W24", "meal_plan", "plan", 2L))

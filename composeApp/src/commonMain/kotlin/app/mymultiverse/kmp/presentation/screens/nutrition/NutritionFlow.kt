@@ -3,22 +3,22 @@ package app.mymultiverse.kmp.presentation.screens.nutrition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
+import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
-import app.mymultiverse.kmp.presentation.navigation.NutritionSpaceContext
 import org.koin.compose.koinInject
 
 @Composable
 fun NutritionFlow(
-    space: NutritionSpaceContext?,
+    household: HouseholdContext?,
     section: NutritionSection,
     onBack: () -> Unit,
     onOpenSection: (NutritionSection) -> Unit,
-    onSpaceSelected: (NutritionSpaceContext) -> Unit,
+    onHouseholdSelected: (HouseholdContext) -> Unit,
 ) {
-    if (space == null) {
+    if (household == null) {
         NutritionEntryGate(
             onBack = onBack,
-            onReady = onSpaceSelected,
+            onReady = onHouseholdSelected,
         )
         return
     }
@@ -27,34 +27,34 @@ fun NutritionFlow(
 
     when (section) {
         NutritionSection.Hub -> {
-            LaunchedEffect(space.id) {
-                nutritionScreenModel.activateSpace(space.id)
+            LaunchedEffect(household.id) {
+                nutritionScreenModel.activateHousehold(household.id)
             }
             NutritionHubScreen(
-                spaceName = space.name,
-                enabledFeatures = space.features,
+                householdName = household.name,
+                enabledFeatures = household.nutritionFeatures,
                 onBack = onBack,
                 onOpenSection = onOpenSection,
             )
         }
 
         NutritionSection.Grocery -> {
-            LaunchedEffect(space.id) {
-                nutritionScreenModel.activateSpace(space.id)
+            LaunchedEffect(household.id) {
+                nutritionScreenModel.activateHousehold(household.id)
             }
             GroceryShoppingScreen(onBack = onBack)
         }
 
         NutritionSection.MealPlan -> {
-            LaunchedEffect(space.id) {
-                nutritionScreenModel.activateSpace(space.id)
+            LaunchedEffect(household.id) {
+                nutritionScreenModel.activateHousehold(household.id)
             }
             WeeklyMealPlanScreen(onBack = onBack)
         }
 
         NutritionSection.AiAdvice -> {
-            LaunchedEffect(space.id) {
-                nutritionScreenModel.activateSpace(space.id)
+            LaunchedEffect(household.id) {
+                nutritionScreenModel.activateHousehold(household.id)
             }
             NutritionAiAdviceScreen(onBack = onBack)
         }

@@ -12,7 +12,9 @@ import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
 import app.mymultiverse.kmp.domain.observability.DiagnosticsContext
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
-import app.mymultiverse.kmp.domain.repository.NutritionSpaceSelectionStore
+import app.mymultiverse.kmp.domain.repository.NutritionHouseholdSelectionStore
+import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
+import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionEntryGate
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionEntryScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionEntryTestTags
@@ -38,7 +40,7 @@ class HouseholdEntryInstrumentedTest {
     @Test
     fun nutritionEntryGate_loadsHouseholdAndNavigatesToHub() {
         val householdRepository = InstrumentedHouseholdRepository()
-        val selectionStore = InstrumentedNutritionSpaceSelectionStore()
+        val selectionStore = InstrumentedNutritionHouseholdSelectionStore()
         val sessionCoordinator = InstrumentedNutritionSessionCoordinator(
             repository = InstrumentedNutritionRepository(weekKey = "2026-06-16"),
         )
@@ -49,14 +51,14 @@ class HouseholdEntryInstrumentedTest {
             logger = logger,
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
         )
-        var resolvedHouseholdId: String? = null
+        var resolvedHousehold: HouseholdContext? = null
 
         composeRule.setContent {
             AppTheme {
                 KoinApplication(application = { modules(testModule(householdRepository, selectionStore, sessionCoordinator)) }) {
                     NutritionEntryGate(
                         onBack = {},
-                        onReady = { resolvedHouseholdId = it.id },
+                        onReady = { resolvedHousehold = it },
                         screenModel = screenModel,
                     )
                 }
@@ -64,12 +66,23 @@ class HouseholdEntryInstrumentedTest {
         }
 
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            resolvedHouseholdId != null
+            resolvedHousehold != null
         }
 
-        assertEquals("household-space-1", resolvedHouseholdId)
-        assertEquals("household-space-1", selectionStore.activeSpaceId.value)
-        assertEquals("household-space-1", sessionCoordinator.activatedSpaceId)
+        assertEquals("household-1", resolvedHousehold?.id)
+        assertEquals("Our household", resolvedHousehold?.name)
+        assertEquals("test-user", resolvedHousehold?.ownerId)
+        assertEquals("Test User", resolvedHousehold?.ownerDisplayName)
+        assertEquals(
+            setOf(
+                NutritionSharingFeature.Grocery,
+                NutritionSharingFeature.MealPlan,
+                NutritionSharingFeature.AiAdvice,
+            ),
+            resolvedHousehold?.nutritionFeatures,
+        )
+        assertEquals("household-1", selectionStore.activeHouseholdId.value)
+        assertEquals("household-1", sessionCoordinator.activatedHouseholdId)
         assertEquals(1, householdRepository.ensureCalls)
     }
 
@@ -80,7 +93,7 @@ class HouseholdEntryInstrumentedTest {
         )
         val screenModel = NutritionEntryScreenModel(
             householdRepository = householdRepository,
-            selectionStore = InstrumentedNutritionSpaceSelectionStore(),
+            selectionStore = InstrumentedNutritionHouseholdSelectionStore(),
             sessionCoordinator = InstrumentedNutritionSessionCoordinator(
                 repository = InstrumentedNutritionRepository(weekKey = "2026-06-16"),
             ),
@@ -112,11 +125,11 @@ class HouseholdEntryInstrumentedTest {
 
     private fun testModule(
         householdRepository: HouseholdRepository,
-        selectionStore: NutritionSpaceSelectionStore,
+        selectionStore: NutritionHouseholdSelectionStore,
         sessionCoordinator: NutritionSessionCoordinator,
     ) = module {
         single<HouseholdRepository> { householdRepository }
-        single<NutritionSpaceSelectionStore> { selectionStore }
+        single<NutritionHouseholdSelectionStore> { selectionStore }
         single<NutritionSessionCoordinator> { sessionCoordinator }
     }
 }

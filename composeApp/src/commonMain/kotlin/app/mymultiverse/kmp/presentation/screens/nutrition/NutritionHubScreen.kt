@@ -24,8 +24,6 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_progress
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_label
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_hub_manage_members
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_subtitle
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
@@ -53,7 +51,7 @@ object NutritionHubTestTags {
 
 @Composable
 fun NutritionHubScreen(
-    spaceName: String,
+    householdName: String,
     enabledFeatures: Set<NutritionSharingFeature>,
     onBack: () -> Unit,
     onOpenSection: (NutritionSection) -> Unit,
@@ -85,7 +83,7 @@ fun NutritionHubScreen(
 
     NutritionScaffold(
         title = stringResource(Res.string.nutrition_hub_title),
-        subtitle = spaceName,
+        subtitle = householdName,
         onBack = onBack,
     ) { padding ->
         LazyColumn(

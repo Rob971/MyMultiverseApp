@@ -4,17 +4,17 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SpaceMemberRow(
+data class HouseholdMemberRow(
     val id: String,
-    @SerialName("household_id") val spaceId: String,
+    @SerialName("household_id") val householdId: String,
     @SerialName("user_id") val userId: String? = null,
     @SerialName("group_id") val groupId: String? = null,
     val role: String,
 )
 
 @Serializable
-data class SpaceMemberInsertRow(
-    @SerialName("household_id") val spaceId: String,
+data class HouseholdMemberInsertRow(
+    @SerialName("household_id") val householdId: String,
     @SerialName("user_id") val userId: String? = null,
     @SerialName("group_id") val groupId: String? = null,
     val role: String = "editor",
@@ -28,43 +28,9 @@ data class ProfileRow(
 )
 
 @Serializable
-data class ContactGroupRow(
+data class HouseholdInviteRow(
     val id: String,
-    val name: String,
-    val lifecycle: String,
-    @SerialName("owner_id") val ownerId: String,
-    @SerialName("event_label") val eventLabel: String? = null,
-    @SerialName("starts_at") val startsAt: String? = null,
-    @SerialName("expires_at") val expiresAt: String? = null,
-)
-
-@Serializable
-data class ContactGroupInsertRow(
-    val name: String,
-    val lifecycle: String,
-    @SerialName("owner_id") val ownerId: String,
-    @SerialName("event_label") val eventLabel: String? = null,
-    @SerialName("starts_at") val startsAt: String? = null,
-    @SerialName("expires_at") val expiresAt: String? = null,
-)
-
-@Serializable
-data class GroupMemberInsertRow(
-    @SerialName("group_id") val groupId: String,
-    @SerialName("user_id") val userId: String,
-)
-
-@Serializable
-data class GroupMemberRow(
-    val id: String,
-    @SerialName("group_id") val groupId: String,
-    @SerialName("user_id") val userId: String,
-)
-
-@Serializable
-data class SpaceInviteRow(
-    val id: String,
-    @SerialName("household_id") val spaceId: String,
+    @SerialName("household_id") val householdId: String,
     val email: String,
     val role: String,
     @SerialName("expires_at") val expiresAt: String? = null,
@@ -73,20 +39,20 @@ data class SpaceInviteRow(
 )
 
 @Serializable
-data class SpaceInviteInsertRow(
-    @SerialName("household_id") val spaceId: String,
+data class HouseholdInviteInsertRow(
+    @SerialName("household_id") val householdId: String,
     val email: String,
     val role: String,
     @SerialName("invited_by") val invitedBy: String,
 )
 
 @Serializable
-data class SpaceInviteUpdateRow(
+data class HouseholdInviteUpdateRow(
     @SerialName("declined_at") val declinedAt: String,
 )
 
 @Serializable
-data class SpaceInvitePendingUpdateRow(
+data class HouseholdInvitePendingUpdateRow(
     val role: String,
     @SerialName("invited_by") val invitedBy: String,
 )

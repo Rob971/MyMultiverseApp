@@ -2,7 +2,7 @@ package app.mymultiverse.kmp.i18n
 
 object SharingStringKeys {
     val all: Set<String> = setOf(
-        "sharing_hub_manage_members",
+        "household_manage_members",
         "sharing_members_title",
         "sharing_members_subtitle",
         "sharing_members_empty",
@@ -56,6 +56,12 @@ object SharingStringKeys {
         "sharing_members_error_transfer_target",
         "sharing_members_error_transfer_failed",
         "sharing_members_leave_gdpr_note",
+        "sharing_members_add_dependent",
+        "sharing_members_dependent_name_label",
+        "sharing_members_dependent_confirm",
+        "sharing_members_dependent_added",
+        "sharing_members_dependent_hint",
+        "sharing_members_kind_dependent",
     )
 
     val localeDirectories: List<String> = NutritionStringKeys.localeDirectories

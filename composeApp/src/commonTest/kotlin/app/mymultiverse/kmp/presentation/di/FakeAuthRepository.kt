@@ -44,4 +44,6 @@ class FakeAuthRepository(
 
     override suspend fun exportPersonalData(): Result<String> =
         Result.success("""{"exported_at":"test","profile":{"email":"test@example.com"}}""")
+
+    override suspend fun deleteAccount(): Result<Unit> = Result.success(Unit)
 }

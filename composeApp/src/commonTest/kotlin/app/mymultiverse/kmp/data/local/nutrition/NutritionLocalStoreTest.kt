@@ -15,7 +15,7 @@ class NutritionLocalStoreTest {
     @Test
     fun saveGroceryItems_persistsUnderScopedKey() = runTest {
         val settings = MapSettings()
-        val store = NutritionLocalStore(settings, spaceId = "space-1", weekKey = weekKey)
+        val store = NutritionLocalStore(settings, householdId = "household-1", weekKey = weekKey)
         val items = listOf(GroceryItem("1", "Rice", false))
 
         store.saveGroceryItems(items)
@@ -23,7 +23,7 @@ class NutritionLocalStoreTest {
         assertEquals(items, store.observeGroceryItems().first())
         assertEquals(
             items,
-            NutritionLocalStore(settings, spaceId = "space-1", weekKey = weekKey)
+            NutritionLocalStore(settings, householdId = "household-1", weekKey = weekKey)
                 .observeGroceryItems()
                 .first(),
         )
@@ -32,7 +32,7 @@ class NutritionLocalStoreTest {
     @Test
     fun applyPayload_updatesGroceryFromRemoteBlob() = runTest {
         val settings = MapSettings()
-        val store = NutritionLocalStore(settings, spaceId = "space-1", weekKey = weekKey)
+        val store = NutritionLocalStore(settings, householdId = "household-1", weekKey = weekKey)
         val payload = store.encodeGrocery(listOf(GroceryItem("1", "Beans", true)))
 
         store.applyPayload("grocery", payload)
@@ -42,10 +42,10 @@ class NutritionLocalStoreTest {
     }
 
     @Test
-    fun personalAndSpaceScopes_useSeparateKeys() = runTest {
+    fun personalAndHouseholdScopes_useSeparateKeys() = runTest {
         val settings = MapSettings()
-        val personal = NutritionLocalStore(settings, spaceId = null, weekKey = weekKey)
-        val shared = NutritionLocalStore(settings, spaceId = "space-1", weekKey = weekKey)
+        val personal = NutritionLocalStore(settings, householdId = null, weekKey = weekKey)
+        val shared = NutritionLocalStore(settings, householdId = "household-1", weekKey = weekKey)
 
         personal.saveGroceryItems(listOf(GroceryItem("p", "Personal", false)))
         shared.saveGroceryItems(listOf(GroceryItem("s", "Shared", false)))
@@ -57,7 +57,7 @@ class NutritionLocalStoreTest {
     @Test
     fun applyPayload_mealPlan_roundTrips() = runTest {
         val settings = MapSettings()
-        val store = NutritionLocalStore(settings, spaceId = "space-1", weekKey = weekKey)
+        val store = NutritionLocalStore(settings, householdId = "household-1", weekKey = weekKey)
         val plan = WeeklyMealPlan(weekKey = weekKey)
         val payload = store.encodeMealPlan(plan)
 

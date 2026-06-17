@@ -33,9 +33,17 @@ fi
 echo "OK: Supabase REST reachable (status ${HEALTH_STATUS})"
 
 echo "==> Checking ensure_household RPC is deployed"
-OPENAPI_BODY="$(curl -fsS "${REST_URL}/" \
+OPENAPI_STATUS="$(curl -s -o /tmp/supabase-openapi.json -w '%{http_code}' "${REST_URL}/" \
   -H "apikey: ${ANON_KEY}" \
+  -H "Authorization: Bearer ${ANON_KEY}" \
   -H "Accept: application/openapi+json")"
+OPENAPI_BODY="$(cat /tmp/supabase-openapi.json)"
+rm -f /tmp/supabase-openapi.json
+
+if [[ "${OPENAPI_STATUS}" != "200" ]]; then
+  echo "ERROR: could not fetch PostgREST OpenAPI schema (status ${OPENAPI_STATUS})" >&2
+  exit 1
+fi
 
 if ! echo "${OPENAPI_BODY}" | jq -e '.paths["/rpc/ensure_household"].post' >/dev/null 2>&1; then
   echo "ERROR: ensure_household RPC not found in PostgREST schema. Run: supabase db push" >&2
@@ -64,16 +72,16 @@ if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
     -H "Content-Type: application/json" \
     -d '{}')"
 
-  SPACE_ID="$(echo "${HOUSEHOLD_JSON}" | jq -r '.space_id')"
+  HOUSEHOLD_ID="$(echo "${HOUSEHOLD_JSON}" | jq -r '.household_id')"
   FEATURE_COUNT="$(echo "${HOUSEHOLD_JSON}" | jq -r '.features | length')"
 
-  if [[ -z "${SPACE_ID}" || "${SPACE_ID}" == "null" ]]; then
-    echo "ERROR: ensure_household did not return space_id" >&2
+  if [[ -z "${HOUSEHOLD_ID}" || "${HOUSEHOLD_ID}" == "null" ]]; then
+    echo "ERROR: ensure_household did not return household_id" >&2
     echo "${HOUSEHOLD_JSON}" >&2
     exit 1
   fi
 
-  echo "OK: household space_id=${SPACE_ID} features=${FEATURE_COUNT}"
+  echo "OK: household_id=${HOUSEHOLD_ID} features=${FEATURE_COUNT}"
 
   WEEK_KEY="$(date -u +%Y-%m-%d)"
   PAYLOAD='[{"id":"verify-1","label":"Supabase verify rice","isChecked":false}]'
@@ -85,7 +93,7 @@ if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
     -H "Authorization: Bearer ${ACCESS_TOKEN}" \
     -H "Content-Type: application/json" \
     -H "Prefer: resolution=merge-duplicates" \
-    -d "[{\"household_id\":\"${SPACE_ID}\",\"week_key\":\"${WEEK_KEY}\",\"data_kind\":\"grocery\",\"payload\":$(echo "${PAYLOAD}" | jq -c .)}]")"
+    -d "[{\"household_id\":\"${HOUSEHOLD_ID}\",\"week_key\":\"${WEEK_KEY}\",\"data_kind\":\"grocery\",\"payload\":$(echo "${PAYLOAD}" | jq -c .)}]")"
 
   if [[ "${UPSERT_STATUS}" != "201" && "${UPSERT_STATUS}" != "200" ]]; then
     echo "ERROR: nutrition upsert failed with status ${UPSERT_STATUS}" >&2
@@ -94,7 +102,7 @@ if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
 
   echo "==> Reading nutrition week grocery payload back"
   FETCHED="$(curl -fsS \
-    "${REST_URL}/nutrition_household_week_data?household_id=eq.${SPACE_ID}&week_key=eq.${WEEK_KEY}&data_kind=eq.grocery&select=payload" \
+    "${REST_URL}/nutrition_household_week_data?household_id=eq.${HOUSEHOLD_ID}&week_key=eq.${WEEK_KEY}&data_kind=eq.grocery&select=payload" \
     -H "apikey: ${ANON_KEY}" \
     -H "Authorization: Bearer ${ACCESS_TOKEN}")"
 

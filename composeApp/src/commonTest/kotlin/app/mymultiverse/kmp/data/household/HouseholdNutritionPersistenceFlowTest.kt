@@ -24,7 +24,7 @@ import kotlin.test.assertTrue
  */
 class HouseholdNutritionPersistenceFlowTest {
 
-    private val householdId = "household-space-1"
+    private val householdId = "household-1"
     private val weekKey = "2026-06-16"
 
     @Test
@@ -49,7 +49,7 @@ class HouseholdNutritionPersistenceFlowTest {
         val repository = OfflineFirstNutritionRepository(
             localStore = store,
             syncEngine = NutritionSyncEngine(remote, outbox, TestObservability.logger),
-            spaceId = householdId,
+            householdId = householdId,
             weekKey = weekKey,
             remoteEnabled = true,
         )
@@ -58,7 +58,7 @@ class HouseholdNutritionPersistenceFlowTest {
 
         assertEquals("Milk", repository.observeGroceryItems().first().single().label)
         assertEquals(1, remote.upserts.size)
-        assertEquals(householdId, remote.upserts.single().spaceId)
+        assertEquals(householdId, remote.upserts.single().householdId)
         assertEquals(0, outbox.pendingFor(householdId, weekKey).size)
     }
 
@@ -70,7 +70,7 @@ class HouseholdNutritionPersistenceFlowTest {
         val remote = StaticHouseholdRemote(
             listOf(
                 NutritionWeekDataRow(
-                    spaceId = householdId,
+                    householdId = householdId,
                     weekKey = weekKey,
                     dataKind = "grocery",
                     payload = payload,
@@ -80,7 +80,7 @@ class HouseholdNutritionPersistenceFlowTest {
         val repository = OfflineFirstNutritionRepository(
             localStore = store,
             syncEngine = NutritionSyncEngine(remote, NutritionSyncOutbox(settings), TestObservability.logger),
-            spaceId = householdId,
+            householdId = householdId,
             weekKey = weekKey,
             remoteEnabled = true,
         )
@@ -94,7 +94,7 @@ class HouseholdNutritionPersistenceFlowTest {
 
 private class RecordingHouseholdRemote : NutritionRemoteDataSource {
     data class UpsertCall(
-        val spaceId: String,
+        val householdId: String,
         val weekKey: String,
         val dataKind: String,
         val payload: String,
@@ -102,10 +102,10 @@ private class RecordingHouseholdRemote : NutritionRemoteDataSource {
 
     val upserts = mutableListOf<UpsertCall>()
 
-    override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
+    override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
 
-    override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) {
-        upserts += UpsertCall(spaceId, weekKey, dataKind, payload)
+    override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) {
+        upserts += UpsertCall(householdId, weekKey, dataKind, payload)
     }
 }
 
@@ -114,10 +114,10 @@ private class StaticHouseholdRemote(
 ) : NutritionRemoteDataSource {
     val fetchCalls = mutableListOf<Pair<String, String>>()
 
-    override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> {
-        fetchCalls += spaceId to weekKey
+    override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
+        fetchCalls += householdId to weekKey
         return rows
     }
 
-    override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) = Unit
+    override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
 }

@@ -13,7 +13,7 @@ class FakeNutritionSessionCoordinator(
 ) : NutritionSessionCoordinator {
     private val _nutrition = MutableStateFlow(initialRepository)
 
-    var activatedSpaceId: String? = null
+    var activatedHouseholdId: String? = null
         private set
     var deactivateCount: Int = 0
         private set
@@ -22,8 +22,8 @@ class FakeNutritionSessionCoordinator(
 
     override fun observeSyncStatus(): Flow<NutritionSyncStatus> = flowOf(NutritionSyncStatus.Idle)
 
-    override suspend fun activateSpace(spaceId: String) {
-        activatedSpaceId = spaceId
+    override suspend fun activateHousehold(householdId: String) {
+        activatedHouseholdId = householdId
     }
 
     override fun deactivate() {

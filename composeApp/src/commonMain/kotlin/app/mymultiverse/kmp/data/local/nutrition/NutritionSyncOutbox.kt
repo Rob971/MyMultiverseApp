@@ -6,7 +6,7 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 data class PendingNutritionPush(
-    val spaceId: String,
+    val householdId: String,
     val weekKey: String,
     val dataKind: String,
     val payload: String,
@@ -22,7 +22,7 @@ class NutritionSyncOutbox(
     fun enqueue(item: PendingNutritionPush) {
         val updated = peekAll()
             .filterNot {
-                it.spaceId == item.spaceId &&
+                it.householdId == item.householdId &&
                     it.weekKey == item.weekKey &&
                     it.dataKind == item.dataKind
             } + item
@@ -36,17 +36,17 @@ class NutritionSyncOutbox(
         }.getOrDefault(emptyList())
     }
 
-    fun pendingFor(spaceId: String, weekKey: String): List<PendingNutritionPush> =
-        peekAll().filter { it.spaceId == spaceId && it.weekKey == weekKey }
+    fun pendingFor(householdId: String, weekKey: String): List<PendingNutritionPush> =
+        peekAll().filter { it.householdId == householdId && it.weekKey == weekKey }
 
     fun remove(item: PendingNutritionPush) {
         persist(peekAll().filterNot { it == item })
     }
 
-    fun removeFor(spaceId: String, weekKey: String, dataKind: String) {
+    fun removeFor(householdId: String, weekKey: String, dataKind: String) {
         persist(
             peekAll().filterNot {
-                it.spaceId == spaceId &&
+                it.householdId == householdId &&
                     it.weekKey == weekKey &&
                     it.dataKind == dataKind
             },
