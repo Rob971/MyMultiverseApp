@@ -63,36 +63,6 @@ as $$
         );
 $$;
 
-drop policy if exists nutrition_space_week_data_insert on public.nutrition_household_week_data;
-drop policy if exists nutrition_space_week_data_update on public.nutrition_household_week_data;
-drop policy if exists nutrition_space_week_data_delete on public.nutrition_household_week_data;
-drop policy if exists nutrition_space_week_data_select on public.nutrition_household_week_data;
-
-create policy nutrition_household_week_data_select
-    on public.nutrition_household_week_data
-    for select
-    to authenticated
-    using (public.is_household_member(household_id));
-
-create policy nutrition_household_week_data_insert
-    on public.nutrition_household_week_data
-    for insert
-    to authenticated
-    with check (public.household_member_can_write_nutrition(household_id));
-
-create policy nutrition_household_week_data_update
-    on public.nutrition_household_week_data
-    for update
-    to authenticated
-    using (public.household_member_can_write_nutrition(household_id))
-    with check (public.household_member_can_write_nutrition(household_id));
-
-create policy nutrition_household_week_data_delete
-    on public.nutrition_household_week_data
-    for delete
-    to authenticated
-    using (public.household_member_can_write_nutrition(household_id));
-
 create or replace function public.household_membership_status()
 returns json
 language plpgsql
@@ -854,6 +824,10 @@ as $$
 $$;
 
 -- RLS policies (household helper names)
+drop policy if exists nutrition_space_week_data_insert on public.nutrition_household_week_data;
+drop policy if exists nutrition_space_week_data_update on public.nutrition_household_week_data;
+drop policy if exists nutrition_space_week_data_delete on public.nutrition_household_week_data;
+drop policy if exists nutrition_space_week_data_select on public.nutrition_household_week_data;
 drop policy if exists nutrition_household_week_data_insert on public.nutrition_household_week_data;
 drop policy if exists nutrition_household_week_data_update on public.nutrition_household_week_data;
 drop policy if exists nutrition_household_week_data_delete on public.nutrition_household_week_data;
