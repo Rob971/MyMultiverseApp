@@ -110,6 +110,23 @@ class NutritionScreenModelTest {
     }
 
     @Test
+    fun updateGroceryItemLabel_rejectsBlankAndDuplicateLabels() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.grocery.value = listOf(
+            GroceryItem("1", "Rice", false),
+            GroceryItem("2", "Beans", false),
+        )
+        val model = nutritionScreenModel(repository, scope = modelScope)
+        advanceUntilIdle()
+
+        assertFalse(model.updateGroceryItemLabel("1", "   "))
+        assertFalse(model.updateGroceryItemLabel("1", " beans "))
+        advanceUntilIdle()
+
+        assertEquals(listOf("Rice", "Beans"), repository.grocery.value.map { it.label })
+    }
+
+    @Test
     fun restoreGroceryItem_insertsAtIndex() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         repository.grocery.value = listOf(GroceryItem("2", "Beans", false))
@@ -136,6 +153,27 @@ class NutritionScreenModelTest {
         advanceUntilIdle()
 
         assertEquals("Rice", repository.grocery.value.single().label)
+    }
+
+    @Test
+    fun restoreGroceryItemsSnapshot_restoresBulkClearedItemsInOriginalOrder() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.grocery.value = listOf(
+            GroceryItem("1", "Rice", false),
+            GroceryItem("2", "Beans", true),
+            GroceryItem("3", "Milk", true),
+        )
+        val model = nutritionScreenModel(repository, scope = modelScope)
+        advanceUntilIdle()
+
+        val snapshot = model.clearCheckedGroceryItems()
+        advanceUntilIdle()
+        assertEquals(listOf("Rice"), repository.grocery.value.map { it.label })
+
+        model.restoreGroceryItemsSnapshot(snapshot)
+        advanceUntilIdle()
+
+        assertEquals(listOf("Rice", "Beans", "Milk"), repository.grocery.value.map { it.label })
     }
 
     @Test
@@ -233,6 +271,26 @@ class NutritionScreenModelTest {
         assertEquals(2, groceryState.itemCount)
         assertEquals(2, repository.aiGrocery.value.size)
         assertEquals("Milk", repository.aiGrocery.value.first().label)
+    }
+
+    @Test
+    fun clearAiGrocery_returnsSnapshotAndRestoreRebuildsReadOnlyList() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.aiGrocery.value = listOf(
+            GroceryItem("ai-1", "Spinach"),
+            GroceryItem("ai-2", "Eggs"),
+        )
+        val model = nutritionScreenModel(repository, scope = modelScope)
+        advanceUntilIdle()
+
+        val snapshot = model.clearAiGrocery()
+        advanceUntilIdle()
+        assertTrue(repository.aiGrocery.value.isEmpty())
+
+        model.restoreAiGroceryItems(snapshot)
+        advanceUntilIdle()
+
+        assertEquals(listOf("Spinach", "Eggs"), repository.aiGrocery.value.map { it.label })
     }
 
     @Test

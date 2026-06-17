@@ -11,8 +11,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_saved_readonly_note
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_readonly_note
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_result_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_dinner
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_generate_grocery
@@ -73,24 +73,27 @@ fun WeeklyMealPlanScreen(
     val generateGroceryLabel = stringResource(Res.string.nutrition_meal_generate_grocery)
     val lunchLabel = stringResource(Res.string.nutrition_meal_lunch)
     val dinnerLabel = stringResource(Res.string.nutrition_meal_dinner)
-    val groceryAddedFormat = stringResource(Res.string.nutrition_meal_grocery_added)
     val groceryNoneNew = stringResource(Res.string.nutrition_meal_grocery_none_new)
     val groceryError = stringResource(Res.string.nutrition_meal_grocery_error)
-
-    LaunchedEffect(mealGroceryResult) {
-        val result = mealGroceryResult ?: return@LaunchedEffect
+    val mealGrocerySnackbarMessage = mealGroceryResult?.let { result ->
         val slotLabel = when (result.slot) {
             MealSlot.Lunch -> lunchLabel
             MealSlot.Dinner -> dinnerLabel
         }
-        val message = when {
+        when {
             result.isError -> groceryError
             result.itemCount == 0 -> groceryNoneNew
-            else -> groceryAddedFormat
-                .replace("%1\$d", result.itemCount.toString())
-                .replace("%2\$s", result.dayLabel)
-                .replace("%3\$s", slotLabel)
+            else -> stringResource(
+                Res.string.nutrition_meal_grocery_added,
+                result.itemCount,
+                result.dayLabel,
+                slotLabel,
+            )
         }
+    }
+
+    LaunchedEffect(mealGrocerySnackbarMessage) {
+        val message = mealGrocerySnackbarMessage ?: return@LaunchedEffect
         snackbarHostState.showSnackbar(message)
         screenModel.consumeMealGroceryResult()
     }
@@ -137,7 +140,7 @@ fun WeeklyMealPlanScreen(
                     AiReadOnlyGroceryList(
                         items = aiGrocery,
                         title = stringResource(Res.string.nutrition_ai_grocery_result_title),
-                        subtitle = stringResource(Res.string.nutrition_ai_grocery_readonly_note),
+                        subtitle = stringResource(Res.string.nutrition_ai_grocery_saved_readonly_note),
                     )
                 }
             }

@@ -17,6 +17,7 @@ import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.kmp.presentation.components.MealPlanTestTags
+import app.mymultiverse.kmp.presentation.screens.nutrition.GroceryListTestTags
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.screens.home.HomeContent
 import app.mymultiverse.kmp.presentation.screens.home.HomeTestTags
@@ -86,6 +87,32 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun grocery_clearCheckedAction_removesCompletedItems() {
+        val screenModel = nutritionScreenModel()
+
+        composeRule.setContent {
+            AppTheme {
+                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+            }
+        }
+
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.INPUT_FIELD)
+            .performTextInput("Milk")
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
+        composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
+
+        composeRule.onNodeWithTag("${GroceryListTestTags.CHECKBOX_PREFIX}instrumented-item-1")
+            .performScrollTo()
+            .performClick()
+        composeRule.waitForState(screenModel.groceryItems) { it.single().isChecked }
+
+        composeRule.onNodeWithTag(GroceryListTestTags.CLEAR_CHECKED_ACTION)
+            .performScrollTo()
+            .performClick()
+        composeRule.waitForState(screenModel.groceryItems) { it.isEmpty() }
+    }
+
+    @Test
     fun mealPlan_generateLunchGrocery_appendsAiGroceryItems() {
         val weekKey = WeekCalendar.currentWeekKey()
         val dayIndex = WeekCalendar.todayIndexInWeek(weekKey) ?: 0
@@ -134,6 +161,35 @@ class NutritionUxInstrumentedTest {
             .performScrollToNode(hasTestTag(NutritionAiTestTags.ANSWER_CARD))
         composeRule.onNodeWithTag(NutritionAiTestTags.ANSWER_CARD).assertIsDisplayed()
         composeRule.onNodeWithText(answer).assertIsDisplayed()
+    }
+
+    @Test
+    fun nutritionAi_groceryMode_generatesAndClearsReadOnlyGroceryList() {
+        val screenModel = nutritionScreenModel()
+
+        composeRule.setContent {
+            AppTheme {
+                NutritionAiAdviceScreen(onBack = {}, screenModel = screenModel)
+            }
+        }
+
+        composeRule.onNodeWithTag(NutritionAiTestTags.MODE_GROCERY)
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithTag(NutritionAiTestTags.CRITERIA_FIELD)
+            .performScrollTo()
+            .performTextInput("high protein")
+        composeRule.onNodeWithTag(NutritionAiTestTags.GENERATE_BUTTON)
+            .performScrollTo()
+            .performClick()
+        composeRule.waitFor { screenModel.aiState.value is NutritionAiState.GroceryList }
+        composeRule.waitForState(screenModel.aiGroceryItems) { it.size == 3 }
+
+        composeRule.onNodeWithTag(NutritionAiTestTags.CLEAR_AI_GROCERY_BUTTON)
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+        composeRule.waitForState(screenModel.aiGroceryItems) { it.isEmpty() }
     }
 
     @Test

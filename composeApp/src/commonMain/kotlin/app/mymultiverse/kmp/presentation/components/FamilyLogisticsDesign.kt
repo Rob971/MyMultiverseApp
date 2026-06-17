@@ -71,6 +71,7 @@ fun FamilyLogisticsSectionHeader(
     title: String,
     modifier: Modifier = Modifier,
     actionLabel: String? = null,
+    actionModifier: Modifier = Modifier,
     onAction: (() -> Unit)? = null,
 ) {
     Row(
@@ -89,7 +90,7 @@ fun FamilyLogisticsSectionHeader(
         if (actionLabel != null && onAction != null) {
             Text(
                 text = actionLabel,
-                modifier = Modifier.clickable(onClick = onAction),
+                modifier = actionModifier.clickable(onClick = onAction),
                 style = MaterialTheme.typography.labelLarge,
                 color = SharedJourneyColors.TerracottaOrange,
                 fontWeight = FontWeight.Bold,

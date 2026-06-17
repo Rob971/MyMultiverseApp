@@ -153,11 +153,15 @@ summary: |
     title: Add, check off, edit, and delete grocery items
     steps:
       - Add two items (e.g. Milk, Bread).
+      - Try adding a duplicate item with different casing or spacing.
       - Tap checkbox on one item to mark it checked.
+      - Use Clear checked and tap Undo from the snackbar.
       - Edit an item label inline.
       - Swipe-delete an item and use Undo if shown.
     expected:
+      - Duplicate entry shows a clear snackbar and does not create another row.
       - Items appear under To buy / Checked off as appropriate.
+      - Clear checked removes completed items and Undo restores them in order.
       - Changes persist after leaving and returning to the screen.
       - Second household member sees the same grocery list after sync.
 
@@ -206,6 +210,7 @@ summary: |
       - Enter criteria (e.g. high protein) and generate.
     expected:
       - Read-only AI grocery list shown; items persist for the week.
+      - Clear AI grocery list removes the read-only list and offers Undo.
 
   - id: ai-meal-plan-mode
     title: AI meal plan preview and apply

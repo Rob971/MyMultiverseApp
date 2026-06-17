@@ -69,6 +69,7 @@
     <string name="nutrition_grocery_cancel_edit">Annulle</string>
     <string name="nutrition_grocery_undo_delete">Articolo levato</string>
     <string name="nutrition_grocery_undo_action">Annulle</string>
+    <string name="nutrition_grocery_clear_checked_undo">Articoli segnati scancellati</string>
     <string name="nutrition_grocery_duplicate">St'articolo è già 'n lista</string>
     <string name="nutrition_grocery_toggle_item">Segna comme comprato</string>
     <string name="nutrition_grocery_empty_active">Tutto spuntato. Miett'articoli o pulisce spuntate abbascio.</string>
@@ -89,8 +90,11 @@
     <string name="nutrition_ai_meal_plan_summary_full_week">Anteprima d' 'o piano pasti pe' tutta 'a semmana. Cuntrolla abbascio e applica.</string>
     <string name="nutrition_ai_meal_plan_summary_single_day">Anteprima d' 'o piano pasti pe' %1$s. Cuntrolla abbascio e applica.</string>
     <string name="nutrition_ai_grocery_readonly_note">Lista read-only. 'A lista tua è abbascio.</string>
+    <string name="nutrition_ai_grocery_saved_readonly_note">Suggerimente spesa IA read-only sarvate pe chesta settimana.</string>
     <string name="nutrition_ai_clear_grocery">Pulisce lista IA</string>
+    <string name="nutrition_ai_grocery_cleared">Lista IA scancellata</string>
     <string name="nutrition_ai_meal_plan_result_title">Anteprima</string>
+    <string name="nutrition_meal_plan_preview_line">%1$s: %2$s</string>
     <string name="nutrition_ai_apply_meal_plan">Applica 'o piano</string>
     <string name="nutrition_ai_suggestion_veggie_grocery">Spesa vegetariana</string>
     <string name="nutrition_ai_suggestion_budget_grocery">Lista economica</string>

@@ -69,6 +69,7 @@
     <string name="nutrition_grocery_cancel_edit">Annulla</string>
     <string name="nutrition_grocery_undo_delete">Articolo rimosso</string>
     <string name="nutrition_grocery_undo_action">Annulla</string>
+    <string name="nutrition_grocery_clear_checked_undo">Articoli selezionati cancellati</string>
     <string name="nutrition_grocery_duplicate">Questo articolo è già in lista</string>
     <string name="nutrition_grocery_toggle_item">Segna come comprato</string>
     <string name="nutrition_grocery_empty_active">Tutto spuntato. Aggiungi articoli o cancella gli spuntati sotto.</string>
@@ -89,8 +90,11 @@
     <string name="nutrition_ai_meal_plan_summary_full_week">Anteprima del piano pasti per tutta la settimana. Controlla sotto e applica.</string>
     <string name="nutrition_ai_meal_plan_summary_single_day">Anteprima del piano pasti per %1$s. Controlla sotto e applica.</string>
     <string name="nutrition_ai_grocery_readonly_note">Lista solo lettura. La tua lista modificabile è sotto.</string>
+    <string name="nutrition_ai_grocery_saved_readonly_note">Suggerimenti spesa IA in sola lettura salvati per questa settimana.</string>
     <string name="nutrition_ai_clear_grocery">Cancella lista IA</string>
+    <string name="nutrition_ai_grocery_cleared">Lista IA cancellata</string>
     <string name="nutrition_ai_meal_plan_result_title">Anteprima</string>
+    <string name="nutrition_meal_plan_preview_line">%1$s: %2$s</string>
     <string name="nutrition_ai_apply_meal_plan">Applica al piano pasti</string>
     <string name="nutrition_ai_suggestion_veggie_grocery">Spesa vegetariana</string>
     <string name="nutrition_ai_suggestion_budget_grocery">Lista economica</string>

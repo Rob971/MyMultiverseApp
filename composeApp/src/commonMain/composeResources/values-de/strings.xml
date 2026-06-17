@@ -69,6 +69,7 @@
     <string name="nutrition_grocery_cancel_edit">Abbrechen</string>
     <string name="nutrition_grocery_undo_delete">Artikel entfernt</string>
     <string name="nutrition_grocery_undo_action">Rückgängig</string>
+    <string name="nutrition_grocery_clear_checked_undo">Erledigte Artikel gelöscht</string>
     <string name="nutrition_grocery_duplicate">Dieser Artikel steht bereits auf der Liste</string>
     <string name="nutrition_grocery_toggle_item">Als gekauft markieren</string>
     <string name="nutrition_grocery_empty_active">Alles ist erledigt. Füge Artikel hinzu oder lösche erledigte unten.</string>
@@ -89,8 +90,11 @@
     <string name="nutrition_ai_meal_plan_summary_full_week">Speiseplan-Vorschau für die ganze Woche. Unten prüfen und übernehmen.</string>
     <string name="nutrition_ai_meal_plan_summary_single_day">Speiseplan-Vorschau für %1$s. Unten prüfen und übernehmen.</string>
     <string name="nutrition_ai_grocery_readonly_note">Nur-Lesen-Liste. Ihre bearbeitbare Liste ist unten.</string>
+    <string name="nutrition_ai_grocery_saved_readonly_note">Nur lesbare KI-Einkaufsvorschläge für diese Woche gespeichert.</string>
     <string name="nutrition_ai_clear_grocery">KI-Liste löschen</string>
+    <string name="nutrition_ai_grocery_cleared">KI-Einkaufsliste gelöscht</string>
     <string name="nutrition_ai_meal_plan_result_title">Vorschau</string>
+    <string name="nutrition_meal_plan_preview_line">%1$s: %2$s</string>
     <string name="nutrition_ai_apply_meal_plan">In Speiseplan übernehmen</string>
     <string name="nutrition_ai_suggestion_veggie_grocery">Vegetarische Einkäufe</string>
     <string name="nutrition_ai_suggestion_budget_grocery">Günstige Einkaufsliste</string>
