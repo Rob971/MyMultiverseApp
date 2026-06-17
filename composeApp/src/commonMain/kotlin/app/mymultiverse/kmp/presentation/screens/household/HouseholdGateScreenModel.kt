@@ -23,7 +23,12 @@ data class HouseholdGateUiState(
     val householdNameInput: String = "",
     val isCreating: Boolean = false,
     val pendingInvites: List<SpaceInvite> = emptyList(),
+    val inviteActionMessage: InviteActionMessage? = null,
 )
+
+enum class InviteActionMessage {
+    AcceptFailed,
+}
 
 class HouseholdGateScreenModel(
     private val householdRepository: HouseholdRepository,
@@ -115,6 +120,7 @@ class HouseholdGateScreenModel(
 
     fun acceptInvite(inviteId: String) {
         scope.launch {
+            _uiState.value = _uiState.value.copy(inviteActionMessage = null)
             collaborationRepository.acceptInvite(inviteId)
                 .onSuccess { refreshMembership() }
                 .onFailure { throwable ->
@@ -124,10 +130,14 @@ class HouseholdGateScreenModel(
                         throwable = throwable,
                     )
                     _uiState.value = _uiState.value.copy(
-                        membershipStatus = HouseholdMembershipStatus.Error(mapFailure(throwable)),
+                        inviteActionMessage = InviteActionMessage.AcceptFailed,
                     )
                 }
         }
+    }
+
+    fun clearInviteActionMessage() {
+        _uiState.value = _uiState.value.copy(inviteActionMessage = null)
     }
 
     fun declineInvite(inviteId: String) {

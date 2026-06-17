@@ -1,6 +1,7 @@
 package app.mymultiverse.kmp.data.supabase.dto
 
 import io.github.jan.supabase.postgrest.result.PostgrestResult
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 internal object HouseholdRpcDecoder {
@@ -15,6 +16,9 @@ internal object HouseholdRpcDecoder {
 
     fun decodeMembership(result: PostgrestResult): HouseholdMembershipRpcRow =
         decodePayload(result, "household_membership_decode_failed")
+
+    fun decodeInviteResult(result: PostgrestResult): InviteSpaceMemberRpcRow =
+        decodePayload(result, "invite_space_member_decode_failed")
 
     private inline fun <reified T> decodePayload(
         result: PostgrestResult,

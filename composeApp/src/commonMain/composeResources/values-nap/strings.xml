@@ -689,6 +689,9 @@
     <string name="sharing_members_error_email_not_found">Nisciuno account pe\' st\'email.</string>
     <string name="sharing_members_error_group_name_required">Miette nu nomme d\'o gruppo.</string>
     <string name="sharing_members_error_not_configured">Supabase nun è configurato n\'sta build.</string>
+    <string name="sharing_members_error_cannot_add_self">Nun te può invità te stesso.</string>
+    <string name="sharing_members_error_member_already_exists">Sta persona è già int\'a famiglia.</string>
+    <string name="sharing_members_error_insufficient_role">Nun tien\'e permesso pe\' gestì \'e membri.</string>
     <string name="sharing_members_loading">Caricamento membri...</string>
     <string name="nutrition_sync_status_syncing">Sto sincronizzanno 'a nutrizione condivisa...</string>
     <string name="nutrition_sync_status_pending">%1$d cagnature aspettanno 'a sync</string>
@@ -698,6 +701,7 @@
     <string name="auth_pending_invites_subtitle">T'han invitato a %1$s.</string>
     <string name="auth_pending_invites_accept">Accetta</string>
     <string name="auth_pending_invites_decline">Rifiuta</string>
+    <string name="auth_pending_invites_error_generic">Nun s\'è pututo accettà ll\'invito. Próva arreto.</string>
     <string name="sharing_members_role_owner">Proprietario</string>
     <string name="sharing_members_role_editor">Editor</string>
     <string name="sharing_members_role_viewer">Chi guarda</string>

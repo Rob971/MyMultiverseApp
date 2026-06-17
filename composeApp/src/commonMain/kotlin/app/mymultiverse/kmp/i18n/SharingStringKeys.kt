@@ -16,6 +16,9 @@ object SharingStringKeys {
         "sharing_members_error_email_required",
         "sharing_members_error_email_not_found",
         "sharing_members_error_not_configured",
+        "sharing_members_error_cannot_add_self",
+        "sharing_members_error_member_already_exists",
+        "sharing_members_error_insufficient_role",
         "sharing_members_loading",
         "sharing_members_role_owner",
         "sharing_members_role_editor",
@@ -28,6 +31,7 @@ object SharingStringKeys {
         "sharing_members_pending_invites_title",
         "sharing_members_pending_invite_label",
         "sharing_members_read_only_hint",
+        "auth_pending_invites_error_generic",
     )
 
     val localeDirectories: List<String> = NutritionStringKeys.localeDirectories

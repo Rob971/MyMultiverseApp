@@ -44,8 +44,11 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_member
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_email_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_email_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_empty
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_cannot_add_self
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_email_required
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_generic
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_insufficient_role
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_member_already_exists
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_not_configured
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_sent
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_loading
@@ -67,6 +70,8 @@ import org.koin.compose.koinInject
 
 object HouseholdMembersTestTags {
     const val ADD_PERSON_BUTTON = "household_members_add_person"
+    const val ADD_PERSON_CONFIRM_BUTTON = "household_members_add_person_confirm"
+    const val ADD_PERSON_DIALOG_ERROR = "household_members_add_person_error"
     const val MEMBER_ROW = "household_members_row"
     const val PENDING_INVITE_ROW = "household_members_pending_invite"
 }
@@ -83,6 +88,7 @@ fun HouseholdMembersScreen(
     val ownerFallback = stringResource(Res.string.sharing_members_owner_fallback)
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage = uiState.error?.let { error -> mapErrorMessage(error) }
+    val dialogErrorMessage = uiState.dialogError?.let { error -> mapErrorMessage(error) }
     val successMessage = uiState.successMessageKey?.let { success ->
         when (success) {
             HouseholdMembersSuccess.InviteSent -> stringResource(Res.string.sharing_members_invite_sent)
@@ -204,8 +210,17 @@ fun HouseholdMembersScreen(
                         label = { Text(stringResource(Res.string.sharing_members_email_label)) },
                         placeholder = { Text(stringResource(Res.string.sharing_members_email_hint)) },
                         singleLine = true,
+                        enabled = !uiState.isSaving,
+                        isError = dialogErrorMessage != null,
                         modifier = Modifier.fillMaxWidth(),
                     )
+                    if (dialogErrorMessage != null) {
+                        Text(
+                            text = dialogErrorMessage,
+                            color = SharedJourneyColors.TerracottaOrange,
+                            modifier = Modifier.testTag(HouseholdMembersTestTags.ADD_PERSON_DIALOG_ERROR),
+                        )
+                    }
                     Text(stringResource(Res.string.sharing_members_select_role))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FilterChip(
@@ -225,12 +240,22 @@ fun HouseholdMembersScreen(
                 Button(
                     onClick = { screenModel.submitAddPerson(household.id) },
                     enabled = !uiState.isSaving,
+                    modifier = Modifier.testTag(HouseholdMembersTestTags.ADD_PERSON_CONFIRM_BUTTON),
                 ) {
+                    if (uiState.isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(end = 8.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    }
                     Text(stringResource(Res.string.sharing_members_confirm_add))
                 }
             },
             dismissButton = {
-                TextButton(onClick = screenModel::dismissDialogs) {
+                TextButton(
+                    onClick = screenModel::dismissDialogs,
+                    enabled = !uiState.isSaving,
+                ) {
                     Text(stringResource(Res.string.sharing_members_cancel))
                 }
             },
@@ -244,6 +269,9 @@ private fun mapErrorMessage(error: HouseholdMembersError): String =
         HouseholdMembersError.Generic -> stringResource(Res.string.sharing_members_error_generic)
         HouseholdMembersError.EmailRequired -> stringResource(Res.string.sharing_members_error_email_required)
         HouseholdMembersError.NotConfigured -> stringResource(Res.string.sharing_members_error_not_configured)
+        HouseholdMembersError.CannotAddSelf -> stringResource(Res.string.sharing_members_error_cannot_add_self)
+        HouseholdMembersError.MemberAlreadyExists -> stringResource(Res.string.sharing_members_error_member_already_exists)
+        HouseholdMembersError.InsufficientRole -> stringResource(Res.string.sharing_members_error_insufficient_role)
     }
 
 @Composable

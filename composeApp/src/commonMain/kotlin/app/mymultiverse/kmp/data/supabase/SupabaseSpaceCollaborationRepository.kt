@@ -1,5 +1,6 @@
 package app.mymultiverse.kmp.data.supabase
 
+import app.mymultiverse.kmp.data.supabase.dto.HouseholdRpcDecoder
 import app.mymultiverse.kmp.data.supabase.dto.ProfileInsertRow
 import app.mymultiverse.kmp.data.supabase.dto.ProfileRow
 import app.mymultiverse.kmp.data.supabase.dto.SpaceInviteInsertRow
@@ -15,6 +16,7 @@ import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberKind
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
 import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.kmp.domain.sharing.activeInvites
 import app.mymultiverse.kmp.domain.sharing.emailsMatch
 import io.github.jan.supabase.SupabaseClient
@@ -131,39 +133,34 @@ class SupabaseSpaceCollaborationRepository(
         role: SpaceMemberRole,
     ): Result<AddMemberResult> = runCatching {
         val trimmed = email.trim()
-        require(trimmed.isNotEmpty()) { "member_email_required" }
+        require(trimmed.isNotEmpty()) { CollaborationErrorCodes.MEMBER_EMAIL_REQUIRED }
+        require(role != SpaceMemberRole.Owner) { CollaborationErrorCodes.INSUFFICIENT_ROLE }
 
-        val normalizedEmail = trimmed.lowercase()
-        val profileId = findProfileIdByEmail(normalizedEmail)
         val currentUserId = requireUserId()
         ensureProfile(currentUserId)
 
-        if (profileId == null) {
-            sendOrRefreshInvite(
-                spaceId = spaceId,
-                email = normalizedEmail,
-                role = role,
-                invitedBy = currentUserId,
-            )
-            refreshOutboundInvites(spaceId)
-            return@runCatching AddMemberResult.InviteSent
+        val row = HouseholdRpcDecoder.decodeInviteResult(
+            client.postgrest.rpc(
+                "invite_space_member",
+                buildJsonObject {
+                    put("p_space_id", spaceId)
+                    put("p_email", trimmed)
+                    put("p_role", role.wireName())
+                },
+            ),
+        )
+
+        when (row.result) {
+            "invited" -> {
+                refreshOutboundInvites(spaceId)
+                AddMemberResult.InviteSent
+            }
+            "added" -> {
+                refreshMembers(spaceId, currentUserId, currentProfileDisplayName(currentUserId))
+                AddMemberResult.Added
+            }
+            else -> throw IllegalStateException("invite_space_member_unexpected_result")
         }
-
-        if (profileId == currentUserId) {
-            throw IllegalArgumentException("member_cannot_add_self")
-        }
-
-        client.postgrest["space_members"]
-            .insert(
-                SpaceMemberInsertRow(
-                    spaceId = spaceId,
-                    userId = profileId,
-                    role = role.wireName(),
-                ),
-            )
-
-        refreshMembers(spaceId, currentUserId, currentProfileDisplayName(currentUserId))
-        AddMemberResult.Added
     }
 
     override suspend fun removeMember(memberId: String): Result<Unit> = runCatching {

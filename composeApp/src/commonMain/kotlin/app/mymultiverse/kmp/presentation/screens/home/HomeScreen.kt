@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -28,6 +30,7 @@ import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
 import org.koin.compose.koinInject
 
 object HomeTestTags {
@@ -39,6 +42,7 @@ object HomeTestTags {
     const val GREETING_LINE = "home_greeting_line"
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onOpenNutrition: () -> Unit,
@@ -51,21 +55,53 @@ fun HomeScreen(
     val hasActiveHousehold by screenModel.hasActiveHousehold.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val pendingInvites by screenModel.pendingInvites.collectAsState()
+    val inviteActionMessage by screenModel.inviteActionMessage.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val inviteErrorMessage = stringResource(Res.string.auth_pending_invites_error_generic)
 
-    HomeContent(
-        greeting = greeting,
-        userDisplayName = userDisplayName,
-        householdName = household?.name,
-        hasActiveHousehold = hasActiveHousehold,
-        isRefreshing = isRefreshing,
-        pendingInvites = pendingInvites,
-        onRefreshClick = { screenModel.refresh() },
-        onOpenNutrition = onOpenNutrition,
-        onOpenHouseholdMembers = onOpenHouseholdMembers,
-        onSignOut = { screenModel.signOut() },
-        onAcceptInvite = screenModel::acceptInvite,
-        onDeclineInvite = screenModel::declineInvite,
-    )
+    LaunchedEffect(inviteActionMessage) {
+        if (inviteActionMessage == InviteActionMessage.AcceptFailed) {
+            snackbarHostState.showSnackbar(inviteErrorMessage)
+            screenModel.clearInviteActionMessage()
+        }
+    }
+
+    Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = { },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                actions = {
+                    TextButton(
+                        onClick = { screenModel.signOut() },
+                        modifier = Modifier.testTag(HomeTestTags.SIGN_OUT_BUTTON),
+                    ) {
+                        Text(stringResource(Res.string.auth_sign_out))
+                    }
+                    LanguagePicker()
+                },
+            )
+        },
+        containerColor = Color.Transparent,
+    ) { padding ->
+        HomeContent(
+            greeting = greeting,
+            userDisplayName = userDisplayName,
+            householdName = household?.name,
+            hasActiveHousehold = hasActiveHousehold,
+            isRefreshing = isRefreshing,
+            pendingInvites = pendingInvites,
+            onRefreshClick = { screenModel.refresh() },
+            onOpenNutrition = onOpenNutrition,
+            onOpenHouseholdMembers = onOpenHouseholdMembers,
+            onSignOut = { screenModel.signOut() },
+            onAcceptInvite = screenModel::acceptInvite,
+            onDeclineInvite = screenModel::declineInvite,
+            modifier = Modifier.padding(padding),
+        )
+    }
 }
 
 @Composable
@@ -82,6 +118,7 @@ fun HomeContent(
     onSignOut: () -> Unit,
     onAcceptInvite: (String) -> Unit,
     onDeclineInvite: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
     val requiresHouseholdLabel = stringResource(Res.string.home_logistics_requires_household)
@@ -98,35 +135,14 @@ fun HomeContent(
         HomeGreetingSelection.Generic -> stringResource(Res.string.home_greeting)
     }
 
-    Scaffold(
-        contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = {
-            @OptIn(ExperimentalMaterial3Api::class)
-            TopAppBar(
-                title = { },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                actions = {
-                    TextButton(
-                        onClick = onSignOut,
-                        modifier = Modifier.testTag(HomeTestTags.SIGN_OUT_BUTTON),
-                    ) {
-                        Text(stringResource(Res.string.auth_sign_out))
-                    }
-                    LanguagePicker()
-                },
-            )
-        },
-        containerColor = Color.Transparent,
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .navigationBarsPadding()
-                .imePadding(),
-            contentPadding = screenListPadding(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .navigationBarsPadding()
+            .imePadding(),
+        contentPadding = screenListPadding(),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
             item {
                 JourneyBanner(
                     headline = stringResource(Res.string.home_banner_headline),
@@ -262,5 +278,4 @@ fun HomeContent(
                 )
             }
         }
-    }
 }

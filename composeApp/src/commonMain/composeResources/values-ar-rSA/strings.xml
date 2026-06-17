@@ -689,6 +689,9 @@
     <string name="sharing_members_error_email_not_found">لا يوجد حساب بهذا البريد بعد.</string>
     <string name="sharing_members_error_group_name_required">أدخل اسم المجموعة.</string>
     <string name="sharing_members_error_not_configured">لم يتم إعداد Supabase في هذا الإصدار.</string>
+    <string name="sharing_members_error_cannot_add_self">لا يمكنك دعوة نفسك.</string>
+    <string name="sharing_members_error_member_already_exists">هذا الشخص موجود بالفعل في أسرتك.</string>
+    <string name="sharing_members_error_insufficient_role">ليس لديك إذن لإدارة الأعضاء.</string>
     <string name="sharing_members_loading">جارٍ تحميل الأعضاء...</string>
     <string name="nutrition_sync_status_syncing">جارٍ مزامنة التغذية المشتركة...</string>
     <string name="nutrition_sync_status_pending">%1$d تغييرات بانتظار المزامنة</string>
@@ -698,6 +701,7 @@
     <string name="auth_pending_invites_subtitle">تمت دعوتك للانضمام إلى %1$s.</string>
     <string name="auth_pending_invites_accept">قبول</string>
     <string name="auth_pending_invites_decline">رفض</string>
+    <string name="auth_pending_invites_error_generic">تعذر قبول الدعوة. حاول مرة أخرى.</string>
     <string name="sharing_members_role_owner">المالك</string>
     <string name="sharing_members_role_editor">محرر</string>
     <string name="sharing_members_role_viewer">مشاهد</string>

@@ -5,8 +5,10 @@ import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
 import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +20,9 @@ sealed interface HouseholdMembersError {
     data object Generic : HouseholdMembersError
     data object EmailRequired : HouseholdMembersError
     data object NotConfigured : HouseholdMembersError
+    data object CannotAddSelf : HouseholdMembersError
+    data object MemberAlreadyExists : HouseholdMembersError
+    data object InsufficientRole : HouseholdMembersError
 }
 
 data class HouseholdMembersUiState(
@@ -31,6 +36,7 @@ data class HouseholdMembersUiState(
     val selectedRole: SpaceMemberRole = SpaceMemberRole.Editor,
     val successMessageKey: HouseholdMembersSuccess? = null,
     val error: HouseholdMembersError? = null,
+    val dialogError: HouseholdMembersError? = null,
 )
 
 enum class HouseholdMembersSuccess {
@@ -48,6 +54,7 @@ class HouseholdMembersScreenModel(
     private var activeSpaceId: String? = null
     private var activeOwnerId: String = ""
     private var activeOwnerDisplayName: String = ""
+    private var observeJob: Job? = null
 
     fun bindHousehold(
         spaceId: String,
@@ -68,14 +75,17 @@ class HouseholdMembersScreenModel(
         activeOwnerDisplayName = ownerDisplayName
         _uiState.update { it.copy(canManageMembers = canManage) }
 
-        scope.launch {
-            collaborationRepository.observeMembers(spaceId).collect { members ->
-                _uiState.update { it.copy(members = members) }
+        observeJob?.cancel()
+        observeJob = scope.launch {
+            launch {
+                collaborationRepository.observeMembers(spaceId).collect { members ->
+                    _uiState.update { it.copy(members = members) }
+                }
             }
-        }
-        scope.launch {
-            collaborationRepository.observeOutboundInvites(spaceId).collect { invites ->
-                _uiState.update { it.copy(outboundInvites = invites) }
+            launch {
+                collaborationRepository.observeOutboundInvites(spaceId).collect { invites ->
+                    _uiState.update { it.copy(outboundInvites = invites) }
+                }
             }
         }
         refresh(spaceId)
@@ -104,6 +114,7 @@ class HouseholdMembersScreenModel(
                 emailInput = "",
                 selectedRole = SpaceMemberRole.Editor,
                 error = null,
+                dialogError = null,
                 successMessageKey = null,
             )
         }
@@ -113,48 +124,58 @@ class HouseholdMembersScreenModel(
         _uiState.update {
             it.copy(
                 showAddPersonDialog = false,
-                error = null,
+                dialogError = null,
             )
         }
     }
 
     fun onEmailChange(value: String) {
-        _uiState.update { it.copy(emailInput = value, error = null) }
+        _uiState.update { it.copy(emailInput = value, dialogError = null) }
     }
 
     fun onRoleChange(role: SpaceMemberRole) {
-        _uiState.update { it.copy(selectedRole = role, error = null) }
+        _uiState.update { it.copy(selectedRole = role, dialogError = null) }
     }
 
     fun submitAddPerson(spaceId: String) {
-        val email = _uiState.value.emailInput
+        val email = _uiState.value.emailInput.trim()
         if (email.isBlank()) {
-            _uiState.update { it.copy(error = HouseholdMembersError.EmailRequired) }
+            _uiState.update { it.copy(dialogError = HouseholdMembersError.EmailRequired) }
             return
         }
         scope.launch {
-            _uiState.update { it.copy(isSaving = true, error = null) }
+            _uiState.update { it.copy(isSaving = true, dialogError = null, error = null) }
             val result = collaborationRepository.addMemberByEmail(
                 spaceId = spaceId,
                 email = email,
                 role = _uiState.value.selectedRole,
             )
-            _uiState.update { state ->
-                state.copy(
-                    isSaving = false,
-                    showAddPersonDialog = result.isFailure,
-                    successMessageKey = when {
-                        result.isFailure -> null
-                        result.getOrNull() == AddMemberResult.InviteSent -> HouseholdMembersSuccess.InviteSent
-                        else -> HouseholdMembersSuccess.MemberAdded
-                    },
-                    error = result.exceptionOrNull()?.let { mapFailure(it) },
-                )
-            }
-            if (result.isSuccess) {
-                collaborationRepository.refreshMembers(spaceId, activeOwnerId, activeOwnerDisplayName)
-                collaborationRepository.refreshOutboundInvites(spaceId)
-            }
+            result
+                .onSuccess { addResult ->
+                    collaborationRepository.refreshMembers(spaceId, activeOwnerId, activeOwnerDisplayName)
+                    collaborationRepository.refreshOutboundInvites(spaceId)
+                    _uiState.update { state ->
+                        state.copy(
+                            isSaving = false,
+                            showAddPersonDialog = false,
+                            emailInput = "",
+                            dialogError = null,
+                            successMessageKey = when (addResult) {
+                                AddMemberResult.InviteSent -> HouseholdMembersSuccess.InviteSent
+                                AddMemberResult.Added -> HouseholdMembersSuccess.MemberAdded
+                            },
+                        )
+                    }
+                }
+                .onFailure { throwable ->
+                    _uiState.update { state ->
+                        state.copy(
+                            isSaving = false,
+                            showAddPersonDialog = true,
+                            dialogError = mapFailure(throwable),
+                        )
+                    }
+                }
         }
     }
 
@@ -179,10 +200,20 @@ class HouseholdMembersScreenModel(
         _uiState.update { it.copy(successMessageKey = null) }
     }
 
-    private fun mapFailure(throwable: Throwable): HouseholdMembersError =
-        when (throwable.message) {
-            "member_email_required" -> HouseholdMembersError.EmailRequired
-            "supabase_not_configured" -> HouseholdMembersError.NotConfigured
+    private fun mapFailure(throwable: Throwable): HouseholdMembersError {
+        val message = throwable.message
+        return when {
+            CollaborationErrorCodes.messageContains(CollaborationErrorCodes.MEMBER_EMAIL_REQUIRED, message) ->
+                HouseholdMembersError.EmailRequired
+            CollaborationErrorCodes.messageContains(CollaborationErrorCodes.SUPABASE_NOT_CONFIGURED, message) ->
+                HouseholdMembersError.NotConfigured
+            CollaborationErrorCodes.messageContains(CollaborationErrorCodes.MEMBER_CANNOT_ADD_SELF, message) ->
+                HouseholdMembersError.CannotAddSelf
+            CollaborationErrorCodes.messageContains(CollaborationErrorCodes.MEMBER_ALREADY_EXISTS, message) ->
+                HouseholdMembersError.MemberAlreadyExists
+            CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INSUFFICIENT_ROLE, message) ->
+                HouseholdMembersError.InsufficientRole
             else -> HouseholdMembersError.Generic
         }
+    }
 }

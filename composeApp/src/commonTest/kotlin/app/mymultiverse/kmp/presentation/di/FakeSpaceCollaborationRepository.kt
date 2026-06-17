@@ -17,6 +17,7 @@ class FakeSpaceCollaborationRepository : SpaceCollaborationRepository {
     private val outboundInvitesBySpace = mutableMapOf<String, MutableStateFlow<List<SpaceInvite>>>()
     private val pendingInvites = MutableStateFlow<List<SpaceInvite>>(emptyList())
     var inboundProfileEmail: String = "invitee@example.com"
+    var addMemberFailure: Throwable? = null
 
     override fun observeMembers(spaceId: String): Flow<List<SpaceMember>> =
         membersFlow(spaceId).asStateFlow()
@@ -55,6 +56,7 @@ class FakeSpaceCollaborationRepository : SpaceCollaborationRepository {
         email: String,
         role: SpaceMemberRole,
     ): Result<AddMemberResult> {
+        addMemberFailure?.let { return Result.failure(it) }
         val trimmed = email.trim()
         if (trimmed.isEmpty()) return Result.failure(IllegalArgumentException("member_email_required"))
         if (trimmed.contains("invite")) {

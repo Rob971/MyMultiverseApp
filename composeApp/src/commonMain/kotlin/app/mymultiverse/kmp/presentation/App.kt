@@ -111,7 +111,7 @@ private fun AuthenticatedMainApp() {
             household = route.household,
             onBack = navigator::navigateBack,
             onHouseholdReady = { household ->
-                navigator.navigateTo(AppRoute.HouseholdMembers(household = household))
+                navigator.replaceCurrent(AppRoute.HouseholdMembers(household = household))
             },
         )
 
@@ -128,7 +128,7 @@ private fun AuthenticatedMainApp() {
                 )
             },
             onSpaceSelected = { space ->
-                navigator.navigateTo(
+                navigator.replaceCurrent(
                     AppRoute.Nutrition(
                         space = space,
                         section = NutritionSection.Hub,

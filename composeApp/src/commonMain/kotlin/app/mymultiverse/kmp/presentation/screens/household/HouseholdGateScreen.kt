@@ -16,14 +16,18 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,6 +43,7 @@ import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_pending_invites_error_generic
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_sign_out
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.household_gate_create_button
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.household_gate_create_title
@@ -75,14 +80,25 @@ fun HouseholdGateScreen(
             onRetry = screenModel::refreshMembership,
             onSignOut = screenModel::signOut,
         )
-        HouseholdMembershipStatus.None -> HouseholdGateOnboardingContent(
-            uiState = uiState,
-            onNameChange = screenModel::onHouseholdNameChange,
-            onCreate = screenModel::createHousehold,
-            onAcceptInvite = screenModel::acceptInvite,
-            onDeclineInvite = screenModel::declineInvite,
-            onSignOut = screenModel::signOut,
-        )
+        HouseholdMembershipStatus.None -> {
+            val snackbarHostState = remember { SnackbarHostState() }
+            val inviteErrorMessage = stringResource(Res.string.auth_pending_invites_error_generic)
+            LaunchedEffect(uiState.inviteActionMessage) {
+                if (uiState.inviteActionMessage == InviteActionMessage.AcceptFailed) {
+                    snackbarHostState.showSnackbar(inviteErrorMessage)
+                    screenModel.clearInviteActionMessage()
+                }
+            }
+            HouseholdGateOnboardingContent(
+                uiState = uiState,
+                snackbarHostState = snackbarHostState,
+                onNameChange = screenModel::onHouseholdNameChange,
+                onCreate = screenModel::createHousehold,
+                onAcceptInvite = screenModel::acceptInvite,
+                onDeclineInvite = screenModel::declineInvite,
+                onSignOut = screenModel::signOut,
+            )
+        }
         is HouseholdMembershipStatus.Active -> Unit
     }
 }
@@ -157,6 +173,7 @@ private fun HouseholdGateErrorContent(
 @Composable
 private fun HouseholdGateOnboardingContent(
     uiState: HouseholdGateUiState,
+    snackbarHostState: SnackbarHostState,
     onNameChange: (String) -> Unit,
     onCreate: () -> Unit,
     onAcceptInvite: (String) -> Unit,
@@ -165,6 +182,7 @@ private fun HouseholdGateOnboardingContent(
 ) {
     Scaffold(
         topBar = { HouseholdGateTopBar(onSignOut = onSignOut) },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color.Transparent,
     ) { padding ->
         Column(

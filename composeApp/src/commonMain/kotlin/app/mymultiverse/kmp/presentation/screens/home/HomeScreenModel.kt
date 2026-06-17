@@ -1,6 +1,7 @@
 package app.mymultiverse.kmp.presentation.screens.home
 
 import app.mymultiverse.kmp.domain.model.Greeting
+import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.auth.resolvedDisplayName
 import app.mymultiverse.kmp.domain.model.sharing.Household
@@ -10,7 +11,7 @@ import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
-import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
+import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -43,6 +44,9 @@ class HomeScreenModel(
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    private val _inviteActionMessage = MutableStateFlow<InviteActionMessage?>(null)
+    val inviteActionMessage: StateFlow<InviteActionMessage?> = _inviteActionMessage.asStateFlow()
 
     val pendingInvites: StateFlow<List<SpaceInvite>> = collaborationRepository
         .observePendingInvites()
@@ -103,6 +107,7 @@ class HomeScreenModel(
 
     fun acceptInvite(inviteId: String) {
         scope.launch {
+            _inviteActionMessage.value = null
             collaborationRepository.acceptInvite(inviteId)
                 .onSuccess {
                     householdRepository.refreshMembership()
@@ -112,7 +117,14 @@ class HomeScreenModel(
                             }
                         }
                 }
+                .onFailure {
+                    _inviteActionMessage.value = InviteActionMessage.AcceptFailed
+                }
         }
+    }
+
+    fun clearInviteActionMessage() {
+        _inviteActionMessage.value = null
     }
 
     fun declineInvite(inviteId: String) {

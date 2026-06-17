@@ -5,7 +5,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 /**
- * Documents the in-memory navigation contract used by [app.mymultiverse.kmp.presentation.App].
+ * Documents route shapes used by [app.mymultiverse.kmp.presentation.App].
+ * Back-stack behaviour is covered by [AppNavigatorTest].
  */
 class AppNavigationTest {
 

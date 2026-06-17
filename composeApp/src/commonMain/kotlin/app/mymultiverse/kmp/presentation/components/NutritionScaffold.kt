@@ -14,10 +14,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.action_back
 import org.jetbrains.compose.resources.stringResource
+import app.mymultiverse.kmp.presentation.navigation.NavigationTestTags
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
@@ -63,7 +65,10 @@ fun NutritionScaffold(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier.testTag(NavigationTestTags.BACK_BUTTON),
+                    ) {
                         Icon(
                             imageVector = AppIcons.ArrowBack,
                             contentDescription = backLabel,

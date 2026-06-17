@@ -42,7 +42,7 @@ class HouseholdMembersScreenModelTest {
     }
 
     @Test
-    fun submitAddPerson_withUnknownEmail_sendsInviteAndTracksOutbound() = runTest(testDispatcher) {
+    fun submitAddPerson_withUnknownEmail_closesDialogAndTracksOutbound() = runTest(testDispatcher) {
         model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddPersonDialog()
         model.onEmailChange("invite@example.com")
@@ -51,9 +51,36 @@ class HouseholdMembersScreenModelTest {
         model.submitAddPerson("space-1")
         advanceUntilIdle()
 
+        assertFalse(model.uiState.value.showAddPersonDialog)
         assertEquals(HouseholdMembersSuccess.InviteSent, model.uiState.value.successMessageKey)
         assertEquals(1, model.uiState.value.outboundInvites.size)
         assertEquals("invite@example.com", model.uiState.value.outboundInvites.single().email)
+    }
+
+    @Test
+    fun submitAddPerson_withBlankEmail_keepsDialogOpenWithInlineError() = runTest(testDispatcher) {
+        model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.openAddPersonDialog()
+
+        model.submitAddPerson("space-1")
+        advanceUntilIdle()
+
+        assertTrue(model.uiState.value.showAddPersonDialog)
+        assertEquals(HouseholdMembersError.EmailRequired, model.uiState.value.dialogError)
+    }
+
+    @Test
+    fun submitAddPerson_whenRepositoryFails_keepsDialogOpenWithError() = runTest(testDispatcher) {
+        repository.addMemberFailure = IllegalStateException("insufficient_role")
+        model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.openAddPersonDialog()
+        model.onEmailChange("partner@example.com")
+
+        model.submitAddPerson("space-1")
+        advanceUntilIdle()
+
+        assertTrue(model.uiState.value.showAddPersonDialog)
+        assertEquals(HouseholdMembersError.InsufficientRole, model.uiState.value.dialogError)
     }
 
     @Test

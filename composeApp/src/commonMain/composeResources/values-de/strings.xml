@@ -689,6 +689,9 @@
     <string name="sharing_members_error_email_not_found">Für diese E-Mail wurde noch kein Konto gefunden.</string>
     <string name="sharing_members_error_group_name_required">Bitte einen Gruppennamen eingeben.</string>
     <string name="sharing_members_error_not_configured">Supabase ist in diesem Build nicht konfiguriert.</string>
+    <string name="sharing_members_error_cannot_add_self">Du kannst dich nicht selbst einladen.</string>
+    <string name="sharing_members_error_member_already_exists">Diese Person ist bereits in deinem Haushalt.</string>
+    <string name="sharing_members_error_insufficient_role">Du hast keine Berechtigung, Mitglieder zu verwalten.</string>
     <string name="sharing_members_loading">Mitglieder werden geladen...</string>
     <string name="nutrition_sync_status_syncing">Geteilte Ernährung wird synchronisiert...</string>
     <string name="nutrition_sync_status_pending">%1$d Änderungen warten auf Sync</string>
@@ -698,6 +701,7 @@
     <string name="auth_pending_invites_subtitle">Du wurdest eingeladen, %1$s beizutreten.</string>
     <string name="auth_pending_invites_accept">Annehmen</string>
     <string name="auth_pending_invites_decline">Ablehnen</string>
+    <string name="auth_pending_invites_error_generic">Einladung konnte nicht angenommen werden. Bitte erneut versuchen.</string>
     <string name="sharing_members_role_owner">Besitzer</string>
     <string name="sharing_members_role_editor">Bearbeiter</string>
     <string name="sharing_members_role_viewer">Betrachter</string>

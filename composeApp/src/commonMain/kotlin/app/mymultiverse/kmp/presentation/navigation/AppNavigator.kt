@@ -19,6 +19,16 @@ class AppNavigator internal constructor(
         backStack.add(route)
     }
 
+    /** Replaces the visible destination without growing the stack (e.g. gate → resolved screen). */
+    fun replaceCurrent(route: AppRoute) {
+        if (backStack.isEmpty()) {
+            backStack.add(route)
+            return
+        }
+        if (backStack.last() == route) return
+        backStack[backStack.lastIndex] = route
+    }
+
     fun navigateBack() {
         if (backStack.size > 1) {
             backStack.removeAt(backStack.lastIndex)
