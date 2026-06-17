@@ -6,6 +6,7 @@ import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiPlanner
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
+import app.mymultiverse.kmp.domain.repository.NutritionSpaceSelectionStore
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +40,20 @@ class InstrumentedNutritionRepository(
 
     override suspend fun saveMealPlan(plan: WeeklyMealPlan) {
         mealPlan.value = plan
+    }
+}
+
+class InstrumentedNutritionSpaceSelectionStore : NutritionSpaceSelectionStore {
+    val activeSpaceId = MutableStateFlow<String?>(null)
+
+    override fun observeActiveSpaceId(): Flow<String?> = activeSpaceId.asStateFlow()
+
+    override suspend fun setActiveSpaceId(spaceId: String) {
+        activeSpaceId.value = spaceId
+    }
+
+    override suspend fun clearActiveSpaceId() {
+        activeSpaceId.value = null
     }
 }
 
