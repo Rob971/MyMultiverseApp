@@ -738,4 +738,16 @@
     <string name="sharing_members_owner_transfer_required">Trasferisci la proprietà a un altro membro prima di uscire mentre altri restano nella famiglia.</string>
     <string name="sharing_members_error_member_limit">Questa famiglia ha raggiunto il limite di 20 membri.</string>
     <string name="sharing_members_error_owner_transfer_required">Trasferisci la proprietà prima di lasciare o eliminare la famiglia.</string>
+    <string name="sharing_members_transfer_ownership">Trasferisci proprietà</string>
+    <string name="sharing_members_transfer_title">Trasferisci proprietà</string>
+    <string name="sharing_members_transfer_pick_member">Scegli il nuovo proprietario</string>
+    <string name="sharing_members_transfer_confirm_message">%1$s diventerà proprietario della famiglia. Tu diventerai editor e potrai uscire dopo.</string>
+    <string name="sharing_members_transfer_confirm">Trasferisci</string>
+    <string name="sharing_members_transfer_success">Proprietà trasferita a %1$s.</string>
+    <string name="sharing_members_error_transfer_target">Scegli un membro della famiglia per il trasferimento.</string>
+    <string name="sharing_members_error_transfer_failed">Impossibile trasferire la proprietà. Riprova.</string>
+    <string name="sharing_members_leave_gdpr_note">Perderai l'accesso ai dati condivisi della famiglia. Le tue modifiche possono restare visibili agli altri membri.</string>
+    <string name="home_export_personal_data">Esporta i miei dati</string>
+    <string name="home_export_personal_data_success">L'esportazione dei dati personali è pronta.</string>
+    <string name="home_export_personal_data_error">Impossibile esportare i dati. Riprova.</string>
 </resources>

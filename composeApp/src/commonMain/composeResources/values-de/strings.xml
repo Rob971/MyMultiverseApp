@@ -738,4 +738,16 @@
     <string name="sharing_members_owner_transfer_required">Übertrage die Inhaberschaft an ein anderes Mitglied, bevor du gehst, solange noch andere im Haushalt sind.</string>
     <string name="sharing_members_error_member_limit">Dieser Haushalt hat das Limit von 20 Mitgliedern erreicht.</string>
     <string name="sharing_members_error_owner_transfer_required">Übertrage die Inhaberschaft, bevor du den Haushalt verlässt oder löschst.</string>
+    <string name="sharing_members_transfer_ownership">Eigentum übertragen</string>
+    <string name="sharing_members_transfer_title">Eigentum übertragen</string>
+    <string name="sharing_members_transfer_pick_member">Neuen Eigentümer wählen</string>
+    <string name="sharing_members_transfer_confirm_message">%1$s wird Haushaltsinhaber. Du wirst Bearbeiter und kannst danach austreten.</string>
+    <string name="sharing_members_transfer_confirm">Übertragen</string>
+    <string name="sharing_members_transfer_success">Eigentum an %1$s übertragen.</string>
+    <string name="sharing_members_error_transfer_target">Wähle ein Haushaltsmitglied für die Übertragung.</string>
+    <string name="sharing_members_error_transfer_failed">Übertragung fehlgeschlagen. Bitte erneut versuchen.</string>
+    <string name="sharing_members_leave_gdpr_note">Du verlierst den Zugriff auf gemeinsame Haushaltsdaten. Deine Änderungen können für andere sichtbar bleiben.</string>
+    <string name="home_export_personal_data">Meine Daten exportieren</string>
+    <string name="home_export_personal_data_success">Der Export deiner personenbezogenen Daten ist bereit.</string>
+    <string name="home_export_personal_data_error">Datenexport fehlgeschlagen. Bitte erneut versuchen.</string>
 </resources>

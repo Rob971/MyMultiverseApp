@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SpaceMemberRow(
     val id: String,
-    @SerialName("space_id") val spaceId: String,
+    @SerialName("household_id") val spaceId: String,
     @SerialName("user_id") val userId: String? = null,
     @SerialName("group_id") val groupId: String? = null,
     val role: String,
@@ -14,7 +14,7 @@ data class SpaceMemberRow(
 
 @Serializable
 data class SpaceMemberInsertRow(
-    @SerialName("space_id") val spaceId: String,
+    @SerialName("household_id") val spaceId: String,
     @SerialName("user_id") val userId: String? = null,
     @SerialName("group_id") val groupId: String? = null,
     val role: String = "editor",
@@ -64,7 +64,7 @@ data class GroupMemberRow(
 @Serializable
 data class SpaceInviteRow(
     val id: String,
-    @SerialName("space_id") val spaceId: String,
+    @SerialName("household_id") val spaceId: String,
     val email: String,
     val role: String,
     @SerialName("expires_at") val expiresAt: String? = null,
@@ -74,7 +74,7 @@ data class SpaceInviteRow(
 
 @Serializable
 data class SpaceInviteInsertRow(
-    @SerialName("space_id") val spaceId: String,
+    @SerialName("household_id") val spaceId: String,
     val email: String,
     val role: String,
     @SerialName("invited_by") val invitedBy: String,

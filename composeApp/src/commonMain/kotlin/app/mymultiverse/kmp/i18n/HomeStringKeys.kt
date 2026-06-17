@@ -26,6 +26,9 @@ object HomeStringKeys {
         "home_greeting_personalized",
         "home_app_version",
         "home_app_version_rc",
+        "home_export_personal_data",
+        "home_export_personal_data_success",
+        "home_export_personal_data_error",
         "action_back",
     )
 

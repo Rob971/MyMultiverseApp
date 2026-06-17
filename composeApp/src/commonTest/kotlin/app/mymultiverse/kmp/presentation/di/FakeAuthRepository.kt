@@ -41,4 +41,7 @@ class FakeAuthRepository(
     override suspend fun signOut() {
         _authState.value = AuthState.Unauthenticated
     }
+
+    override suspend fun exportPersonalData(): Result<String> =
+        Result.success("""{"exported_at":"test","profile":{"email":"test@example.com"}}""")
 }

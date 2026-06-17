@@ -44,6 +44,8 @@ class FakeHouseholdRepository(
     var createCalls = 0
     var leaveCalls = 0
     var dissolveCalls = 0
+    var transferCalls = 0
+    var lastTransferTargetId: String? = null
     var lastCreatedName: String? = null
     var leaveFailure: Throwable? = null
     var dissolveFailure: Throwable? = null
@@ -95,6 +97,22 @@ class FakeHouseholdRepository(
         dissolveFailure?.let { return Result.failure(it) }
         membership.update { HouseholdMembershipStatus.None }
         state.update { null }
+        return Result.success(Unit)
+    }
+
+    override suspend fun transferOwnership(newOwnerUserId: String): Result<Unit> {
+        transferCalls++
+        lastTransferTargetId = newOwnerUserId
+        val current = membership.value
+        if (current is HouseholdMembershipStatus.Active) {
+            val updated = current.household.copy(ownerId = newOwnerUserId)
+            membership.update {
+                HouseholdMembershipStatus.Active(
+                    HouseholdMembership(household = updated, role = SpaceMemberRole.Editor),
+                )
+            }
+            state.update { updated }
+        }
         return Result.success(Unit)
     }
 

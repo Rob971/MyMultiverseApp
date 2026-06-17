@@ -147,6 +147,35 @@ class HouseholdMembersScreenModelTest {
     }
 
     @Test
+    fun confirmTransferOwnership_updatesHouseholdAndRefreshesMembers() = runTest(testDispatcher) {
+        repository.seedMember(
+            spaceId = "space-1",
+            member = app.mymultiverse.kmp.domain.model.sharing.SpaceMember(
+                id = "member-1",
+                spaceId = "space-1",
+                kind = app.mymultiverse.kmp.domain.model.sharing.SpaceMemberKind.Person,
+                displayName = "Partner",
+                role = SpaceMemberRole.Editor,
+                referenceId = "partner-id",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        advanceUntilIdle()
+
+        model.openTransferDialog()
+        model.selectTransferMember("partner-id")
+        model.confirmTransferOwnership("space-1")
+        advanceUntilIdle()
+
+        assertEquals(1, householdRepository.transferCalls)
+        assertEquals("partner-id", householdRepository.lastTransferTargetId)
+        assertEquals(HouseholdMembersSuccess.OwnershipTransferred, model.uiState.value.successMessageKey)
+        assertFalse(model.uiState.value.canManageMembers)
+    }
+
+    @Test
     fun household_withOwnerOnly_isNotReadyUntilSecondMemberJoins() = runTest(testDispatcher) {
         model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         advanceUntilIdle()

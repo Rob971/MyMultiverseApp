@@ -739,4 +739,16 @@
     <string name="sharing_members_owner_transfer_required">Transfer ownership to another member before you can leave while others remain in the household.</string>
     <string name="sharing_members_error_member_limit">This household has reached the 20-member limit.</string>
     <string name="sharing_members_error_owner_transfer_required">Transfer ownership before leaving or deleting the household.</string>
+    <string name="sharing_members_transfer_ownership">Transfer ownership</string>
+    <string name="sharing_members_transfer_title">Transfer ownership</string>
+    <string name="sharing_members_transfer_pick_member">Choose the new owner</string>
+    <string name="sharing_members_transfer_confirm_message">%1$s will become the household owner. You will become an editor and can leave afterward.</string>
+    <string name="sharing_members_transfer_confirm">Transfer</string>
+    <string name="sharing_members_transfer_success">Ownership transferred to %1$s.</string>
+    <string name="sharing_members_error_transfer_target">Choose a household member to transfer ownership to.</string>
+    <string name="sharing_members_error_transfer_failed">Could not transfer ownership. Try again.</string>
+    <string name="sharing_members_leave_gdpr_note">You will lose access to shared household data. Edits you made may remain visible to other members.</string>
+    <string name="home_export_personal_data">Export my data</string>
+    <string name="home_export_personal_data_success">Personal data export is ready.</string>
+    <string name="home_export_personal_data_error">Could not export your data. Try again.</string>
 </resources>

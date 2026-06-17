@@ -123,4 +123,23 @@ class FakeSpaceCollaborationRepository : SpaceCollaborationRepository {
 
     private fun outboundInvitesFlow(spaceId: String): MutableStateFlow<List<SpaceInvite>> =
         outboundInvitesBySpace.getOrPut(spaceId) { MutableStateFlow(emptyList()) }
+
+    fun seedMember(
+        spaceId: String,
+        member: SpaceMember,
+        ownerId: String,
+        ownerDisplayName: String,
+    ) {
+        membersFlow(spaceId).value = listOf(
+            SpaceMember(
+                id = "owner-$ownerId",
+                spaceId = spaceId,
+                kind = SpaceMemberKind.Person,
+                displayName = ownerDisplayName,
+                role = SpaceMemberRole.Owner,
+                referenceId = ownerId,
+            ),
+            member,
+        )
+    }
 }

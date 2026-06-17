@@ -10,6 +10,8 @@ import io.github.jan.supabase.auth.providers.Apple
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -82,6 +84,11 @@ class SupabaseAuthRepository(
 
     override suspend fun signOut() {
         client.auth.signOut()
+    }
+
+    override suspend fun exportPersonalData(): Result<String> = runCatching {
+        client.auth.awaitInitialization()
+        client.postgrest.rpc("export_my_personal_data").data
     }
 
     private suspend fun processOAuthRedirect(url: String) {

@@ -738,4 +738,16 @@
     <string name="sharing_members_owner_transfer_required">Transfiere la propiedad a otro miembro antes de irte mientras otros permanezcan en el hogar.</string>
     <string name="sharing_members_error_member_limit">Este hogar ha alcanzado el límite de 20 miembros.</string>
     <string name="sharing_members_error_owner_transfer_required">Transfiere la propiedad antes de abandonar o eliminar el hogar.</string>
+    <string name="sharing_members_transfer_ownership">Transferir propiedad</string>
+    <string name="sharing_members_transfer_title">Transferir propiedad</string>
+    <string name="sharing_members_transfer_pick_member">Elige el nuevo propietario</string>
+    <string name="sharing_members_transfer_confirm_message">%1$s será el propietario del hogar. Tú pasarás a ser editor y podrás salir después.</string>
+    <string name="sharing_members_transfer_confirm">Transferir</string>
+    <string name="sharing_members_transfer_success">Propiedad transferida a %1$s.</string>
+    <string name="sharing_members_error_transfer_target">Elige un miembro del hogar para transferir la propiedad.</string>
+    <string name="sharing_members_error_transfer_failed">No se pudo transferir la propiedad. Inténtalo de nuevo.</string>
+    <string name="sharing_members_leave_gdpr_note">Perderás acceso a los datos compartidos del hogar. Tus cambios pueden seguir visibles para otros miembros.</string>
+    <string name="home_export_personal_data">Exportar mis datos</string>
+    <string name="home_export_personal_data_success">La exportación de datos personales está lista.</string>
+    <string name="home_export_personal_data_error">No se pudieron exportar tus datos. Inténtalo de nuevo.</string>
 </resources>

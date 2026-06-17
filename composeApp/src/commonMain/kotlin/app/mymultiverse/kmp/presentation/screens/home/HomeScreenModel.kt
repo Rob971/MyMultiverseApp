@@ -124,6 +124,21 @@ class HomeScreenModel(
         }
     }
 
+    private val _personalDataExportMessage = MutableStateFlow<PersonalDataExportMessage?>(null)
+    val personalDataExportMessage: StateFlow<PersonalDataExportMessage?> = _personalDataExportMessage.asStateFlow()
+
+    fun exportPersonalData() {
+        scope.launch {
+            authRepository.exportPersonalData()
+                .onSuccess { _personalDataExportMessage.value = PersonalDataExportMessage.Success }
+                .onFailure { _personalDataExportMessage.value = PersonalDataExportMessage.Error }
+        }
+    }
+
+    fun clearPersonalDataExportMessage() {
+        _personalDataExportMessage.value = null
+    }
+
     fun onAcceptInviteClicked(invite: SpaceInvite) {
         if (latestMembershipStatus is HouseholdMembershipStatus.Active) {
             val currentName = (latestMembershipStatus as HouseholdMembershipStatus.Active).household.name

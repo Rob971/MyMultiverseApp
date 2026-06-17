@@ -101,6 +101,16 @@ class SupabaseHouseholdRepository(
         household.update { null }
     }
 
+    override suspend fun transferOwnership(newOwnerUserId: String): Result<Unit> = runCatching {
+        client.auth.awaitInitialization()
+        requireUserId()
+        client.postgrest.rpc(
+            "transfer_household_ownership",
+            buildJsonObject { put("p_new_owner_user_id", newOwnerUserId) },
+        )
+        refreshMembership()
+    }
+
     private suspend fun requireUserId(): String =
         client.auth.currentUserOrNull()?.id
             ?: client.auth.currentSessionOrNull()?.user?.id

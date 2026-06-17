@@ -738,4 +738,16 @@
     <string name="sharing_members_owner_transfer_required">Passa 'a pruprietà a n'atu membro primma 'e lassà mentr' 'e ll'ati stann' ancora int'a famiglia.</string>
     <string name="sharing_members_error_member_limit">Sta famiglia ha raggiunto 'o limite 'e 20 membri.</string>
     <string name="sharing_members_error_owner_transfer_required">Passa 'a pruprietà primma 'e lassà o scancellà 'a famiglia.</string>
+    <string name="sharing_members_transfer_ownership">Passa 'a pruprietà</string>
+    <string name="sharing_members_transfer_title">Passa 'a pruprietà</string>
+    <string name="sharing_members_transfer_pick_member">Scegli 'o pruprietario nuovo</string>
+    <string name="sharing_members_transfer_confirm_message">%1$s avess'a essere 'o pruprietario d' 'a famiglia. Tu aviss'a essere editor e può scignà dopo.</string>
+    <string name="sharing_members_transfer_confirm">Passa</string>
+    <string name="sharing_members_transfer_success">Pruprietà passata a %1$s.</string>
+    <string name="sharing_members_error_transfer_target">Scegli nu membro d' 'a famiglia pe' 'o passaggio.</string>
+    <string name="sharing_members_error_transfer_failed">Nun s'è pututo passà 'a pruprietà. Prova arreto.</string>
+    <string name="sharing_members_leave_gdpr_note">Perderai l'accesso a 'e date condivise d' 'a famiglia. 'E cagnamiente tune ponno restà visibbe pe' ll'ati membri.</string>
+    <string name="home_export_personal_data">Esporta 'e date mie</string>
+    <string name="home_export_personal_data_success">L'esportazione d' 'e date personale è pronta.</string>
+    <string name="home_export_personal_data_error">Nun s'è pututo esportà 'e date. Prova arreto.</string>
 </resources>

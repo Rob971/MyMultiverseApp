@@ -738,4 +738,16 @@
     <string name="sharing_members_owner_transfer_required">Transférez la propriété à un autre membre avant de partir tant que d'autres restent dans le foyer.</string>
     <string name="sharing_members_error_member_limit">Ce foyer a atteint la limite de 20 membres.</string>
     <string name="sharing_members_error_owner_transfer_required">Transférez la propriété avant de quitter ou supprimer le foyer.</string>
+    <string name="sharing_members_transfer_ownership">Transférer la propriété</string>
+    <string name="sharing_members_transfer_title">Transférer la propriété</string>
+    <string name="sharing_members_transfer_pick_member">Choisir le nouveau propriétaire</string>
+    <string name="sharing_members_transfer_confirm_message">%1$s deviendra propriétaire du foyer. Vous deviendrez éditeur et pourrez partir ensuite.</string>
+    <string name="sharing_members_transfer_confirm">Transférer</string>
+    <string name="sharing_members_transfer_success">Propriété transférée à %1$s.</string>
+    <string name="sharing_members_error_transfer_target">Choisissez un membre du foyer pour le transfert.</string>
+    <string name="sharing_members_error_transfer_failed">Impossible de transférer la propriété. Réessayez.</string>
+    <string name="sharing_members_leave_gdpr_note">Vous perdrez l'accès aux données partagées du foyer. Vos modifications peuvent rester visibles pour les autres membres.</string>
+    <string name="home_export_personal_data">Exporter mes données</string>
+    <string name="home_export_personal_data_success">L'export de vos données personnelles est prêt.</string>
+    <string name="home_export_personal_data_error">Impossible d'exporter vos données. Réessayez.</string>
 </resources>

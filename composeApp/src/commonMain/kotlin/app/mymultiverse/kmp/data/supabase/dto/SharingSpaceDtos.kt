@@ -20,13 +20,13 @@ data class SharingSpaceInsertRow(
 
 @Serializable
 data class NutritionFeatureRow(
-    @SerialName("space_id") val spaceId: String,
+    @SerialName("household_id") val spaceId: String,
     val feature: String,
 )
 
 @Serializable
 data class NutritionFeatureInsertRow(
-    @SerialName("space_id") val spaceId: String,
+    @SerialName("household_id") val spaceId: String,
     val feature: String,
 )
 

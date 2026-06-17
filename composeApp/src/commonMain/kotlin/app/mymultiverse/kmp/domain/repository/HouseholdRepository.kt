@@ -21,4 +21,7 @@ interface HouseholdRepository {
 
     /** Hard-deletes the household when the caller is the sole owner with no other members. */
     suspend fun dissolveHousehold(): Result<Unit>
+
+    /** Transfers nutrition household ownership to another active member (owners only). */
+    suspend fun transferOwnership(newOwnerUserId: String): Result<Unit>
 }

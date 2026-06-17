@@ -47,6 +47,15 @@ object SharingStringKeys {
         "sharing_members_owner_transfer_required",
         "sharing_members_error_member_limit",
         "sharing_members_error_owner_transfer_required",
+        "sharing_members_transfer_ownership",
+        "sharing_members_transfer_title",
+        "sharing_members_transfer_pick_member",
+        "sharing_members_transfer_confirm_message",
+        "sharing_members_transfer_confirm",
+        "sharing_members_transfer_success",
+        "sharing_members_error_transfer_target",
+        "sharing_members_error_transfer_failed",
+        "sharing_members_leave_gdpr_note",
     )
 
     val localeDirectories: List<String> = NutritionStringKeys.localeDirectories

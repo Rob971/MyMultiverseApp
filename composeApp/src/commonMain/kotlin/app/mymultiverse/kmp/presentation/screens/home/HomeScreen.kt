@@ -50,6 +50,7 @@ object HomeTestTags {
     const val NUTRITION_CARD = "home_nutrition_card"
     const val HOUSEHOLD_CARD = "home_household_card"
     const val SIGN_OUT_BUTTON = "home_sign_out_button"
+    const val EXPORT_DATA_BUTTON = "home_export_personal_data_button"
     const val APP_VERSION_LABEL = "home_app_version_label"
     const val LOADING_INDICATOR = "home_loading_indicator"
     const val GREETING_LINE = "home_greeting_line"
@@ -71,6 +72,7 @@ fun HomeScreen(
     val pendingInvites by screenModel.pendingInvites.collectAsState()
     val inviteActionMessage by screenModel.inviteActionMessage.collectAsState()
     val switchHouseholdPrompt by screenModel.switchHouseholdPrompt.collectAsState()
+    val personalDataExportMessage by screenModel.personalDataExportMessage.collectAsState()
     val authState by authRepository.authState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val inviteErrorMessage = stringResource(Res.string.auth_pending_invites_error_generic)
@@ -80,6 +82,22 @@ fun HomeScreen(
         pendingInvites.firstOrNull()?.email.orEmpty(),
         sessionEmail,
     )
+    val exportSuccessMessage = stringResource(Res.string.home_export_personal_data_success)
+    val exportErrorMessage = stringResource(Res.string.home_export_personal_data_error)
+
+    LaunchedEffect(personalDataExportMessage) {
+        when (personalDataExportMessage) {
+            PersonalDataExportMessage.Success -> {
+                snackbarHostState.showSnackbar(exportSuccessMessage)
+                screenModel.clearPersonalDataExportMessage()
+            }
+            PersonalDataExportMessage.Error -> {
+                snackbarHostState.showSnackbar(exportErrorMessage)
+                screenModel.clearPersonalDataExportMessage()
+            }
+            null -> Unit
+        }
+    }
 
     LaunchedEffect(inviteActionMessage) {
         when (inviteActionMessage) {
@@ -156,6 +174,7 @@ fun HomeScreen(
                 pendingInvites.find { it.id == inviteId }?.let(screenModel::onAcceptInviteClicked)
             },
             onDeclineInvite = screenModel::declineInvite,
+            onExportPersonalData = screenModel::exportPersonalData,
             modifier = Modifier.padding(padding),
         )
     }
@@ -175,6 +194,7 @@ fun HomeContent(
     onSignOut: () -> Unit,
     onAcceptInvite: (String) -> Unit,
     onDeclineInvite: (String) -> Unit,
+    onExportPersonalData: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
@@ -298,6 +318,26 @@ fun HomeContent(
 
             item {
                 Spacer(Modifier.height(24.dp))
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    TextButton(
+                        onClick = onExportPersonalData,
+                        modifier = Modifier.testTag(HomeTestTags.EXPORT_DATA_BUTTON),
+                    ) {
+                        Text(
+                            stringResource(Res.string.home_export_personal_data),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = SharedJourneyColors.InkMuted,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+            }
+
+            item {
+                Spacer(Modifier.height(8.dp))
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center,

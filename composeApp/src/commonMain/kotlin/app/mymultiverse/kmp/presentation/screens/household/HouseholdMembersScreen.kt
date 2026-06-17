@@ -14,6 +14,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -60,6 +61,15 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_member
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_leave
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_leave_confirm_message
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_leave_confirm_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_transfer_confirm
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_transfer_confirm_message
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_transfer_ownership
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_transfer_pick_member
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_transfer_success
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_transfer_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_transfer_failed
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_transfer_target
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_leave_gdpr_note
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_owner_transfer_required
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_sent
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_loading
@@ -85,6 +95,7 @@ object HouseholdMembersTestTags {
     const val ADD_PERSON_DIALOG_ERROR = "household_members_add_person_error"
     const val MEMBER_ROW = "household_members_row"
     const val PENDING_INVITE_ROW = "household_members_pending_invite"
+    const val TRANSFER_OWNERSHIP_BUTTON = "household_members_transfer_ownership"
 }
 
 @Composable
@@ -104,6 +115,11 @@ fun HouseholdMembersScreen(
         when (success) {
             HouseholdMembersSuccess.InviteSent -> stringResource(Res.string.sharing_members_invite_sent)
             HouseholdMembersSuccess.MemberAdded -> stringResource(Res.string.sharing_members_member_added)
+            HouseholdMembersSuccess.OwnershipTransferred ->
+                stringResource(
+                    Res.string.sharing_members_transfer_success,
+                    uiState.transferredToDisplayName.orEmpty(),
+                )
         }
     }
     val currentUserId = (authState as? AuthState.Authenticated)?.user?.id
@@ -203,6 +219,19 @@ fun HouseholdMembersScreen(
                             text = stringResource(Res.string.sharing_members_owner_transfer_required),
                             color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
                         )
+                    }
+                }
+                if (uiState.canTransferOwnership) {
+                    item {
+                        Button(
+                            onClick = screenModel::openTransferDialog,
+                            enabled = !uiState.isTransferring,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(HouseholdMembersTestTags.TRANSFER_OWNERSHIP_BUTTON),
+                        ) {
+                            Text(stringResource(Res.string.sharing_members_transfer_ownership))
+                        }
                     }
                 }
                 if (uiState.canLeave) {
@@ -323,7 +352,14 @@ fun HouseholdMembersScreen(
         AlertDialog(
             onDismissRequest = screenModel::dismissLeaveDissolve,
             title = { Text(title) },
-            text = { Text(message) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(message)
+                    if (action == HouseholdMembersLeaveAction.Leave) {
+                        Text(stringResource(Res.string.sharing_members_leave_gdpr_note))
+                    }
+                }
+            },
             confirmButton = {
                 Button(
                     onClick = screenModel::confirmLeaveOrDissolve,
@@ -336,6 +372,59 @@ fun HouseholdMembersScreen(
                 TextButton(
                     onClick = screenModel::dismissLeaveDissolve,
                     enabled = !uiState.isLeaving,
+                ) {
+                    Text(stringResource(Res.string.sharing_members_cancel))
+                }
+            },
+        )
+    }
+
+    if (uiState.showTransferDialog) {
+        val selectedId = uiState.selectedTransferMemberId
+        val selectedMember = uiState.transferCandidates.find { it.referenceId == selectedId }
+        AlertDialog(
+            onDismissRequest = screenModel::dismissTransferDialog,
+            title = { Text(stringResource(Res.string.sharing_members_transfer_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(stringResource(Res.string.sharing_members_transfer_pick_member))
+                    uiState.transferCandidates.forEach { member ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(
+                                selected = member.referenceId == selectedId,
+                                onClick = { screenModel.selectTransferMember(member.referenceId) },
+                            )
+                            Text(
+                                text = member.displayName,
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+                        }
+                    }
+                    if (selectedMember != null) {
+                        Text(
+                            stringResource(
+                                Res.string.sharing_members_transfer_confirm_message,
+                                selectedMember.displayName,
+                            ),
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { screenModel.confirmTransferOwnership(household.id) },
+                    enabled = !uiState.isTransferring && selectedId != null,
+                ) {
+                    Text(stringResource(Res.string.sharing_members_transfer_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = screenModel::dismissTransferDialog,
+                    enabled = !uiState.isTransferring,
                 ) {
                     Text(stringResource(Res.string.sharing_members_cancel))
                 }
@@ -359,6 +448,10 @@ private fun mapErrorMessage(error: HouseholdMembersError): String =
             stringResource(Res.string.sharing_members_error_member_limit)
         HouseholdMembersError.OwnerMustTransferOrDissolve ->
             stringResource(Res.string.sharing_members_error_owner_transfer_required)
+        HouseholdMembersError.InvalidTransferTarget ->
+            stringResource(Res.string.sharing_members_error_transfer_target)
+        HouseholdMembersError.TransferTargetNotMember ->
+            stringResource(Res.string.sharing_members_error_transfer_failed)
     }
 
 @Composable

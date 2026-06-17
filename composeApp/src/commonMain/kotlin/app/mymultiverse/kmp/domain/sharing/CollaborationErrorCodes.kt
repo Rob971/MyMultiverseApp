@@ -13,6 +13,8 @@ object CollaborationErrorCodes {
     const val HOUSEHOLD_MEMBER_LIMIT_REACHED = "household_member_limit_reached"
     const val OWNER_MUST_TRANSFER_OR_DISSOLVE = "owner_must_transfer_or_dissolve"
     const val HOUSEHOLD_NOT_FOUND = "household_not_found"
+    const val INVALID_TRANSFER_TARGET = "invalid_transfer_target"
+    const val TRANSFER_TARGET_NOT_MEMBER = "transfer_target_not_member"
     const val SUPABASE_NOT_CONFIGURED = "supabase_not_configured"
 
     fun messageContains(code: String, message: String?): Boolean =

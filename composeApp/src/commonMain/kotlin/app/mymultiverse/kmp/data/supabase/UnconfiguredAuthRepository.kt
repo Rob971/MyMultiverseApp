@@ -25,4 +25,7 @@ class UnconfiguredAuthRepository : AuthRepository {
         Result.failure(IllegalStateException("supabase_not_configured"))
 
     override suspend fun signOut() = Unit
+
+    override suspend fun exportPersonalData(): Result<String> =
+        Result.failure(IllegalStateException("supabase_not_configured"))
 }

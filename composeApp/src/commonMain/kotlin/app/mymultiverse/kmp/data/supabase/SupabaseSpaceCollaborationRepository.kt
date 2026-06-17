@@ -47,9 +47,9 @@ class SupabaseSpaceCollaborationRepository(
         outboundInvitesFlow(spaceId).asStateFlow()
 
     override suspend fun refreshMembers(spaceId: String, ownerId: String, ownerDisplayName: String) {
-        val rows = client.postgrest["space_members"]
+        val rows = client.postgrest["household_members"]
             .select(Columns.ALL) {
-                filter { eq("space_id", spaceId) }
+                filter { eq("household_id", spaceId) }
             }
             .decodeList<SpaceMemberRow>()
             .filter { it.userId != null }
@@ -119,9 +119,9 @@ class SupabaseSpaceCollaborationRepository(
     }
 
     override suspend fun refreshOutboundInvites(spaceId: String) {
-        val rows = client.postgrest["space_invites"]
+        val rows = client.postgrest["household_invites"]
             .select(Columns.ALL) {
-                filter { eq("space_id", spaceId) }
+                filter { eq("household_id", spaceId) }
             }
             .decodeList<SpaceInviteRow>()
             .filter { row -> row.acceptedAt == null && row.declinedAt == null }
@@ -171,7 +171,7 @@ class SupabaseSpaceCollaborationRepository(
     override suspend fun removeMember(memberId: String): Result<Unit> = runCatching {
         require(!memberId.startsWith(OWNER_MEMBER_PREFIX)) { "cannot_remove_owner" }
 
-        client.postgrest["space_members"]
+        client.postgrest["household_members"]
             .delete {
                 filter { eq("id", memberId) }
             }
@@ -189,7 +189,7 @@ class SupabaseSpaceCollaborationRepository(
     }
 
     override suspend fun declineInvite(inviteId: String): Result<Unit> = runCatching {
-        client.postgrest["space_invites"]
+        client.postgrest["household_invites"]
             .update(
                 SpaceInviteUpdateRow(
                     declinedAt = Clock.System.now().toString(),
@@ -207,7 +207,7 @@ class SupabaseSpaceCollaborationRepository(
         invitedBy: String,
     ) {
         val insertResult = runCatching {
-            client.postgrest["space_invites"]
+            client.postgrest["household_invites"]
                 .insert(
                     SpaceInviteInsertRow(
                         spaceId = spaceId,
@@ -224,7 +224,7 @@ class SupabaseSpaceCollaborationRepository(
             throw insertResult.exceptionOrNull() ?: IllegalStateException("invite_insert_failed")
         }
 
-        client.postgrest["space_invites"]
+        client.postgrest["household_invites"]
             .update(
                 SpaceInvitePendingUpdateRow(
                     role = role.wireName(),
@@ -232,7 +232,7 @@ class SupabaseSpaceCollaborationRepository(
                 ),
             ) {
                 filter {
-                    eq("space_id", spaceId)
+                    eq("household_id", spaceId)
                     eq("email", email)
                 }
             }
@@ -294,7 +294,7 @@ class SupabaseSpaceCollaborationRepository(
 
     private suspend fun loadSpaceNames(spaceIds: List<String>): Map<String, String> {
         if (spaceIds.isEmpty()) return emptyMap()
-        return client.postgrest["sharing_spaces"]
+        return client.postgrest["households"]
             .select(Columns.ALL) {
                 filter { isIn("id", spaceIds) }
             }

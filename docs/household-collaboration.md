@@ -59,7 +59,7 @@ Members have a **role**: `owner`, `editor`, or `viewer`.
 
 **Implementation:** Postgres policies on `nutrition_space_week_data` allow `INSERT`/`UPDATE`/`DELETE` only when the caller is **owner or editor** on that household. The app disables all write controls when `role = viewer`.
 
-**Status:** Spec locked — implementation next (UI + migration).
+**Status:** Implemented (migration `20250618150000` + read-only UI).
 
 ---
 
@@ -141,7 +141,7 @@ Sign in → **gate** (if unaffiliated) → accept invite → **home** + snackbar
 | **Only owner, no other members** | **Delete household** (hard delete) — not plain Leave |
 | **Any member** | GDPR-related **export/delete my data** where required (see § GDPR) |
 
-**Status:** Implemented in P0 branch (leave / dissolve + switch-household dialog).
+**Status:** Implemented in P0 branch (leave / dissolve + switch-household dialog). **Transfer ownership** implemented in P1 (`transfer_household_ownership` RPC + members UI).
 
 ---
 
@@ -196,7 +196,7 @@ When a user **leaves** a household (or deletes account):
 3. **Household content** — user’s edits may remain in shared payloads attributed by `updated_by`; leaving does not delete the whole household’s groceries for other members (unless **dissolve** by owner).
 4. **Document** in-app privacy/settings copy and external privacy policy; implement export/delete tickets as engineering work.
 
-**Status:** Not implemented — track as P1 compliance work alongside `leave_household`.
+**Status:** P1 — `export_my_personal_data` RPC + Home export action; leave dialog includes data-retention note. Account deletion flow remains P2/legal.
 
 ---
 
@@ -222,9 +222,9 @@ When a user **leaves** a household (or deletes account):
 |---|--------|-------|
 | 1 | **Child / shared family email** | Deferred v2 |
 | 2 | **Push/email on invite** | Deferred v2 |
-| 3 | **Viewer RLS + read-only UI** | **Next** — no viewer may edit any entry |
-| 4 | **GDPR legal copy** | Engineering yes; legal review of exact wording |
-| 5 | **`households` migration timing** | Agreed yes; schedule after P0 collaboration |
+| 3 | **Viewer RLS + read-only UI** | **Done** |
+| 4 | **GDPR legal copy** | Engineering hooks done; legal review of exact wording |
+| 5 | **`households` migration timing** | **Done** — migration `20250618170000` |
 | 6 | **Hard delete cascade scope** | Confirm: nutrition rows + invites + members all removed on dissolve |
 
 ---
@@ -237,12 +237,12 @@ When a user **leaves** a household (or deletes account):
 | **P0** | Pending invites when affiliated + leave-then-accept — **done** (branch) |
 | **P0** | `activateSpace` on membership active — **done** (branch) |
 | **P0** | Max 20 members check on invite/accept — **done** (branch) |
-| **P0** | **Viewer read-only UI** — disable all nutrition writes for `viewer` role |
-| **P0** | **Viewer RLS** — block INSERT/UPDATE/DELETE on `nutrition_space_week_data` for viewers |
-| **P0** | **Auth email match** — list + accept paths; QA in Firebase YAML |
-| **P1** | `leave_household`, `dissolve_household` — **done** (branch); `transfer_ownership` pending |
-| **P1** | GDPR export/delete hooks on leave |
-| **P1** | Migrate `sharing_spaces` → `households` |
+| **P0** | **Viewer read-only UI** — disable all nutrition writes for `viewer` role — **done** |
+| **P0** | **Viewer RLS** — block INSERT/UPDATE/DELETE on nutrition week data for viewers — **done** |
+| **P0** | **Auth email match** — list + accept paths; QA in Firebase YAML — **done** |
+| **P1** | `leave_household`, `dissolve_household` — **done**; `transfer_ownership` — **done** |
+| **P1** | GDPR export hook + leave privacy copy — **done** (account delete deferred) |
+| **P1** | Migrate `sharing_spaces` → `households` — **done** (`20250618170000`) |
 | **P2** | Push/email notifications |
 | **P2** | Child accounts |
 
@@ -259,7 +259,7 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 - `nutrition-viewer-read-only` — viewer cannot edit grocery, meal plan, or AI lists.
 
 **Remote Supabase migrations required for field tests:**  
-`20250617130000`, `20250617140000`, `20250618120000`, `20250618140000` (and viewer-RLS migration when shipped).
+`20250617130000`, `20250617140000`, `20250618120000`, `20250618140000`, `20250618150000`, `20250618160000`, `20250618161000`, `20250618170000`.
 
 ---
 
@@ -270,3 +270,4 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 | 2025-06-18 | Initial spec |
 | 2025-06-18 | Locked product decisions; FAQ for RLS viewer + email change; GDPR; QA |
 | 2025-06-18 | Locked viewer read-only + auth email must match; P0 backlog and QA updated |
+| 2025-06-18 | P1: transfer ownership, GDPR export, `households` table rename shipped |

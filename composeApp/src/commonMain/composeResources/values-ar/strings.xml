@@ -738,4 +738,16 @@
     <string name="sharing_members_owner_transfer_required">انقل الملكية إلى عضو آخر قبل المغادرة بينما يبقى آخرون في الأسرة.</string>
     <string name="sharing_members_error_member_limit">وصلت هذه الأسرة إلى حد 20 عضواً.</string>
     <string name="sharing_members_error_owner_transfer_required">انقل الملكية قبل المغادرة أو حذف الأسرة.</string>
+    <string name="sharing_members_transfer_ownership">نقل الملكية</string>
+    <string name="sharing_members_transfer_title">نقل الملكية</string>
+    <string name="sharing_members_transfer_pick_member">اختر المالك الجديد</string>
+    <string name="sharing_members_transfer_confirm_message">سيصبح %1$s مالك الأسرة. ستصبح محررًا ويمكنك المغادرة لاحقًا.</string>
+    <string name="sharing_members_transfer_confirm">نقل</string>
+    <string name="sharing_members_transfer_success">تم نقل الملكية إلى %1$s.</string>
+    <string name="sharing_members_error_transfer_target">اختر عضوًا في الأسرة لنقل الملكية.</string>
+    <string name="sharing_members_error_transfer_failed">تعذر نقل الملكية. حاول مرة أخرى.</string>
+    <string name="sharing_members_leave_gdpr_note">ستفقد الوصول إلى بيانات الأسرة المشتركة. قد تبقى تعديلاتك مرئية للأعضاء الآخرين.</string>
+    <string name="home_export_personal_data">تصدير بياناتي</string>
+    <string name="home_export_personal_data_success">تصدير البيانات الشخصية جاهز.</string>
+    <string name="home_export_personal_data_error">تعذر تصدير بياناتك. حاول مرة أخرى.</string>
 </resources>

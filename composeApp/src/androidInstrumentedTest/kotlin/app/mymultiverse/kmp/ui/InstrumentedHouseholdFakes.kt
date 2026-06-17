@@ -59,4 +59,6 @@ class InstrumentedHouseholdRepository(
     override suspend fun leaveHousehold(): Result<Unit> = Result.success(Unit)
 
     override suspend fun dissolveHousehold(): Result<Unit> = Result.success(Unit)
+
+    override suspend fun transferOwnership(newOwnerUserId: String): Result<Unit> = Result.success(Unit)
 }
