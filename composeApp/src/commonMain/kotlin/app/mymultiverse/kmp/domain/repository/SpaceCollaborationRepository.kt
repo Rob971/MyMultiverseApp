@@ -11,9 +11,13 @@ interface SpaceCollaborationRepository {
 
     fun observePendingInvites(): Flow<List<SpaceInvite>>
 
+    fun observeOutboundInvites(spaceId: String): Flow<List<SpaceInvite>>
+
     suspend fun refreshMembers(spaceId: String, ownerId: String, ownerDisplayName: String)
 
     suspend fun refreshPendingInvites()
+
+    suspend fun refreshOutboundInvites(spaceId: String)
 
     suspend fun addMemberByEmail(
         spaceId: String,

@@ -6,6 +6,9 @@
     <string name="home_banner_description">Nu spazio cundiviso pe' cultivà 'e suonne d' 'a famiglia, traccià 'e gol S.M.A.R.T. e rinfurzà 'e legame d' 'o juorno.</string>
     <string name="home_dreams_title">'a logistica 'e famiglia nuosta</string>
     <string name="home_logistics_nutrition_title">Nutrizione</string>
+    <string name="home_household_title">Famiglia</string>
+    <string name="home_household_description">Invita a gente pe' collaborà ncopp'a nutrizione, avventure e budget.</string>
+    <string name="home_household_description_named">Gestisce a gente 'e %1$s — condiviso pe' nutrizione, avventure e budget.</string>
     <string name="home_logistics_nutrition_description">Pasti, spesa e pianificazione p' 'a famiglia.</string>
     <string name="home_logistics_adventures_title">Avventure</string>
     <string name="home_logistics_adventures_description">Viaggi, gite e esperienze ca planificammo insieme.</string>
@@ -66,6 +69,7 @@
     <string name="nutrition_grocery_cancel_edit">Annulle</string>
     <string name="nutrition_grocery_undo_delete">Articolo levato</string>
     <string name="nutrition_grocery_undo_action">Annulle</string>
+    <string name="nutrition_grocery_clear_checked_undo">Articoli segnati scancellati</string>
     <string name="nutrition_grocery_duplicate">St'articolo è già 'n lista</string>
     <string name="nutrition_grocery_toggle_item">Segna comme comprato</string>
     <string name="nutrition_grocery_empty_active">Tutto spuntato. Miett'articoli o pulisce spuntate abbascio.</string>
@@ -86,8 +90,11 @@
     <string name="nutrition_ai_meal_plan_summary_full_week">Anteprima d' 'o piano pasti pe' tutta 'a semmana. Cuntrolla abbascio e applica.</string>
     <string name="nutrition_ai_meal_plan_summary_single_day">Anteprima d' 'o piano pasti pe' %1$s. Cuntrolla abbascio e applica.</string>
     <string name="nutrition_ai_grocery_readonly_note">Lista read-only. 'A lista tua è abbascio.</string>
+    <string name="nutrition_ai_grocery_saved_readonly_note">Suggerimente spesa IA read-only sarvate pe chesta settimana.</string>
     <string name="nutrition_ai_clear_grocery">Pulisce lista IA</string>
+    <string name="nutrition_ai_grocery_cleared">Lista IA scancellata</string>
     <string name="nutrition_ai_meal_plan_result_title">Anteprima</string>
+    <string name="nutrition_meal_plan_preview_line">%1$s: %2$s</string>
     <string name="nutrition_ai_apply_meal_plan">Applica 'o piano</string>
     <string name="nutrition_ai_suggestion_veggie_grocery">Spesa vegetariana</string>
     <string name="nutrition_ai_suggestion_budget_grocery">Lista economica</string>
@@ -261,6 +268,7 @@
     <string name="category_long_term_ai_action">Genera piano traguardo</string>
     <string name="category_long_term_plan_title">Piano traguardo</string>
     <string name="home_greeting">'O core ca batte d' 'a famiglia.</string>
+    <string name="home_greeting_personalized">Ciao, %1$s</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>
@@ -648,9 +656,9 @@
     <string name="sharing_nutrition_spaces_error_not_configured">Supabase nun è configurato.</string>
     <string name="sharing_nutrition_spaces_loading">Caricamento spazie...</string>
     <string name="sharing_hub_manage_members">Gente e gruppi</string>
-    <string name="sharing_members_title">Membri d\'a condivisione</string>
-    <string name="sharing_members_subtitle">Invita gente pe\' email o aggiunge nu gruppo a stu spazio nutrizione.</string>
-    <string name="sharing_members_empty">Nisciuno membro ancora. Aggiunge quacuno o nu gruppo pe\' accumincià a spartì.</string>
+    <string name="sharing_members_title">Membri d' 'a famiglia</string>
+    <string name="sharing_members_subtitle">Invita a gente pe' email. Li editor ponno cagnà liste e piani condivisi; li viewer ponno legge. Sta famiglia vale pe' nutrizione, avventure e budget.</string>
+    <string name="sharing_members_empty">Nisciuno membro ancora. Miette quacuno pe' accummincià a spartì.</string>
     <string name="sharing_members_add_person">Aggiunge persona</string>
     <string name="sharing_members_add_group">Aggiunge gruppo</string>
     <string name="sharing_members_email_label">Indirizzo email</string>
@@ -694,6 +702,9 @@
     <string name="sharing_members_event_expires_required">Piglia 'na data 'e fine pe' gruppi viaggio o evento.</string>
     <string name="sharing_members_group_expired">Scaduto</string>
     <string name="sharing_members_invite_sent">Invito mandato. Pònno unì dopo 'a registrazione.</string>
-    <string name="sharing_members_member_added">Membro aggiunto a stu spazio.</string>
+    <string name="sharing_members_member_added">Membro aggiunto â famiglia toja.</string>
+    <string name="sharing_members_pending_invites_title">Inviti 'n attesa</string>
+    <string name="sharing_members_pending_invite_label">'N attesa · %1$s</string>
+    <string name="sharing_members_read_only_hint">Solo 'o proprietario d' 'a famiglia può invità o levà membri.</string>
     <string name="sharing_members_select_role">Livello 'e accesso</string>
 </resources>

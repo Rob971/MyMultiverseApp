@@ -6,6 +6,7 @@ import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberKind
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
 import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import app.mymultiverse.kmp.domain.sharing.emailsMatch
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,12 +14,17 @@ import kotlinx.coroutines.flow.update
 
 class FakeSpaceCollaborationRepository : SpaceCollaborationRepository {
     private val membersBySpace = mutableMapOf<String, MutableStateFlow<List<SpaceMember>>>()
+    private val outboundInvitesBySpace = mutableMapOf<String, MutableStateFlow<List<SpaceInvite>>>()
     private val pendingInvites = MutableStateFlow<List<SpaceInvite>>(emptyList())
+    var inboundProfileEmail: String = "invitee@example.com"
 
     override fun observeMembers(spaceId: String): Flow<List<SpaceMember>> =
         membersFlow(spaceId).asStateFlow()
 
     override fun observePendingInvites(): Flow<List<SpaceInvite>> = pendingInvites.asStateFlow()
+
+    override fun observeOutboundInvites(spaceId: String): Flow<List<SpaceInvite>> =
+        outboundInvitesFlow(spaceId).asStateFlow()
 
     override suspend fun refreshMembers(spaceId: String, ownerId: String, ownerDisplayName: String) {
         val current = membersFlow(spaceId).value.filterNot { it.id.startsWith("owner-") }
@@ -34,7 +40,15 @@ class FakeSpaceCollaborationRepository : SpaceCollaborationRepository {
         ) + current
     }
 
-    override suspend fun refreshPendingInvites() = Unit
+    override suspend fun refreshPendingInvites() {
+        pendingInvites.value = outboundInvitesBySpace.values
+            .flatMap { it.value }
+            .filter { invite -> emailsMatch(invite.email, inboundProfileEmail) }
+    }
+
+    override suspend fun refreshOutboundInvites(spaceId: String) {
+        outboundInvitesFlow(spaceId).value = outboundInvitesFlow(spaceId).value
+    }
 
     override suspend fun addMemberByEmail(
         spaceId: String,
@@ -44,15 +58,16 @@ class FakeSpaceCollaborationRepository : SpaceCollaborationRepository {
         val trimmed = email.trim()
         if (trimmed.isEmpty()) return Result.failure(IllegalArgumentException("member_email_required"))
         if (trimmed.contains("invite")) {
-            pendingInvites.update {
-                it + SpaceInvite(
-                    id = "invite-${it.size + 1}",
-                    spaceId = spaceId,
-                    spaceName = "Test Space",
-                    email = trimmed,
-                    role = role,
-                    expiresAtEpochMillis = null,
-                )
+            val invite = SpaceInvite(
+                id = "invite-${outboundInvitesFlow(spaceId).value.size + 1}",
+                spaceId = spaceId,
+                spaceName = "Test Space",
+                email = trimmed.lowercase(),
+                role = role,
+                expiresAtEpochMillis = null,
+            )
+            outboundInvitesFlow(spaceId).update { current ->
+                current.filterNot { emailsMatch(it.email, trimmed) } + invite
             }
             return Result.success(AddMemberResult.InviteSent)
         }
@@ -77,15 +92,38 @@ class FakeSpaceCollaborationRepository : SpaceCollaborationRepository {
     }
 
     override suspend fun acceptInvite(inviteId: String): Result<Unit> {
+        val invite = pendingInvites.value.firstOrNull { it.id == inviteId }
+            ?: outboundInvitesBySpace.values.flatMap { it.value }.firstOrNull { it.id == inviteId }
+            ?: return Result.failure(IllegalStateException("invite_not_found"))
+
+        outboundInvitesBySpace.values.forEach { flow ->
+            flow.update { invites -> invites.filterNot { it.id == inviteId } }
+        }
         pendingInvites.update { invites -> invites.filterNot { it.id == inviteId } }
+
+        val member = SpaceMember(
+            id = "member-${membersFlow(invite.spaceId).value.size + 1}",
+            spaceId = invite.spaceId,
+            kind = SpaceMemberKind.Person,
+            displayName = invite.email,
+            role = invite.role,
+            referenceId = invite.email,
+        )
+        membersFlow(invite.spaceId).update { current -> current + member }
         return Result.success(Unit)
     }
 
     override suspend fun declineInvite(inviteId: String): Result<Unit> {
+        outboundInvitesBySpace.values.forEach { flow ->
+            flow.update { invites -> invites.filterNot { it.id == inviteId } }
+        }
         pendingInvites.update { invites -> invites.filterNot { it.id == inviteId } }
         return Result.success(Unit)
     }
 
     private fun membersFlow(spaceId: String): MutableStateFlow<List<SpaceMember>> =
         membersBySpace.getOrPut(spaceId) { MutableStateFlow(emptyList()) }
+
+    private fun outboundInvitesFlow(spaceId: String): MutableStateFlow<List<SpaceInvite>> =
+        outboundInvitesBySpace.getOrPut(spaceId) { MutableStateFlow(emptyList()) }
 }

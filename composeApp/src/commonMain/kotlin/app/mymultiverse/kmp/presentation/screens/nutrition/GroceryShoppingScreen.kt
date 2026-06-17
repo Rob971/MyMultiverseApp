@@ -21,14 +21,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_clear_grocery
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_cleared
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_readonly_note
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_result_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_delete_item
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_add_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_cancel_edit
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_clear_checked
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_clear_checked_undo
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_description
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_duplicate
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_edit_hint
@@ -68,6 +72,8 @@ import org.koin.compose.koinInject
 object GroceryListTestTags {
     const val ITEM_ROW_PREFIX = GroceryItemRowTestTags.ROW_PREFIX
     const val CHECKBOX_PREFIX = GroceryItemRowTestTags.CHECKBOX_PREFIX
+    const val CLEAR_CHECKED_ACTION = "grocery_clear_checked"
+    const val CLEAR_AI_GROCERY_BUTTON = "grocery_clear_ai_grocery"
 }
 
 @Composable
@@ -101,9 +107,12 @@ fun GroceryShoppingScreen(
     val saveContentDescription = stringResource(Res.string.nutrition_grocery_save_edit)
     val cancelEditLabel = stringResource(Res.string.nutrition_grocery_cancel_edit)
     val toggleContentDescription = stringResource(Res.string.nutrition_grocery_toggle_item)
+    val deleteContentDescription = stringResource(Res.string.nutrition_delete_item)
     val sectionToBuy = stringResource(Res.string.nutrition_grocery_section_to_buy)
     val sectionCompleted = stringResource(Res.string.nutrition_grocery_section_completed)
     val clearCheckedLabel = stringResource(Res.string.nutrition_grocery_clear_checked)
+    val clearCheckedMessage = stringResource(Res.string.nutrition_grocery_clear_checked_undo)
+    val aiGroceryClearedMessage = stringResource(Res.string.nutrition_ai_grocery_cleared)
 
     fun showMessage(message: String) {
         scope.launch { snackbarHostState.showSnackbar(message) }
@@ -130,6 +139,37 @@ fun GroceryShoppingScreen(
             )
             if (result == SnackbarResult.ActionPerformed) {
                 screenModel.restoreGroceryItem(item, index)
+            }
+        }
+    }
+
+    fun clearCheckedWithUndo() {
+        val snapshot = screenModel.clearCheckedGroceryItems()
+        if (snapshot.isEmpty()) return
+        if (editingItemId != null && snapshot.firstOrNull { it.id == editingItemId }?.isChecked == true) {
+            editingItemId = null
+        }
+        scope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = clearCheckedMessage,
+                actionLabel = undoLabel,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                screenModel.restoreGroceryItemsSnapshot(snapshot)
+            }
+        }
+    }
+
+    fun clearAiGroceryWithUndo() {
+        val snapshot = screenModel.clearAiGrocery()
+        if (snapshot.isEmpty()) return
+        scope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = aiGroceryClearedMessage,
+                actionLabel = undoLabel,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                screenModel.restoreAiGroceryItems(snapshot)
             }
         }
     }
@@ -174,8 +214,10 @@ fun GroceryShoppingScreen(
                     }
                     item {
                         OutlinedButton(
-                            onClick = { screenModel.clearAiGrocery() },
-                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { clearAiGroceryWithUndo() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(GroceryListTestTags.CLEAR_AI_GROCERY_BUTTON),
                         ) {
                             Text(stringResource(Res.string.nutrition_ai_clear_grocery))
                         }
@@ -205,6 +247,7 @@ fun GroceryShoppingScreen(
                                 saveContentDescription = saveContentDescription,
                                 cancelEditLabel = cancelEditLabel,
                                 toggleContentDescription = toggleContentDescription,
+                                deleteContentDescription = deleteContentDescription,
                                 onStartEdit = { editingItemId = item.id },
                                 onCancelEdit = { if (editingItemId == item.id) editingItemId = null },
                                 onSaveEdit = { label ->
@@ -232,7 +275,8 @@ fun GroceryShoppingScreen(
                             FamilyLogisticsSectionHeader(
                                 title = sectionCompleted,
                                 actionLabel = clearCheckedLabel,
-                                onAction = { screenModel.clearCheckedGroceryItems() },
+                                actionModifier = Modifier.testTag(GroceryListTestTags.CLEAR_CHECKED_ACTION),
+                                onAction = { clearCheckedWithUndo() },
                             )
                         }
                         items(sections.completed, key = { "done-${it.id}" }) { item ->
@@ -246,6 +290,7 @@ fun GroceryShoppingScreen(
                                 saveContentDescription = saveContentDescription,
                                 cancelEditLabel = cancelEditLabel,
                                 toggleContentDescription = toggleContentDescription,
+                                deleteContentDescription = deleteContentDescription,
                                 onStartEdit = { editingItemId = item.id },
                                 onCancelEdit = { if (editingItemId == item.id) editingItemId = null },
                                 onSaveEdit = { label ->
@@ -285,6 +330,7 @@ private fun GroceryListItem(
     saveContentDescription: String,
     cancelEditLabel: String,
     toggleContentDescription: String,
+    deleteContentDescription: String,
     onStartEdit: () -> Unit,
     onCancelEdit: () -> Unit,
     onSaveEdit: (String) -> Boolean,
@@ -299,6 +345,7 @@ private fun GroceryListItem(
         saveContentDescription = saveContentDescription,
         cancelEditLabel = cancelEditLabel,
         toggleContentDescription = toggleContentDescription,
+        deleteContentDescription = deleteContentDescription,
         onStartEdit = onStartEdit,
         onCancelEdit = onCancelEdit,
         onSaveEdit = onSaveEdit,

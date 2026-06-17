@@ -1,15 +1,14 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: Nutrition, Adventures, and Budget share one household (2+ members).
 
-version: 6
+version: 9
 updated: 2026-06-16
 
 summary: |
-  Verify auth, single household bootstrap, household members (invite by email),
-  pending invites, sign-out, and nutrition hub sync. Adventures and Budget cards on Home
-  remain coming soon but use the same household when shipped.
-
-test_cases:
+  Verify auth, household members on Home (shared across nutrition, adventures, budget),
+  nutrition hub (grocery / meal plan / AI adviser), CRUD on shared week data, sync status,
+  Crashlytics on tester builds, and sign-out.
+  Adventures and Budget cards on Home remain coming soon but use the same household when shipped.
   - id: auth-sign-in
     title: Email sign-in and sign-up
     steps:
@@ -43,6 +42,15 @@ test_cases:
     expected:
       - Invite card disappears; opening Nutrition lands on the shared household hub.
 
+  - id: home-personalized-greeting
+    title: Personalized home greeting after sign-in
+    steps:
+      - Sign in with an account that has a display name (or use email if no profile name).
+      - Land on Home and wait for the banner to finish loading.
+    expected:
+      - Banner supporting line greets you by name (e.g. Hello, Roberto).
+      - Greeting persists while you stay signed in and navigate back to Home.
+
   - id: nutrition-household-bootstrap
     title: Open nutrition (single household)
     steps:
@@ -52,16 +60,23 @@ test_cases:
       - Nutrition hub opens directly (no space picker).
       - Household is auto-created on first access with grocery, meal plan, and AI advice enabled.
 
-  - id: nutrition-household-members
-    title: Invite household members
+  - id: home-household-members
+    title: Invite household members from Home
     steps:
-      - From the nutrition hub, open Household members.
+      - From Home, tap the Household card (below pending invites, above topic cards).
       - Add a second person by email (existing account) or send an invite (unknown email).
-      - Add a third member if available.
     expected:
-      - Members list shows owner and invited people only (no groups).
-      - Household supports two or more members without an upper limit.
-      - Invite sent message for unknown emails.
+      - Members screen explains the household is shared across nutrition, adventures, and budget.
+      - Owner can invite; editors/viewers see read-only member list.
+      - Pending invites appear on the members screen until accepted.
+      - Snackbar confirms invite sent or member added.
+
+  - id: nutrition-household-members
+    title: Invite household members (legacy note)
+    steps:
+      - Use Home → Household card (members moved from nutrition hub).
+    expected:
+      - Same as home-household-members.
 
   - id: nutrition-sync-status
     title: Shared nutrition sync indicator
@@ -78,6 +93,54 @@ test_cases:
     expected:
       - Nutrition hub opens with Grocery, Meal plan, and AI adviser cards.
 
+  - id: hub-layout-order
+    title: Nutrition hub section order
+    steps:
+      - Open the nutrition hub on a household with all features enabled.
+      - Scroll through the hub cards top to bottom.
+    expected:
+      - Grocery, Weekly meal plan, and AI adviser cards are shown.
+      - Each category card shows a progress or status line when data exists.
+
+  - id: hub-meal-plan-navigation
+    title: Open weekly meal plan from hub
+    steps:
+      - From Nutrition hub, tap the Weekly meal plan card.
+    expected:
+      - Meal plan screen shows the current week label and today highlighted.
+      - Days can expand to edit lunch and dinner.
+
+  - id: hub-ai-navigation
+    title: Open AI adviser from hub
+    steps:
+      - From Nutrition hub, tap the AI adviser card.
+    expected:
+      - AI screen shows mode chips (Advice, Grocery, Meal plan) and a criteria field.
+
+  - id: hub-members-navigation
+    title: Open household members from Home
+    steps:
+      - From Home, tap the Household card.
+    expected:
+      - Members screen lists the owner, active members, and pending invites.
+
+  - id: nutrition-section-back
+    title: Back from nutrition section to hub
+    steps:
+      - From the hub, open Grocery (or Meal plan / AI adviser).
+      - Tap the back control in the top bar.
+    expected:
+      - Returns to the nutrition hub with the same household context (no space picker).
+
+  - id: crashlytics-smoke
+    title: Firebase Crashlytics (tester builds with google-services)
+    steps:
+      - Install a CI or local debug APK built with google-services.json configured.
+      - Use the app normally (sign in, open Nutrition, edit grocery).
+      - Optional: trigger a non-fatal path (e.g. airplane mode during sync) and confirm no user-visible crash.
+    expected:
+      - Crashes and non-fatal errors appear in Firebase Console → Crashlytics with app version, user id (after sign-in), and breadcrumbs (session_start, nutrition_space_activated).
+
   - id: hub-grocery-navigation
     title: Open editable grocery list
     steps:
@@ -90,11 +153,15 @@ test_cases:
     title: Add, check off, edit, and delete grocery items
     steps:
       - Add two items (e.g. Milk, Bread).
+      - Try adding a duplicate item with different casing or spacing.
       - Tap checkbox on one item to mark it checked.
+      - Use Clear checked and tap Undo from the snackbar.
       - Edit an item label inline.
       - Swipe-delete an item and use Undo if shown.
     expected:
+      - Duplicate entry shows a clear snackbar and does not create another row.
       - Items appear under To buy / Checked off as appropriate.
+      - Clear checked removes completed items and Undo restores them in order.
       - Changes persist after leaving and returning to the screen.
       - Second household member sees the same grocery list after sync.
 
@@ -143,6 +210,7 @@ test_cases:
       - Enter criteria (e.g. high protein) and generate.
     expected:
       - Read-only AI grocery list shown; items persist for the week.
+      - Clear AI grocery list removes the read-only list and offers Undo.
 
   - id: ai-meal-plan-mode
     title: AI meal plan preview and apply

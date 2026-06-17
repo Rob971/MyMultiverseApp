@@ -38,8 +38,6 @@ fun PendingInvitesCard(
 ) {
     if (invites.isEmpty()) return
 
-    val invite = invites.first()
-
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -49,40 +47,44 @@ fun PendingInvitesCard(
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
                 text = stringResource(Res.string.auth_pending_invites_title),
                 style = MaterialTheme.typography.titleSmall,
                 color = SharedJourneyColors.InkDeep,
             )
-            Text(
-                text = stringResource(
-                    Res.string.auth_pending_invites_subtitle,
-                    invite.spaceName,
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = SharedJourneyColors.InkMuted,
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Button(
-                    onClick = { onAccept(invite.id) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .testTag(PendingInvitesTestTags.ACCEPT_BUTTON),
-                ) {
-                    Text(stringResource(Res.string.auth_pending_invites_accept))
-                }
-                OutlinedButton(
-                    onClick = { onDecline(invite.id) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .testTag(PendingInvitesTestTags.DECLINE_BUTTON),
-                ) {
-                    Text(stringResource(Res.string.auth_pending_invites_decline))
+            invites.forEach { invite ->
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringResource(
+                            Res.string.auth_pending_invites_subtitle,
+                            invite.spaceName,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = SharedJourneyColors.InkMuted,
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Button(
+                            onClick = { onAccept(invite.id) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("${PendingInvitesTestTags.ACCEPT_BUTTON}_${invite.id}"),
+                        ) {
+                            Text(stringResource(Res.string.auth_pending_invites_accept))
+                        }
+                        OutlinedButton(
+                            onClick = { onDecline(invite.id) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("${PendingInvitesTestTags.DECLINE_BUTTON}_${invite.id}"),
+                        ) {
+                            Text(stringResource(Res.string.auth_pending_invites_decline))
+                        }
+                    }
                 }
             }
         }

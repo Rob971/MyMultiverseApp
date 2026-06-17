@@ -3,6 +3,7 @@ package app.mymultiverse.kmp.data.supabase
 import app.mymultiverse.kmp.data.supabase.dto.ProfileInsertRow
 import app.mymultiverse.kmp.data.supabase.dto.ProfileRow
 import app.mymultiverse.kmp.data.supabase.dto.SpaceInviteInsertRow
+import app.mymultiverse.kmp.data.supabase.dto.SpaceInvitePendingUpdateRow
 import app.mymultiverse.kmp.data.supabase.dto.SpaceInviteRow
 import app.mymultiverse.kmp.data.supabase.dto.SpaceInviteUpdateRow
 import app.mymultiverse.kmp.data.supabase.dto.SpaceMemberInsertRow
@@ -14,6 +15,8 @@ import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberKind
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
 import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import app.mymultiverse.kmp.domain.sharing.activeInvites
+import app.mymultiverse.kmp.domain.sharing.emailsMatch
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
@@ -31,12 +34,16 @@ class SupabaseSpaceCollaborationRepository(
 ) : SpaceCollaborationRepository {
 
     private val membersBySpace = mutableMapOf<String, MutableStateFlow<List<SpaceMember>>>()
+    private val outboundInvitesBySpace = mutableMapOf<String, MutableStateFlow<List<SpaceInvite>>>()
     private val pendingInvites = MutableStateFlow<List<SpaceInvite>>(emptyList())
 
     override fun observeMembers(spaceId: String): Flow<List<SpaceMember>> =
         membersFlow(spaceId).asStateFlow()
 
     override fun observePendingInvites(): Flow<List<SpaceInvite>> = pendingInvites.asStateFlow()
+
+    override fun observeOutboundInvites(spaceId: String): Flow<List<SpaceInvite>> =
+        outboundInvitesFlow(spaceId).asStateFlow()
 
     override suspend fun refreshMembers(spaceId: String, ownerId: String, ownerDisplayName: String) {
         val rows = client.postgrest["space_members"]
@@ -85,47 +92,37 @@ class SupabaseSpaceCollaborationRepository(
     }
 
     override suspend fun refreshPendingInvites() {
-        runCatching {
-            val profile = currentProfile() ?: run {
-                pendingInvites.value = emptyList()
-                return
-            }
-            val email = profile.email?.trim()?.lowercase().orEmpty()
-            if (email.isEmpty()) {
-                pendingInvites.value = emptyList()
-                return
-            }
-
-            val rows = client.postgrest["space_invites"]
-                .select(Columns.ALL) {
-                    filter { eq("email", email) }
-                }
-                .decodeList<SpaceInviteRow>()
-                .filter { row -> row.acceptedAt == null && row.declinedAt == null }
-
-            val spaceIds = rows.map { it.spaceId }.distinct()
-            val spaceNames = if (spaceIds.isEmpty()) {
-                emptyMap()
-            } else {
-                client.postgrest["sharing_spaces"]
-                    .select(Columns.ALL) {
-                        filter { isIn("id", spaceIds) }
-                    }
-                    .decodeList<SharingSpaceRow>()
-                    .associateBy({ it.id }, { it.name })
-            }
-
-            pendingInvites.value = rows.map { row ->
-                SpaceInvite(
-                    id = row.id,
-                    spaceId = row.spaceId,
-                    spaceName = spaceNames[row.spaceId] ?: row.spaceId,
-                    email = row.email,
-                    role = row.role.toSpaceMemberRole(),
-                    expiresAtEpochMillis = row.expiresAt?.toEpochMillis(),
-                )
-            }.sortedBy { it.spaceName.lowercase() }
+        val profileEmail = resolveProfileEmail() ?: run {
+            pendingInvites.value = emptyList()
+            return
         }
+
+        val rows = client.postgrest["space_invites"]
+            .select(Columns.ALL)
+            .decodeList<SpaceInviteRow>()
+            .filter { row -> row.acceptedAt == null && row.declinedAt == null }
+            .filter { row -> emailsMatch(row.email, profileEmail) }
+
+        val spaceNames = loadSpaceNames(rows.map { it.spaceId }.distinct())
+        pendingInvites.value = rows
+            .map { it.toSpaceInvite(spaceName = null) }
+            .activeInvites()
+            .map { invite -> invite.copy(spaceName = spaceNames[invite.spaceId] ?: invite.spaceId) }
+            .sortedBy { it.spaceName.lowercase() }
+    }
+
+    override suspend fun refreshOutboundInvites(spaceId: String) {
+        val rows = client.postgrest["space_invites"]
+            .select(Columns.ALL) {
+                filter { eq("space_id", spaceId) }
+            }
+            .decodeList<SpaceInviteRow>()
+            .filter { row -> row.acceptedAt == null && row.declinedAt == null }
+            .map { it.toSpaceInvite(spaceName = null) }
+            .activeInvites()
+            .sortedBy { it.email.lowercase() }
+
+        outboundInvitesFlow(spaceId).value = rows
     }
 
     override suspend fun addMemberByEmail(
@@ -136,20 +133,19 @@ class SupabaseSpaceCollaborationRepository(
         val trimmed = email.trim()
         require(trimmed.isNotEmpty()) { "member_email_required" }
 
-        val profileId = findProfileIdByEmail(trimmed)
+        val normalizedEmail = trimmed.lowercase()
+        val profileId = findProfileIdByEmail(normalizedEmail)
         val currentUserId = requireUserId()
         ensureProfile(currentUserId)
 
         if (profileId == null) {
-            client.postgrest["space_invites"]
-                .insert(
-                    SpaceInviteInsertRow(
-                        spaceId = spaceId,
-                        email = trimmed.lowercase(),
-                        role = role.wireName(),
-                        invitedBy = currentUserId,
-                    ),
-                )
+            sendOrRefreshInvite(
+                spaceId = spaceId,
+                email = normalizedEmail,
+                role = role,
+                invitedBy = currentUserId,
+            )
+            refreshOutboundInvites(spaceId)
             return@runCatching AddMemberResult.InviteSent
         }
 
@@ -166,6 +162,7 @@ class SupabaseSpaceCollaborationRepository(
                 ),
             )
 
+        refreshMembers(spaceId, currentUserId, currentProfileDisplayName(currentUserId))
         AddMemberResult.Added
     }
 
@@ -182,6 +179,8 @@ class SupabaseSpaceCollaborationRepository(
     }
 
     override suspend fun acceptInvite(inviteId: String): Result<Unit> = runCatching {
+        val currentUserId = requireUserId()
+        ensureProfile(currentUserId)
         val parameters = buildJsonObject { put("p_invite_id", inviteId) }
         client.postgrest.rpc("accept_space_invite", parameters)
         refreshPendingInvites()
@@ -199,6 +198,44 @@ class SupabaseSpaceCollaborationRepository(
         refreshPendingInvites()
     }
 
+    private suspend fun sendOrRefreshInvite(
+        spaceId: String,
+        email: String,
+        role: SpaceMemberRole,
+        invitedBy: String,
+    ) {
+        val insertResult = runCatching {
+            client.postgrest["space_invites"]
+                .insert(
+                    SpaceInviteInsertRow(
+                        spaceId = spaceId,
+                        email = email,
+                        role = role.wireName(),
+                        invitedBy = invitedBy,
+                    ),
+                )
+        }
+        if (insertResult.isSuccess) return
+
+        val message = insertResult.exceptionOrNull()?.message.orEmpty().lowercase()
+        if (!message.contains("duplicate") && !message.contains("23505") && !message.contains("unique")) {
+            throw insertResult.exceptionOrNull() ?: IllegalStateException("invite_insert_failed")
+        }
+
+        client.postgrest["space_invites"]
+            .update(
+                SpaceInvitePendingUpdateRow(
+                    role = role.wireName(),
+                    invitedBy = invitedBy,
+                ),
+            ) {
+                filter {
+                    eq("space_id", spaceId)
+                    eq("email", email)
+                }
+            }
+    }
+
     private suspend fun findProfileIdByEmail(email: String): String? {
         val parameters = buildJsonObject { put("p_email", email) }
         return client.postgrest
@@ -206,8 +243,21 @@ class SupabaseSpaceCollaborationRepository(
             .decodeSingleOrNull()
     }
 
+    private suspend fun resolveProfileEmail(): String? {
+        client.auth.awaitInitialization()
+        val userId = requireUserId()
+        ensureProfile(userId)
+        val profileEmail = currentProfile()?.email?.trim().orEmpty()
+        if (profileEmail.isNotEmpty()) return profileEmail
+
+        return client.auth.currentUserOrNull()?.email?.trim()
+            ?: client.auth.currentSessionOrNull()?.user?.email?.trim()
+    }
+
     private suspend fun currentProfile(): ProfileRow? {
-        val userId = client.auth.currentUserOrNull()?.id ?: return null
+        val userId = client.auth.currentUserOrNull()?.id
+            ?: client.auth.currentSessionOrNull()?.user?.id
+            ?: return null
         return client.postgrest["profiles"]
             .select(Columns.ALL) {
                 filter { eq("id", userId) }
@@ -215,11 +265,19 @@ class SupabaseSpaceCollaborationRepository(
             .decodeSingleOrNull<ProfileRow>()
     }
 
+    private suspend fun currentProfileDisplayName(userId: String): String {
+        val profile = currentProfile()
+        return profile?.displayName?.takeIf { it.isNotBlank() }
+            ?: profile?.email?.takeIf { it.isNotBlank() }
+            ?: userId
+    }
+
     private suspend fun ensureProfile(userId: String) {
         val rpcResult = runCatching { client.postgrest.rpc("ensure_current_profile") }
         if (rpcResult.isSuccess) return
 
         val email = client.auth.currentUserOrNull()?.email
+            ?: client.auth.currentSessionOrNull()?.user?.email
         client.postgrest["profiles"]
             .upsert(
                 ProfileInsertRow(
@@ -232,12 +290,26 @@ class SupabaseSpaceCollaborationRepository(
             }
     }
 
+    private suspend fun loadSpaceNames(spaceIds: List<String>): Map<String, String> {
+        if (spaceIds.isEmpty()) return emptyMap()
+        return client.postgrest["sharing_spaces"]
+            .select(Columns.ALL) {
+                filter { isIn("id", spaceIds) }
+            }
+            .decodeList<SharingSpaceRow>()
+            .associateBy({ it.id }, { it.name })
+    }
+
     private fun membersFlow(spaceId: String): MutableStateFlow<List<SpaceMember>> =
         membersBySpace.getOrPut(spaceId) { MutableStateFlow(emptyList()) }
+
+    private fun outboundInvitesFlow(spaceId: String): MutableStateFlow<List<SpaceInvite>> =
+        outboundInvitesBySpace.getOrPut(spaceId) { MutableStateFlow(emptyList()) }
 
     private suspend fun requireUserId(): String {
         client.auth.awaitInitialization()
         return client.auth.currentUserOrNull()?.id
+            ?: client.auth.currentSessionOrNull()?.user?.id
             ?: throw IllegalStateException("auth_required")
     }
 
@@ -249,6 +321,16 @@ class SupabaseSpaceCollaborationRepository(
             displayName = ownerDisplayName,
             role = SpaceMemberRole.Owner,
             referenceId = ownerId,
+        )
+
+    private fun SpaceInviteRow.toSpaceInvite(spaceName: String?): SpaceInvite =
+        SpaceInvite(
+            id = id,
+            spaceId = spaceId,
+            spaceName = spaceName ?: spaceId,
+            email = email,
+            role = role.toSpaceMemberRole(),
+            expiresAtEpochMillis = expiresAt?.toEpochMillis(),
         )
 
     private fun SpaceMemberRole.wireName(): String =

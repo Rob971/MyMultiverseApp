@@ -25,6 +25,9 @@ object SharingStringKeys {
         "sharing_members_invite_sent",
         "sharing_members_member_added",
         "sharing_members_select_role",
+        "sharing_members_pending_invites_title",
+        "sharing_members_pending_invite_label",
+        "sharing_members_read_only_hint",
     )
 
     val localeDirectories: List<String> = NutritionStringKeys.localeDirectories

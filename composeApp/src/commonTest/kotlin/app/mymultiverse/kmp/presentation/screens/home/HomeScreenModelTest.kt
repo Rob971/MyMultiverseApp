@@ -1,6 +1,8 @@
 package app.mymultiverse.kmp.presentation.screens.home
 
 import app.mymultiverse.kmp.domain.model.Greeting
+import app.mymultiverse.kmp.domain.model.auth.AuthState
+import app.mymultiverse.kmp.domain.model.auth.AuthUser
 import app.mymultiverse.kmp.domain.model.sharing.AddMemberResult
 import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
@@ -13,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.kmp.presentation.di.FakeAuthRepository
+import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
 import app.mymultiverse.kmp.presentation.di.FakeSpaceCollaborationRepository
 import com.russhwolf.settings.MapSettings
@@ -45,16 +48,119 @@ class HomeScreenModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun model(repository: FakeGreetingRepository): HomeScreenModel =
+    private fun model(
+        repository: FakeGreetingRepository,
+        authRepository: FakeAuthRepository = FakeAuthRepository(
+            initialState = AuthState.Authenticated(
+                AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),
+            ),
+        ),
+    ): HomeScreenModel =
         HomeScreenModel(
             getGreetingUseCase = GetGreetingUseCase(repository),
-            authRepository = FakeAuthRepository(),
+            authRepository = authRepository,
+            householdRepository = FakeHouseholdRepository(),
             collaborationRepository = FakeSpaceCollaborationRepository(),
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
             ),
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
+
+    @Test
+    fun userDisplayName_isAvailableImmediatelyForAuthenticatedSession() = runTest(testDispatcher) {
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            authRepository = FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(id = "user-1", email = "roberto@example.com", displayName = "Roberto"),
+                ),
+            ),
+        )
+
+        assertEquals("Roberto", screenModel.userDisplayName.value)
+    }
+
+    @Test
+    fun userDisplayName_reflectsAuthenticatedProfile() = runTest(testDispatcher) {
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            authRepository = FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(id = "user-1", email = "roberto@example.com", displayName = "Roberto"),
+                ),
+            ),
+        )
+
+        advanceUntilIdle()
+
+        assertEquals("Roberto", screenModel.userDisplayName.value)
+    }
+
+    @Test
+    fun userDisplayName_fallsBackToEmailWhenDisplayNameMissing() = runTest(testDispatcher) {
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            authRepository = FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(id = "user-1", email = "maria@example.com", displayName = null),
+                ),
+            ),
+        )
+
+        advanceUntilIdle()
+
+        assertEquals("maria", screenModel.userDisplayName.value)
+    }
+
+    @Test
+    fun userDisplayName_isNullWhenUnauthenticated() = runTest(testDispatcher) {
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            authRepository = FakeAuthRepository(initialState = AuthState.Unauthenticated),
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(null, screenModel.userDisplayName.value)
+    }
+
+    @Test
+    fun userDisplayName_persistsAcrossGreetingRefresh() = runTest(testDispatcher) {
+        val repository = FakeGreetingRepository(Greeting("Initial"))
+        val screenModel = model(
+            repository = repository,
+            authRepository = FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(id = "user-1", email = "roberto@example.com", displayName = "Roberto"),
+                ),
+            ),
+        )
+        advanceUntilIdle()
+
+        repository.nextGreeting = Greeting("Refreshed")
+        screenModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals("Roberto", screenModel.userDisplayName.value)
+        assertEquals("Refreshed", screenModel.greeting.value?.text)
+    }
+
+    @Test
+    fun userDisplayName_clearsAfterSignOut() = runTest(testDispatcher) {
+        val authRepository = FakeAuthRepository(
+            initialState = AuthState.Authenticated(
+                AuthUser(id = "user-1", email = "roberto@example.com", displayName = "Roberto"),
+            ),
+        )
+        val screenModel = model(FakeGreetingRepository(Greeting("Welcome home")), authRepository)
+        advanceUntilIdle()
+
+        screenModel.signOut()
+        advanceUntilIdle()
+
+        assertEquals(null, screenModel.userDisplayName.value)
+    }
 
     @Test
     fun init_loadsGreeting() = runTest(testDispatcher) {
@@ -100,7 +206,12 @@ class HomeScreenModelTest {
         val repository = FakeGreetingRepository(Greeting("Welcome home"))
         val screenModel = HomeScreenModel(
             getGreetingUseCase = GetGreetingUseCase(repository),
-            authRepository = FakeAuthRepository(),
+            authRepository = FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),
+                ),
+            ),
+            householdRepository = FakeHouseholdRepository(),
             collaborationRepository = HangingSpaceCollaborationRepository(),
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
@@ -119,7 +230,12 @@ class HomeScreenModelTest {
         val collaborationRepository = TrackingSpaceCollaborationRepository()
         val screenModel = HomeScreenModel(
             getGreetingUseCase = GetGreetingUseCase(FakeGreetingRepository(Greeting("Welcome home"))),
-            authRepository = FakeAuthRepository(),
+            authRepository = FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),
+                ),
+            ),
+            householdRepository = FakeHouseholdRepository(),
             collaborationRepository = collaborationRepository,
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
@@ -141,11 +257,16 @@ private class HangingSpaceCollaborationRepository : SpaceCollaborationRepository
 
     override fun observePendingInvites(): Flow<List<SpaceInvite>> = pendingInvites.asStateFlow()
 
+    override fun observeOutboundInvites(spaceId: String): Flow<List<SpaceInvite>> =
+        MutableStateFlow<List<SpaceInvite>>(emptyList()).asStateFlow()
+
     override suspend fun refreshMembers(spaceId: String, ownerId: String, ownerDisplayName: String) = Unit
 
     override suspend fun refreshPendingInvites() {
         suspendCancellableCoroutine<Unit> { }
     }
+
+    override suspend fun refreshOutboundInvites(spaceId: String) = Unit
 
     override suspend fun addMemberByEmail(
         spaceId: String,

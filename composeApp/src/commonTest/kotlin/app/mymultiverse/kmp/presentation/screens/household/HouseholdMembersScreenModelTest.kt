@@ -1,4 +1,4 @@
-package app.mymultiverse.kmp.presentation.screens.nutrition.spaces
+package app.mymultiverse.kmp.presentation.screens.household
 
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
 import app.mymultiverse.kmp.domain.sharing.HOUSEHOLD_RECOMMENDED_MIN_MEMBERS
@@ -20,17 +20,17 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class NutritionSpaceMembersScreenModelTest {
+class HouseholdMembersScreenModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var repository: FakeSpaceCollaborationRepository
-    private lateinit var model: NutritionSpaceMembersScreenModel
+    private lateinit var model: HouseholdMembersScreenModel
 
     @BeforeTest
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         repository = FakeSpaceCollaborationRepository()
-        model = NutritionSpaceMembersScreenModel(
+        model = HouseholdMembersScreenModel(
             collaborationRepository = repository,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
@@ -42,8 +42,8 @@ class NutritionSpaceMembersScreenModelTest {
     }
 
     @Test
-    fun submitAddPerson_withUnknownEmail_sendsInvite() = runTest(testDispatcher) {
-        model.bindSpace("space-1", ownerId = "owner", ownerDisplayName = "Owner")
+    fun submitAddPerson_withUnknownEmail_sendsInviteAndTracksOutbound() = runTest(testDispatcher) {
+        model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddPersonDialog()
         model.onEmailChange("invite@example.com")
         model.onRoleChange(SpaceMemberRole.Viewer)
@@ -51,25 +51,35 @@ class NutritionSpaceMembersScreenModelTest {
         model.submitAddPerson("space-1")
         advanceUntilIdle()
 
-        assertEquals(SpaceMembersSuccess.InviteSent, model.uiState.value.successMessageKey)
+        assertEquals(HouseholdMembersSuccess.InviteSent, model.uiState.value.successMessageKey)
+        assertEquals(1, model.uiState.value.outboundInvites.size)
+        assertEquals("invite@example.com", model.uiState.value.outboundInvites.single().email)
     }
 
     @Test
     fun submitAddPerson_withKnownEmail_addsMember() = runTest(testDispatcher) {
-        model.bindSpace("space-1", ownerId = "owner", ownerDisplayName = "Owner")
+        model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddPersonDialog()
         model.onEmailChange("member@example.com")
 
         model.submitAddPerson("space-1")
         advanceUntilIdle()
 
-        assertEquals(SpaceMembersSuccess.MemberAdded, model.uiState.value.successMessageKey)
+        assertEquals(HouseholdMembersSuccess.MemberAdded, model.uiState.value.successMessageKey)
         assertFalse(model.uiState.value.showAddPersonDialog)
     }
 
     @Test
+    fun nonOwner_cannotManageMembers() = runTest(testDispatcher) {
+        model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "editor-1")
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.canManageMembers)
+    }
+
+    @Test
     fun household_withOwnerOnly_isNotReadyUntilSecondMemberJoins() = runTest(testDispatcher) {
-        model.bindSpace("household-1", ownerId = "owner", ownerDisplayName = "Owner")
+        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         advanceUntilIdle()
 
         assertEquals(1, householdMemberCount(model.uiState.value.members))

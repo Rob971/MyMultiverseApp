@@ -16,6 +16,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,10 +26,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
@@ -37,8 +44,9 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_d
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_empty_question
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_error
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_generate_button
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_readonly_note
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_cleared
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_result_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_saved_readonly_note
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_summary
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_meal_plan_summary_full_week
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_meal_plan_summary_single_day
@@ -59,8 +67,10 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_s
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestions_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_try_again
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_undo_action
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_dinner
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_lunch
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_preview_line
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_label
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
@@ -77,6 +87,7 @@ import app.mymultiverse.kmp.presentation.components.screenContentArea
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 object NutritionAiTestTags {
@@ -85,6 +96,13 @@ object NutritionAiTestTags {
     const val GENERATE_BUTTON = "nutrition_ai_generate"
     const val ANSWER_CARD = "nutrition_ai_answer"
     const val APPLY_MEAL_PLAN_BUTTON = "nutrition_ai_apply_meal_plan"
+    const val CLEAR_AI_GROCERY_BUTTON = "nutrition_ai_clear_grocery"
+    const val MODE_ADVICE = "nutrition_ai_mode_advice"
+    const val MODE_GROCERY = "nutrition_ai_mode_grocery"
+    const val MODE_MEAL_PLAN = "nutrition_ai_mode_meal_plan"
+    const val SCOPE_FULL_WEEK = "nutrition_ai_scope_full_week"
+    const val SCOPE_TODAY = "nutrition_ai_scope_today"
+    const val MEAL_PLAN_PREVIEW_ROW_PREFIX = "nutrition_ai_meal_preview_"
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -101,6 +119,8 @@ fun NutritionAiAdviceScreen(
     val isLoading = aiState is NutritionAiState.Loading
     val todayIndex = remember(screenModel.weekKey) { WeekCalendar.todayIndexInWeek(screenModel.weekKey) }
     val accentColor = SharedJourneyColors.MediterraneanTeal
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     val weekLabel = stringResource(
         Res.string.nutrition_week_label,
@@ -138,9 +158,29 @@ fun NutritionAiAdviceScreen(
         )
     }
 
+    val undoLabel = stringResource(Res.string.nutrition_grocery_undo_action)
+    val aiGroceryClearedMessage = stringResource(Res.string.nutrition_ai_grocery_cleared)
+
+    fun clearAiGroceryWithUndo(resetStateOnDismiss: Boolean) {
+        val snapshot = screenModel.clearAiGrocery()
+        if (snapshot.isEmpty()) return
+        coroutineScope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = aiGroceryClearedMessage,
+                actionLabel = undoLabel,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                screenModel.restoreAiGroceryItems(snapshot)
+            } else if (resetStateOnDismiss) {
+                screenModel.resetAiState()
+            }
+        }
+    }
+
     NutritionScaffold(
         title = stringResource(Res.string.nutrition_ai_title),
         onBack = onBack,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -173,18 +213,21 @@ fun NutritionAiAdviceScreen(
                         label = stringResource(Res.string.nutrition_ai_mode_advice),
                         selected = mode == NutritionAiMode.Advice,
                         enabled = !isLoading,
+                        modifier = Modifier.testTag(NutritionAiTestTags.MODE_ADVICE),
                         onClick = { mode = NutritionAiMode.Advice },
                     )
                     ModeChip(
                         label = stringResource(Res.string.nutrition_ai_mode_grocery),
                         selected = mode == NutritionAiMode.GroceryList,
                         enabled = !isLoading,
+                        modifier = Modifier.testTag(NutritionAiTestTags.MODE_GROCERY),
                         onClick = { mode = NutritionAiMode.GroceryList },
                     )
                     ModeChip(
                         label = stringResource(Res.string.nutrition_ai_mode_meal_plan),
                         selected = mode == NutritionAiMode.MealPlan,
                         enabled = !isLoading,
+                        modifier = Modifier.testTag(NutritionAiTestTags.MODE_MEAL_PLAN),
                         onClick = { mode = NutritionAiMode.MealPlan },
                     )
                 }
@@ -200,12 +243,14 @@ fun NutritionAiAdviceScreen(
                             label = stringResource(Res.string.nutrition_ai_scope_full_week),
                             selected = fullWeekScope,
                             enabled = !isLoading,
+                            modifier = Modifier.testTag(NutritionAiTestTags.SCOPE_FULL_WEEK),
                             onClick = { fullWeekScope = true },
                         )
                         ModeChip(
                             label = stringResource(Res.string.nutrition_ai_scope_today),
                             selected = !fullWeekScope,
                             enabled = !isLoading,
+                            modifier = Modifier.testTag(NutritionAiTestTags.SCOPE_TODAY),
                             onClick = { fullWeekScope = false },
                         )
                     }
@@ -279,7 +324,7 @@ fun NutritionAiAdviceScreen(
                     AiReadOnlyGroceryList(
                         items = aiGrocery,
                         title = stringResource(Res.string.nutrition_ai_grocery_result_title),
-                        subtitle = stringResource(Res.string.nutrition_ai_grocery_readonly_note),
+                        subtitle = stringResource(Res.string.nutrition_ai_grocery_saved_readonly_note),
                     )
                 }
             }
@@ -320,13 +365,15 @@ fun NutritionAiAdviceScreen(
                         AiReadOnlyGroceryList(
                             items = aiGrocery,
                             title = stringResource(Res.string.nutrition_ai_grocery_result_title),
-                            subtitle = stringResource(Res.string.nutrition_ai_grocery_readonly_note),
+                            subtitle = stringResource(Res.string.nutrition_ai_grocery_saved_readonly_note),
                         )
                     }
                     item {
                         OutlinedButton(
-                            onClick = { screenModel.clearAiGrocery(); screenModel.resetAiState() },
-                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { clearAiGroceryWithUndo(resetStateOnDismiss = true) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(NutritionAiTestTags.CLEAR_AI_GROCERY_BUTTON),
                         ) {
                             Text(stringResource(Res.string.nutrition_ai_clear_grocery))
                         }
@@ -368,6 +415,9 @@ fun NutritionAiAdviceScreen(
                             dayIndex = dayIndex,
                             lunch = day.lunch,
                             dinner = day.dinner,
+                            modifier = Modifier.testTag(
+                                "${NutritionAiTestTags.MEAL_PLAN_PREVIEW_ROW_PREFIX}$dayIndex",
+                            ),
                         )
                     }
                     item {
@@ -435,11 +485,12 @@ private fun MealPlanPreviewCard(
     dayIndex: Int,
     lunch: String,
     dinner: String,
+    modifier: Modifier = Modifier,
 ) {
     val dayLabel = nutritionDayLabel(dayIndex)
     FamilyLogisticsCardSurface {
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -451,12 +502,20 @@ private fun MealPlanPreviewCard(
                 color = SharedJourneyColors.InkDeep,
             )
             Text(
-                text = "${stringResource(Res.string.nutrition_meal_lunch)}: $lunch",
+                text = stringResource(
+                    Res.string.nutrition_meal_plan_preview_line,
+                    stringResource(Res.string.nutrition_meal_lunch),
+                    lunch,
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = SharedJourneyColors.InkDeep,
             )
             Text(
-                text = "${stringResource(Res.string.nutrition_meal_dinner)}: $dinner",
+                text = stringResource(
+                    Res.string.nutrition_meal_plan_preview_line,
+                    stringResource(Res.string.nutrition_meal_dinner),
+                    dinner,
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = SharedJourneyColors.InkDeep,
             )
@@ -476,6 +535,7 @@ private fun ModeChip(
     label: String,
     selected: Boolean,
     enabled: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
     val colors = if (selected) {
@@ -484,7 +544,12 @@ private fun ModeChip(
         SharedJourneyColors.GlassWhite to SharedJourneyColors.MediterraneanTeal
     }
     Surface(
-        modifier = if (enabled) Modifier.clickable(onClick = onClick) else Modifier,
+        modifier = modifier
+            .semantics { this.selected = selected }
+            .clickable(
+                enabled = enabled,
+                role = Role.Button,
+            ) { onClick() },
         shape = FamilyLogisticsDesign.fieldShape,
         color = colors.first.copy(alpha = if (selected) 1f else 0.12f),
         border = androidx.compose.foundation.BorderStroke(
@@ -508,9 +573,11 @@ private fun SuggestionChip(
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
-    val chipModifier = if (enabled) Modifier.clickable(onClick = onClick) else Modifier
     Surface(
-        modifier = chipModifier,
+        modifier = Modifier.clickable(
+            enabled = enabled,
+            role = Role.Button,
+        ) { onClick() },
         shape = FamilyLogisticsDesign.fieldShape,
         color = SharedJourneyColors.GlassTerracotta,
         border = androidx.compose.foundation.BorderStroke(

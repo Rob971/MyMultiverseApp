@@ -130,9 +130,24 @@ class NutritionScreenModel(
         }
     }
 
-    fun clearCheckedGroceryItems() {
+    fun clearCheckedGroceryItems(): List<GroceryItem> {
+        val snapshot = groceryItems.value
+        val updated = snapshot.filterNot { it.isChecked }
+        if (updated.size == snapshot.size) return emptyList()
         scope.launch {
-            repository.saveGroceryItems(groceryItems.value.filterNot { it.isChecked })
+            repository.saveGroceryItems(updated)
+        }
+        return snapshot
+    }
+
+    fun restoreGroceryItemsSnapshot(items: List<GroceryItem>) {
+        if (items.isEmpty()) return
+        scope.launch {
+            val currentById = groceryItems.value.associateBy { it.id }
+            val restoredIds = items.map { it.id }.toSet()
+            val restored = items.map { item -> currentById[item.id] ?: item }
+            val newItems = groceryItems.value.filterNot { it.id in restoredIds }
+            repository.saveGroceryItems(restored + newItems)
         }
     }
 
@@ -211,9 +226,20 @@ class NutritionScreenModel(
         }
     }
 
-    fun clearAiGrocery() {
+    fun clearAiGrocery(): List<GroceryItem> {
+        val snapshot = aiGroceryItems.value
+        if (snapshot.isEmpty()) return emptyList()
         scope.launch {
             repository.saveAiGroceryItems(emptyList())
+        }
+        return snapshot
+    }
+
+    fun restoreAiGroceryItems(items: List<GroceryItem>) {
+        if (items.isEmpty()) return
+        scope.launch {
+            val restoredIds = items.map { it.id }.toSet()
+            repository.saveAiGroceryItems(items + aiGroceryItems.value.filterNot { it.id in restoredIds })
         }
     }
 

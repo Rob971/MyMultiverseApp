@@ -45,6 +45,7 @@ class NutritionSessionCoordinatorImplTest {
             outbox = NutritionSyncOutbox(settings),
             realtimeSync = null,
             logger = TestObservability.logger,
+            diagnostics = TestObservability.diagnostics,
         )
 
         coordinator.activateSpace("space-offline")
@@ -65,6 +66,7 @@ class NutritionSessionCoordinatorImplTest {
             outbox = NutritionSyncOutbox(settings),
             realtimeSync = null,
             logger = TestObservability.logger,
+            diagnostics = TestObservability.diagnostics,
         )
 
         coordinator.activateSpace("space-family")
@@ -82,12 +84,32 @@ class NutritionSessionCoordinatorImplTest {
             outbox = NutritionSyncOutbox(settings),
             realtimeSync = null,
             logger = TestObservability.logger,
+            diagnostics = TestObservability.diagnostics,
         )
 
         coordinator.activateSpace("space-family")
 
         assertEquals("space-family", coordinator.nutrition.value.spaceId)
         assertEquals(NutritionSyncStatus.RemoteUnavailable, coordinator.observeSyncStatus().first())
+    }
+
+    @Test
+    fun activateSpace_setsDiagnosticsActiveSpaceId() = runTest {
+        val diagnostics = TestObservability.diagnostics
+        val coordinator = NutritionSessionCoordinatorImpl.create(
+            settings = MapSettings(),
+            remoteApi = null,
+            outbox = NutritionSyncOutbox(MapSettings()),
+            realtimeSync = null,
+            logger = TestObservability.logger,
+            diagnostics = diagnostics,
+        )
+
+        coordinator.activateSpace("space-family")
+        assertEquals("space-family", diagnostics.activeSpaceId)
+
+        coordinator.deactivate()
+        assertEquals(null, diagnostics.activeSpaceId)
     }
 
     private fun coordinator(): NutritionSessionCoordinatorImpl =
@@ -97,6 +119,7 @@ class NutritionSessionCoordinatorImplTest {
             outbox = NutritionSyncOutbox(MapSettings()),
             realtimeSync = null,
             logger = TestObservability.logger,
+            diagnostics = TestObservability.diagnostics,
         )
 
     private suspend fun advance() {

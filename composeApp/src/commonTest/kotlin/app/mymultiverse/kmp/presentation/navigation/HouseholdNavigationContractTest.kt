@@ -35,9 +35,16 @@ class HouseholdNavigationContractTest {
         )
 
         val grocery = AppRoute.Nutrition(space = space, section = NutritionSection.Grocery)
-        val members = AppRoute.Nutrition(space = space, section = NutritionSection.Members)
+        val householdMembers = AppRoute.HouseholdMembers(
+            household = HouseholdContext(
+                id = space.id,
+                name = space.name,
+                ownerId = space.ownerId,
+                ownerDisplayName = space.ownerDisplayName,
+            ),
+        )
 
         assertEquals("household-1", grocery.space?.id)
-        assertEquals("household-1", members.space?.id)
+        assertEquals("household-1", householdMembers.household?.id)
     }
 }

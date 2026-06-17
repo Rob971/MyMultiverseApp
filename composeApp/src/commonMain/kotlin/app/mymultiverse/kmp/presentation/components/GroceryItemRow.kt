@@ -54,6 +54,7 @@ fun GroceryItemRow(
     saveContentDescription: String,
     cancelEditLabel: String,
     toggleContentDescription: String,
+    deleteContentDescription: String,
     onStartEdit: () -> Unit,
     onCancelEdit: () -> Unit,
     onSaveEdit: (String) -> Boolean,
@@ -91,7 +92,7 @@ fun GroceryItemRow(
             ) {
                 Icon(
                     imageVector = AppIcons.Delete,
-                    contentDescription = null,
+                    contentDescription = deleteContentDescription,
                     tint = SharedJourneyColors.TerracottaOrange,
                 )
             }

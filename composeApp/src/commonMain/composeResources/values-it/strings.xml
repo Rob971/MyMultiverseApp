@@ -6,6 +6,9 @@
     <string name="home_banner_description">Uno spazio condiviso per coltivare i sogni della nostra famiglia, tracciare obiettivi S.M.A.R.T. e rafforzare i nostri legami quotidiani.</string>
     <string name="home_dreams_title">la nostra logistica di famiglia</string>
     <string name="home_logistics_nutrition_title">Nutrizione</string>
+    <string name="home_household_title">Famiglia</string>
+    <string name="home_household_description">Invita persone a collaborare su nutrizione, avventure e budget.</string>
+    <string name="home_household_description_named">Gestisci le persone di %1$s — condiviso tra nutrizione, avventure e budget.</string>
     <string name="home_logistics_nutrition_description">Pasti, spesa e pianificazione settimanale per la famiglia.</string>
     <string name="home_logistics_adventures_title">Avventure</string>
     <string name="home_logistics_adventures_description">Viaggi, uscite ed esperienze che pianifichiamo insieme.</string>
@@ -66,6 +69,7 @@
     <string name="nutrition_grocery_cancel_edit">Annulla</string>
     <string name="nutrition_grocery_undo_delete">Articolo rimosso</string>
     <string name="nutrition_grocery_undo_action">Annulla</string>
+    <string name="nutrition_grocery_clear_checked_undo">Articoli selezionati cancellati</string>
     <string name="nutrition_grocery_duplicate">Questo articolo è già in lista</string>
     <string name="nutrition_grocery_toggle_item">Segna come comprato</string>
     <string name="nutrition_grocery_empty_active">Tutto spuntato. Aggiungi articoli o cancella gli spuntati sotto.</string>
@@ -86,8 +90,11 @@
     <string name="nutrition_ai_meal_plan_summary_full_week">Anteprima del piano pasti per tutta la settimana. Controlla sotto e applica.</string>
     <string name="nutrition_ai_meal_plan_summary_single_day">Anteprima del piano pasti per %1$s. Controlla sotto e applica.</string>
     <string name="nutrition_ai_grocery_readonly_note">Lista solo lettura. La tua lista modificabile è sotto.</string>
+    <string name="nutrition_ai_grocery_saved_readonly_note">Suggerimenti spesa IA in sola lettura salvati per questa settimana.</string>
     <string name="nutrition_ai_clear_grocery">Cancella lista IA</string>
+    <string name="nutrition_ai_grocery_cleared">Lista IA cancellata</string>
     <string name="nutrition_ai_meal_plan_result_title">Anteprima</string>
+    <string name="nutrition_meal_plan_preview_line">%1$s: %2$s</string>
     <string name="nutrition_ai_apply_meal_plan">Applica al piano pasti</string>
     <string name="nutrition_ai_suggestion_veggie_grocery">Spesa vegetariana</string>
     <string name="nutrition_ai_suggestion_budget_grocery">Lista economica</string>
@@ -261,6 +268,7 @@
     <string name="category_long_term_ai_action">Genera piano traguardo</string>
     <string name="category_long_term_plan_title">Piano traguardo</string>
     <string name="home_greeting">Il cuore pulsante della nostra famiglia.</string>
+    <string name="home_greeting_personalized">Ciao, %1$s</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>
@@ -648,9 +656,9 @@
     <string name="sharing_nutrition_spaces_error_not_configured">Supabase non è configurato in questa build.</string>
     <string name="sharing_nutrition_spaces_loading">Caricamento spazi...</string>
     <string name="sharing_hub_manage_members">Persone e gruppi</string>
-    <string name="sharing_members_title">Membri della condivisione</string>
-    <string name="sharing_members_subtitle">Invita persone via email o aggiungi un gruppo a questo spazio nutrizione.</string>
-    <string name="sharing_members_empty">Nessun membro ancora. Aggiungi qualcuno o un gruppo per iniziare a condividere.</string>
+    <string name="sharing_members_title">Membri della famiglia</string>
+    <string name="sharing_members_subtitle">Invita persone via email. Gli editor possono modificare liste e piani condivisi; i visualizzatori possono leggerli. Questa famiglia vale per nutrizione, avventure e budget.</string>
+    <string name="sharing_members_empty">Nessun membro ancora. Aggiungi qualcuno per iniziare a condividere.</string>
     <string name="sharing_members_add_person">Aggiungi persona</string>
     <string name="sharing_members_add_group">Aggiungi gruppo</string>
     <string name="sharing_members_email_label">Indirizzo email</string>
@@ -694,6 +702,9 @@
     <string name="sharing_members_event_expires_required">Scegli una data di fine per gruppi viaggio o evento.</string>
     <string name="sharing_members_group_expired">Scaduto</string>
     <string name="sharing_members_invite_sent">Invito inviato. Potranno unirsi dopo la registrazione.</string>
-    <string name="sharing_members_member_added">Membro aggiunto a questo spazio.</string>
+    <string name="sharing_members_member_added">Membro aggiunto alla tua famiglia.</string>
+    <string name="sharing_members_pending_invites_title">Inviti in sospeso</string>
+    <string name="sharing_members_pending_invite_label">In sospeso · %1$s</string>
+    <string name="sharing_members_read_only_hint">Solo il proprietario della famiglia può invitare o rimuovere membri.</string>
     <string name="sharing_members_select_role">Livello di accesso</string>
 </resources>

@@ -5,7 +5,6 @@ import androidx.compose.runtime.LaunchedEffect
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.navigation.NutritionSpaceContext
-import app.mymultiverse.kmp.presentation.screens.nutrition.spaces.NutritionSpaceMembersScreen
 import org.koin.compose.koinInject
 
 @Composable
@@ -27,13 +26,6 @@ fun NutritionFlow(
     val nutritionScreenModel = koinInject<NutritionScreenModel>()
 
     when (section) {
-        NutritionSection.Members -> {
-            NutritionSpaceMembersScreen(
-                space = space,
-                onBack = onBack,
-            )
-        }
-
         NutritionSection.Hub -> {
             LaunchedEffect(space.id) {
                 nutritionScreenModel.activateSpace(space.id)

@@ -17,6 +17,7 @@ import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.kmp.presentation.components.MealPlanTestTags
+import app.mymultiverse.kmp.presentation.screens.nutrition.GroceryListTestTags
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.screens.home.HomeContent
 import app.mymultiverse.kmp.presentation.screens.home.HomeTestTags
@@ -86,6 +87,32 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun grocery_clearCheckedAction_removesCompletedItems() {
+        val screenModel = nutritionScreenModel()
+
+        composeRule.setContent {
+            AppTheme {
+                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+            }
+        }
+
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.INPUT_FIELD)
+            .performTextInput("Milk")
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
+        composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
+
+        composeRule.onNodeWithTag("${GroceryListTestTags.CHECKBOX_PREFIX}instrumented-item-1")
+            .performScrollTo()
+            .performClick()
+        composeRule.waitForState(screenModel.groceryItems) { it.single().isChecked }
+
+        composeRule.onNodeWithTag(GroceryListTestTags.CLEAR_CHECKED_ACTION)
+            .performScrollTo()
+            .performClick()
+        composeRule.waitForState(screenModel.groceryItems) { it.isEmpty() }
+    }
+
+    @Test
     fun mealPlan_generateLunchGrocery_appendsAiGroceryItems() {
         val weekKey = WeekCalendar.currentWeekKey()
         val dayIndex = WeekCalendar.todayIndexInWeek(weekKey) ?: 0
@@ -137,6 +164,60 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun nutritionAi_groceryMode_generatesAndClearsReadOnlyGroceryList() {
+        val screenModel = nutritionScreenModel()
+
+        composeRule.setContent {
+            AppTheme {
+                NutritionAiAdviceScreen(onBack = {}, screenModel = screenModel)
+            }
+        }
+
+        composeRule.onNodeWithTag(NutritionAiTestTags.MODE_GROCERY)
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithTag(NutritionAiTestTags.CRITERIA_FIELD)
+            .performScrollTo()
+            .performTextInput("high protein")
+        composeRule.onNodeWithTag(NutritionAiTestTags.GENERATE_BUTTON)
+            .performScrollTo()
+            .performClick()
+        composeRule.waitFor { screenModel.aiState.value is NutritionAiState.GroceryList }
+        composeRule.waitForState(screenModel.aiGroceryItems) { it.size == 3 }
+
+        composeRule.onNodeWithTag(NutritionAiTestTags.CLEAR_AI_GROCERY_BUTTON)
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+        composeRule.waitForState(screenModel.aiGroceryItems) { it.isEmpty() }
+    }
+
+    @Test
+    fun nutritionHub_showsAllThreeCategoryCards() {
+        val screenModel = nutritionScreenModel()
+
+        composeRule.setContent {
+            AppTheme {
+                NutritionHubScreen(
+                    spaceName = "Test space",
+                    enabledFeatures = setOf(
+                        NutritionSharingFeature.Grocery,
+                        NutritionSharingFeature.MealPlan,
+                        NutritionSharingFeature.AiAdvice,
+                    ),
+                    onBack = {},
+                    onOpenSection = {},
+                    screenModel = screenModel,
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(NutritionHubTestTags.GROCERY_CARD).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(NutritionHubTestTags.MEAL_PLAN_CARD).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(NutritionHubTestTags.AI_CARD).performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
     fun nutritionHub_tapGroceryCard_opensGrocerySection() {
         val screenModel = nutritionScreenModel()
         var opened: NutritionSection? = null
@@ -165,6 +246,93 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun nutritionHub_tapMealPlanCard_opensMealPlanSection() {
+        val screenModel = nutritionScreenModel()
+        var opened: NutritionSection? = null
+
+        composeRule.setContent {
+            AppTheme {
+                NutritionHubScreen(
+                    spaceName = "Test space",
+                    enabledFeatures = setOf(
+                        NutritionSharingFeature.Grocery,
+                        NutritionSharingFeature.MealPlan,
+                        NutritionSharingFeature.AiAdvice,
+                    ),
+                    onBack = {},
+                    onOpenSection = { opened = it },
+                    screenModel = screenModel,
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(NutritionHubTestTags.MEAL_PLAN_CARD)
+            .performScrollTo()
+            .performClick()
+
+        assertEquals(NutritionSection.MealPlan, opened)
+    }
+
+    @Test
+    fun nutritionHub_tapAiCard_opensAiAdviceSection() {
+        val screenModel = nutritionScreenModel()
+        var opened: NutritionSection? = null
+
+        composeRule.setContent {
+            AppTheme {
+                NutritionHubScreen(
+                    spaceName = "Test space",
+                    enabledFeatures = setOf(
+                        NutritionSharingFeature.Grocery,
+                        NutritionSharingFeature.MealPlan,
+                        NutritionSharingFeature.AiAdvice,
+                    ),
+                    onBack = {},
+                    onOpenSection = { opened = it },
+                    screenModel = screenModel,
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(NutritionHubTestTags.AI_CARD)
+            .performScrollTo()
+            .performClick()
+
+        assertEquals(NutritionSection.AiAdvice, opened)
+    }
+
+    @Test
+    fun homeContent_tapHouseholdCard_invokesCallback() {
+        var openedHousehold = false
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = Greeting("Hello"),
+                        userDisplayName = "Test User",
+                        householdName = "Our household",
+                        isRefreshing = false,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onOpenHouseholdMembers = { openedHousehold = true },
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.HOUSEHOLD_CARD)
+            .performScrollTo()
+            .performClick()
+
+        assertTrue(openedHousehold)
+    }
+
+    @Test
     fun homeContent_tapNutritionCard_invokesCallback() {
         var openedNutrition = false
 
@@ -173,10 +341,13 @@ class NutritionUxInstrumentedTest {
                 InstrumentedKoinHost {
                     HomeContent(
                         greeting = Greeting("Hello"),
+                        userDisplayName = "Test User",
+                        householdName = null,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = { openedNutrition = true },
+                        onOpenHouseholdMembers = {},
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
@@ -193,16 +364,122 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun homeContent_withUserDisplayName_showsPersonalizedGreeting() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = Greeting("ready"),
+                        userDisplayName = "Roberto",
+                        householdName = null,
+                        isRefreshing = false,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.GREETING_LINE).assertIsDisplayed()
+        composeRule.onNodeWithText("Hello, Roberto").assertIsDisplayed()
+    }
+
+    @Test
+    fun homeContent_withEmailDerivedDisplayName_showsPersonalizedGreeting() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = Greeting("ready"),
+                        userDisplayName = "maria",
+                        householdName = null,
+                        isRefreshing = false,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithText("Hello, maria").assertIsDisplayed()
+    }
+
+    @Test
+    fun homeContent_withoutDisplayName_showsGenericGreeting() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = Greeting("ready"),
+                        userDisplayName = null,
+                        householdName = null,
+                        isRefreshing = false,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.GREETING_LINE).assertIsDisplayed()
+        composeRule.onNodeWithText("The beating heart of our family.").assertIsDisplayed()
+    }
+
+    @Test
+    fun homeContent_withoutGreeting_showsLoadingBannerLine() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeContent(
+                        greeting = null,
+                        userDisplayName = "Roberto",
+                        householdName = null,
+                        isRefreshing = false,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
+                        onSignOut = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.LOADING_INDICATOR).assertIsDisplayed()
+        composeRule.onNodeWithText("Loading your family space...").assertIsDisplayed()
+    }
+
+    @Test
     fun homeContent_withoutGreeting_showsLoadingIndicator() {
         composeRule.setContent {
             AppTheme {
                 InstrumentedKoinHost {
                     HomeContent(
                         greeting = null,
+                        userDisplayName = null,
+                        householdName = null,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
@@ -221,10 +498,13 @@ class NutritionUxInstrumentedTest {
                 InstrumentedKoinHost {
                     HomeContent(
                         greeting = Greeting("Hello"),
+                        userDisplayName = "Test User",
+                        householdName = null,
                         isRefreshing = true,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},

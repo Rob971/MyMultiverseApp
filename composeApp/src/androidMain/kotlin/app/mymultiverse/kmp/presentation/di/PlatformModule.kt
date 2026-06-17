@@ -1,6 +1,7 @@
 package app.mymultiverse.kmp.presentation.di
 
 import android.content.Context
+import app.mymultiverse.kmp.data.observability.FirebaseBuildFlags
 import app.mymultiverse.kmp.data.observability.FirebaseCrashReporter
 import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
 import app.mymultiverse.kmp.domain.manager.AndroidLanguageManager
@@ -19,9 +20,8 @@ actual fun platformModule(): Module = module {
     }
     single<LanguageManager> { AndroidLanguageManager(androidContext(), get()) }
     single<CrashReporter> {
-        val context = androidContext()
-        if (FirebaseCrashReporter.isAvailable(context)) {
-            FirebaseCrashReporter()
+        if (FirebaseBuildFlags.CRASHLYTICS_ENABLED) {
+            FirebaseCrashReporter(androidContext())
         } else {
             NoOpCrashReporter()
         }

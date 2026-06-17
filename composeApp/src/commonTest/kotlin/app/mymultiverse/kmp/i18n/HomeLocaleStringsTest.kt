@@ -30,4 +30,16 @@ class HomeLocaleStringsTest {
             assertTrue(value.isNotBlank(), "Default locale value for '$key' must not be blank")
         }
     }
+
+    @Test
+    fun personalizedGreeting_containsNamePlaceholderInEveryLocale() {
+        HomeStringKeys.localeDirectories.forEach { localeDir ->
+            val contents = LocaleTestFiles.stringsFile(localeDir).readText()
+            val value = LocaleTestFiles.readStringValue(contents, "home_greeting_personalized")
+            assertTrue(
+                value.contains("%1\$s"),
+                "Locale '$localeDir' must use %1\$s placeholder in home_greeting_personalized",
+            )
+        }
+    }
 }

@@ -1,10 +1,10 @@
 package app.mymultiverse.kmp.domain.repository
 
 import app.mymultiverse.kmp.domain.model.auth.AuthState
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface AuthRepository {
-    val authState: Flow<AuthState>
+    val authState: StateFlow<AuthState>
 
     suspend fun restoreSession()
 

@@ -1,4 +1,4 @@
-package app.mymultiverse.kmp.presentation.screens.nutrition.spaces
+package app.mymultiverse.kmp.presentation.screens.household
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,23 +13,29 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.domain.model.auth.AuthState
+import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.screenContentArea
 import app.mymultiverse.kmp.presentation.components.screenListPadding
-import app.mymultiverse.kmp.presentation.navigation.NutritionSpaceContext
+import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_add_person
@@ -38,7 +44,6 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_member
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_email_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_email_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_empty
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_email_not_found
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_email_required
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_generic
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_not_configured
@@ -46,6 +51,9 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_member
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_loading
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_member_added
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_owner_fallback
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_pending_invite_label
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_pending_invites_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_read_only_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_remove
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_role_editor
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_role_label
@@ -57,45 +65,52 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_member
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-object NutritionSpaceMembersTestTags {
-    const val ADD_PERSON_BUTTON = "nutrition_members_add_person"
-    const val MEMBER_ROW = "nutrition_members_row"
+object HouseholdMembersTestTags {
+    const val ADD_PERSON_BUTTON = "household_members_add_person"
+    const val MEMBER_ROW = "household_members_row"
+    const val PENDING_INVITE_ROW = "household_members_pending_invite"
 }
 
 @Composable
-fun NutritionSpaceMembersScreen(
-    space: NutritionSpaceContext,
+fun HouseholdMembersScreen(
+    household: HouseholdContext,
     onBack: () -> Unit,
-    screenModel: NutritionSpaceMembersScreenModel = koinInject(),
+    screenModel: HouseholdMembersScreenModel = koinInject(),
+    authRepository: AuthRepository = koinInject(),
 ) {
     val uiState by screenModel.uiState.collectAsState()
+    val authState by authRepository.authState.collectAsState()
     val ownerFallback = stringResource(Res.string.sharing_members_owner_fallback)
+    val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage = uiState.error?.let { error -> mapErrorMessage(error) }
     val successMessage = uiState.successMessageKey?.let { success ->
         when (success) {
-            SpaceMembersSuccess.InviteSent -> stringResource(Res.string.sharing_members_invite_sent)
-            SpaceMembersSuccess.MemberAdded -> stringResource(Res.string.sharing_members_member_added)
+            HouseholdMembersSuccess.InviteSent -> stringResource(Res.string.sharing_members_invite_sent)
+            HouseholdMembersSuccess.MemberAdded -> stringResource(Res.string.sharing_members_member_added)
         }
     }
+    val currentUserId = (authState as? AuthState.Authenticated)?.user?.id
 
-    LaunchedEffect(space.id, space.ownerId, space.ownerDisplayName) {
-        screenModel.bindSpace(
-            spaceId = space.id,
-            ownerId = space.ownerId,
-            ownerDisplayName = space.ownerDisplayName ?: ownerFallback,
+    LaunchedEffect(household.id, household.ownerId, household.ownerDisplayName, currentUserId) {
+        screenModel.bindHousehold(
+            spaceId = household.id,
+            ownerId = household.ownerId,
+            ownerDisplayName = household.ownerDisplayName ?: ownerFallback,
+            currentUserId = currentUserId,
         )
     }
 
     LaunchedEffect(successMessage) {
-        if (successMessage != null) {
-            screenModel.clearSuccessMessage()
-        }
+        val message = successMessage ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(message)
+        screenModel.clearSuccessMessage()
     }
 
     NutritionScaffold(
         title = stringResource(Res.string.sharing_members_title),
-        subtitle = space.name,
+        subtitle = household.name,
         onBack = onBack,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         if (uiState.isLoading && uiState.members.isEmpty()) {
             Column(
@@ -121,22 +136,35 @@ fun NutritionSpaceMembersScreen(
                         color = SharedJourneyColors.InkDeep.copy(alpha = 0.75f),
                     )
                 }
-                if (successMessage != null) {
+                if (!uiState.canManageMembers) {
                     item {
                         Text(
-                            text = successMessage,
-                            color = SharedJourneyColors.MediterraneanTeal,
+                            text = stringResource(Res.string.sharing_members_read_only_hint),
+                            color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
                         )
                     }
                 }
-                item {
-                    Button(
-                        onClick = screenModel::openAddPersonDialog,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag(NutritionSpaceMembersTestTags.ADD_PERSON_BUTTON),
-                    ) {
-                        Text(stringResource(Res.string.sharing_members_add_person))
+                if (uiState.canManageMembers) {
+                    item {
+                        Button(
+                            onClick = screenModel::openAddPersonDialog,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(HouseholdMembersTestTags.ADD_PERSON_BUTTON),
+                        ) {
+                            Text(stringResource(Res.string.sharing_members_add_person))
+                        }
+                    }
+                }
+                if (uiState.outboundInvites.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = stringResource(Res.string.sharing_members_pending_invites_title),
+                            color = SharedJourneyColors.InkDeep,
+                        )
+                    }
+                    items(uiState.outboundInvites, key = { it.id }) { invite ->
+                        PendingInviteRow(invite = invite)
                     }
                 }
                 if (uiState.members.isEmpty()) {
@@ -147,7 +175,8 @@ fun NutritionSpaceMembersScreen(
                     items(uiState.members, key = { it.id }) { member ->
                         MemberRow(
                             member = member,
-                            onRemove = { screenModel.removeMember(member.id, space.id) },
+                            canManage = uiState.canManageMembers,
+                            onRemove = { screenModel.removeMember(member.id, household.id) },
                         )
                     }
                 }
@@ -194,7 +223,7 @@ fun NutritionSpaceMembersScreen(
             },
             confirmButton = {
                 Button(
-                    onClick = { screenModel.submitAddPerson(space.id) },
+                    onClick = { screenModel.submitAddPerson(household.id) },
                     enabled = !uiState.isSaving,
                 ) {
                     Text(stringResource(Res.string.sharing_members_confirm_add))
@@ -210,17 +239,17 @@ fun NutritionSpaceMembersScreen(
 }
 
 @Composable
-private fun mapErrorMessage(error: SpaceMembersError): String =
+private fun mapErrorMessage(error: HouseholdMembersError): String =
     when (error) {
-        SpaceMembersError.Generic -> stringResource(Res.string.sharing_members_error_generic)
-        SpaceMembersError.EmailRequired -> stringResource(Res.string.sharing_members_error_email_required)
-        SpaceMembersError.EmailNotFound -> stringResource(Res.string.sharing_members_error_email_not_found)
-        SpaceMembersError.NotConfigured -> stringResource(Res.string.sharing_members_error_not_configured)
+        HouseholdMembersError.Generic -> stringResource(Res.string.sharing_members_error_generic)
+        HouseholdMembersError.EmailRequired -> stringResource(Res.string.sharing_members_error_email_required)
+        HouseholdMembersError.NotConfigured -> stringResource(Res.string.sharing_members_error_not_configured)
     }
 
 @Composable
 private fun MemberRow(
     member: SpaceMember,
+    canManage: Boolean,
     onRemove: () -> Unit,
 ) {
     val roleLabel = when (member.role) {
@@ -232,7 +261,7 @@ private fun MemberRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .testTag("${NutritionSpaceMembersTestTags.MEMBER_ROW}_${member.id}"),
+            .testTag("${HouseholdMembersTestTags.MEMBER_ROW}_${member.id}"),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -243,10 +272,31 @@ private fun MemberRow(
                 color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
             )
         }
-        if (member.role != SpaceMemberRole.Owner) {
+        if (canManage && member.role != SpaceMemberRole.Owner) {
             TextButton(onClick = onRemove) {
                 Text(stringResource(Res.string.sharing_members_remove))
             }
         }
+    }
+}
+
+@Composable
+private fun PendingInviteRow(invite: SpaceInvite) {
+    val roleLabel = when (invite.role) {
+        SpaceMemberRole.Owner -> stringResource(Res.string.sharing_members_role_owner)
+        SpaceMemberRole.Editor -> stringResource(Res.string.sharing_members_role_editor)
+        SpaceMemberRole.Viewer -> stringResource(Res.string.sharing_members_role_viewer)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("${HouseholdMembersTestTags.PENDING_INVITE_ROW}_${invite.id}"),
+    ) {
+        Text(text = invite.email)
+        Text(
+            text = stringResource(Res.string.sharing_members_pending_invite_label, roleLabel),
+            color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
+        )
     }
 }

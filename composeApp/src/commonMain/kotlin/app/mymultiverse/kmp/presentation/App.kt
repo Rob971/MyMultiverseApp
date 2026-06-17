@@ -20,6 +20,7 @@ import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.navigation.rememberAppNavigator
 import app.mymultiverse.kmp.presentation.screens.auth.LoginScreen
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreen
+import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersFlow
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionFlow
 import app.mymultiverse.kmp.presentation.theme.AppTheme
 import org.koin.compose.koinInject
@@ -85,6 +86,17 @@ private fun AuthenticatedApp() {
         AppRoute.Home -> HomeScreen(
             onOpenNutrition = {
                 navigator.navigateTo(AppRoute.Nutrition())
+            },
+            onOpenHouseholdMembers = {
+                navigator.navigateTo(AppRoute.HouseholdMembers())
+            },
+        )
+
+        is AppRoute.HouseholdMembers -> HouseholdMembersFlow(
+            household = route.household,
+            onBack = navigator::navigateBack,
+            onHouseholdReady = { household ->
+                navigator.navigateTo(AppRoute.HouseholdMembers(household = household))
             },
         )
 
