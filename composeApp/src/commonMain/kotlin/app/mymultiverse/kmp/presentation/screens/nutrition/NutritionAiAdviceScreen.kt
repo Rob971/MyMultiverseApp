@@ -549,8 +549,7 @@ private fun ModeChip(
             .clickable(
                 enabled = enabled,
                 role = Role.Button,
-                onClick = onClick,
-            ),
+            ) { onClick() },
         shape = FamilyLogisticsDesign.fieldShape,
         color = colors.first.copy(alpha = if (selected) 1f else 0.12f),
         border = androidx.compose.foundation.BorderStroke(
@@ -578,8 +577,7 @@ private fun SuggestionChip(
         modifier = Modifier.clickable(
             enabled = enabled,
             role = Role.Button,
-            onClick = onClick,
-        ),
+        ) { onClick() },
         shape = FamilyLogisticsDesign.fieldShape,
         color = SharedJourneyColors.GlassTerracotta,
         border = androidx.compose.foundation.BorderStroke(
