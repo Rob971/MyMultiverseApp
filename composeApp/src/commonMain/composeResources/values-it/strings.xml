@@ -723,7 +723,7 @@
     <string name="sharing_members_event_expires_label">Termina il (AAAA-MM-GG)</string>
     <string name="sharing_members_event_expires_required">Scegli una data di fine per gruppi viaggio o evento.</string>
     <string name="sharing_members_group_expired">Scaduto</string>
-    <string name="sharing_members_invite_sent">Invito inviato. Potranno unirsi dopo la registrazione.</string>
+    <string name="sharing_members_invite_sent">Invito inviato a %1$s. Può accettare dopo l'accesso.</string>
     <string name="sharing_members_member_added">Membro aggiunto alla tua famiglia.</string>
     <string name="sharing_members_pending_invites_title">Inviti in sospeso</string>
     <string name="sharing_members_pending_invite_label">In sospeso · %1$s</string>
@@ -750,4 +750,6 @@
     <string name="home_export_personal_data">Esporta i miei dati</string>
     <string name="home_export_personal_data_success">L'esportazione dei dati personali è pronta.</string>
     <string name="home_export_personal_data_error">Impossibile esportare i dati. Riprova.</string>
+        <string name="auth_household_joined_success">Ti sei unito a %1$s.</string>
+        <string name="household_gate_create_divider">Oppure crea una nuova famiglia</string>
 </resources>

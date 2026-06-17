@@ -113,7 +113,10 @@ fun HouseholdMembersScreen(
     val dialogErrorMessage = uiState.dialogError?.let { error -> mapErrorMessage(error) }
     val successMessage = uiState.successMessageKey?.let { success ->
         when (success) {
-            HouseholdMembersSuccess.InviteSent -> stringResource(Res.string.sharing_members_invite_sent)
+            HouseholdMembersSuccess.InviteSent -> stringResource(
+                Res.string.sharing_members_invite_sent,
+                uiState.invitedEmailForSuccess.orEmpty(),
+            )
             HouseholdMembersSuccess.MemberAdded -> stringResource(Res.string.sharing_members_member_added)
             HouseholdMembersSuccess.OwnershipTransferred ->
                 stringResource(

@@ -27,9 +27,10 @@ data class HouseholdGateUiState(
     val inviteActionMessage: InviteActionMessage? = null,
 )
 
-enum class InviteActionMessage {
-    AcceptFailed,
-    EmailMismatch,
+sealed interface InviteActionMessage {
+    data object AcceptFailed : InviteActionMessage
+    data object EmailMismatch : InviteActionMessage
+    data class Joined(val householdName: String) : InviteActionMessage
 }
 
 data class SwitchHouseholdPrompt(
@@ -129,10 +130,19 @@ class HouseholdGateScreenModel(
     }
 
     fun acceptInvite(inviteId: String) {
+        val householdName = _uiState.value.pendingInvites
+            .find { it.id == inviteId }
+            ?.spaceName
+            .orEmpty()
         scope.launch {
             _uiState.value = _uiState.value.copy(inviteActionMessage = null)
             collaborationRepository.acceptInvite(inviteId)
-                .onSuccess { refreshMembership() }
+                .onSuccess {
+                    _uiState.value = _uiState.value.copy(
+                        inviteActionMessage = InviteActionMessage.Joined(householdName),
+                    )
+                    refreshMembership()
+                }
                 .onFailure { throwable ->
                     logger.recordError(
                         tag = "HouseholdGate",

@@ -148,7 +148,7 @@ class HomeScreenModel(
                 currentHouseholdName = currentName,
             )
         } else {
-            acceptInvite(invite.id)
+            acceptInvite(invite.id, invite.spaceName)
         }
     }
 
@@ -162,14 +162,14 @@ class HomeScreenModel(
         scope.launch {
             _inviteActionMessage.value = null
             exitCurrentHousehold()
-                .onSuccess { acceptInvite(prompt.inviteId) }
+                .onSuccess { acceptInvite(prompt.inviteId, prompt.invitedHouseholdName) }
                 .onFailure {
                     _inviteActionMessage.value = InviteActionMessage.AcceptFailed
                 }
         }
     }
 
-    fun acceptInvite(inviteId: String) {
+    fun acceptInvite(inviteId: String, householdName: String) {
         scope.launch {
             _inviteActionMessage.value = null
             collaborationRepository.acceptInvite(inviteId)
@@ -182,6 +182,7 @@ class HomeScreenModel(
                             }
                             runCatching { collaborationRepository.refreshPendingInvites() }
                         }
+                    _inviteActionMessage.value = InviteActionMessage.Joined(householdName)
                 }
                 .onFailure { throwable ->
                     _inviteActionMessage.value = throwable.toInviteActionMessage()

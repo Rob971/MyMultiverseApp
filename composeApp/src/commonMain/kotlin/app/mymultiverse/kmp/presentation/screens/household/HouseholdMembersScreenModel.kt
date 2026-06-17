@@ -49,6 +49,7 @@ data class HouseholdMembersUiState(
     val emailInput: String = "",
     val selectedRole: SpaceMemberRole = SpaceMemberRole.Editor,
     val successMessageKey: HouseholdMembersSuccess? = null,
+    val invitedEmailForSuccess: String? = null,
     val transferredToDisplayName: String? = null,
     val error: HouseholdMembersError? = null,
     val dialogError: HouseholdMembersError? = null,
@@ -208,6 +209,10 @@ class HouseholdMembersScreenModel(
                             showAddPersonDialog = false,
                             emailInput = "",
                             dialogError = null,
+                            invitedEmailForSuccess = when (addResult) {
+                                AddMemberResult.InviteSent -> email
+                                AddMemberResult.Added -> null
+                            },
                             successMessageKey = when (addResult) {
                                 AddMemberResult.InviteSent -> HouseholdMembersSuccess.InviteSent
                                 AddMemberResult.Added -> HouseholdMembersSuccess.MemberAdded
@@ -245,7 +250,7 @@ class HouseholdMembersScreenModel(
     }
 
     fun clearSuccessMessage() {
-        _uiState.update { it.copy(successMessageKey = null, transferredToDisplayName = null) }
+        _uiState.update { it.copy(successMessageKey = null, transferredToDisplayName = null, invitedEmailForSuccess = null) }
     }
 
     fun requestLeave() {

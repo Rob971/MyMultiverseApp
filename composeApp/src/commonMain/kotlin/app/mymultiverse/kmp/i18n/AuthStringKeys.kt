@@ -28,6 +28,13 @@ object AuthStringKeys {
         "auth_pending_invites_subtitle",
         "auth_pending_invites_accept",
         "auth_pending_invites_decline",
+        "auth_pending_invites_error_generic",
+        "auth_pending_invites_email_mismatch",
+        "auth_pending_invites_switch_title",
+        "auth_pending_invites_switch_message",
+        "auth_pending_invites_switch_confirm",
+        "auth_pending_invites_switch_cancel",
+        "auth_household_joined_success",
     )
 
     val localeDirectories: List<String> = NutritionStringKeys.localeDirectories

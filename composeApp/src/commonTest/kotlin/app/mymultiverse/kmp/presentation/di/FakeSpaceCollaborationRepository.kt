@@ -124,6 +124,9 @@ class FakeSpaceCollaborationRepository : SpaceCollaborationRepository {
     private fun outboundInvitesFlow(spaceId: String): MutableStateFlow<List<SpaceInvite>> =
         outboundInvitesBySpace.getOrPut(spaceId) { MutableStateFlow(emptyList()) }
 
+    fun latestOutboundInvite(spaceId: String): SpaceInvite? =
+        outboundInvitesBySpace[spaceId]?.value?.lastOrNull()
+
     fun seedMember(
         spaceId: String,
         member: SpaceMember,

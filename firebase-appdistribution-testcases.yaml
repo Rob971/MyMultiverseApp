@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: Nutrition, Adventures, and Budget share one household (2+ members).
 
-version: 12
-updated: 2026-06-18
+version: 13
+updated: 2026-06-19
 
 summary: |
   Verify auth, household members on Home (shared across nutrition, adventures, budget),
@@ -41,6 +41,7 @@ summary: |
       - Sign in as a user who has a pending household invite and no household yet.
       - On the household gate (onboarding screen), tap Accept on the invite card.
     expected:
+      - Snackbar shows you joined the invited household name.
       - Full Home appears; invite card is gone.
       - Opening Nutrition lands on the shared household hub.
 
@@ -131,7 +132,34 @@ summary: |
       - Members screen explains the household is shared across nutrition, adventures, and budget.
       - Owner can invite; editors/viewers see read-only member list.
       - Pending invites appear on the members screen until accepted.
-      - Snackbar confirms invitation sent (invitee must accept on their device).
+      - Snackbar confirms invitation sent to the exact email address (invitee must accept on their device).
+
+  - id: household-transfer-ownership-leave
+    title: Owner transfers ownership then leaves
+    steps:
+      - Sign in as household owner with at least one editor member (two accounts).
+      - Open Household members → Transfer ownership → pick the editor → confirm.
+      - Sign in as the former owner (now editor) → Leave household.
+    expected:
+      - New owner appears on the members list; former owner is editor.
+      - Former owner reaches the household gate after leaving; shared data is no longer accessible.
+
+  - id: home-export-personal-data
+    title: Export personal data (GDPR)
+    steps:
+      - Sign in and open Home.
+      - Tap Export my data above the version label.
+    expected:
+      - Success snackbar appears (profile + household affiliation metadata exported server-side).
+
+  - id: household-gate-create-with-invite
+    title: Gate layout when pending invite exists
+    steps:
+      - Sign in with a pending invite and no household.
+      - Observe the gate screen before accepting or creating.
+    expected:
+      - Pending invite card is prominent above a divider.
+      - Create household uses secondary (outlined) styling; create is not blocked.
 
   - id: household-max-members
     title: Household member cap (20)

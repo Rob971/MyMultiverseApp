@@ -84,6 +84,15 @@ fun HomeScreen(
     )
     val exportSuccessMessage = stringResource(Res.string.home_export_personal_data_success)
     val exportErrorMessage = stringResource(Res.string.home_export_personal_data_error)
+    val joinedInviteMessage = (inviteActionMessage as? InviteActionMessage.Joined)?.householdName
+        ?.let { name -> stringResource(Res.string.auth_household_joined_success, name) }
+
+    LaunchedEffect(joinedInviteMessage) {
+        joinedInviteMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            screenModel.clearInviteActionMessage()
+        }
+    }
 
     LaunchedEffect(personalDataExportMessage) {
         when (personalDataExportMessage) {
@@ -100,7 +109,7 @@ fun HomeScreen(
     }
 
     LaunchedEffect(inviteActionMessage) {
-        when (inviteActionMessage) {
+        when (val message = inviteActionMessage) {
             InviteActionMessage.AcceptFailed -> {
                 snackbarHostState.showSnackbar(inviteErrorMessage)
                 screenModel.clearInviteActionMessage()
@@ -109,6 +118,7 @@ fun HomeScreen(
                 snackbarHostState.showSnackbar(emailMismatchMessage)
                 screenModel.clearInviteActionMessage()
             }
+            is InviteActionMessage.Joined -> Unit
             null -> Unit
         }
     }
@@ -171,7 +181,9 @@ fun HomeScreen(
             onOpenHouseholdMembers = onOpenHouseholdMembers,
             onSignOut = { screenModel.signOut() },
             onAcceptInvite = { inviteId ->
-                pendingInvites.find { it.id == inviteId }?.let(screenModel::onAcceptInviteClicked)
+                pendingInvites.find { it.id == inviteId }?.let { invite ->
+                    screenModel.onAcceptInviteClicked(invite)
+                }
             },
             onDeclineInvite = screenModel::declineInvite,
             onExportPersonalData = screenModel::exportPersonalData,

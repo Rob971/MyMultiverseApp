@@ -14,6 +14,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -45,10 +47,12 @@ import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_household_joined_success
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_pending_invites_email_mismatch
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_pending_invites_error_generic
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_sign_out
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.household_gate_create_button
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.household_gate_create_divider
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.household_gate_create_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.household_gate_error_already_active
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.household_gate_error_generic
@@ -94,6 +98,15 @@ fun HouseholdGateScreen(
                 uiState.pendingInvites.firstOrNull()?.email.orEmpty(),
                 sessionEmail,
             )
+            val joinedInviteMessage = (uiState.inviteActionMessage as? InviteActionMessage.Joined)
+                ?.householdName
+                ?.let { name -> stringResource(Res.string.auth_household_joined_success, name) }
+            LaunchedEffect(joinedInviteMessage) {
+                joinedInviteMessage?.let { message ->
+                    snackbarHostState.showSnackbar(message)
+                    screenModel.clearInviteActionMessage()
+                }
+            }
             LaunchedEffect(uiState.inviteActionMessage) {
                 when (uiState.inviteActionMessage) {
                     InviteActionMessage.AcceptFailed -> {
@@ -104,6 +117,7 @@ fun HouseholdGateScreen(
                         snackbarHostState.showSnackbar(emailMismatchMessage)
                         screenModel.clearInviteActionMessage()
                     }
+                    is InviteActionMessage.Joined -> Unit
                     null -> Unit
                 }
             }
@@ -198,6 +212,8 @@ private fun HouseholdGateOnboardingContent(
     onDeclineInvite: (String) -> Unit,
     onSignOut: () -> Unit,
 ) {
+    val hasPendingInvites = uiState.pendingInvites.isNotEmpty()
+
     Scaffold(
         topBar = { HouseholdGateTopBar(onSignOut = onSignOut) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -225,11 +241,26 @@ private fun HouseholdGateOnboardingContent(
                 onDecline = onDeclineInvite,
             )
 
+            if (hasPendingInvites) {
+                HorizontalDivider(color = SharedJourneyColors.InkMuted.copy(alpha = 0.25f))
+                Text(
+                    text = stringResource(Res.string.household_gate_create_divider),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = SharedJourneyColors.InkMuted,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                )
+            }
+
             Text(
                 text = stringResource(Res.string.household_gate_create_title),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = SharedJourneyColors.InkDeep,
+                fontWeight = if (hasPendingInvites) FontWeight.SemiBold else FontWeight.Bold,
+                color = if (hasPendingInvites) {
+                    SharedJourneyColors.InkMuted
+                } else {
+                    SharedJourneyColors.InkDeep
+                },
             )
 
             OutlinedTextField(
@@ -243,20 +274,38 @@ private fun HouseholdGateOnboardingContent(
                 enabled = !uiState.isCreating,
             )
 
-            Button(
-                onClick = onCreate,
-                enabled = uiState.householdNameInput.isNotBlank() && !uiState.isCreating,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag(HouseholdGateTestTags.CREATE_BUTTON),
-            ) {
-                if (uiState.isCreating) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.padding(end = 8.dp),
-                        strokeWidth = 2.dp,
-                    )
+            if (hasPendingInvites) {
+                OutlinedButton(
+                    onClick = onCreate,
+                    enabled = uiState.householdNameInput.isNotBlank() && !uiState.isCreating,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(HouseholdGateTestTags.CREATE_BUTTON),
+                ) {
+                    if (uiState.isCreating) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(end = 8.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    }
+                    Text(stringResource(Res.string.household_gate_create_button))
                 }
-                Text(stringResource(Res.string.household_gate_create_button))
+            } else {
+                Button(
+                    onClick = onCreate,
+                    enabled = uiState.householdNameInput.isNotBlank() && !uiState.isCreating,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(HouseholdGateTestTags.CREATE_BUTTON),
+                ) {
+                    if (uiState.isCreating) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(end = 8.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    }
+                    Text(stringResource(Res.string.household_gate_create_button))
+                }
             }
 
             Spacer(Modifier.height(8.dp))

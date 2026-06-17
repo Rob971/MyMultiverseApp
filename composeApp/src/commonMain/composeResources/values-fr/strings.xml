@@ -723,7 +723,7 @@
     <string name="sharing_members_event_expires_label">Fin le (AAAA-MM-JJ)</string>
     <string name="sharing_members_event_expires_required">Choisissez une date de fin pour les groupes événement.</string>
     <string name="sharing_members_group_expired">Expiré</string>
-    <string name="sharing_members_invite_sent">Invitation envoyée. Ils pourront rejoindre après inscription.</string>
+    <string name="sharing_members_invite_sent">Invitation envoyée à %1$s. Cette personne peut accepter après connexion.</string>
     <string name="sharing_members_member_added">Membre ajouté à votre foyer.</string>
     <string name="sharing_members_pending_invites_title">Invitations en attente</string>
     <string name="sharing_members_pending_invite_label">En attente · %1$s</string>
@@ -750,4 +750,6 @@
     <string name="home_export_personal_data">Exporter mes données</string>
     <string name="home_export_personal_data_success">L'export de vos données personnelles est prêt.</string>
     <string name="home_export_personal_data_error">Impossible d'exporter vos données. Réessayez.</string>
+        <string name="auth_household_joined_success">Vous avez rejoint %1$s.</string>
+        <string name="household_gate_create_divider">Ou créer un nouveau foyer</string>
 </resources>

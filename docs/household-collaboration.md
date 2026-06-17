@@ -99,7 +99,7 @@ Members have a **role**: `owner`, `editor`, or `viewer`.
 
 Pending invites **above** “Create household” (primary vs secondary action). Do **not** disable create when invites exist.
 
-**Status:** Partially implemented — polish visual hierarchy.
+**Status:** Implemented — pending invites emphasized; create uses outlined secondary styling when invites exist.
 
 ---
 
@@ -122,13 +122,15 @@ Show pending invites even when affiliated. Accept opens confirmation:
 | Already in your household | Inline error |
 | In another household | Inline error (`invitee_household_already_active`) |
 
-**Status:** Errors done; richer success copy pending.
+**Status:** Implemented — snackbar includes invited email (`sharing_members_invite_sent`).
 
 ---
 
 ### 4. Invitee login flow
 
 Sign in → **gate** (if unaffiliated) → accept invite → **home** + snackbar “You joined **{name}**”.
+
+**Status:** Implemented (`auth_household_joined_success` on gate and home accept).
 
 ---
 
@@ -177,7 +179,7 @@ Partial unique index: at most one `household_members` row per `user_id` where `l
 | Editor | No | Yes | No |
 | Viewer | No | Read-only | No |
 
-Owner-only invite enforced in RPC. **Viewer:** read-only UI on all nutrition screens + RLS write block (next implementation).
+Owner-only invite enforced in RPC. **Viewer:** read-only UI on all nutrition screens + RLS write block.
 
 ---
 
@@ -225,7 +227,7 @@ When a user **leaves** a household (or deletes account):
 | 3 | **Viewer RLS + read-only UI** | **Done** |
 | 4 | **GDPR legal copy** | Engineering hooks done; legal review of exact wording |
 | 5 | **`households` migration timing** | **Done** — migration `20250618170000` |
-| 6 | **Hard delete cascade scope** | Confirm: nutrition rows + invites + members all removed on dissolve |
+| 6 | **Hard delete cascade scope** | **Confirmed** — `dissolve_household` deletes the `households` row; FK `ON DELETE CASCADE` removes `household_members`, `household_invites`, `household_modules`, and `nutrition_household_week_data` for that id. |
 
 ---
 
@@ -258,6 +260,10 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 - `household-invite-email-mismatch` — wrong signed-in email cannot accept; dedicated mismatch message.
 - `nutrition-viewer-read-only` — viewer cannot edit grocery, meal plan, or AI lists.
 
+- `household-transfer-ownership-leave` — owner transfers, then leaves as editor.
+- `home-export-personal-data` — GDPR export from Home.
+- `household-gate-create-with-invite` — gate hierarchy when invite + create both visible.
+
 **Remote Supabase migrations required for field tests:**  
 `20250617130000`, `20250617140000`, `20250618120000`, `20250618140000`, `20250618150000`, `20250618160000`, `20250618161000`, `20250618170000`.
 
@@ -271,3 +277,4 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 | 2025-06-18 | Locked product decisions; FAQ for RLS viewer + email change; GDPR; QA |
 | 2025-06-18 | Locked viewer read-only + auth email must match; P0 backlog and QA updated |
 | 2025-06-18 | P1: transfer ownership, GDPR export, `households` table rename shipped |
+| 2025-06-19 | v1 polish: gate hierarchy, invite email snackbar, joined snackbar, dissolve cascade doc, Firebase QA |

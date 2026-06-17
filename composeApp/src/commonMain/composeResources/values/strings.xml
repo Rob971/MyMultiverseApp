@@ -724,7 +724,7 @@
     <string name="sharing_members_event_expires_label">Ends on (YYYY-MM-DD)</string>
     <string name="sharing_members_event_expires_required">Pick an end date for trip or event groups.</string>
     <string name="sharing_members_group_expired">Expired</string>
-    <string name="sharing_members_invite_sent">Invite sent. They can join after signing up.</string>
+    <string name="sharing_members_invite_sent">Invitation sent to %1$s. They can accept after signing in.</string>
     <string name="sharing_members_member_added">Member added to your household.</string>
     <string name="sharing_members_select_role">Access level</string>
     <string name="sharing_members_pending_invites_title">Pending invites</string>
@@ -751,4 +751,6 @@
     <string name="home_export_personal_data">Export my data</string>
     <string name="home_export_personal_data_success">Personal data export is ready.</string>
     <string name="home_export_personal_data_error">Could not export your data. Try again.</string>
+        <string name="auth_household_joined_success">You joined %1$s.</string>
+        <string name="household_gate_create_divider">Or start a new household</string>
 </resources>

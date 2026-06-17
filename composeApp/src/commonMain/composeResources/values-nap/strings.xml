@@ -723,7 +723,7 @@
     <string name="sharing_members_event_expires_label">Finisce 'o (AAAA-MM-GG)</string>
     <string name="sharing_members_event_expires_required">Piglia 'na data 'e fine pe' gruppi viaggio o evento.</string>
     <string name="sharing_members_group_expired">Scaduto</string>
-    <string name="sharing_members_invite_sent">Invito mandato. Pònno unì dopo 'a registrazione.</string>
+    <string name="sharing_members_invite_sent">Invito mandato a %1$s. Pònno accettà dopo 'o accesso.</string>
     <string name="sharing_members_member_added">Membro aggiunto â famiglia toja.</string>
     <string name="sharing_members_pending_invites_title">Inviti 'n attesa</string>
     <string name="sharing_members_pending_invite_label">'N attesa · %1$s</string>
@@ -750,4 +750,6 @@
     <string name="home_export_personal_data">Esporta 'e date mie</string>
     <string name="home_export_personal_data_success">L'esportazione d' 'e date personale è pronta.</string>
     <string name="home_export_personal_data_error">Nun s'è pututo esportà 'e date. Prova arreto.</string>
+        <string name="auth_household_joined_success">T'ê unito a %1$s.</string>
+        <string name="household_gate_create_divider">O crea 'na famiglia nova</string>
 </resources>

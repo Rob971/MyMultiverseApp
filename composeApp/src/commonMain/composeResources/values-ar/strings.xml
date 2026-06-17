@@ -723,7 +723,7 @@
     <string name="sharing_members_event_expires_label">ينتهي في (YYYY-MM-DD)</string>
     <string name="sharing_members_event_expires_required">اختر تاريخ انتهاء لمجموعات الرحلات أو الأحداث.</string>
     <string name="sharing_members_group_expired">منتهٍ</string>
-    <string name="sharing_members_invite_sent">تم إرسال الدعوة. يمكنهم الانضمام بعد التسجيل.</string>
+    <string name="sharing_members_invite_sent">تم إرسال الدعوة إلى %1$s. يمكنهم القبول بعد تسجيل الدخول.</string>
     <string name="sharing_members_member_added">تمت إضافة العضو إلى أسرتك.</string>
     <string name="sharing_members_pending_invites_title">دعوات قيد الانتظار</string>
     <string name="sharing_members_pending_invite_label">قيد الانتظار · %1$s</string>
@@ -750,4 +750,6 @@
     <string name="home_export_personal_data">تصدير بياناتي</string>
     <string name="home_export_personal_data_success">تصدير البيانات الشخصية جاهز.</string>
     <string name="home_export_personal_data_error">تعذر تصدير بياناتك. حاول مرة أخرى.</string>
+        <string name="auth_household_joined_success">انضممت إلى %1$s.</string>
+        <string name="household_gate_create_divider">أو إنشاء أسرة جديدة</string>
 </resources>

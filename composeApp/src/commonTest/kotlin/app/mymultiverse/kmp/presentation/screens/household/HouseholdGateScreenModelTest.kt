@@ -127,6 +127,36 @@ class HouseholdGateScreenModelTest {
     }
 
     @Test
+    fun acceptInvite_emitsJoinedMessage() = runTest(testDispatcher) {
+        val collaboration = FakeSpaceCollaborationRepository()
+        collaboration.inboundProfileEmail = "invitee@example.com"
+        collaboration.addMemberByEmail(
+            spaceId = "household-space-1",
+            email = "invitee@example.com",
+            role = SpaceMemberRole.Editor,
+        )
+        collaboration.refreshPendingInvites()
+
+        val householdRepository = FakeHouseholdRepository(
+            initialMembershipStatus = HouseholdMembershipStatus.None,
+        )
+        householdRepository.setMembershipStatus(HouseholdMembershipStatus.None)
+        val model = model(
+            householdRepository = householdRepository,
+            collaborationRepository = collaboration,
+        )
+
+        advanceUntilIdle()
+        val inviteId = model.uiState.value.pendingInvites.single().id
+        model.acceptInvite(inviteId)
+        advanceUntilIdle()
+
+        val message = model.uiState.value.inviteActionMessage
+        assertTrue(message is InviteActionMessage.Joined)
+        assertEquals("Test Space", (message as InviteActionMessage.Joined).householdName)
+    }
+
+    @Test
     fun createHousehold_activatesNutritionSession() = runTest(testDispatcher) {
         val householdRepository = FakeHouseholdRepository(
             initialMembershipStatus = HouseholdMembershipStatus.None,
