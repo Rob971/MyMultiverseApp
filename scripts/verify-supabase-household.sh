@@ -89,12 +89,12 @@ if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
 
   echo "==> Upserting nutrition week grocery payload"
   UPSERT_STATUS="$(curl -s -o /dev/null -w '%{http_code}' \
-    -X POST "${REST_URL}/nutrition_space_week_data" \
+    -X POST "${REST_URL}/nutrition_household_week_data" \
     -H "apikey: ${ANON_KEY}" \
     -H "Authorization: Bearer ${ACCESS_TOKEN}" \
     -H "Content-Type: application/json" \
     -H "Prefer: resolution=merge-duplicates" \
-    -d "[{\"space_id\":\"${SPACE_ID}\",\"week_key\":\"${WEEK_KEY}\",\"data_kind\":\"grocery\",\"payload\":$(echo "${PAYLOAD}" | jq -c .)}]")"
+    -d "[{\"household_id\":\"${SPACE_ID}\",\"week_key\":\"${WEEK_KEY}\",\"data_kind\":\"grocery\",\"payload\":$(echo "${PAYLOAD}" | jq -c .)}]")"
 
   if [[ "${UPSERT_STATUS}" != "201" && "${UPSERT_STATUS}" != "200" ]]; then
     echo "ERROR: nutrition upsert failed with status ${UPSERT_STATUS}" >&2
@@ -103,7 +103,7 @@ if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
 
   echo "==> Reading nutrition week grocery payload back"
   FETCHED="$(curl -fsS \
-    "${REST_URL}/nutrition_space_week_data?space_id=eq.${SPACE_ID}&week_key=eq.${WEEK_KEY}&data_kind=eq.grocery&select=payload" \
+    "${REST_URL}/nutrition_household_week_data?household_id=eq.${SPACE_ID}&week_key=eq.${WEEK_KEY}&data_kind=eq.grocery&select=payload" \
     -H "apikey: ${ANON_KEY}" \
     -H "Authorization: Bearer ${ACCESS_TOKEN}")"
 

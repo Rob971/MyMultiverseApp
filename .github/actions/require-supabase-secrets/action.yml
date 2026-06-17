@@ -1,0 +1,22 @@
+name: Require Supabase secrets
+description: Fail fast when Supabase CI secrets are missing
+
+inputs:
+  supabase-url:
+    required: true
+  supabase-anon-key:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Require Supabase secrets
+      shell: bash
+      env:
+        SUPABASE_URL: ${{ inputs.supabase-url }}
+        SUPABASE_ANON_KEY: ${{ inputs.supabase-anon-key }}
+      run: |
+        if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+          echo "SUPABASE_URL and SUPABASE_ANON_KEY repository secrets are required."
+          exit 1
+        fi
