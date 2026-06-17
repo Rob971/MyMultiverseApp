@@ -279,3 +279,26 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 | 2025-06-18 | P1: transfer ownership, GDPR export, `households` table rename shipped |
 | 2025-06-19 | v1 polish: gate hierarchy, invite email snackbar, joined snackbar, dissolve cascade doc, Firebase QA |
 | 2025-06-19 | Architecture section updated post-`households` rename; table names aligned in FAQ |
+| 2026-06-17 | v1 merged to `main` (PR #7); post-merge status and P2 backlog documented |
+
+---
+
+## v1 status (shipped on `main`)
+
+Household collaboration **v1** merged via PR #7 (`9fb4895`, 2026-06-17). P0 + P1 + polish are on `main`.
+
+| Step | Status |
+|------|--------|
+| Merge PR #7 → `main` | **Done** |
+| Full CI on `main` (Supabase Migrations, instrumented, iOS) | Monitor [KMP CI](https://github.com/Rob971/MyMultiverseApp/actions/workflows/kmp-ci.yml) |
+| Manual two-phone QA (`firebase-appdistribution-testcases.yaml` v13) | Recommended before wide distribution |
+| Supabase deploy secrets (`SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`) | Add for automated `db push` on `main` |
+
+**Next (P2 and follow-ups):**
+
+| Track | Items |
+|-------|--------|
+| **P2** | Push/email invite notifications; child/shared email accounts |
+| **GDPR** | Account deletion flow; legal review of privacy wording; export share/save-to-file UX |
+| **Polish** | Instrumented UI tests for viewer read-only + transfer ownership; optional RPC rename (`space_*` → `household_*`) |
+| **Product** | Adventures / Budget on `household_modules` |

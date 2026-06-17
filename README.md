@@ -173,7 +173,7 @@ GitHub Actions workflow: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-
 
 **Manual `release`:** reuses the APK from the latest successful **Android CI** on that branch (optional `source_run_id`).
 
-Firebase App Distribution runs on every **push**, **pull request** (opened / reopened), manual `all`, and manual `firebase-release`.
+Firebase App Distribution runs on every **push**, **pull request** (opened / reopened), manual `all`, and manual `release`.
 
 ## App versioning
 
