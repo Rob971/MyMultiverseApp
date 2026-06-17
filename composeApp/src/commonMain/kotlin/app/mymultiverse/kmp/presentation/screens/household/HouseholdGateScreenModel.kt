@@ -3,11 +3,11 @@ package app.mymultiverse.kmp.presentation.screens.household
 import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
-import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
-import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import app.mymultiverse.kmp.domain.repository.HouseholdCollaborationRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -23,7 +23,7 @@ data class HouseholdGateUiState(
     val membershipStatus: HouseholdMembershipStatus = HouseholdMembershipStatus.Loading,
     val householdNameInput: String = "",
     val isCreating: Boolean = false,
-    val pendingInvites: List<SpaceInvite> = emptyList(),
+    val pendingInvites: List<HouseholdInvite> = emptyList(),
     val inviteActionMessage: InviteActionMessage? = null,
 )
 
@@ -41,7 +41,7 @@ data class SwitchHouseholdPrompt(
 
 class HouseholdGateScreenModel(
     private val householdRepository: HouseholdRepository,
-    private val collaborationRepository: SpaceCollaborationRepository,
+    private val collaborationRepository: HouseholdCollaborationRepository,
     private val authRepository: AuthRepository,
     private val sessionCoordinator: NutritionSessionCoordinator,
     private val logger: AppLogger,
@@ -50,7 +50,7 @@ class HouseholdGateScreenModel(
     private val _uiState = MutableStateFlow(HouseholdGateUiState())
     val uiState: StateFlow<HouseholdGateUiState> = _uiState.asStateFlow()
 
-    val pendingInvites: StateFlow<List<SpaceInvite>> = collaborationRepository
+    val pendingInvites: StateFlow<List<HouseholdInvite>> = collaborationRepository
         .observePendingInvites()
         .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
@@ -106,7 +106,7 @@ class HouseholdGateScreenModel(
                                 membershipStatus = status,
                                 isCreating = false,
                             )
-                            activateNutritionSessionIfActive(status, fallbackSpaceId = created.id)
+                            activateNutritionSessionIfActive(status, fallbackHouseholdId = created.id)
                         }
                         .onFailure { throwable ->
                             _uiState.value = _uiState.value.copy(
@@ -132,7 +132,7 @@ class HouseholdGateScreenModel(
     fun acceptInvite(inviteId: String) {
         val householdName = _uiState.value.pendingInvites
             .find { it.id == inviteId }
-            ?.spaceName
+            ?.householdName
             .orEmpty()
         scope.launch {
             _uiState.value = _uiState.value.copy(inviteActionMessage = null)
@@ -184,13 +184,13 @@ class HouseholdGateScreenModel(
 
     private suspend fun activateNutritionSessionIfActive(
         status: HouseholdMembershipStatus,
-        fallbackSpaceId: String? = null,
+        fallbackHouseholdId: String? = null,
     ) {
-        val spaceId = when (status) {
+        val householdId = when (status) {
             is HouseholdMembershipStatus.Active -> status.household.id
-            else -> fallbackSpaceId
+            else -> fallbackHouseholdId
         } ?: return
-        runCatching { sessionCoordinator.activateSpace(spaceId) }
+        runCatching { sessionCoordinator.activateHousehold(householdId) }
     }
 }
 

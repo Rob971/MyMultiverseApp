@@ -25,7 +25,7 @@ class NutritionSyncEngine(
     fun observeStatus(): Flow<NutritionSyncStatus> = _status.asStateFlow()
 
     suspend fun pullRemote(
-        spaceId: String,
+        householdId: String,
         weekKey: String,
         applyRow: (NutritionWeekDataRow) -> Unit,
     ) {
@@ -35,23 +35,23 @@ class NutritionSyncEngine(
         }
         _status.value = NutritionSyncStatus.Syncing
         val rows = try {
-            api.fetchWeek(spaceId, weekKey)
+            api.fetchWeek(householdId, weekKey)
         } catch (error: Exception) {
             logger.recordError(
                 tag = TAG,
                 message = "pull_remote_failed",
                 throwable = error,
-                context = syncContext(spaceId, weekKey, "pull"),
+                context = syncContext(householdId, weekKey, "pull"),
             )
-            markRemoteFailure(spaceId, weekKey)
+            markRemoteFailure(householdId, weekKey)
             return
         }
         rows.latestByDataKind().forEach(applyRow)
-        refreshStatus(spaceId, weekKey)
+        refreshStatus(householdId, weekKey)
     }
 
     suspend fun pushNowOrEnqueue(
-        spaceId: String,
+        householdId: String,
         weekKey: String,
         dataKind: String,
         payload: String,
@@ -61,56 +61,56 @@ class NutritionSyncEngine(
             return
         }
         try {
-            api.upsert(spaceId, weekKey, dataKind, payload)
-            outbox.removeFor(spaceId, weekKey, dataKind)
-            refreshStatus(spaceId, weekKey)
+            api.upsert(householdId, weekKey, dataKind, payload)
+            outbox.removeFor(householdId, weekKey, dataKind)
+            refreshStatus(householdId, weekKey)
         } catch (error: Exception) {
             logger.recordError(
                 tag = TAG,
                 message = "push_failed_enqueue",
                 throwable = error,
-                context = syncContext(spaceId, weekKey, "push", dataKind),
+                context = syncContext(householdId, weekKey, "push", dataKind),
             )
             outbox.enqueue(
                 PendingNutritionPush(
-                    spaceId = spaceId,
+                    householdId = householdId,
                     weekKey = weekKey,
                     dataKind = dataKind,
                     payload = payload,
                     enqueuedAtEpochMs = Clock.System.now().toEpochMilliseconds(),
                 ),
             )
-            refreshStatus(spaceId, weekKey)
+            refreshStatus(householdId, weekKey)
         }
     }
 
-    suspend fun flushPending(spaceId: String, weekKey: String) {
+    suspend fun flushPending(householdId: String, weekKey: String) {
         val api = remote ?: run {
             _status.value = NutritionSyncStatus.RemoteUnavailable
             return
         }
-        val pending = outbox.pendingFor(spaceId, weekKey)
+        val pending = outbox.pendingFor(householdId, weekKey)
         if (pending.isEmpty()) {
-            refreshStatus(spaceId, weekKey)
+            refreshStatus(householdId, weekKey)
             return
         }
         _status.value = NutritionSyncStatus.Syncing
         for (item in pending) {
             try {
-                api.upsert(item.spaceId, item.weekKey, item.dataKind, item.payload)
+                api.upsert(item.householdId, item.weekKey, item.dataKind, item.payload)
                 outbox.remove(item)
             } catch (error: Exception) {
                 logger.recordError(
                     tag = TAG,
                     message = "flush_pending_failed",
                     throwable = error,
-                    context = syncContext(spaceId, weekKey, "flush", item.dataKind),
+                    context = syncContext(householdId, weekKey, "flush", item.dataKind),
                 )
-                refreshStatus(spaceId, weekKey)
+                refreshStatus(householdId, weekKey)
                 return
             }
         }
-        refreshStatus(spaceId, weekKey)
+        refreshStatus(householdId, weekKey)
     }
 
     fun markIdle() {
@@ -121,8 +121,8 @@ class NutritionSyncEngine(
         _status.value = NutritionSyncStatus.RemoteUnavailable
     }
 
-    private fun refreshStatus(spaceId: String, weekKey: String) {
-        val pendingCount = outbox.pendingFor(spaceId, weekKey).size
+    private fun refreshStatus(householdId: String, weekKey: String) {
+        val pendingCount = outbox.pendingFor(householdId, weekKey).size
         _status.value = when {
             remote == null -> NutritionSyncStatus.RemoteUnavailable
             pendingCount > 0 -> NutritionSyncStatus.PendingPush(pendingCount)
@@ -130,8 +130,8 @@ class NutritionSyncEngine(
         }
     }
 
-    private fun markRemoteFailure(spaceId: String, weekKey: String) {
-        val pendingCount = outbox.pendingFor(spaceId, weekKey).size
+    private fun markRemoteFailure(householdId: String, weekKey: String) {
+        val pendingCount = outbox.pendingFor(householdId, weekKey).size
         _status.value = if (pendingCount > 0) {
             NutritionSyncStatus.PendingPush(pendingCount)
         } else {
@@ -154,13 +154,13 @@ class NutritionSyncEngine(
             ?: Long.MIN_VALUE
 
     private fun syncContext(
-        spaceId: String,
+        householdId: String,
         weekKey: String,
         operation: String,
         dataKind: String? = null,
     ): Map<String, String> = buildMap {
         put("operation", operation)
-        put("space_id", spaceId)
+        put("household_id", householdId)
         put("week_key", weekKey)
         dataKind?.let { put("data_kind", it) }
     }

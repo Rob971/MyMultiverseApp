@@ -20,4 +20,7 @@ interface AuthRepository {
 
     /** GDPR: exports profile and household affiliation metadata as JSON. */
     suspend fun exportPersonalData(): Result<String>
+
+    /** GDPR: leaves/dissolves household, removes PII, deletes auth user via Edge Function. */
+    suspend fun deleteAccount(): Result<Unit>
 }

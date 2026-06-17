@@ -1,14 +1,14 @@
 package app.mymultiverse.kmp.presentation.screens.household
 
 import app.mymultiverse.kmp.domain.model.sharing.AddMemberResult
-import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
-import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import app.mymultiverse.kmp.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberKind
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberKind
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -40,14 +40,14 @@ enum class HouseholdMembersLeaveAction {
 }
 
 data class HouseholdMembersUiState(
-    val members: List<SpaceMember> = emptyList(),
-    val outboundInvites: List<SpaceInvite> = emptyList(),
+    val members: List<HouseholdMember> = emptyList(),
+    val outboundInvites: List<HouseholdInvite> = emptyList(),
     val canManageMembers: Boolean = false,
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
     val showAddPersonDialog: Boolean = false,
     val emailInput: String = "",
-    val selectedRole: SpaceMemberRole = SpaceMemberRole.Editor,
+    val selectedRole: HouseholdMemberRole = HouseholdMemberRole.Editor,
     val successMessageKey: HouseholdMembersSuccess? = null,
     val invitedEmailForSuccess: String? = null,
     val transferredToDisplayName: String? = null,
@@ -57,8 +57,10 @@ data class HouseholdMembersUiState(
     val canDissolve: Boolean = false,
     val showOwnerTransferHint: Boolean = false,
     val canTransferOwnership: Boolean = false,
-    val transferCandidates: List<SpaceMember> = emptyList(),
+    val transferCandidates: List<HouseholdMember> = emptyList(),
     val showTransferDialog: Boolean = false,
+    val showAddDependantDialog: Boolean = false,
+    val dependantNameInput: String = "",
     val selectedTransferMemberId: String? = null,
     val isTransferring: Boolean = false,
     val pendingLeaveAction: HouseholdMembersLeaveAction? = null,
@@ -69,10 +71,11 @@ enum class HouseholdMembersSuccess {
     InviteSent,
     MemberAdded,
     OwnershipTransferred,
+    DependantAdded,
 }
 
 class HouseholdMembersScreenModel(
-    private val collaborationRepository: SpaceCollaborationRepository,
+    private val collaborationRepository: HouseholdCollaborationRepository,
     private val householdRepository: HouseholdRepository,
     private val sessionCoordinator: NutritionSessionCoordinator,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
@@ -80,28 +83,28 @@ class HouseholdMembersScreenModel(
     private val _uiState = MutableStateFlow(HouseholdMembersUiState())
     val uiState: StateFlow<HouseholdMembersUiState> = _uiState.asStateFlow()
 
-    private var activeSpaceId: String? = null
+    private var activeHouseholdId: String? = null
     private var activeOwnerId: String = ""
     private var activeOwnerDisplayName: String = ""
     private var activeUserIsOwner: Boolean = false
     private var observeJob: Job? = null
 
     fun bindHousehold(
-        spaceId: String,
+        householdId: String,
         ownerId: String,
         ownerDisplayName: String,
         currentUserId: String?,
     ) {
         val canManage = currentUserId != null && currentUserId == ownerId
         activeUserIsOwner = canManage
-        if (activeSpaceId == spaceId &&
+        if (activeHouseholdId == householdId &&
             activeOwnerId == ownerId &&
             activeOwnerDisplayName == ownerDisplayName &&
             _uiState.value.canManageMembers == canManage
         ) {
             return
         }
-        activeSpaceId = spaceId
+        activeHouseholdId = householdId
         activeOwnerId = ownerId
         activeOwnerDisplayName = ownerDisplayName
         _uiState.update {
@@ -114,11 +117,11 @@ class HouseholdMembersScreenModel(
         observeJob?.cancel()
         observeJob = scope.launch {
             launch {
-                collaborationRepository.observeMembers(spaceId).collect { members ->
+                collaborationRepository.observeMembers(householdId).collect { members ->
                     _uiState.update { state ->
-                        val otherMembers = members.count { it.role != SpaceMemberRole.Owner }
+                        val otherMembers = members.count { it.role != HouseholdMemberRole.Owner }
                         val transferCandidates = members.filter {
-                            it.role != SpaceMemberRole.Owner && it.kind == SpaceMemberKind.Person
+                            it.role != HouseholdMemberRole.Owner && it.kind == HouseholdMemberKind.Person
                         }
                         state.copy(
                             members = members,
@@ -132,20 +135,20 @@ class HouseholdMembersScreenModel(
                 }
             }
             launch {
-                collaborationRepository.observeOutboundInvites(spaceId).collect { invites ->
+                collaborationRepository.observeOutboundInvites(householdId).collect { invites ->
                     _uiState.update { it.copy(outboundInvites = invites) }
                 }
             }
         }
-        refresh(spaceId)
+        refresh(householdId)
     }
 
-    fun refresh(spaceId: String) {
+    fun refresh(householdId: String) {
         scope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             runCatching {
-                collaborationRepository.refreshMembers(spaceId, activeOwnerId, activeOwnerDisplayName)
-                collaborationRepository.refreshOutboundInvites(spaceId)
+                collaborationRepository.refreshMembers(householdId, activeOwnerId, activeOwnerDisplayName)
+                collaborationRepository.refreshOutboundInvites(householdId)
             }.onFailure { throwable ->
                 _uiState.update { state ->
                     state.copy(isLoading = false, error = mapFailure(throwable))
@@ -161,7 +164,7 @@ class HouseholdMembersScreenModel(
             it.copy(
                 showAddPersonDialog = true,
                 emailInput = "",
-                selectedRole = SpaceMemberRole.Editor,
+                selectedRole = HouseholdMemberRole.Editor,
                 error = null,
                 dialogError = null,
                 successMessageKey = null,
@@ -182,11 +185,11 @@ class HouseholdMembersScreenModel(
         _uiState.update { it.copy(emailInput = value, dialogError = null) }
     }
 
-    fun onRoleChange(role: SpaceMemberRole) {
+    fun onRoleChange(role: HouseholdMemberRole) {
         _uiState.update { it.copy(selectedRole = role, dialogError = null) }
     }
 
-    fun submitAddPerson(spaceId: String) {
+    fun submitAddPerson(householdId: String) {
         val email = _uiState.value.emailInput.trim()
         if (email.isBlank()) {
             _uiState.update { it.copy(dialogError = HouseholdMembersError.EmailRequired) }
@@ -195,14 +198,14 @@ class HouseholdMembersScreenModel(
         scope.launch {
             _uiState.update { it.copy(isSaving = true, dialogError = null, error = null) }
             val result = collaborationRepository.addMemberByEmail(
-                spaceId = spaceId,
+                householdId = householdId,
                 email = email,
                 role = _uiState.value.selectedRole,
             )
             result
                 .onSuccess { addResult ->
-                    collaborationRepository.refreshMembers(spaceId, activeOwnerId, activeOwnerDisplayName)
-                    collaborationRepository.refreshOutboundInvites(spaceId)
+                    collaborationRepository.refreshMembers(householdId, activeOwnerId, activeOwnerDisplayName)
+                    collaborationRepository.refreshOutboundInvites(householdId)
                     _uiState.update { state ->
                         state.copy(
                             isSaving = false,
@@ -232,13 +235,16 @@ class HouseholdMembersScreenModel(
         }
     }
 
-    fun removeMember(memberId: String, spaceId: String) {
-        if (memberId.startsWith("owner-")) return
+    fun removeMember(member: HouseholdMember, householdId: String) {
+        if (member.role == HouseholdMemberRole.Owner) return
         scope.launch {
             _uiState.update { it.copy(isSaving = true, error = null) }
-            val result = collaborationRepository.removeMember(memberId)
+            val result = when (member.kind) {
+                HouseholdMemberKind.Dependant -> collaborationRepository.removeDependant(member.id)
+                else -> collaborationRepository.removeMember(member.id)
+            }
             if (result.isSuccess) {
-                collaborationRepository.refreshMembers(spaceId, activeOwnerId, activeOwnerDisplayName)
+                collaborationRepository.refreshMembers(householdId, activeOwnerId, activeOwnerDisplayName)
             }
             _uiState.update { state ->
                 state.copy(
@@ -246,6 +252,56 @@ class HouseholdMembersScreenModel(
                     error = result.exceptionOrNull()?.let { mapFailure(it) },
                 )
             }
+        }
+    }
+
+    fun openAddDependantDialog() {
+        _uiState.update {
+            it.copy(
+                showAddDependantDialog = true,
+                dependantNameInput = "",
+                dialogError = null,
+            )
+        }
+    }
+
+    fun dismissAddDependantDialog() {
+        _uiState.update { it.copy(showAddDependantDialog = false, dialogError = null) }
+    }
+
+    fun onDependantNameChange(value: String) {
+        _uiState.update { it.copy(dependantNameInput = value, dialogError = null) }
+    }
+
+    fun submitAddDependant(householdId: String) {
+        val name = _uiState.value.dependantNameInput.trim()
+        if (name.isBlank()) {
+            _uiState.update { it.copy(dialogError = HouseholdMembersError.Generic) }
+            return
+        }
+        scope.launch {
+            _uiState.update { it.copy(isSaving = true, dialogError = null, error = null) }
+            collaborationRepository.addDependant(householdId, name)
+                .onSuccess {
+                    collaborationRepository.refreshMembers(householdId, activeOwnerId, activeOwnerDisplayName)
+                    _uiState.update { state ->
+                        state.copy(
+                            isSaving = false,
+                            showAddDependantDialog = false,
+                            dependantNameInput = "",
+                            successMessageKey = HouseholdMembersSuccess.DependantAdded,
+                        )
+                    }
+                }
+                .onFailure { throwable ->
+                    _uiState.update { state ->
+                        state.copy(
+                            isSaving = false,
+                            showAddDependantDialog = true,
+                            dialogError = mapFailure(throwable),
+                        )
+                    }
+                }
         }
     }
 
@@ -289,7 +345,7 @@ class HouseholdMembersScreenModel(
         _uiState.update { it.copy(selectedTransferMemberId = memberReferenceId, error = null) }
     }
 
-    fun confirmTransferOwnership(spaceId: String) {
+    fun confirmTransferOwnership(householdId: String) {
         val targetId = _uiState.value.selectedTransferMemberId
         if (targetId.isNullOrBlank()) {
             _uiState.update { it.copy(error = HouseholdMembersError.InvalidTransferTarget) }
@@ -309,9 +365,9 @@ class HouseholdMembersScreenModel(
                         if (status is HouseholdMembershipStatus.Active) {
                             activeOwnerId = status.household.ownerId
                             activeOwnerDisplayName = status.household.ownerDisplayName.orEmpty()
-                            activeUserIsOwner = status.membership.role == SpaceMemberRole.Owner
+                            activeUserIsOwner = status.membership.role == HouseholdMemberRole.Owner
                             collaborationRepository.refreshMembers(
-                                spaceId,
+                                householdId,
                                 status.household.ownerId,
                                 status.household.ownerDisplayName.orEmpty(),
                             )

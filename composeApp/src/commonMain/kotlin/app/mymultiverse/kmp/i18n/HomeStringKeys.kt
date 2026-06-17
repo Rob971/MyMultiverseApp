@@ -29,6 +29,14 @@ object HomeStringKeys {
         "home_export_personal_data",
         "home_export_personal_data_success",
         "home_export_personal_data_error",
+        "home_export_personal_data_share_unavailable",
+        "home_delete_account",
+        "home_delete_account_confirm_title",
+        "home_delete_account_confirm_message",
+        "home_delete_account_confirm_action",
+        "home_delete_account_success",
+        "home_delete_account_error_owner",
+        "home_delete_account_error_generic",
         "action_back",
     )
 

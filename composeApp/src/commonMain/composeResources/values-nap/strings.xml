@@ -2,8 +2,8 @@
 <resources>
     <string name="action_add_dream">Mitte nu Suonno</string>
     <string name="home_banner_headline">BENVENUTI 'A CASA</string>
-    <string name="home_banner_loading">Carecanno 'o spazio d' 'a famiglia...</string>
-    <string name="home_banner_description">Nu spazio cundiviso pe' cultivà 'e suonne d' 'a famiglia, traccià 'e gol S.M.A.R.T. e rinfurzà 'e legame d' 'o juorno.</string>
+    <string name="home_banner_loading">Sto caricanno 'o fuosso tojo...</string>
+    <string name="home_banner_description">Nu fuosso condiviso pe' cultivà 'e sogni d' 'a famiglia, seguì 'e goal S.M.A.R.T. e rafforzà 'e legami quotidiani.</string>
     <string name="home_dreams_title">'a logistica 'e famiglia nuosta</string>
     <string name="home_logistics_nutrition_title">Nutrizione</string>
     <string name="home_household_title">Famiglia</string>
@@ -26,7 +26,7 @@
     <string name="home_logistics_budget_title">Budget</string>
     <string name="home_logistics_budget_description">Spese, risparmio e finanza 'e famiglia.</string>
     <string name="nutrition_hub_title">Nutrizione</string>
-    <string name="nutrition_entry_loading">Apertura d''o spazio nutrizione d''a famiglia...</string>
+    <string name="nutrition_entry_loading">Sto aprènno 'a nutrizione d' 'o fuosso...</string>
     <string name="nutrition_entry_error_generic">Nun se pò aprire a nutrizione. Próva arreto.</string>
     <string name="nutrition_entry_error_not_configured">Supabase nun è configurato.</string>
     <string name="nutrition_entry_retry">Próva arreto</string>
@@ -649,25 +649,7 @@
     <string name="auth_error_signup_disabled">Mò nun se ponno fà registrazione nuove.</string>
     <string name="auth_success_email_confirmation">Account criato. Controlla l'email pe' confermà, poi accedi.</string>
     <string name="auth_loading">Accesso in corso...</string>
-    <string name="sharing_nutrition_spaces_title">Spazie condivise nutrizione</string>
-    <string name="sharing_nutrition_spaces_subtitle">Scegli o crià nu spazio e decidi cu spartisce spesa, piano e consigli AI.</string>
-    <string name="sharing_nutrition_spaces_empty">Nun ce spazie condivise. Crià nu spazio pe invità famiglia o amici.</string>
-    <string name="sharing_nutrition_spaces_create_button">Crià spazio condiviso</string>
-    <string name="sharing_nutrition_spaces_create_title">Spazio nutrizione nuovo</string>
-    <string name="sharing_nutrition_spaces_name_label">Nome spazio</string>
-    <string name="sharing_nutrition_spaces_name_hint">es. Casa cu Sara, Spesa sci</string>
-    <string name="sharing_nutrition_spaces_features_title">Funziune condivise</string>
-    <string name="sharing_nutrition_spaces_create_confirm">Crià spazio</string>
-    <string name="sharing_nutrition_spaces_create_cancel">Annulà</string>
-    <string name="sharing_nutrition_spaces_feature_grocery">Spesa</string>
-    <string name="sharing_nutrition_spaces_feature_meal_plan">Piano settimanale</string>
-    <string name="sharing_nutrition_spaces_feature_ai_advice">Consigli AI nutrizione</string>
-    <string name="sharing_nutrition_spaces_error_generic">Nun se pò carricà li spazie. Próva arreto.</string>
-    <string name="sharing_nutrition_spaces_error_name_required">Miette nu nome pe stu spazio.</string>
-    <string name="sharing_nutrition_spaces_error_features_required">Scegli almeno na funzione condivisa.</string>
-    <string name="sharing_nutrition_spaces_error_not_configured">Supabase nun è configurato.</string>
-    <string name="sharing_nutrition_spaces_loading">Caricamento spazie...</string>
-    <string name="sharing_hub_manage_members">Gente e gruppi</string>
+    <string name="household_manage_members">Gestisce membri d''o famiglia</string>
     <string name="sharing_members_title">Membri d' 'a famiglia</string>
     <string name="sharing_members_subtitle">Invita a gente pe' email. Li editor ponno cagnà liste e piani condivisi; li viewer ponno legge. Sta famiglia vale pe' nutrizione, avventure e budget.</string>
     <string name="sharing_members_empty">Nisciuno membro ancora. Miette quacuno pe' accummincià a spartì.</string>
@@ -713,7 +695,7 @@
     <string name="sharing_members_role_editor">Editor</string>
     <string name="sharing_members_role_viewer">Chi guarda</string>
     <string name="sharing_members_role_label">Ruolo: %1$s</string>
-    <string name="sharing_members_owner_fallback">Proprietario d' 'o spazio</string>
+    <string name="sharing_members_owner_fallback">Proprietario d' 'o fuosso</string>
     <string name="sharing_members_manage_group">Gestisce 'o gruppo</string>
     <string name="sharing_members_group_members_title">Membri d' 'o gruppo</string>
     <string name="sharing_members_add_to_group">Aggiunge a 'o gruppo</string>
@@ -750,6 +732,20 @@
     <string name="home_export_personal_data">Esporta 'e date mie</string>
     <string name="home_export_personal_data_success">L'esportazione d' 'e date personale è pronta.</string>
     <string name="home_export_personal_data_error">Nun s'è pututo esportà 'e date. Prova arreto.</string>
+    <string name="home_export_personal_data_share_unavailable">Personal data copied — share sheet unavailable on this device.</string>
+    <string name="home_delete_account">Delete my account</string>
+    <string name="home_delete_account_confirm_title">Delete account?</string>
+    <string name="home_delete_account_confirm_message">This permanently removes your account and personal data. Shared household content may remain for other members.</string>
+    <string name="home_delete_account_confirm_action">Delete account</string>
+    <string name="home_delete_account_success">Your account was deleted.</string>
+    <string name="home_delete_account_error_owner">Transfer ownership or dissolve your household before deleting your account.</string>
+    <string name="home_delete_account_error_generic">Could not delete your account. Try again.</string>
+    <string name="sharing_members_add_dependent">Add dependant</string>
+    <string name="sharing_members_dependent_name_label">Display name</string>
+    <string name="sharing_members_dependent_confirm">Add</string>
+    <string name="sharing_members_dependent_added">Dependant added.</string>
+    <string name="sharing_members_dependent_hint">Children and others without their own login appear here only.</string>
+    <string name="sharing_members_kind_dependent">Dependant</string>
         <string name="auth_household_joined_success">T'ê unito a %1$s.</string>
         <string name="household_gate_create_divider">O crea 'na famiglia nova</string>
 </resources>

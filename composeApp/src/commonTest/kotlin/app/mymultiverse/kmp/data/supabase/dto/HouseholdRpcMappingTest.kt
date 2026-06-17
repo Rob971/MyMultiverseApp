@@ -15,8 +15,8 @@ class HouseholdRpcMappingTest {
         val row = json.decodeFromString<HouseholdRpcRow>(
             """
             {
-              "space_id": "11111111-1111-1111-1111-111111111111",
-              "space_name": "Rossi home",
+              "household_id": "11111111-1111-1111-1111-111111111111",
+              "household_name": "Rossi home",
               "owner_id": "22222222-2222-2222-2222-222222222222",
               "owner_display_name": "Roberto",
               "features": ["grocery", "meal_plan", "ai_advice"]
@@ -24,8 +24,8 @@ class HouseholdRpcMappingTest {
             """.trimIndent(),
         )
 
-        assertEquals("11111111-1111-1111-1111-111111111111", row.spaceId)
-        assertEquals("Rossi home", row.spaceName)
+        assertEquals("11111111-1111-1111-1111-111111111111", row.householdId)
+        assertEquals("Rossi home", row.householdName)
         assertEquals("Roberto", row.ownerDisplayName)
         assertEquals(
             setOf(
@@ -42,8 +42,8 @@ class HouseholdRpcMappingTest {
         val row = json.decodeFromString<HouseholdRpcRow>(
             """
             {
-              "space_id": "space-1",
-              "space_name": "Home",
+              "household_id": "household-1",
+              "household_name": "Home",
               "owner_id": "owner-1",
               "features": null
             }
@@ -58,8 +58,8 @@ class HouseholdRpcMappingTest {
         val row = json.decodeFromString<HouseholdRpcRow>(
             """
             {
-              "space_id": "space-1",
-              "space_name": "Home",
+              "household_id": "household-1",
+              "household_name": "Home",
               "owner_id": "owner-1",
               "features": []
             }

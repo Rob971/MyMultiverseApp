@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.update
 
 class InstrumentedHouseholdRepository(
     private val household: Household = Household(
-        id = "household-space-1",
+        id = "household-1",
         name = "Our household",
         ownerId = "test-user",
         ownerDisplayName = "Test User",
@@ -21,6 +21,8 @@ class InstrumentedHouseholdRepository(
             NutritionSharingFeature.AiAdvice,
         ),
     ),
+    private val role: app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole =
+        app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole.Owner,
     private val ensureFailure: Throwable? = null,
     private val refreshFailure: Throwable? = null,
 ) : HouseholdRepository {
@@ -29,7 +31,7 @@ class InstrumentedHouseholdRepository(
         HouseholdMembershipStatus.Active(
             app.mymultiverse.kmp.domain.model.sharing.HouseholdMembership(
                 household = household,
-                role = app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole.Owner,
+                role = role,
             ),
         ),
     )

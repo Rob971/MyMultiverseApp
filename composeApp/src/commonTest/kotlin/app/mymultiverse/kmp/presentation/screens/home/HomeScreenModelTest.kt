@@ -5,11 +5,11 @@ import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.model.auth.AuthUser
 import app.mymultiverse.kmp.domain.model.sharing.AddMemberResult
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
-import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.domain.repository.GreetingRepository
-import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import app.mymultiverse.kmp.domain.repository.HouseholdCollaborationRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +18,9 @@ import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.kmp.presentation.di.FakeAuthRepository
 import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
-import app.mymultiverse.kmp.presentation.di.FakeSpaceCollaborationRepository
+import app.mymultiverse.kmp.presentation.di.FakePersonalDataExporter
+import app.mymultiverse.kmp.presentation.di.FakePushNotificationRegistrar
+import app.mymultiverse.kmp.presentation.di.FakeHouseholdCollaborationRepository
 import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
 import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.Dispatchers
@@ -58,15 +60,19 @@ class HomeScreenModelTest {
                 AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),
             ),
         ),
+        personalDataExporter: FakePersonalDataExporter = FakePersonalDataExporter(),
+        pushNotificationRegistrar: FakePushNotificationRegistrar = FakePushNotificationRegistrar(),
     ): HomeScreenModel =
         HomeScreenModel(
             getGreetingUseCase = GetGreetingUseCase(repository),
             authRepository = authRepository,
             householdRepository = FakeHouseholdRepository(),
-            collaborationRepository = FakeSpaceCollaborationRepository(),
+            collaborationRepository = FakeHouseholdCollaborationRepository(),
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
             ),
+            personalDataExporter = personalDataExporter,
+            pushNotificationRegistrar = pushNotificationRegistrar,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
 
@@ -215,10 +221,12 @@ class HomeScreenModelTest {
                 ),
             ),
             householdRepository = FakeHouseholdRepository(),
-            collaborationRepository = HangingSpaceCollaborationRepository(),
+            collaborationRepository = HangingHouseholdCollaborationRepository(),
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
             ),
+            personalDataExporter = FakePersonalDataExporter(),
+            pushNotificationRegistrar = FakePushNotificationRegistrar(),
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
 
@@ -238,20 +246,22 @@ class HomeScreenModelTest {
                 ),
             ),
             householdRepository = FakeHouseholdRepository(),
-            collaborationRepository = FakeSpaceCollaborationRepository(),
+            collaborationRepository = FakeHouseholdCollaborationRepository(),
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
             ),
+            personalDataExporter = FakePersonalDataExporter(),
+            pushNotificationRegistrar = FakePushNotificationRegistrar(),
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
         advanceUntilIdle()
 
-        val invite = SpaceInvite(
+        val invite = HouseholdInvite(
             id = "invite-1",
-            spaceId = "space-2",
-            spaceName = "Partner home",
+            householdId = "household-2",
+            householdName = "Partner home",
             email = "test@example.com",
-            role = SpaceMemberRole.Editor,
+            role = HouseholdMemberRole.Editor,
             expiresAtEpochMillis = 4_102_444_800_000L,
         )
         screenModel.onAcceptInviteClicked(invite)
@@ -263,7 +273,7 @@ class HomeScreenModelTest {
 
     @Test
     fun refresh_stillLoadsPendingInvitesInBackground() = runTest(testDispatcher) {
-        val collaborationRepository = TrackingSpaceCollaborationRepository()
+        val collaborationRepository = TrackingHouseholdCollaborationRepository()
         val screenModel = HomeScreenModel(
             getGreetingUseCase = GetGreetingUseCase(FakeGreetingRepository(Greeting("Welcome home"))),
             authRepository = FakeAuthRepository(
@@ -276,6 +286,8 @@ class HomeScreenModelTest {
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
             ),
+            personalDataExporter = FakePersonalDataExporter(),
+            pushNotificationRegistrar = FakePushNotificationRegistrar(),
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
 
@@ -286,7 +298,7 @@ class HomeScreenModelTest {
 
     @Test
     fun acceptInvite_emitsJoinedMessage() = runTest(testDispatcher) {
-        val collaborationRepository = FakeSpaceCollaborationRepository()
+        val collaborationRepository = FakeHouseholdCollaborationRepository()
         val screenModel = HomeScreenModel(
             getGreetingUseCase = GetGreetingUseCase(FakeGreetingRepository(Greeting("Welcome home"))),
             authRepository = FakeAuthRepository(
@@ -301,49 +313,51 @@ class HomeScreenModelTest {
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
             ),
+            personalDataExporter = FakePersonalDataExporter(),
+            pushNotificationRegistrar = FakePushNotificationRegistrar(),
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
         advanceUntilIdle()
 
         collaborationRepository.addMemberByEmail(
-            spaceId = "household-space-1",
+            householdId = "household-1",
             email = "partner@example.com",
-            role = SpaceMemberRole.Editor,
+            role = HouseholdMemberRole.Editor,
         )
-        val invite = collaborationRepository.latestOutboundInvite("household-space-1")
+        val invite = collaborationRepository.latestOutboundInvite("household-1")
             ?: error("expected outbound invite")
-        screenModel.acceptInvite(invite.id, invite.spaceName)
+        screenModel.acceptInvite(invite.id, invite.householdName)
         advanceUntilIdle()
 
         val message = screenModel.inviteActionMessage.value
         assertTrue(message is InviteActionMessage.Joined)
-        assertEquals("Test Space", (message as InviteActionMessage.Joined).householdName)
+        assertEquals("Test Household", (message as InviteActionMessage.Joined).householdName)
     }
 }
 
-private class HangingSpaceCollaborationRepository : SpaceCollaborationRepository {
-    private val pendingInvites = MutableStateFlow<List<SpaceInvite>>(emptyList())
+private class HangingHouseholdCollaborationRepository : HouseholdCollaborationRepository {
+    private val pendingInvites = MutableStateFlow<List<HouseholdInvite>>(emptyList())
 
-    override fun observeMembers(spaceId: String): Flow<List<SpaceMember>> =
-        MutableStateFlow<List<SpaceMember>>(emptyList()).asStateFlow()
+    override fun observeMembers(householdId: String): Flow<List<HouseholdMember>> =
+        MutableStateFlow<List<HouseholdMember>>(emptyList()).asStateFlow()
 
-    override fun observePendingInvites(): Flow<List<SpaceInvite>> = pendingInvites.asStateFlow()
+    override fun observePendingInvites(): Flow<List<HouseholdInvite>> = pendingInvites.asStateFlow()
 
-    override fun observeOutboundInvites(spaceId: String): Flow<List<SpaceInvite>> =
-        MutableStateFlow<List<SpaceInvite>>(emptyList()).asStateFlow()
+    override fun observeOutboundInvites(householdId: String): Flow<List<HouseholdInvite>> =
+        MutableStateFlow<List<HouseholdInvite>>(emptyList()).asStateFlow()
 
-    override suspend fun refreshMembers(spaceId: String, ownerId: String, ownerDisplayName: String) = Unit
+    override suspend fun refreshMembers(householdId: String, ownerId: String, ownerDisplayName: String) = Unit
 
     override suspend fun refreshPendingInvites() {
         suspendCancellableCoroutine<Unit> { }
     }
 
-    override suspend fun refreshOutboundInvites(spaceId: String) = Unit
+    override suspend fun refreshOutboundInvites(householdId: String) = Unit
 
     override suspend fun addMemberByEmail(
-        spaceId: String,
+        householdId: String,
         email: String,
-        role: SpaceMemberRole,
+        role: HouseholdMemberRole,
     ): Result<AddMemberResult> = Result.failure(UnsupportedOperationException())
 
     override suspend fun removeMember(memberId: String): Result<Unit> =
@@ -353,6 +367,12 @@ private class HangingSpaceCollaborationRepository : SpaceCollaborationRepository
         Result.failure(UnsupportedOperationException())
 
     override suspend fun declineInvite(inviteId: String): Result<Unit> =
+        Result.failure(UnsupportedOperationException())
+
+    override suspend fun addDependant(householdId: String, displayName: String): Result<Unit> =
+        Result.failure(UnsupportedOperationException())
+
+    override suspend fun removeDependant(dependantId: String): Result<Unit> =
         Result.failure(UnsupportedOperationException())
 }
 
@@ -368,8 +388,8 @@ private class FakeGreetingRepository(
     }
 }
 
-private class TrackingSpaceCollaborationRepository :
-    SpaceCollaborationRepository by FakeSpaceCollaborationRepository() {
+private class TrackingHouseholdCollaborationRepository :
+    HouseholdCollaborationRepository by FakeHouseholdCollaborationRepository() {
     var refreshPendingInvitesCalls = 0
 
     override suspend fun refreshPendingInvites() {

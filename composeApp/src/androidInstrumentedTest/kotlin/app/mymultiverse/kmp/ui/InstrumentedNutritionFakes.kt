@@ -6,7 +6,7 @@ import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiPlanner
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
-import app.mymultiverse.kmp.domain.repository.NutritionSpaceSelectionStore
+import app.mymultiverse.kmp.domain.repository.NutritionHouseholdSelectionStore
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.flowOf
 
 class InstrumentedNutritionRepository(
     override val weekKey: String,
-    override val spaceId: String? = null,
+    override val householdId: String? = null,
 ) : NutritionRepository {
     val grocery = MutableStateFlow<List<GroceryItem>>(emptyList())
     val aiGrocery = MutableStateFlow<List<GroceryItem>>(emptyList())
@@ -43,17 +43,17 @@ class InstrumentedNutritionRepository(
     }
 }
 
-class InstrumentedNutritionSpaceSelectionStore : NutritionSpaceSelectionStore {
-    val activeSpaceId = MutableStateFlow<String?>(null)
+class InstrumentedNutritionHouseholdSelectionStore : NutritionHouseholdSelectionStore {
+    val activeHouseholdId = MutableStateFlow<String?>(null)
 
-    override fun observeActiveSpaceId(): Flow<String?> = activeSpaceId.asStateFlow()
+    override fun observeActiveHouseholdId(): Flow<String?> = activeHouseholdId.asStateFlow()
 
-    override suspend fun setActiveSpaceId(spaceId: String) {
-        activeSpaceId.value = spaceId
+    override suspend fun setActiveHouseholdId(householdId: String) {
+        activeHouseholdId.value = householdId
     }
 
-    override suspend fun clearActiveSpaceId() {
-        activeSpaceId.value = null
+    override suspend fun clearActiveHouseholdId() {
+        activeHouseholdId.value = null
     }
 }
 
@@ -62,15 +62,15 @@ class InstrumentedNutritionSessionCoordinator(
 ) : NutritionSessionCoordinator {
     private val _nutrition = MutableStateFlow<NutritionRepository>(repository)
 
-    var activatedSpaceId: String? = null
+    var activatedHouseholdId: String? = null
         private set
 
     override val nutrition = _nutrition.asStateFlow()
 
     override fun observeSyncStatus(): Flow<NutritionSyncStatus> = flowOf(NutritionSyncStatus.Idle)
 
-    override suspend fun activateSpace(spaceId: String) {
-        activatedSpaceId = spaceId
+    override suspend fun activateHousehold(householdId: String) {
+        activatedHouseholdId = householdId
     }
 
     override fun deactivate() = Unit

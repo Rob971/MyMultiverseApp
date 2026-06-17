@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_pending_invites_accept
@@ -31,7 +31,7 @@ object PendingInvitesTestTags {
 
 @Composable
 fun PendingInvitesCard(
-    invites: List<SpaceInvite>,
+    invites: List<HouseholdInvite>,
     onAccept: (String) -> Unit,
     onDecline: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -59,7 +59,7 @@ fun PendingInvitesCard(
                     Text(
                         text = stringResource(
                             Res.string.auth_pending_invites_subtitle,
-                            invite.spaceName,
+                            invite.householdName,
                         ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = SharedJourneyColors.InkMuted,

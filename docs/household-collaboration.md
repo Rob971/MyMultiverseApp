@@ -32,7 +32,7 @@ This document is the **source of truth** for household sharing in MyMultiverse: 
 | **Dissolve household** | **Hard delete** household data (not soft archive) for v1. Confirm in UI with strong destructive copy. |
 | **Pending invites + Create household** | **Do not block** create; use **layout** (invites above create on gate). |
 | **Max household size** | **20** members. |
-| **Rename `sharing_spaces` → `households`** | **Done** — migration `20250618170000`; stable UUIDs preserved for client cache keys. |
+| **Household-only terminology** | **Done** — migration `20250620000000`; RPCs/helpers/JSON use `household_*` only (no `space_*` aliases). Table rename `sharing_spaces` → `households` was `20250618170000`. |
 | **Trip / Budget** | **Same unique household** as Nutrition (module flags, not separate household rows). |
 | **Invite expiry in UI** | **No** — expiry still enforced server-side (14 days); no countdown in app v1. |
 | **GDPR on leave** | **Yes** — implement leave/export/delete flows per privacy policy (see § GDPR). |
@@ -68,8 +68,8 @@ Members have a **role**: `owner`, `editor`, or `viewer`.
 **Locked (v1):**
 
 - Invites are stored and matched by **normalized email** (`lower(trim)`).
-- `list_my_pending_space_invites()` returns only invites whose email equals the signed-in user's profile/auth email.
-- `accept_space_invite` raises `invite_email_mismatch` when emails differ.
+- `list_my_pending_household_invites()` returns only invites whose email equals the signed-in user's profile/auth email.
+- `accept_household_invite` raises `invite_email_mismatch` when emails differ.
 - If the user changes their auth email after an invite was sent, they need a **new invite** to the new address or must sign in with the **original invited email**.
 
 **Status:** Server rules in place; client shows dedicated copy on mismatch (see §8).
@@ -157,9 +157,9 @@ Partial unique index: at most one `household_members` row per `user_id` where `l
 
 ### 7. Nutrition sync on join
 
-`activateSpace(householdId)` immediately after accept or create—not only when opening Nutrition.
+`activateHousehold(householdId)` immediately after accept or create—not only when opening Nutrition.
 
-**Status:** Implemented in P0 branch (`activateSpace` on create/accept/home refresh).
+**Status:** Implemented in P0 branch (`activateHousehold` on create/accept/home refresh).
 
 ---
 
@@ -202,17 +202,9 @@ When a user **leaves** a household (or deletes account):
 
 ---
 
-## Architecture — current schema (post-rename)
+## Architecture — current schema
 
-Migration `20250618170000` renamed legacy `sharing_spaces` tables. RPC names and JSON keys may still use `space_*` for backward compatibility; PostgREST table names are below.
-
-| Legacy (pre-`20250618170000`) | Current |
-|--------------------------------|---------|
-| `sharing_spaces` (`topic = nutrition`) | `households` |
-| `space_members` | `household_members` (`left_at`; `joined_at` not yet added) |
-| `space_invites` | `household_invites` |
-| `space_nutrition_features` | `household_modules` (`nutrition`, `adventures`, `budget`) |
-| `nutrition_space_week_data.space_id` | `nutrition_household_week_data.household_id` (same UUID) |
+Household collaboration uses **household-only** terminology in app code, RPCs, and JSON (`household_id`, `household_name`, `household_*` RPCs). Core tables: `households`, `household_members`, `household_invites`, `household_modules`, and `nutrition_household_week_data`.
 
 **One `households` row** powers Nutrition, Adventures, and Budget via `household_modules` (Adventures/Budget not wired in app yet).
 
@@ -237,14 +229,14 @@ Migration `20250618170000` renamed legacy `sharing_spaces` tables. RPC names and
 |----------|------|
 | **P0** | One active household per user (DB + RPCs) — **done** (branch) |
 | **P0** | Pending invites when affiliated + leave-then-accept — **done** (branch) |
-| **P0** | `activateSpace` on membership active — **done** (branch) |
+| **P0** | `activateHousehold` on membership active — **done** (branch) |
 | **P0** | Max 20 members check on invite/accept — **done** (branch) |
 | **P0** | **Viewer read-only UI** — disable all nutrition writes for `viewer` role — **done** |
 | **P0** | **Viewer RLS** — block INSERT/UPDATE/DELETE on nutrition week data for viewers — **done** |
 | **P0** | **Auth email match** — list + accept paths; QA in Firebase YAML — **done** |
 | **P1** | `leave_household`, `dissolve_household` — **done**; `transfer_ownership` — **done** |
 | **P1** | GDPR export hook + leave privacy copy — **done** (account delete deferred) |
-| **P1** | Migrate `sharing_spaces` → `households` — **done** (`20250618170000`) |
+| **P1** | Household-only terminology (tables `20250618170000`, RPCs/JSON `20250620000000`) — **done** |
 | **P2** | Push/email notifications |
 | **P2** | Child accounts |
 
@@ -300,5 +292,5 @@ Household collaboration **v1** merged via PR #7 (`9fb4895`, 2026-06-17). P0 + P1
 |-------|--------|
 | **P2** | Push/email invite notifications; child/shared email accounts |
 | **GDPR** | Account deletion flow; legal review of privacy wording; export share/save-to-file UX |
-| **Polish** | Instrumented UI tests for viewer read-only + transfer ownership; optional RPC rename (`space_*` → `household_*`) |
+| **Polish** | Instrumented UI tests for viewer read-only + transfer ownership |
 | **Product** | Adventures / Budget on `household_modules` |

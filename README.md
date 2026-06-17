@@ -15,7 +15,7 @@ MyMultiverse helps a **household** (family or roommates) coordinate day-to-day l
 | Concept | What it means for users |
 |---------|-------------------------|
 | **Account** | One person, one email (Supabase Auth). Sign up / sign in with email, Google, or Apple. |
-| **Household** | One shared space per user at a time. All modules (Nutrition, future Adventures/Budget) share one household id. |
+| **Household** | One shared household per user at a time. All modules (Nutrition, future Adventures/Budget) share one household id. |
 | **Gate** | Onboarding screen when signed in but not in a household: accept a pending invite **or** create a new household. |
 | **Invite** | Owner sends invite by email; invitee must **accept** on their device. No silent add. |
 | **Roles** | **Owner** — invite, manage members, edit data. **Editor** — edit shared nutrition. **Viewer** — read-only everywhere. |
@@ -152,7 +152,7 @@ The mobile app talks to **Supabase Auth** (sessions, OAuth) and **PostgREST** (t
 | **Auth** | Email/password, Google, Apple; redirect `app.mymultiverse.kmp://auth/callback` |
 | **Profiles** | `profiles` row per `auth.users`; bootstrap via `ensure_current_profile()` |
 | **Household lifecycle** | RPCs: `create_household`, `leave_household`, `dissolve_household`, `transfer_household_ownership` |
-| **Invites** | `invite_space_member`, `accept_space_invite`, `list_my_pending_space_invites` (RPC names retain `space_*` for compatibility) |
+| **Invites** | `invite_household_member`, `accept_household_invite`, `list_my_pending_household_invites` |
 | **Membership query** | `household_membership_status`, `resolve_user_household_row` |
 | **Nutrition data** | `nutrition_household_week_data` — one row per `(household_id, week_key, data_kind)` |
 | **GDPR** | `export_my_personal_data` |
@@ -185,7 +185,7 @@ Enable Google/Apple providers for OAuth. Ensure **Realtime** is enabled (Databas
 
 ## Data model (Postgres)
 
-Current table names (post-migration `20250618170000`). Legacy RPC/JSON keys may still say `space_*`.
+Current table and RPC names (post-migrations `20250618170000`, `20250620000000`).
 
 ### Enums
 
@@ -194,7 +194,7 @@ Current table names (post-migration `20250618170000`). Legacy RPC/JSON keys may 
 | `app_topic` | `nutrition`, `adventures`, `budget` |
 | `nutrition_feature` | `grocery`, `meal_plan`, `ai_advice` (enabled modules per household) |
 | `nutrition_data_kind` | `grocery`, `ai_grocery`, `meal_plan` (week payload rows) |
-| `space_member_role` | `owner`, `editor`, `viewer` |
+| `household_member_role` | `owner`, `editor`, `viewer` |
 | `group_lifecycle` | `persistent`, `event` |
 
 ### Core tables
@@ -214,7 +214,7 @@ Current table names (post-migration `20250618170000`). Legacy RPC/JSON keys may 
 
 - At most **one active** `household_members` row per `user_id` (`left_at IS NULL`).
 - At most **20** active members per household (enforced in invite/accept RPCs).
-- **Viewers:** RLS on `nutrition_household_week_data` allows `SELECT` only; writes require owner/editor (`space_member_can_write_nutrition`).
+- **Viewers:** RLS on `nutrition_household_week_data` allows `SELECT` only; writes require owner/editor (`household_member_can_write_nutrition`).
 - **Dissolve:** deleting a `households` row cascades to members, invites, modules, and week data.
 
 ### Key RPCs (callable by authenticated clients)
@@ -225,9 +225,9 @@ Current table names (post-migration `20250618170000`). Legacy RPC/JSON keys may 
 | `household_membership_status()` | Gate: affiliated or not, role, household name |
 | `create_household(p_name)` | Create household + owner membership + default modules |
 | `ensure_household()` | Idempotent household ensure (used by client bootstrap) |
-| `invite_space_member(p_email, p_role)` | Owner sends invite; guards for cap, duplicate, other household |
-| `list_my_pending_space_invites()` | Invites matching session email only |
-| `accept_space_invite(p_invite_id)` | Join household; email match required |
+| `invite_household_member(p_email, p_role)` | Owner sends invite; guards for cap, duplicate, other household |
+| `list_my_pending_household_invites()` | Invites matching session email only |
+| `accept_household_invite(p_invite_id)` | Join household; email match required |
 | `leave_household()` | Member leaves (not sole owner with others) |
 | `dissolve_household()` | Owner hard-deletes household when alone |
 | `transfer_household_ownership(p_new_owner_user_id)` | Sole owner picks new owner |

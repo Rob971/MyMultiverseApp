@@ -167,4 +167,6 @@ private class RecordingAuthRepository(
 
     override suspend fun exportPersonalData(): Result<String> =
         Result.success("""{"exported_at":"test"}""")
+
+    override suspend fun deleteAccount(): Result<Unit> = Result.success(Unit)
 }

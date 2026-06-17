@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 class OfflineFirstNutritionRepositoryTest {
 
     private val weekKey = "2026-05-18"
-    private val spaceId = "space-1"
+    private val householdId = "household-1"
 
     @Test
     fun saveGrocery_persistsLocallyWhenRemoteDisabled() = runTest {
@@ -28,7 +28,7 @@ class OfflineFirstNutritionRepositoryTest {
         repository.saveGroceryItems(listOf(GroceryItem("1", "Milk", false)))
 
         assertEquals("Milk", repository.observeGroceryItems().first().single().label)
-        assertEquals(0, NutritionSyncOutbox(settings).pendingFor(spaceId, weekKey).size)
+        assertEquals(0, NutritionSyncOutbox(settings).pendingFor(householdId, weekKey).size)
     }
 
     @Test
@@ -45,13 +45,13 @@ class OfflineFirstNutritionRepositoryTest {
         repository.saveGroceryItems(listOf(GroceryItem("1", "Bread", false)))
 
         assertEquals("Bread", repository.observeGroceryItems().first().single().label)
-        assertEquals(1, outbox.pendingFor(spaceId, weekKey).size)
+        assertEquals(1, outbox.pendingFor(householdId, weekKey).size)
     }
 
     @Test
     fun refreshFromRemote_appliesFetchedSupabaseRowsToLocalCache() = runTest {
         val settings = MapSettings()
-        val store = NutritionLocalStore(settings, spaceId, weekKey)
+        val store = NutritionLocalStore(settings, householdId, weekKey)
         val plan = WeeklyMealPlan(
             weekKey = weekKey,
             days = List(WeeklyMealPlan.DAYS_IN_WEEK) { index ->
@@ -61,19 +61,19 @@ class OfflineFirstNutritionRepositoryTest {
         val remote = StaticRemote(
             listOf(
                 NutritionWeekDataRow(
-                    spaceId = spaceId,
+                    householdId = householdId,
                     weekKey = weekKey,
                     dataKind = "grocery",
                     payload = store.encodeGrocery(listOf(GroceryItem("r1", "Remote rice", false))),
                 ),
                 NutritionWeekDataRow(
-                    spaceId = spaceId,
+                    householdId = householdId,
                     weekKey = weekKey,
                     dataKind = "ai_grocery",
                     payload = store.encodeGrocery(listOf(GroceryItem("ai1", "AI lentils", true))),
                 ),
                 NutritionWeekDataRow(
-                    spaceId = spaceId,
+                    householdId = householdId,
                     weekKey = weekKey,
                     dataKind = "meal_plan",
                     payload = store.encodeMealPlan(plan),
@@ -93,13 +93,13 @@ class OfflineFirstNutritionRepositoryTest {
     @Test
     fun applyRemoteWeekData_updatesLocalCache() = runTest {
         val settings = MapSettings()
-        val store = NutritionLocalStore(settings, spaceId, weekKey)
+        val store = NutritionLocalStore(settings, householdId, weekKey)
         val repository = repository(settings, store = store, remoteEnabled = false)
         val payload = store.encodeGrocery(listOf(GroceryItem("r1", "Remote rice", false)))
 
         repository.applyRemoteWeekData(
             NutritionWeekDataRow(
-                spaceId = spaceId,
+                householdId = householdId,
                 weekKey = weekKey,
                 dataKind = "grocery",
                 payload = payload,
@@ -110,15 +110,15 @@ class OfflineFirstNutritionRepositoryTest {
     }
 
     @Test
-    fun applyRemoteWeekData_ignoresOtherSpaceOrWeek() = runTest {
+    fun applyRemoteWeekData_ignoresOtherHouseholdOrWeek() = runTest {
         val settings = MapSettings()
-        val store = NutritionLocalStore(settings, spaceId, weekKey)
+        val store = NutritionLocalStore(settings, householdId, weekKey)
         val repository = repository(settings, store = store, remoteEnabled = false)
         val payload = store.encodeGrocery(listOf(GroceryItem("1", "Ignored", false)))
 
         repository.applyRemoteWeekData(
             NutritionWeekDataRow(
-                spaceId = "other-space",
+                householdId = "other-household",
                 weekKey = weekKey,
                 dataKind = "grocery",
                 payload = payload,
@@ -130,7 +130,7 @@ class OfflineFirstNutritionRepositoryTest {
 
     private fun repository(
         settings: MapSettings,
-        store: NutritionLocalStore = NutritionLocalStore(settings, spaceId, weekKey),
+        store: NutritionLocalStore = NutritionLocalStore(settings, householdId, weekKey),
         remote: NutritionRemoteDataSource? = null,
         outbox: NutritionSyncOutbox = NutritionSyncOutbox(settings),
         remoteEnabled: Boolean = remote != null,
@@ -138,15 +138,15 @@ class OfflineFirstNutritionRepositoryTest {
         OfflineFirstNutritionRepository(
             localStore = store,
             syncEngine = NutritionSyncEngine(remote, outbox, TestObservability.logger),
-            spaceId = spaceId,
+            householdId = householdId,
             weekKey = weekKey,
             remoteEnabled = remoteEnabled,
         )
 
     private object FailingRemote : NutritionRemoteDataSource {
-        override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
+        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
 
-        override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) {
+        override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) {
             throw IllegalStateException("offline")
         }
     }
@@ -156,11 +156,11 @@ class OfflineFirstNutritionRepositoryTest {
     ) : NutritionRemoteDataSource {
         var fetchCount = 0
 
-        override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> {
+        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
             fetchCount++
             return rows
         }
 
-        override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) = Unit
+        override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
 }

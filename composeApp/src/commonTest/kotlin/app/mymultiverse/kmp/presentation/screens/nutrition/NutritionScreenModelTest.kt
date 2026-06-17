@@ -4,7 +4,7 @@ import app.mymultiverse.kmp.domain.model.nutrition.DayMeals
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
@@ -319,7 +319,7 @@ class NutritionScreenModelTest {
     @Test
     fun viewerRole_blocksGroceryWrites() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
-        val householdRepository = FakeHouseholdRepository(role = SpaceMemberRole.Viewer)
+        val householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Viewer)
         val model = nutritionScreenModel(
             repository = repository,
             householdRepository = householdRepository,
@@ -334,7 +334,7 @@ class NutritionScreenModelTest {
     }
 
     @Test
-    fun activateSpace_delegatesToSessionCoordinator() = runTest(testDispatcher) {
+    fun activateHousehold_delegatesToSessionCoordinator() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val session = nutritionSession(repository)
         val model = NutritionScreenModel(
@@ -344,10 +344,10 @@ class NutritionScreenModelTest {
             scope = modelScope,
         )
 
-        model.activateSpace("space-99")
+        model.activateHousehold("household-99")
         advanceUntilIdle()
 
-        assertEquals("space-99", session.activatedSpaceId)
+        assertEquals("household-99", session.activatedHouseholdId)
     }
 
     @Test
@@ -369,7 +369,7 @@ class NutritionScreenModelTest {
 private class FakeNutritionRepository(
     override val weekKey: String,
 ) : NutritionRepository {
-    override val spaceId: String? = "test-space"
+    override val householdId: String? = "test-household"
     val grocery = MutableStateFlow<List<GroceryItem>>(emptyList())
     val aiGrocery = MutableStateFlow<List<GroceryItem>>(emptyList())
     val mealPlan = MutableStateFlow(WeeklyMealPlan(weekKey = weekKey))

@@ -1,8 +1,8 @@
 package app.mymultiverse.kmp.data.collaboration
 
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
-import app.mymultiverse.kmp.presentation.di.FakeSpaceCollaborationRepository
+import app.mymultiverse.kmp.presentation.di.FakeHouseholdCollaborationRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -13,14 +13,14 @@ class CollaborationInviteFlowTest {
 
     @Test
     fun inviteAcceptance_addsMemberAndRefreshesHousehold() = runTest {
-        val collaboration = FakeSpaceCollaborationRepository()
+        val collaboration = FakeHouseholdCollaborationRepository()
         val household = FakeHouseholdRepository()
 
         collaboration.inboundProfileEmail = "invite@example.com"
         collaboration.addMemberByEmail(
-            spaceId = "household-space-1",
+            householdId = "household-1",
             email = "invite@example.com",
-            role = SpaceMemberRole.Editor,
+            role = HouseholdMemberRole.Editor,
         )
         collaboration.refreshPendingInvites()
 
@@ -30,6 +30,6 @@ class CollaborationInviteFlowTest {
 
         assertTrue(acceptResult.isSuccess)
         assertTrue(householdResult.isSuccess)
-        assertEquals("household-space-1", householdResult.getOrThrow().id)
+        assertEquals("household-1", householdResult.getOrThrow().id)
     }
 }

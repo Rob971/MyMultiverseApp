@@ -1,0 +1,37 @@
+package app.mymultiverse.kmp.domain.repository
+
+import app.mymultiverse.kmp.domain.model.sharing.AddMemberResult
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
+import kotlinx.coroutines.flow.Flow
+
+interface HouseholdCollaborationRepository {
+    fun observeMembers(householdId: String): Flow<List<HouseholdMember>>
+
+    fun observePendingInvites(): Flow<List<HouseholdInvite>>
+
+    fun observeOutboundInvites(householdId: String): Flow<List<HouseholdInvite>>
+
+    suspend fun refreshMembers(householdId: String, ownerId: String, ownerDisplayName: String)
+
+    suspend fun refreshPendingInvites()
+
+    suspend fun refreshOutboundInvites(householdId: String)
+
+    suspend fun addMemberByEmail(
+        householdId: String,
+        email: String,
+        role: HouseholdMemberRole = HouseholdMemberRole.Editor,
+    ): Result<AddMemberResult>
+
+    suspend fun removeMember(memberId: String): Result<Unit>
+
+    suspend fun acceptInvite(inviteId: String): Result<Unit>
+
+    suspend fun declineInvite(inviteId: String): Result<Unit>
+
+    suspend fun addDependant(householdId: String, displayName: String): Result<Unit>
+
+    suspend fun removeDependant(dependantId: String): Result<Unit>
+}

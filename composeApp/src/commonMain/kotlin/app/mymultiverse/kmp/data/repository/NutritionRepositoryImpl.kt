@@ -16,11 +16,11 @@ class NutritionRepositoryImpl(
     override val weekKey: String = WeekCalendar.currentWeekKey(),
 ) : NutritionRepository {
 
-    override val spaceId: String? = null
+    override val householdId: String? = null
 
     private val localStore = NutritionLocalStore(
         settings = settings,
-        spaceId = null,
+        householdId = null,
         weekKey = weekKey,
     )
 

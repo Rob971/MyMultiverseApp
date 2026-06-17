@@ -124,21 +124,21 @@ private fun AuthenticatedMainApp() {
         )
 
         is AppRoute.Nutrition -> NutritionFlow(
-            space = route.space,
+            household = route.household,
             section = route.section,
             onBack = navigator::navigateBack,
             onOpenSection = { section ->
                 navigator.navigateTo(
                     AppRoute.Nutrition(
-                        space = route.space,
+                        household = route.household,
                         section = section,
                     ),
                 )
             },
-            onSpaceSelected = { space ->
+            onHouseholdSelected = { household ->
                 navigator.replaceCurrent(
                     AppRoute.Nutrition(
-                        space = space,
+                        household = household,
                         section = NutritionSection.Hub,
                     ),
                 )

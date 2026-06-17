@@ -8,13 +8,13 @@ import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Local-first nutrition repository for a sharing space: writes are immediate on device,
+ * Local-first nutrition repository for a household: writes are immediate on device,
  * pushes go through [NutritionSyncEngine] (queued when offline).
  */
 class OfflineFirstNutritionRepository(
     private val localStore: NutritionLocalStore,
     private val syncEngine: NutritionSyncEngine,
-    override val spaceId: String,
+    override val householdId: String,
     override val weekKey: String,
     private val remoteEnabled: Boolean,
 ) : NutritionRepository {
@@ -30,12 +30,12 @@ class OfflineFirstNutritionRepository(
             syncEngine.markRemoteUnavailable()
             return
         }
-        syncEngine.flushPending(spaceId, weekKey)
-        syncEngine.pullRemote(spaceId, weekKey) { applyRemoteWeekData(it) }
+        syncEngine.flushPending(householdId, weekKey)
+        syncEngine.pullRemote(householdId, weekKey) { applyRemoteWeekData(it) }
     }
 
     fun applyRemoteWeekData(row: NutritionWeekDataRow) {
-        if (row.spaceId != spaceId || row.weekKey != weekKey) return
+        if (row.householdId != householdId || row.weekKey != weekKey) return
         localStore.applyPayload(row.dataKind, row.payload)
     }
 
@@ -43,7 +43,7 @@ class OfflineFirstNutritionRepository(
         localStore.saveGroceryItems(items)
         if (remoteEnabled) {
             syncEngine.pushNowOrEnqueue(
-                spaceId = spaceId,
+                householdId = householdId,
                 weekKey = weekKey,
                 dataKind = "grocery",
                 payload = localStore.encodeGrocery(items),
@@ -55,7 +55,7 @@ class OfflineFirstNutritionRepository(
         localStore.saveAiGroceryItems(items)
         if (remoteEnabled) {
             syncEngine.pushNowOrEnqueue(
-                spaceId = spaceId,
+                householdId = householdId,
                 weekKey = weekKey,
                 dataKind = "ai_grocery",
                 payload = localStore.encodeGrocery(items),
@@ -67,7 +67,7 @@ class OfflineFirstNutritionRepository(
         localStore.saveMealPlan(plan)
         if (remoteEnabled) {
             syncEngine.pushNowOrEnqueue(
-                spaceId = spaceId,
+                householdId = householdId,
                 weekKey = weekKey,
                 dataKind = "meal_plan",
                 payload = localStore.encodeMealPlan(plan),

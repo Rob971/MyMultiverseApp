@@ -1,6 +1,6 @@
 package app.mymultiverse.kmp.domain.sharing
 
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -9,19 +9,19 @@ class HouseholdPermissionRulesTest {
 
     @Test
     fun ownerAndEditorCanWrite() {
-        assertTrue(SpaceMemberRole.Owner.canWriteHouseholdData())
-        assertTrue(SpaceMemberRole.Editor.canWriteHouseholdData())
+        assertTrue(HouseholdMemberRole.Owner.canWriteHouseholdData())
+        assertTrue(HouseholdMemberRole.Editor.canWriteHouseholdData())
     }
 
     @Test
     fun viewerCannotWrite() {
-        assertFalse(SpaceMemberRole.Viewer.canWriteHouseholdData())
+        assertFalse(HouseholdMemberRole.Viewer.canWriteHouseholdData())
     }
 
     @Test
     fun onlyOwnerCanManageMembers() {
-        assertTrue(SpaceMemberRole.Owner.canManageHouseholdMembers())
-        assertFalse(SpaceMemberRole.Editor.canManageHouseholdMembers())
-        assertFalse(SpaceMemberRole.Viewer.canManageHouseholdMembers())
+        assertTrue(HouseholdMemberRole.Owner.canManageHouseholdMembers())
+        assertFalse(HouseholdMemberRole.Editor.canManageHouseholdMembers())
+        assertFalse(HouseholdMemberRole.Viewer.canManageHouseholdMembers())
     }
 }

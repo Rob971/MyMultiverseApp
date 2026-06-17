@@ -5,25 +5,25 @@ import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteApi
 import app.mymultiverse.kmp.data.repository.GreetingRepositoryImpl
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
-import app.mymultiverse.kmp.data.repository.SettingsNutritionSpaceSelectionStore
+import app.mymultiverse.kmp.data.repository.SettingsNutritionHouseholdSelectionStore
 import app.mymultiverse.kmp.data.service.LocalNutritionAiAssistantService
 import app.mymultiverse.kmp.data.supabase.SupabaseAuthRepository
 import app.mymultiverse.kmp.data.supabase.SupabaseClientHolder
 import app.mymultiverse.kmp.data.supabase.SupabaseHouseholdRepository
-import app.mymultiverse.kmp.data.supabase.SupabaseSpaceCollaborationRepository
+import app.mymultiverse.kmp.data.supabase.SupabaseHouseholdCollaborationRepository
 import app.mymultiverse.kmp.data.supabase.UnconfiguredAuthRepository
 import app.mymultiverse.kmp.data.supabase.UnconfiguredHouseholdRepository
-import app.mymultiverse.kmp.data.supabase.UnconfiguredSpaceCollaborationRepository
+import app.mymultiverse.kmp.data.supabase.UnconfiguredHouseholdCollaborationRepository
 import app.mymultiverse.kmp.data.sync.NutritionSessionCoordinatorImpl
-import app.mymultiverse.kmp.data.sync.NutritionSpaceRealtimeSync
+import app.mymultiverse.kmp.data.sync.NutritionHouseholdRealtimeSync
 import app.mymultiverse.kmp.domain.observability.DiagnosticsContext
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.GreetingRepository
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
-import app.mymultiverse.kmp.domain.repository.NutritionSpaceSelectionStore
-import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import app.mymultiverse.kmp.domain.repository.NutritionHouseholdSelectionStore
+import app.mymultiverse.kmp.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
 import app.mymultiverse.kmp.presentation.screens.auth.LoginScreenModel
@@ -68,15 +68,15 @@ private val dataModule = module {
             UnconfiguredHouseholdRepository()
         }
     }
-    single<SpaceCollaborationRepository> {
+    single<HouseholdCollaborationRepository> {
         val client = get<SupabaseClientHolder>().client
         if (client != null) {
-            SupabaseSpaceCollaborationRepository(client)
+            SupabaseHouseholdCollaborationRepository(client)
         } else {
-            UnconfiguredSpaceCollaborationRepository()
+            UnconfiguredHouseholdCollaborationRepository()
         }
     }
-    single<NutritionSpaceSelectionStore> { SettingsNutritionSpaceSelectionStore(get()) }
+    single<NutritionHouseholdSelectionStore> { SettingsNutritionHouseholdSelectionStore(get()) }
     single<GreetingRepository> { GreetingRepositoryImpl() }
     single<NutritionRepository> { NutritionRepositoryImpl(get()) }
     single { NutritionSyncOutbox(get()) }
@@ -87,7 +87,7 @@ private val dataModule = module {
             settings = settings,
             remoteApi = client?.let { NutritionRemoteApi(it) },
             outbox = get(),
-            realtimeSync = client?.let { NutritionSpaceRealtimeSync(it, get()) },
+            realtimeSync = client?.let { NutritionHouseholdRealtimeSync(it, get()) },
             logger = get(),
             diagnostics = get(),
         )

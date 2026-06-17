@@ -1,9 +1,9 @@
 package app.mymultiverse.kmp.presentation.screens.household
 
 import app.mymultiverse.kmp.data.observability.AppLogger
-import app.mymultiverse.kmp.domain.model.sharing.Household
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
+import app.mymultiverse.kmp.presentation.navigation.toNavigationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -36,7 +36,7 @@ class HouseholdMembersEntryScreenModel(
             _state.value = HouseholdMembersEntryState.Loading
             householdRepository.ensureHousehold()
                 .onSuccess { household ->
-                    _state.value = HouseholdMembersEntryState.Ready(household.toContext())
+                    _state.value = HouseholdMembersEntryState.Ready(household.toNavigationContext())
                 }
                 .onFailure { throwable ->
                     logger.recordError(
@@ -48,14 +48,6 @@ class HouseholdMembersEntryScreenModel(
                 }
         }
     }
-
-    private fun Household.toContext(): HouseholdContext =
-        HouseholdContext(
-            id = id,
-            name = name,
-            ownerId = ownerId,
-            ownerDisplayName = ownerDisplayName,
-        )
 
     private fun mapFailure(throwable: Throwable): HouseholdMembersEntryError =
         when (throwable.message) {

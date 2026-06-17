@@ -51,6 +51,7 @@ object HomeTestTags {
     const val HOUSEHOLD_CARD = "home_household_card"
     const val SIGN_OUT_BUTTON = "home_sign_out_button"
     const val EXPORT_DATA_BUTTON = "home_export_personal_data_button"
+    const val DELETE_ACCOUNT_BUTTON = "home_delete_account_button"
     const val APP_VERSION_LABEL = "home_app_version_label"
     const val LOADING_INDICATOR = "home_loading_indicator"
     const val GREETING_LINE = "home_greeting_line"
@@ -73,6 +74,8 @@ fun HomeScreen(
     val inviteActionMessage by screenModel.inviteActionMessage.collectAsState()
     val switchHouseholdPrompt by screenModel.switchHouseholdPrompt.collectAsState()
     val personalDataExportMessage by screenModel.personalDataExportMessage.collectAsState()
+    val deleteAccountMessage by screenModel.deleteAccountMessage.collectAsState()
+    val showDeleteAccountDialog by screenModel.showDeleteAccountDialog.collectAsState()
     val authState by authRepository.authState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val inviteErrorMessage = stringResource(Res.string.auth_pending_invites_error_generic)
@@ -83,7 +86,11 @@ fun HomeScreen(
         sessionEmail,
     )
     val exportSuccessMessage = stringResource(Res.string.home_export_personal_data_success)
+    val exportShareUnavailableMessage = stringResource(Res.string.home_export_personal_data_share_unavailable)
     val exportErrorMessage = stringResource(Res.string.home_export_personal_data_error)
+    val deleteAccountSuccessMessage = stringResource(Res.string.home_delete_account_success)
+    val deleteAccountOwnerMessage = stringResource(Res.string.home_delete_account_error_owner)
+    val deleteAccountErrorMessage = stringResource(Res.string.home_delete_account_error_generic)
     val joinedInviteMessage = (inviteActionMessage as? InviteActionMessage.Joined)?.householdName
         ?.let { name -> stringResource(Res.string.auth_household_joined_success, name) }
 
@@ -100,9 +107,31 @@ fun HomeScreen(
                 snackbarHostState.showSnackbar(exportSuccessMessage)
                 screenModel.clearPersonalDataExportMessage()
             }
+            PersonalDataExportMessage.ShareUnavailable -> {
+                snackbarHostState.showSnackbar(exportShareUnavailableMessage)
+                screenModel.clearPersonalDataExportMessage()
+            }
             PersonalDataExportMessage.Error -> {
                 snackbarHostState.showSnackbar(exportErrorMessage)
                 screenModel.clearPersonalDataExportMessage()
+            }
+            null -> Unit
+        }
+    }
+
+    LaunchedEffect(deleteAccountMessage) {
+        when (deleteAccountMessage) {
+            DeleteAccountMessage.Success -> {
+                snackbarHostState.showSnackbar(deleteAccountSuccessMessage)
+                screenModel.clearDeleteAccountMessage()
+            }
+            DeleteAccountMessage.OwnerMustTransfer -> {
+                snackbarHostState.showSnackbar(deleteAccountOwnerMessage)
+                screenModel.clearDeleteAccountMessage()
+            }
+            DeleteAccountMessage.Error -> {
+                snackbarHostState.showSnackbar(deleteAccountErrorMessage)
+                screenModel.clearDeleteAccountMessage()
             }
             null -> Unit
         }
@@ -149,6 +178,24 @@ fun HomeScreen(
         )
     }
 
+    if (showDeleteAccountDialog) {
+        AlertDialog(
+            onDismissRequest = screenModel::dismissDeleteAccountDialog,
+            title = { Text(stringResource(Res.string.home_delete_account_confirm_title)) },
+            text = { Text(stringResource(Res.string.home_delete_account_confirm_message)) },
+            confirmButton = {
+                Button(onClick = screenModel::confirmDeleteAccount) {
+                    Text(stringResource(Res.string.home_delete_account_confirm_action))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = screenModel::dismissDeleteAccountDialog) {
+                    Text(stringResource(Res.string.auth_pending_invites_switch_cancel))
+                }
+            },
+        )
+    }
+
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -187,6 +234,7 @@ fun HomeScreen(
             },
             onDeclineInvite = screenModel::declineInvite,
             onExportPersonalData = screenModel::exportPersonalData,
+            onDeleteAccount = screenModel::requestDeleteAccount,
             modifier = Modifier.padding(padding),
         )
     }
@@ -199,7 +247,7 @@ fun HomeContent(
     householdName: String?,
     hasActiveHousehold: Boolean,
     isRefreshing: Boolean,
-    pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.SpaceInvite>,
+    pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite>,
     onRefreshClick: () -> Unit,
     onOpenNutrition: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
@@ -207,6 +255,7 @@ fun HomeContent(
     onAcceptInvite: (String) -> Unit,
     onDeclineInvite: (String) -> Unit,
     onExportPersonalData: () -> Unit,
+    onDeleteAccount: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
@@ -342,6 +391,25 @@ fun HomeContent(
                             stringResource(Res.string.home_export_personal_data),
                             style = MaterialTheme.typography.labelMedium,
                             color = SharedJourneyColors.InkMuted,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+            }
+
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    TextButton(
+                        onClick = onDeleteAccount,
+                        modifier = Modifier.testTag(HomeTestTags.DELETE_ACCOUNT_BUTTON),
+                    ) {
+                        Text(
+                            stringResource(Res.string.home_delete_account),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = SharedJourneyColors.TerracottaOrange,
                             fontWeight = FontWeight.Bold,
                         )
                     }

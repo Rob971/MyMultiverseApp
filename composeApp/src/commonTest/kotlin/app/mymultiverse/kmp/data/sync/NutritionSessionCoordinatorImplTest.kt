@@ -15,29 +15,29 @@ import kotlin.test.assertNull
 class NutritionSessionCoordinatorImplTest {
 
     @Test
-    fun activateSpace_switchesToSharedRepositoryWithSpaceId() = runTest {
+    fun activateHousehold_switchesToSharedRepositoryWithHouseholdId() = runTest {
         val coordinator = coordinator()
 
-        coordinator.activateSpace("space-family")
+        coordinator.activateHousehold("household-family")
         advance()
 
-        assertEquals("space-family", coordinator.nutrition.value.spaceId)
+        assertEquals("household-family", coordinator.nutrition.value.householdId)
     }
 
     @Test
     fun deactivate_returnsToPersonalRepository() = runTest {
         val coordinator = coordinator()
 
-        coordinator.activateSpace("space-family")
+        coordinator.activateHousehold("household-family")
         advance()
         coordinator.deactivate()
 
-        assertNull(coordinator.nutrition.value.spaceId)
+        assertNull(coordinator.nutrition.value.householdId)
         assertEquals(NutritionSyncStatus.Idle, coordinator.observeSyncStatus().first())
     }
 
     @Test
-    fun activateSpace_withoutRemote_reportsRemoteUnavailableAfterRefresh() = runTest {
+    fun activateHousehold_withoutRemote_reportsRemoteUnavailableAfterRefresh() = runTest {
         val settings = MapSettings()
         val coordinator = NutritionSessionCoordinatorImpl.create(
             settings = settings,
@@ -48,18 +48,18 @@ class NutritionSessionCoordinatorImplTest {
             diagnostics = TestObservability.diagnostics,
         )
 
-        coordinator.activateSpace("space-offline")
+        coordinator.activateHousehold("household-offline")
         advance()
 
         assertEquals(NutritionSyncStatus.RemoteUnavailable, coordinator.observeSyncStatus().first())
-        assertEquals("space-offline", coordinator.nutrition.value.spaceId)
+        assertEquals("household-offline", coordinator.nutrition.value.householdId)
     }
 
     @Test
-    fun activateSpace_switchesRepositoryBeforeRemoteRefresh() = runTest {
+    fun activateHousehold_switchesRepositoryBeforeRemoteRefresh() = runTest {
         val settings = MapSettings()
         lateinit var coordinator: NutritionSessionCoordinatorImpl
-        val remote = ObservingRemote { coordinator.nutrition.value.spaceId }
+        val remote = ObservingRemote { coordinator.nutrition.value.householdId }
         coordinator = NutritionSessionCoordinatorImpl.create(
             settings = settings,
             remoteApi = remote,
@@ -69,14 +69,14 @@ class NutritionSessionCoordinatorImplTest {
             diagnostics = TestObservability.diagnostics,
         )
 
-        coordinator.activateSpace("space-family")
+        coordinator.activateHousehold("household-family")
 
-        assertEquals("space-family", remote.spaceIdDuringFetch)
-        assertEquals("space-family", coordinator.nutrition.value.spaceId)
+        assertEquals("household-family", remote.householdIdDuringFetch)
+        assertEquals("household-family", coordinator.nutrition.value.householdId)
     }
 
     @Test
-    fun activateSpace_whenRemoteRefreshFails_keepsSharedRepository() = runTest {
+    fun activateHousehold_whenRemoteRefreshFails_keepsSharedRepository() = runTest {
         val settings = MapSettings()
         val coordinator = NutritionSessionCoordinatorImpl.create(
             settings = settings,
@@ -87,14 +87,14 @@ class NutritionSessionCoordinatorImplTest {
             diagnostics = TestObservability.diagnostics,
         )
 
-        coordinator.activateSpace("space-family")
+        coordinator.activateHousehold("household-family")
 
-        assertEquals("space-family", coordinator.nutrition.value.spaceId)
+        assertEquals("household-family", coordinator.nutrition.value.householdId)
         assertEquals(NutritionSyncStatus.RemoteUnavailable, coordinator.observeSyncStatus().first())
     }
 
     @Test
-    fun activateSpace_setsDiagnosticsActiveSpaceId() = runTest {
+    fun activateHousehold_setsDiagnosticsActiveHouseholdId() = runTest {
         val diagnostics = TestObservability.diagnostics
         val coordinator = NutritionSessionCoordinatorImpl.create(
             settings = MapSettings(),
@@ -105,11 +105,35 @@ class NutritionSessionCoordinatorImplTest {
             diagnostics = diagnostics,
         )
 
-        coordinator.activateSpace("space-family")
-        assertEquals("space-family", diagnostics.activeSpaceId)
+        coordinator.activateHousehold("household-family")
+        assertEquals("household-family", diagnostics.activeHouseholdId)
 
         coordinator.deactivate()
-        assertEquals(null, diagnostics.activeSpaceId)
+        assertEquals(null, diagnostics.activeHouseholdId)
+    }
+
+    @Test
+    fun activateHousehold_logsHouseholdActivatedBreadcrumb() = runTest {
+        val crashReporter = RecordingCrashReporter()
+        val logger = app.mymultiverse.kmp.data.observability.AppLogger(
+            crashReporter,
+            TestObservability.diagnostics,
+        )
+        val coordinator = NutritionSessionCoordinatorImpl.create(
+            settings = MapSettings(),
+            remoteApi = null,
+            outbox = NutritionSyncOutbox(MapSettings()),
+            realtimeSync = null,
+            logger = logger,
+            diagnostics = TestObservability.diagnostics,
+        )
+
+        coordinator.activateHousehold("household-family")
+
+        assertEquals(
+            listOf("nutrition_household_activated household_id=household-family"),
+            crashReporter.breadcrumbs,
+        )
     }
 
     private fun coordinator(): NutritionSessionCoordinatorImpl =
@@ -127,23 +151,37 @@ class NutritionSessionCoordinatorImplTest {
     }
 
     private class ObservingRemote(
-        private val activeSpaceId: () -> String?,
+        private val activeHouseholdId: () -> String?,
     ) : NutritionRemoteDataSource {
-        var spaceIdDuringFetch: String? = null
+        var householdIdDuringFetch: String? = null
 
-        override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> {
-            spaceIdDuringFetch = activeSpaceId()
+        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
+            householdIdDuringFetch = activeHouseholdId()
             return emptyList()
         }
 
-        override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) = Unit
+        override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
 
     private object FailingFetchRemote : NutritionRemoteDataSource {
-        override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> {
+        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
             throw IllegalStateException("offline")
         }
 
-        override suspend fun upsert(spaceId: String, weekKey: String, dataKind: String, payload: String) = Unit
+        override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
+    }
+
+    private class RecordingCrashReporter : app.mymultiverse.kmp.domain.observability.CrashReporter {
+        val breadcrumbs = mutableListOf<String>()
+
+        override fun initialize() = Unit
+
+        override fun setUserId(userId: String?) = Unit
+
+        override fun logBreadcrumb(message: String) {
+            breadcrumbs += message
+        }
+
+        override fun recordNonFatal(throwable: Throwable, context: Map<String, String>) = Unit
     }
 }

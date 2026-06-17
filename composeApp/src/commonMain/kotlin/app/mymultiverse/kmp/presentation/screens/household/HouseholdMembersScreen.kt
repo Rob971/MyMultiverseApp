@@ -29,9 +29,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.model.auth.AuthState
-import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberKind
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
@@ -40,9 +41,14 @@ import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_add_dependent
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_add_person
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_cancel
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_confirm_add
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_dependent_added
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_dependent_confirm
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_dependent_hint
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_dependent_name_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_email_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_email_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_empty
@@ -72,6 +78,7 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_member
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_leave_gdpr_note
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_owner_transfer_required
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_sent
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_kind_dependent
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_loading
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_member_added
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_owner_fallback
@@ -96,6 +103,8 @@ object HouseholdMembersTestTags {
     const val MEMBER_ROW = "household_members_row"
     const val PENDING_INVITE_ROW = "household_members_pending_invite"
     const val TRANSFER_OWNERSHIP_BUTTON = "household_members_transfer_ownership"
+    const val TRANSFER_DIALOG = "household_members_transfer_dialog"
+    const val ADD_DEPENDANT_BUTTON = "household_members_add_dependant"
 }
 
 @Composable
@@ -118,6 +127,7 @@ fun HouseholdMembersScreen(
                 uiState.invitedEmailForSuccess.orEmpty(),
             )
             HouseholdMembersSuccess.MemberAdded -> stringResource(Res.string.sharing_members_member_added)
+            HouseholdMembersSuccess.DependantAdded -> stringResource(Res.string.sharing_members_dependent_added)
             HouseholdMembersSuccess.OwnershipTransferred ->
                 stringResource(
                     Res.string.sharing_members_transfer_success,
@@ -129,7 +139,7 @@ fun HouseholdMembersScreen(
 
     LaunchedEffect(household.id, household.ownerId, household.ownerDisplayName, currentUserId) {
         screenModel.bindHousehold(
-            spaceId = household.id,
+            householdId = household.id,
             ownerId = household.ownerId,
             ownerDisplayName = household.ownerDisplayName ?: ownerFallback,
             currentUserId = currentUserId,
@@ -191,6 +201,22 @@ fun HouseholdMembersScreen(
                             Text(stringResource(Res.string.sharing_members_add_person))
                         }
                     }
+                    item {
+                        OutlinedButton(
+                            onClick = screenModel::openAddDependantDialog,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(HouseholdMembersTestTags.ADD_DEPENDANT_BUTTON),
+                        ) {
+                            Text(stringResource(Res.string.sharing_members_add_dependent))
+                        }
+                    }
+                    item {
+                        Text(
+                            text = stringResource(Res.string.sharing_members_dependent_hint),
+                            color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
+                        )
+                    }
                 }
                 if (uiState.outboundInvites.isNotEmpty()) {
                     item {
@@ -212,7 +238,7 @@ fun HouseholdMembersScreen(
                         MemberRow(
                             member = member,
                             canManage = uiState.canManageMembers,
-                            onRemove = { screenModel.removeMember(member.id, household.id) },
+                            onRemove = { screenModel.removeMember(member, household.id) },
                         )
                     }
                 }
@@ -297,13 +323,13 @@ fun HouseholdMembersScreen(
                     Text(stringResource(Res.string.sharing_members_select_role))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FilterChip(
-                            selected = uiState.selectedRole == SpaceMemberRole.Editor,
-                            onClick = { screenModel.onRoleChange(SpaceMemberRole.Editor) },
+                            selected = uiState.selectedRole == HouseholdMemberRole.Editor,
+                            onClick = { screenModel.onRoleChange(HouseholdMemberRole.Editor) },
                             label = { Text(stringResource(Res.string.sharing_members_role_editor)) },
                         )
                         FilterChip(
-                            selected = uiState.selectedRole == SpaceMemberRole.Viewer,
-                            onClick = { screenModel.onRoleChange(SpaceMemberRole.Viewer) },
+                            selected = uiState.selectedRole == HouseholdMemberRole.Viewer,
+                            onClick = { screenModel.onRoleChange(HouseholdMemberRole.Viewer) },
                             label = { Text(stringResource(Res.string.sharing_members_role_viewer)) },
                         )
                     }
@@ -382,11 +408,49 @@ fun HouseholdMembersScreen(
         )
     }
 
+    if (uiState.showAddDependantDialog) {
+        AlertDialog(
+            onDismissRequest = screenModel::dismissAddDependantDialog,
+            title = { Text(stringResource(Res.string.sharing_members_add_dependent)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = uiState.dependantNameInput,
+                        onValueChange = screenModel::onDependantNameChange,
+                        label = { Text(stringResource(Res.string.sharing_members_dependent_name_label)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    if (dialogErrorMessage != null) {
+                        Text(
+                            text = dialogErrorMessage,
+                            color = SharedJourneyColors.TerracottaOrange,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { screenModel.submitAddDependant(household.id) },
+                    enabled = !uiState.isSaving,
+                ) {
+                    Text(stringResource(Res.string.sharing_members_dependent_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = screenModel::dismissAddDependantDialog) {
+                    Text(stringResource(Res.string.sharing_members_cancel))
+                }
+            },
+        )
+    }
+
     if (uiState.showTransferDialog) {
         val selectedId = uiState.selectedTransferMemberId
         val selectedMember = uiState.transferCandidates.find { it.referenceId == selectedId }
         AlertDialog(
             onDismissRequest = screenModel::dismissTransferDialog,
+            modifier = Modifier.testTag(HouseholdMembersTestTags.TRANSFER_DIALOG),
             title = { Text(stringResource(Res.string.sharing_members_transfer_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -459,14 +523,17 @@ private fun mapErrorMessage(error: HouseholdMembersError): String =
 
 @Composable
 private fun MemberRow(
-    member: SpaceMember,
+    member: HouseholdMember,
     canManage: Boolean,
     onRemove: () -> Unit,
 ) {
-    val roleLabel = when (member.role) {
-        SpaceMemberRole.Owner -> stringResource(Res.string.sharing_members_role_owner)
-        SpaceMemberRole.Editor -> stringResource(Res.string.sharing_members_role_editor)
-        SpaceMemberRole.Viewer -> stringResource(Res.string.sharing_members_role_viewer)
+    val roleLabel = when (member.kind) {
+        HouseholdMemberKind.Dependant -> stringResource(Res.string.sharing_members_kind_dependent)
+        else -> when (member.role) {
+            HouseholdMemberRole.Owner -> stringResource(Res.string.sharing_members_role_owner)
+            HouseholdMemberRole.Editor -> stringResource(Res.string.sharing_members_role_editor)
+            HouseholdMemberRole.Viewer -> stringResource(Res.string.sharing_members_role_viewer)
+        }
     }
 
     Row(
@@ -483,7 +550,7 @@ private fun MemberRow(
                 color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
             )
         }
-        if (canManage && member.role != SpaceMemberRole.Owner) {
+        if (canManage && member.role != HouseholdMemberRole.Owner) {
             TextButton(onClick = onRemove) {
                 Text(stringResource(Res.string.sharing_members_remove))
             }
@@ -492,11 +559,11 @@ private fun MemberRow(
 }
 
 @Composable
-private fun PendingInviteRow(invite: SpaceInvite) {
+private fun PendingInviteRow(invite: HouseholdInvite) {
     val roleLabel = when (invite.role) {
-        SpaceMemberRole.Owner -> stringResource(Res.string.sharing_members_role_owner)
-        SpaceMemberRole.Editor -> stringResource(Res.string.sharing_members_role_editor)
-        SpaceMemberRole.Viewer -> stringResource(Res.string.sharing_members_role_viewer)
+        HouseholdMemberRole.Owner -> stringResource(Res.string.sharing_members_role_owner)
+        HouseholdMemberRole.Editor -> stringResource(Res.string.sharing_members_role_editor)
+        HouseholdMemberRole.Viewer -> stringResource(Res.string.sharing_members_role_viewer)
     }
 
     Column(

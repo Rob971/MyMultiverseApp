@@ -6,6 +6,7 @@ import app.mymultiverse.kmp.domain.model.auth.AuthUser
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.functions.functions
 import io.github.jan.supabase.auth.providers.Apple
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
@@ -89,6 +90,12 @@ class SupabaseAuthRepository(
     override suspend fun exportPersonalData(): Result<String> = runCatching {
         client.auth.awaitInitialization()
         client.postgrest.rpc("export_my_personal_data").data
+    }
+
+    override suspend fun deleteAccount(): Result<Unit> = runCatching {
+        client.auth.awaitInitialization()
+        client.functions.invoke("delete-account")
+        client.auth.signOut()
     }
 
     private suspend fun processOAuthRedirect(url: String) {

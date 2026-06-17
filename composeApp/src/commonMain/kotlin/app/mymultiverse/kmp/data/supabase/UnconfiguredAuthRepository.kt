@@ -28,4 +28,7 @@ class UnconfiguredAuthRepository : AuthRepository {
 
     override suspend fun exportPersonalData(): Result<String> =
         Result.failure(IllegalStateException("supabase_not_configured"))
+
+    override suspend fun deleteAccount(): Result<Unit> =
+        Result.failure(IllegalStateException("supabase_not_configured"))
 }

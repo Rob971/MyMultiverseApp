@@ -2,8 +2,8 @@
 <resources>
     <string name="action_add_dream">أضف حلماً</string>
     <string name="home_banner_headline">مرحباً بك في بيتك</string>
-    <string name="home_banner_loading">جاري تحميل مساحة عائلتك...</string>
-    <string name="home_banner_description">مساحة مشتركة لتنمية أحلام عائلتنا، وتتبع أهداف S.M.A.R.T. وتقوية روابطنا اليومية.</string>
+    <string name="home_banner_loading">جاري تحميل أسرتك...</string>
+    <string name="home_banner_description">أسرة مشتركة لتنمية أحلام عائلتنا، وتتبع أهداف S.M.A.R.T. وتقوية روابطنا اليومية.</string>
     <string name="home_dreams_title">لوجستيات عائلتنا</string>
     <string name="home_logistics_nutrition_title">التغذية</string>
     <string name="home_household_title">الأسرة</string>
@@ -26,7 +26,7 @@
     <string name="home_logistics_budget_title">الميزانية</string>
     <string name="home_logistics_budget_description">الإنفاق والادخار والمالية العائلية المشتركة.</string>
     <string name="nutrition_hub_title">التغذية</string>
-    <string name="nutrition_entry_loading">جارٍ فتح مساحة التغذية للأسرة...</string>
+    <string name="nutrition_entry_loading">جارٍ فتح تغذية الأسرة...</string>
     <string name="nutrition_entry_error_generic">تعذر فتح التغذية. حاول مرة أخرى.</string>
     <string name="nutrition_entry_error_not_configured">لم يتم إعداد Supabase في هذا الإصدار.</string>
     <string name="nutrition_entry_retry">حاول مرة أخرى</string>
@@ -649,25 +649,7 @@
     <string name="auth_error_signup_disabled">التسجيلات الجديدة غير متاحة حاليًا.</string>
     <string name="auth_success_email_confirmation">تم إنشاء الحساب. تحقق من بريدك للتأكيد ثم سجّل الدخول.</string>
     <string name="auth_loading">جارٍ تسجيل الدخول...</string>
-    <string name="sharing_nutrition_spaces_title">مساحات مشاركة التغذية</string>
-    <string name="sharing_nutrition_spaces_subtitle">اختر أو أنشئ مساحة وحدد من يشارك التسوق والخطة الأسبوعية ونصائح الذكاء الاصطناعي.</string>
-    <string name="sharing_nutrition_spaces_empty">لا توجد مساحات بعد. أنشئ مساحة لدعوة العائلة أو الأصدقاء.</string>
-    <string name="sharing_nutrition_spaces_create_button">إنشاء مساحة مشاركة</string>
-    <string name="sharing_nutrition_spaces_create_title">مساحة تغذية جديدة</string>
-    <string name="sharing_nutrition_spaces_name_label">اسم المساحة</string>
-    <string name="sharing_nutrition_spaces_name_hint">مثال: المنزل مع سارة، تسوق التزلج</string>
-    <string name="sharing_nutrition_spaces_features_title">الميزات المشتركة</string>
-    <string name="sharing_nutrition_spaces_create_confirm">إنشاء المساحة</string>
-    <string name="sharing_nutrition_spaces_create_cancel">إلغاء</string>
-    <string name="sharing_nutrition_spaces_feature_grocery">التسوق</string>
-    <string name="sharing_nutrition_spaces_feature_meal_plan">التخطيط الأسبوعي</string>
-    <string name="sharing_nutrition_spaces_feature_ai_advice">نصائح التغذية بالذكاء الاصطناعي</string>
-    <string name="sharing_nutrition_spaces_error_generic">تعذر تحميل المساحات. حاول مرة أخرى.</string>
-    <string name="sharing_nutrition_spaces_error_name_required">أدخل اسمًا لهذه المساحة.</string>
-    <string name="sharing_nutrition_spaces_error_features_required">اختر ميزة مشتركة واحدة على الأقل.</string>
-    <string name="sharing_nutrition_spaces_error_not_configured">لم يتم إعداد Supabase في هذا الإصدار.</string>
-    <string name="sharing_nutrition_spaces_loading">جارٍ تحميل المساحات...</string>
-    <string name="sharing_hub_manage_members">الأشخاص والمجموعات</string>
+    <string name="household_manage_members">إدارة أعضاء الأسرة</string>
     <string name="sharing_members_title">أعضاء الأسرة</string>
     <string name="sharing_members_subtitle">ادعُ أشخاصًا بالبريد الإلكتروني. يمكن للمحررين تغيير القوائم والخطط المشتركة؛ ويمكن للمشاهدين قراءتها. تنطبق هذه الأسرة على التغذية والمغامرات والميزانية.</string>
     <string name="sharing_members_empty">لا يوجد أعضاء بعد. أضف شخصًا لبدء المشاركة.</string>
@@ -713,7 +695,7 @@
     <string name="sharing_members_role_editor">محرر</string>
     <string name="sharing_members_role_viewer">مشاهد</string>
     <string name="sharing_members_role_label">الدور: %1$s</string>
-    <string name="sharing_members_owner_fallback">مالك المساحة</string>
+    <string name="sharing_members_owner_fallback">مالك الأسرة</string>
     <string name="sharing_members_manage_group">إدارة المجموعة</string>
     <string name="sharing_members_group_members_title">أعضاء المجموعة</string>
     <string name="sharing_members_add_to_group">إضافة إلى المجموعة</string>
@@ -750,6 +732,20 @@
     <string name="home_export_personal_data">تصدير بياناتي</string>
     <string name="home_export_personal_data_success">تصدير البيانات الشخصية جاهز.</string>
     <string name="home_export_personal_data_error">تعذر تصدير بياناتك. حاول مرة أخرى.</string>
+    <string name="home_export_personal_data_share_unavailable">Personal data copied — share sheet unavailable on this device.</string>
+    <string name="home_delete_account">Delete my account</string>
+    <string name="home_delete_account_confirm_title">Delete account?</string>
+    <string name="home_delete_account_confirm_message">This permanently removes your account and personal data. Shared household content may remain for other members.</string>
+    <string name="home_delete_account_confirm_action">Delete account</string>
+    <string name="home_delete_account_success">Your account was deleted.</string>
+    <string name="home_delete_account_error_owner">Transfer ownership or dissolve your household before deleting your account.</string>
+    <string name="home_delete_account_error_generic">Could not delete your account. Try again.</string>
+    <string name="sharing_members_add_dependent">Add dependant</string>
+    <string name="sharing_members_dependent_name_label">Display name</string>
+    <string name="sharing_members_dependent_confirm">Add</string>
+    <string name="sharing_members_dependent_added">Dependant added.</string>
+    <string name="sharing_members_dependent_hint">Children and others without their own login appear here only.</string>
+    <string name="sharing_members_kind_dependent">Dependant</string>
         <string name="auth_household_joined_success">انضممت إلى %1$s.</string>
         <string name="household_gate_create_divider">أو إنشاء أسرة جديدة</string>
 </resources>

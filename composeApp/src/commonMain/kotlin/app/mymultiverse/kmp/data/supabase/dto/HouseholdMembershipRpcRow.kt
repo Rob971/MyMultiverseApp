@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class HouseholdMembershipRpcRow(
     val status: String,
-    @SerialName("space_id") val spaceId: String? = null,
-    @SerialName("space_name") val spaceName: String? = null,
+    @SerialName("household_id") val householdId: String? = null,
+    @SerialName("household_name") val householdName: String? = null,
     @SerialName("owner_id") val ownerId: String? = null,
     @SerialName("owner_display_name") val ownerDisplayName: String? = null,
     val role: String? = null,

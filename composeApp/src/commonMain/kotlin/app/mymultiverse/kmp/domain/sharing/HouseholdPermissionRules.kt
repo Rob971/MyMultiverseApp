@@ -1,9 +1,9 @@
 package app.mymultiverse.kmp.domain.sharing
 
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 
-fun SpaceMemberRole.canWriteHouseholdData(): Boolean =
-    this == SpaceMemberRole.Owner || this == SpaceMemberRole.Editor
+fun HouseholdMemberRole.canWriteHouseholdData(): Boolean =
+    this == HouseholdMemberRole.Owner || this == HouseholdMemberRole.Editor
 
-fun SpaceMemberRole.canManageHouseholdMembers(): Boolean =
-    this == SpaceMemberRole.Owner
+fun HouseholdMemberRole.canManageHouseholdMembers(): Boolean =
+    this == HouseholdMemberRole.Owner

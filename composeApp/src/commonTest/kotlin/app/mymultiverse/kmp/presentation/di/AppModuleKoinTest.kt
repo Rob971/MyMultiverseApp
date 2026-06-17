@@ -6,11 +6,13 @@ import app.mymultiverse.kmp.domain.observability.CrashReporter
 import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.model.auth.AuthUser
+import app.mymultiverse.kmp.domain.platform.PersonalDataExporter
+import app.mymultiverse.kmp.domain.platform.PushNotificationRegistrar
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
-import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import app.mymultiverse.kmp.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
@@ -64,7 +66,9 @@ class AppModuleKoinTest : KoinTest {
             )
         }
         single<HouseholdRepository> { FakeHouseholdRepository() }
-        single<SpaceCollaborationRepository> { FakeSpaceCollaborationRepository() }
+        single<HouseholdCollaborationRepository> { FakeHouseholdCollaborationRepository() }
+        single<PersonalDataExporter> { FakePersonalDataExporter() }
+        single<PushNotificationRegistrar> { FakePushNotificationRegistrar() }
     }
 
     private val testAppModule = module {
@@ -144,13 +148,13 @@ class AppModuleKoinTest : KoinTest {
     }
 
     @Test
-    fun activateSpace_switchesActiveNutritionToSharedScope() = runTest(testDispatcher) {
+    fun activateHousehold_switchesActiveNutritionToSharedScope() = runTest(testDispatcher) {
         val coordinator = get<NutritionSessionCoordinator>()
 
-        coordinator.activateSpace("koin-space")
+        coordinator.activateHousehold("koin-household")
         advanceUntilIdle()
 
-        assertEquals("koin-space", coordinator.nutrition.value.spaceId)
+        assertEquals("koin-household", coordinator.nutrition.value.householdId)
         assertEquals(NutritionSyncStatus.RemoteUnavailable, coordinator.observeSyncStatus().first())
     }
 

@@ -2,8 +2,8 @@
 <resources>
     <string name="action_add_dream">Aggiungi Sogno</string>
     <string name="home_banner_headline">BENVENUTI A CASA</string>
-    <string name="home_banner_loading">Caricando il tuo spazio famiglia...</string>
-    <string name="home_banner_description">Uno spazio condiviso per coltivare i sogni della nostra famiglia, tracciare obiettivi S.M.A.R.T. e rafforzare i nostri legami quotidiani.</string>
+    <string name="home_banner_loading">Caricamento del tuo nucleo familiare...</string>
+    <string name="home_banner_description">Un nucleo familiare condiviso per coltivare i sogni della nostra famiglia, tracciare obiettivi S.M.A.R.T. e rafforzare i nostri legami quotidiani.</string>
     <string name="home_dreams_title">la nostra logistica di famiglia</string>
     <string name="home_logistics_nutrition_title">Nutrizione</string>
     <string name="home_household_title">Famiglia</string>
@@ -26,7 +26,7 @@
     <string name="home_logistics_budget_title">Budget</string>
     <string name="home_logistics_budget_description">Spese, risparmi e finanze familiari condivise.</string>
     <string name="nutrition_hub_title">Nutrizione</string>
-    <string name="nutrition_entry_loading">Apertura dello spazio nutrizione della famiglia...</string>
+    <string name="nutrition_entry_loading">Apertura della nutrizione del nucleo familiare...</string>
     <string name="nutrition_entry_error_generic">Impossibile aprire la nutrizione. Riprova.</string>
     <string name="nutrition_entry_error_not_configured">Supabase non è configurato in questa build.</string>
     <string name="nutrition_entry_retry">Riprova</string>
@@ -649,25 +649,7 @@
     <string name="auth_error_signup_disabled">Le nuove registrazioni non sono disponibili al momento.</string>
     <string name="auth_success_email_confirmation">Account creato. Controlla la tua email per confermare, poi accedi.</string>
     <string name="auth_loading">Accesso in corso...</string>
-    <string name="sharing_nutrition_spaces_title">Spazi condivisi nutrizione</string>
-    <string name="sharing_nutrition_spaces_subtitle">Scegli o crea uno spazio e decidi chi condivide spesa, piano settimanale e consigli AI.</string>
-    <string name="sharing_nutrition_spaces_empty">Nessuno spazio condiviso. Creane uno per invitare famiglia o amici.</string>
-    <string name="sharing_nutrition_spaces_create_button">Crea spazio condiviso</string>
-    <string name="sharing_nutrition_spaces_create_title">Nuovo spazio nutrizione</string>
-    <string name="sharing_nutrition_spaces_name_label">Nome spazio</string>
-    <string name="sharing_nutrition_spaces_name_hint">es. Casa con Sara, Spesa sci</string>
-    <string name="sharing_nutrition_spaces_features_title">Funzioni condivise</string>
-    <string name="sharing_nutrition_spaces_create_confirm">Crea spazio</string>
-    <string name="sharing_nutrition_spaces_create_cancel">Annulla</string>
-    <string name="sharing_nutrition_spaces_feature_grocery">Spesa</string>
-    <string name="sharing_nutrition_spaces_feature_meal_plan">Piano settimanale</string>
-    <string name="sharing_nutrition_spaces_feature_ai_advice">Consigli AI nutrizione</string>
-    <string name="sharing_nutrition_spaces_error_generic">Impossibile caricare gli spazi. Riprova.</string>
-    <string name="sharing_nutrition_spaces_error_name_required">Inserisci un nome per questo spazio.</string>
-    <string name="sharing_nutrition_spaces_error_features_required">Seleziona almeno una funzione condivisa.</string>
-    <string name="sharing_nutrition_spaces_error_not_configured">Supabase non è configurato in questa build.</string>
-    <string name="sharing_nutrition_spaces_loading">Caricamento spazi...</string>
-    <string name="sharing_hub_manage_members">Persone e gruppi</string>
+    <string name="household_manage_members">Gestisci membri del nucleo familiare</string>
     <string name="sharing_members_title">Membri della famiglia</string>
     <string name="sharing_members_subtitle">Invita persone via email. Gli editor possono modificare liste e piani condivisi; i visualizzatori possono leggerli. Questa famiglia vale per nutrizione, avventure e budget.</string>
     <string name="sharing_members_empty">Nessun membro ancora. Aggiungi qualcuno per iniziare a condividere.</string>
@@ -713,7 +695,7 @@
     <string name="sharing_members_role_editor">Editor</string>
     <string name="sharing_members_role_viewer">Visualizzatore</string>
     <string name="sharing_members_role_label">Ruolo: %1$s</string>
-    <string name="sharing_members_owner_fallback">Proprietario dello spazio</string>
+    <string name="sharing_members_owner_fallback">Titolare del nucleo familiare</string>
     <string name="sharing_members_manage_group">Gestisci gruppo</string>
     <string name="sharing_members_group_members_title">Membri del gruppo</string>
     <string name="sharing_members_add_to_group">Aggiungi al gruppo</string>
@@ -750,6 +732,20 @@
     <string name="home_export_personal_data">Esporta i miei dati</string>
     <string name="home_export_personal_data_success">L'esportazione dei dati personali è pronta.</string>
     <string name="home_export_personal_data_error">Impossibile esportare i dati. Riprova.</string>
+    <string name="home_export_personal_data_share_unavailable">Personal data copied — share sheet unavailable on this device.</string>
+    <string name="home_delete_account">Delete my account</string>
+    <string name="home_delete_account_confirm_title">Delete account?</string>
+    <string name="home_delete_account_confirm_message">This permanently removes your account and personal data. Shared household content may remain for other members.</string>
+    <string name="home_delete_account_confirm_action">Delete account</string>
+    <string name="home_delete_account_success">Your account was deleted.</string>
+    <string name="home_delete_account_error_owner">Transfer ownership or dissolve your household before deleting your account.</string>
+    <string name="home_delete_account_error_generic">Could not delete your account. Try again.</string>
+    <string name="sharing_members_add_dependent">Add dependant</string>
+    <string name="sharing_members_dependent_name_label">Display name</string>
+    <string name="sharing_members_dependent_confirm">Add</string>
+    <string name="sharing_members_dependent_added">Dependant added.</string>
+    <string name="sharing_members_dependent_hint">Children and others without their own login appear here only.</string>
+    <string name="sharing_members_kind_dependent">Dependant</string>
         <string name="auth_household_joined_success">Ti sei unito a %1$s.</string>
         <string name="household_gate_create_divider">Oppure crea una nuova famiglia</string>
 </resources>

@@ -6,12 +6,14 @@ import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.auth.resolvedDisplayName
 import app.mymultiverse.kmp.domain.model.sharing.Household
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
-import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
-import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import app.mymultiverse.kmp.domain.repository.HouseholdCollaborationRepository
+import app.mymultiverse.kmp.domain.platform.PersonalDataExporter
+import app.mymultiverse.kmp.domain.platform.PushNotificationRegistrar
 import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
 import app.mymultiverse.kmp.presentation.screens.household.SwitchHouseholdPrompt
@@ -30,8 +32,10 @@ class HomeScreenModel(
     private val getGreetingUseCase: GetGreetingUseCase,
     private val authRepository: AuthRepository,
     private val householdRepository: HouseholdRepository,
-    private val collaborationRepository: SpaceCollaborationRepository,
+    private val collaborationRepository: HouseholdCollaborationRepository,
     private val sessionCoordinator: NutritionSessionCoordinator,
+    private val personalDataExporter: PersonalDataExporter,
+    private val pushNotificationRegistrar: PushNotificationRegistrar,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
     private val _greeting = MutableStateFlow<Greeting?>(null)
@@ -56,7 +60,7 @@ class HomeScreenModel(
     private val _switchHouseholdPrompt = MutableStateFlow<SwitchHouseholdPrompt?>(null)
     val switchHouseholdPrompt: StateFlow<SwitchHouseholdPrompt?> = _switchHouseholdPrompt.asStateFlow()
 
-    val pendingInvites: StateFlow<List<SpaceInvite>> = collaborationRepository
+    val pendingInvites: StateFlow<List<HouseholdInvite>> = collaborationRepository
         .observePendingInvites()
         .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
@@ -95,6 +99,15 @@ class HomeScreenModel(
         }
         refreshPendingInvitesInBackground()
         refreshHouseholdInBackground()
+        registerPushNotificationsIfAuthenticated()
+    }
+
+    private fun registerPushNotificationsIfAuthenticated() {
+        scope.launch {
+            if (authRepository.authState.value is AuthState.Authenticated) {
+                runCatching { pushNotificationRegistrar.registerCurrentDeviceToken() }
+            }
+        }
     }
 
     private fun refreshHouseholdInBackground() {
@@ -130,25 +143,65 @@ class HomeScreenModel(
     fun exportPersonalData() {
         scope.launch {
             authRepository.exportPersonalData()
-                .onSuccess { _personalDataExportMessage.value = PersonalDataExportMessage.Success }
+                .onSuccess { json ->
+                    val shared = personalDataExporter.shareJson("mymultiverse-personal-data.json", json)
+                    _personalDataExportMessage.value = when {
+                        shared -> PersonalDataExportMessage.Success
+                        else -> PersonalDataExportMessage.ShareUnavailable
+                    }
+                }
                 .onFailure { _personalDataExportMessage.value = PersonalDataExportMessage.Error }
         }
+    }
+
+    private val _deleteAccountMessage = MutableStateFlow<DeleteAccountMessage?>(null)
+    val deleteAccountMessage: StateFlow<DeleteAccountMessage?> = _deleteAccountMessage.asStateFlow()
+
+    private val _showDeleteAccountDialog = MutableStateFlow(false)
+    val showDeleteAccountDialog: StateFlow<Boolean> = _showDeleteAccountDialog.asStateFlow()
+
+    fun requestDeleteAccount() {
+        _showDeleteAccountDialog.value = true
+    }
+
+    fun dismissDeleteAccountDialog() {
+        _showDeleteAccountDialog.value = false
+    }
+
+    fun confirmDeleteAccount() {
+        _showDeleteAccountDialog.value = false
+        scope.launch {
+            sessionCoordinator.deactivate()
+            authRepository.deleteAccount()
+                .onSuccess { _deleteAccountMessage.value = DeleteAccountMessage.Success }
+                .onFailure { throwable ->
+                    _deleteAccountMessage.value = when (throwable.message) {
+                        CollaborationErrorCodes.OWNER_MUST_TRANSFER_OR_DISSOLVE ->
+                            DeleteAccountMessage.OwnerMustTransfer
+                        else -> DeleteAccountMessage.Error
+                    }
+                }
+        }
+    }
+
+    fun clearDeleteAccountMessage() {
+        _deleteAccountMessage.value = null
     }
 
     fun clearPersonalDataExportMessage() {
         _personalDataExportMessage.value = null
     }
 
-    fun onAcceptInviteClicked(invite: SpaceInvite) {
+    fun onAcceptInviteClicked(invite: HouseholdInvite) {
         if (latestMembershipStatus is HouseholdMembershipStatus.Active) {
             val currentName = (latestMembershipStatus as HouseholdMembershipStatus.Active).household.name
             _switchHouseholdPrompt.value = SwitchHouseholdPrompt(
                 inviteId = invite.id,
-                invitedHouseholdName = invite.spaceName,
+                invitedHouseholdName = invite.householdName,
                 currentHouseholdName = currentName,
             )
         } else {
-            acceptInvite(invite.id, invite.spaceName)
+            acceptInvite(invite.id, invite.householdName)
         }
     }
 
@@ -206,13 +259,13 @@ class HomeScreenModel(
         if (status !is HouseholdMembershipStatus.Active) return Result.success(Unit)
         sessionCoordinator.deactivate()
         return when (status.role) {
-            SpaceMemberRole.Owner -> householdRepository.dissolveHousehold()
+            HouseholdMemberRole.Owner -> householdRepository.dissolveHousehold()
             else -> householdRepository.leaveHousehold()
         }
     }
 
-    private suspend fun activateNutritionSession(spaceId: String) {
-        runCatching { sessionCoordinator.activateSpace(spaceId) }
+    private suspend fun activateNutritionSession(householdId: String) {
+        runCatching { sessionCoordinator.activateHousehold(householdId) }
     }
 
     private fun displayNameForAuthState(state: AuthState): String? =

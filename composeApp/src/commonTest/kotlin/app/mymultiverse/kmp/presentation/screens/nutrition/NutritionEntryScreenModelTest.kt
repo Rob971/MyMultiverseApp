@@ -5,7 +5,7 @@ import app.mymultiverse.kmp.domain.sharing.DefaultNutritionSharingFeatures
 import app.mymultiverse.kmp.data.observability.TestObservability
 import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
-import app.mymultiverse.kmp.presentation.screens.nutrition.spaces.FakeNutritionSpaceSelectionStore
+import app.mymultiverse.kmp.presentation.screens.nutrition.FakeNutritionHouseholdSelectionStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -35,9 +35,9 @@ class NutritionEntryScreenModelTest {
     }
 
     @Test
-    fun ensureHousehold_resolvesSpaceAndActivatesSession() = runTest(testDispatcher) {
+    fun ensureHousehold_resolvesHouseholdAndActivatesSession() = runTest(testDispatcher) {
         val householdRepository = FakeHouseholdRepository()
-        val selectionStore = FakeNutritionSpaceSelectionStore()
+        val selectionStore = FakeNutritionHouseholdSelectionStore()
         val sessionCoordinator = FakeNutritionSessionCoordinator(
             initialRepository = app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl(
                 com.russhwolf.settings.MapSettings(),
@@ -56,9 +56,20 @@ class NutritionEntryScreenModelTest {
 
         val ready = model.state.value
         assertIs<NutritionEntryState.Ready>(ready)
-        assertEquals("household-space-1", ready.space.id)
-        assertEquals("household-space-1", selectionStore.activeSpaceId.value)
-        assertEquals("household-space-1", sessionCoordinator.activatedSpaceId)
+        assertEquals("household-1", ready.household.id)
+        assertEquals("Our household", ready.household.name)
+        assertEquals("test-user", ready.household.ownerId)
+        assertEquals("Test User", ready.household.ownerDisplayName)
+        assertEquals(
+            setOf(
+                app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature.Grocery,
+                app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature.MealPlan,
+                app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature.AiAdvice,
+            ),
+            ready.household.nutritionFeatures,
+        )
+        assertEquals("household-1", selectionStore.activeHouseholdId.value)
+        assertEquals("household-1", sessionCoordinator.activatedHouseholdId)
         assertEquals(1, householdRepository.ensureCalls)
     }
 
@@ -66,7 +77,7 @@ class NutritionEntryScreenModelTest {
     fun ensureHousehold_appliesDefaultFeaturesWhenHouseholdReturnsEmpty() = runTest(testDispatcher) {
         val householdRepository = FakeHouseholdRepository(
             household = Household(
-                id = "household-space-1",
+                id = "household-1",
                 name = "Legacy household",
                 ownerId = "test-user",
                 ownerDisplayName = "Test User",
@@ -75,7 +86,7 @@ class NutritionEntryScreenModelTest {
         )
         val model = NutritionEntryScreenModel(
             householdRepository = householdRepository,
-            selectionStore = FakeNutritionSpaceSelectionStore(),
+            selectionStore = FakeNutritionHouseholdSelectionStore(),
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl(
                     com.russhwolf.settings.MapSettings(),
@@ -90,7 +101,7 @@ class NutritionEntryScreenModelTest {
 
         val ready = model.state.value
         assertIs<NutritionEntryState.Ready>(ready)
-        assertEquals(DefaultNutritionSharingFeatures, ready.space.features)
+        assertEquals(DefaultNutritionSharingFeatures, ready.household.nutritionFeatures)
     }
 
     @Test
@@ -99,7 +110,7 @@ class NutritionEntryScreenModelTest {
             householdRepository = FakeHouseholdRepository(
                 ensureFailure = IllegalStateException("supabase_not_configured"),
             ),
-            selectionStore = FakeNutritionSpaceSelectionStore(),
+            selectionStore = FakeNutritionHouseholdSelectionStore(),
             sessionCoordinator = FakeNutritionSessionCoordinator(
                 initialRepository = app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl(
                     com.russhwolf.settings.MapSettings(),

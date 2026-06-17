@@ -1,8 +1,8 @@
 package app.mymultiverse.kmp.domain.sharing
 
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberKind
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberKind
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -15,12 +15,12 @@ class HouseholdMemberRulesTest {
         val members = listOf(
             person("owner", "Owner"),
             person("mate", "Roommate"),
-            SpaceMember(
+            HouseholdMember(
                 id = "legacy-group",
-                spaceId = "space-1",
-                kind = SpaceMemberKind.Group,
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Group,
                 displayName = "Old group",
-                role = SpaceMemberRole.Editor,
+                role = HouseholdMemberRole.Editor,
                 referenceId = "group-1",
             ),
         )
@@ -51,13 +51,13 @@ class HouseholdMemberRulesTest {
         assertTrue(canAddHouseholdMember(many))
     }
 
-    private fun person(id: String, name: String): SpaceMember =
-        SpaceMember(
+    private fun person(id: String, name: String): HouseholdMember =
+        HouseholdMember(
             id = "member-$id",
-            spaceId = "space-1",
-            kind = SpaceMemberKind.Person,
+            householdId = "household-1",
+            kind = HouseholdMemberKind.Person,
             displayName = name,
-            role = if (id == "owner") SpaceMemberRole.Owner else SpaceMemberRole.Editor,
+            role = if (id == "owner") HouseholdMemberRole.Owner else HouseholdMemberRole.Editor,
             referenceId = id,
         )
 }

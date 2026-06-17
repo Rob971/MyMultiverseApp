@@ -1,21 +1,22 @@
 package app.mymultiverse.kmp.data.supabase
 
+import app.mymultiverse.kmp.data.supabase.dto.HouseholdDependantRow
 import app.mymultiverse.kmp.data.supabase.dto.HouseholdRpcDecoder
 import app.mymultiverse.kmp.data.supabase.dto.ProfileInsertRow
 import app.mymultiverse.kmp.data.supabase.dto.ProfileRow
-import app.mymultiverse.kmp.data.supabase.dto.SpaceInviteInsertRow
-import app.mymultiverse.kmp.data.supabase.dto.SpaceInvitePendingUpdateRow
-import app.mymultiverse.kmp.data.supabase.dto.SpaceInviteRow
-import app.mymultiverse.kmp.data.supabase.dto.SpaceInviteUpdateRow
-import app.mymultiverse.kmp.data.supabase.dto.SpaceMemberInsertRow
-import app.mymultiverse.kmp.data.supabase.dto.SpaceMemberRow
-import app.mymultiverse.kmp.data.supabase.dto.SharingSpaceRow
+import app.mymultiverse.kmp.data.supabase.dto.HouseholdInviteInsertRow
+import app.mymultiverse.kmp.data.supabase.dto.HouseholdInvitePendingUpdateRow
+import app.mymultiverse.kmp.data.supabase.dto.HouseholdInviteRow
+import app.mymultiverse.kmp.data.supabase.dto.HouseholdInviteUpdateRow
+import app.mymultiverse.kmp.data.supabase.dto.HouseholdMemberInsertRow
+import app.mymultiverse.kmp.data.supabase.dto.HouseholdMemberRow
+import app.mymultiverse.kmp.data.supabase.dto.HouseholdRow
 import app.mymultiverse.kmp.domain.model.sharing.AddMemberResult
-import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberKind
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
-import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberKind
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
+import app.mymultiverse.kmp.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.kmp.domain.sharing.activeInvites
 import io.github.jan.supabase.SupabaseClient
@@ -30,28 +31,28 @@ import kotlinx.datetime.Clock
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class SupabaseSpaceCollaborationRepository(
+class SupabaseHouseholdCollaborationRepository(
     private val client: SupabaseClient,
-) : SpaceCollaborationRepository {
+) : HouseholdCollaborationRepository {
 
-    private val membersBySpace = mutableMapOf<String, MutableStateFlow<List<SpaceMember>>>()
-    private val outboundInvitesBySpace = mutableMapOf<String, MutableStateFlow<List<SpaceInvite>>>()
-    private val pendingInvites = MutableStateFlow<List<SpaceInvite>>(emptyList())
+    private val membersByHousehold = mutableMapOf<String, MutableStateFlow<List<HouseholdMember>>>()
+    private val outboundInvitesByHousehold = mutableMapOf<String, MutableStateFlow<List<HouseholdInvite>>>()
+    private val pendingInvites = MutableStateFlow<List<HouseholdInvite>>(emptyList())
 
-    override fun observeMembers(spaceId: String): Flow<List<SpaceMember>> =
-        membersFlow(spaceId).asStateFlow()
+    override fun observeMembers(householdId: String): Flow<List<HouseholdMember>> =
+        membersFlow(householdId).asStateFlow()
 
-    override fun observePendingInvites(): Flow<List<SpaceInvite>> = pendingInvites.asStateFlow()
+    override fun observePendingInvites(): Flow<List<HouseholdInvite>> = pendingInvites.asStateFlow()
 
-    override fun observeOutboundInvites(spaceId: String): Flow<List<SpaceInvite>> =
-        outboundInvitesFlow(spaceId).asStateFlow()
+    override fun observeOutboundInvites(householdId: String): Flow<List<HouseholdInvite>> =
+        outboundInvitesFlow(householdId).asStateFlow()
 
-    override suspend fun refreshMembers(spaceId: String, ownerId: String, ownerDisplayName: String) {
+    override suspend fun refreshMembers(householdId: String, ownerId: String, ownerDisplayName: String) {
         val rows = client.postgrest["household_members"]
             .select(Columns.ALL) {
-                filter { eq("household_id", spaceId) }
+                filter { eq("household_id", householdId) }
             }
-            .decodeList<SpaceMemberRow>()
+            .decodeList<HouseholdMemberRow>()
             .filter { it.userId != null }
 
         val profileIds = rows.mapNotNull { it.userId }.distinct()
@@ -69,12 +70,12 @@ class SupabaseSpaceCollaborationRepository(
         val mapped = rows.map { row ->
             val userId = requireNotNull(row.userId)
             val profile = profiles[userId]
-            SpaceMember(
+            HouseholdMember(
                 id = row.id,
-                spaceId = row.spaceId,
-                kind = SpaceMemberKind.Person,
+                householdId = row.householdId,
+                kind = HouseholdMemberKind.Person,
                 displayName = profile?.displayName ?: profile?.email ?: userId,
-                role = row.role.toSpaceMemberRole(),
+                role = row.role.toHouseholdMemberRole(),
                 referenceId = userId,
             )
         }
@@ -83,11 +84,29 @@ class SupabaseSpaceCollaborationRepository(
         val withOwner = if (ownerAlreadyListed) {
             mapped
         } else {
-            listOf(ownerMember(spaceId, ownerId, ownerDisplayName)) + mapped
+            listOf(ownerMember(householdId, ownerId, ownerDisplayName)) + mapped
         }
 
-        membersFlow(spaceId).value = withOwner.sortedWith(
-            compareByDescending<SpaceMember> { it.role == SpaceMemberRole.Owner }
+        val dependantRows = client.postgrest["household_dependants"]
+            .select(Columns.ALL) {
+                filter { eq("household_id", householdId) }
+            }
+            .decodeList<HouseholdDependantRow>()
+            .filter { it.removedAt == null }
+
+        val dependants = dependantRows.map { row ->
+            HouseholdMember(
+                id = row.id,
+                householdId = row.householdId,
+                kind = HouseholdMemberKind.Dependant,
+                displayName = row.displayName,
+                role = HouseholdMemberRole.Viewer,
+                referenceId = row.id,
+            )
+        }
+
+        membersFlow(householdId).value = (withOwner + dependants).sortedWith(
+            compareByDescending<HouseholdMember> { it.role == HouseholdMemberRole.Owner }
                 .thenBy { it.displayName.lowercase() },
         )
     }
@@ -100,55 +119,55 @@ class SupabaseSpaceCollaborationRepository(
         ensureProfile(currentUserId)
 
         val rows = HouseholdRpcDecoder.decodePendingInvites(
-            client.postgrest.rpc("list_my_pending_space_invites"),
+            client.postgrest.rpc("list_my_pending_household_invites"),
         )
 
         pendingInvites.value = rows
             .map { row ->
-                SpaceInvite(
+                HouseholdInvite(
                     id = row.id,
-                    spaceId = row.spaceId,
-                    spaceName = row.spaceName,
+                    householdId = row.householdId,
+                    householdName = row.householdName,
                     email = row.email,
-                    role = row.role.toSpaceMemberRole(),
+                    role = row.role.toHouseholdMemberRole(),
                     expiresAtEpochMillis = row.expiresAt?.toEpochMillis(),
                 )
             }
             .activeInvites()
-            .sortedBy { it.spaceName.lowercase() }
+            .sortedBy { it.householdName.lowercase() }
     }
 
-    override suspend fun refreshOutboundInvites(spaceId: String) {
+    override suspend fun refreshOutboundInvites(householdId: String) {
         val rows = client.postgrest["household_invites"]
             .select(Columns.ALL) {
-                filter { eq("household_id", spaceId) }
+                filter { eq("household_id", householdId) }
             }
-            .decodeList<SpaceInviteRow>()
+            .decodeList<HouseholdInviteRow>()
             .filter { row -> row.acceptedAt == null && row.declinedAt == null }
-            .map { it.toSpaceInvite(spaceName = null) }
+            .map { it.toHouseholdInvite(householdName = null) }
             .activeInvites()
             .sortedBy { it.email.lowercase() }
 
-        outboundInvitesFlow(spaceId).value = rows
+        outboundInvitesFlow(householdId).value = rows
     }
 
     override suspend fun addMemberByEmail(
-        spaceId: String,
+        householdId: String,
         email: String,
-        role: SpaceMemberRole,
+        role: HouseholdMemberRole,
     ): Result<AddMemberResult> = runCatching {
         val trimmed = email.trim()
         require(trimmed.isNotEmpty()) { CollaborationErrorCodes.MEMBER_EMAIL_REQUIRED }
-        require(role != SpaceMemberRole.Owner) { CollaborationErrorCodes.INSUFFICIENT_ROLE }
+        require(role != HouseholdMemberRole.Owner) { CollaborationErrorCodes.INSUFFICIENT_ROLE }
 
         val currentUserId = requireUserId()
         ensureProfile(currentUserId)
 
         val row = HouseholdRpcDecoder.decodeInviteResult(
             client.postgrest.rpc(
-                "invite_space_member",
+                "invite_household_member",
                 buildJsonObject {
-                    put("p_space_id", spaceId)
+                    put("p_household_id", householdId)
                     put("p_email", trimmed)
                     put("p_role", role.wireName())
                 },
@@ -157,14 +176,14 @@ class SupabaseSpaceCollaborationRepository(
 
         when (row.result) {
             "invited" -> {
-                refreshOutboundInvites(spaceId)
+                refreshOutboundInvites(householdId)
                 AddMemberResult.InviteSent
             }
             "added" -> {
-                refreshMembers(spaceId, currentUserId, currentProfileDisplayName(currentUserId))
+                refreshMembers(householdId, currentUserId, currentProfileDisplayName(currentUserId))
                 AddMemberResult.Added
             }
-            else -> throw IllegalStateException("invite_space_member_unexpected_result")
+            else -> throw IllegalStateException("invite_household_member_unexpected_result")
         }
     }
 
@@ -175,7 +194,7 @@ class SupabaseSpaceCollaborationRepository(
             .delete {
                 filter { eq("id", memberId) }
             }
-        membersBySpace.values.forEach { flow ->
+        membersByHousehold.values.forEach { flow ->
             flow.update { members -> members.filterNot { it.id == memberId } }
         }
     }
@@ -184,14 +203,14 @@ class SupabaseSpaceCollaborationRepository(
         val currentUserId = requireUserId()
         ensureProfile(currentUserId)
         val parameters = buildJsonObject { put("p_invite_id", inviteId) }
-        client.postgrest.rpc("accept_space_invite", parameters)
+        client.postgrest.rpc("accept_household_invite", parameters)
         refreshPendingInvites()
     }
 
     override suspend fun declineInvite(inviteId: String): Result<Unit> = runCatching {
         client.postgrest["household_invites"]
             .update(
-                SpaceInviteUpdateRow(
+                HouseholdInviteUpdateRow(
                     declinedAt = Clock.System.now().toString(),
                 ),
             ) {
@@ -200,17 +219,39 @@ class SupabaseSpaceCollaborationRepository(
         refreshPendingInvites()
     }
 
+    override suspend fun addDependant(householdId: String, displayName: String): Result<Unit> = runCatching {
+        val trimmed = displayName.trim()
+        require(trimmed.isNotEmpty()) { "dependant_name_required" }
+        client.postgrest.rpc(
+            "add_household_dependant",
+            buildJsonObject {
+                put("p_household_id", householdId)
+                put("p_display_name", trimmed)
+            },
+        )
+    }
+
+    override suspend fun removeDependant(dependantId: String): Result<Unit> = runCatching {
+        client.postgrest.rpc(
+            "remove_household_dependant",
+            buildJsonObject { put("p_dependant_id", dependantId) },
+        )
+        membersByHousehold.values.forEach { flow ->
+            flow.update { members -> members.filterNot { it.id == dependantId } }
+        }
+    }
+
     private suspend fun sendOrRefreshInvite(
-        spaceId: String,
+        householdId: String,
         email: String,
-        role: SpaceMemberRole,
+        role: HouseholdMemberRole,
         invitedBy: String,
     ) {
         val insertResult = runCatching {
             client.postgrest["household_invites"]
                 .insert(
-                    SpaceInviteInsertRow(
-                        spaceId = spaceId,
+                    HouseholdInviteInsertRow(
+                        householdId = householdId,
                         email = email,
                         role = role.wireName(),
                         invitedBy = invitedBy,
@@ -226,13 +267,13 @@ class SupabaseSpaceCollaborationRepository(
 
         client.postgrest["household_invites"]
             .update(
-                SpaceInvitePendingUpdateRow(
+                HouseholdInvitePendingUpdateRow(
                     role = role.wireName(),
                     invitedBy = invitedBy,
                 ),
             ) {
                 filter {
-                    eq("household_id", spaceId)
+                    eq("household_id", householdId)
                     eq("email", email)
                 }
             }
@@ -292,21 +333,21 @@ class SupabaseSpaceCollaborationRepository(
             }
     }
 
-    private suspend fun loadSpaceNames(spaceIds: List<String>): Map<String, String> {
-        if (spaceIds.isEmpty()) return emptyMap()
+    private suspend fun loadHouseholdNames(householdIds: List<String>): Map<String, String> {
+        if (householdIds.isEmpty()) return emptyMap()
         return client.postgrest["households"]
             .select(Columns.ALL) {
-                filter { isIn("id", spaceIds) }
+                filter { isIn("id", householdIds) }
             }
-            .decodeList<SharingSpaceRow>()
+            .decodeList<HouseholdRow>()
             .associateBy({ it.id }, { it.name })
     }
 
-    private fun membersFlow(spaceId: String): MutableStateFlow<List<SpaceMember>> =
-        membersBySpace.getOrPut(spaceId) { MutableStateFlow(emptyList()) }
+    private fun membersFlow(householdId: String): MutableStateFlow<List<HouseholdMember>> =
+        membersByHousehold.getOrPut(householdId) { MutableStateFlow(emptyList()) }
 
-    private fun outboundInvitesFlow(spaceId: String): MutableStateFlow<List<SpaceInvite>> =
-        outboundInvitesBySpace.getOrPut(spaceId) { MutableStateFlow(emptyList()) }
+    private fun outboundInvitesFlow(householdId: String): MutableStateFlow<List<HouseholdInvite>> =
+        outboundInvitesByHousehold.getOrPut(householdId) { MutableStateFlow(emptyList()) }
 
     private suspend fun requireUserId(): String {
         client.auth.awaitInitialization()
@@ -315,38 +356,38 @@ class SupabaseSpaceCollaborationRepository(
             ?: throw IllegalStateException("auth_required")
     }
 
-    private fun ownerMember(spaceId: String, ownerId: String, ownerDisplayName: String): SpaceMember =
-        SpaceMember(
+    private fun ownerMember(householdId: String, ownerId: String, ownerDisplayName: String): HouseholdMember =
+        HouseholdMember(
             id = "$OWNER_MEMBER_PREFIX$ownerId",
-            spaceId = spaceId,
-            kind = SpaceMemberKind.Person,
+            householdId = householdId,
+            kind = HouseholdMemberKind.Person,
             displayName = ownerDisplayName,
-            role = SpaceMemberRole.Owner,
+            role = HouseholdMemberRole.Owner,
             referenceId = ownerId,
         )
 
-    private fun SpaceInviteRow.toSpaceInvite(spaceName: String?): SpaceInvite =
-        SpaceInvite(
+    private fun HouseholdInviteRow.toHouseholdInvite(householdName: String?): HouseholdInvite =
+        HouseholdInvite(
             id = id,
-            spaceId = spaceId,
-            spaceName = spaceName ?: spaceId,
+            householdId = householdId,
+            householdName = householdName ?: householdId,
             email = email,
-            role = role.toSpaceMemberRole(),
+            role = role.toHouseholdMemberRole(),
             expiresAtEpochMillis = expiresAt?.toEpochMillis(),
         )
 
-    private fun SpaceMemberRole.wireName(): String =
+    private fun HouseholdMemberRole.wireName(): String =
         when (this) {
-            SpaceMemberRole.Owner -> "owner"
-            SpaceMemberRole.Viewer -> "viewer"
-            SpaceMemberRole.Editor -> "editor"
+            HouseholdMemberRole.Owner -> "owner"
+            HouseholdMemberRole.Viewer -> "viewer"
+            HouseholdMemberRole.Editor -> "editor"
         }
 
-    private fun String.toSpaceMemberRole(): SpaceMemberRole =
+    private fun String.toHouseholdMemberRole(): HouseholdMemberRole =
         when (this) {
-            "owner" -> SpaceMemberRole.Owner
-            "viewer" -> SpaceMemberRole.Viewer
-            else -> SpaceMemberRole.Editor
+            "owner" -> HouseholdMemberRole.Owner
+            "viewer" -> HouseholdMemberRole.Viewer
+            else -> HouseholdMemberRole.Editor
         }
 
     private fun String.toEpochMillis(): Long? =

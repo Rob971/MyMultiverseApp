@@ -23,8 +23,8 @@ class HouseholdMembershipRpcMappingTest {
             """
             {
               "status": "active",
-              "space_id": "space-1",
-              "space_name": "Rossi home",
+              "household_id": "household-1",
+              "household_name": "Rossi home",
               "owner_id": "owner-1",
               "owner_display_name": "Roberto",
               "role": "owner",
@@ -34,7 +34,7 @@ class HouseholdMembershipRpcMappingTest {
         )
 
         assertEquals("active", row.status)
-        assertEquals("space-1", row.spaceId)
+        assertEquals("household-1", row.householdId)
         assertEquals("owner", row.role)
     }
 }

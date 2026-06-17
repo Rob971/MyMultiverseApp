@@ -1,7 +1,7 @@
 package app.mymultiverse.kmp.domain.sync
 
 /**
- * High-level sync state for shared nutrition data (grocery / meal plan in a space).
+ * High-level sync state for shared nutrition data (grocery / meal plan in a household).
  * Personal-only mode stays [Idle] with no remote session.
  */
 sealed class NutritionSyncStatus {

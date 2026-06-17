@@ -1,7 +1,7 @@
 package app.mymultiverse.kmp.domain.sharing
 
-import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -11,20 +11,20 @@ class CollaborationInviteRulesTest {
     @Test
     fun activeInvites_filtersExpiredRows() {
         val invites = listOf(
-            SpaceInvite(
+            HouseholdInvite(
                 id = "active",
-                spaceId = "space-1",
-                spaceName = "Home",
+                householdId = "household-1",
+                householdName = "Home",
                 email = "a@example.com",
-                role = SpaceMemberRole.Editor,
+                role = HouseholdMemberRole.Editor,
                 expiresAtEpochMillis = 9_999_999_999_999,
             ),
-            SpaceInvite(
+            HouseholdInvite(
                 id = "expired",
-                spaceId = "space-1",
-                spaceName = "Home",
+                householdId = "household-1",
+                householdName = "Home",
                 email = "b@example.com",
-                role = SpaceMemberRole.Viewer,
+                role = HouseholdMemberRole.Viewer,
                 expiresAtEpochMillis = 1,
             ),
         )

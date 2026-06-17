@@ -83,8 +83,8 @@ class NutritionScreenModel(
         }
         .stateIn(scope, SharingStarted.Eagerly, true)
 
-    suspend fun activateSpace(spaceId: String) {
-        session.activateSpace(spaceId)
+    suspend fun activateHousehold(householdId: String) {
+        session.activateHousehold(householdId)
     }
 
     private val _aiState = MutableStateFlow<NutritionAiState>(NutritionAiState.Idle)

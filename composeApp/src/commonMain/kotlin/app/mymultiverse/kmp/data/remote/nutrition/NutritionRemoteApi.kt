@@ -15,12 +15,12 @@ import kotlinx.datetime.Clock
 class NutritionRemoteApi(
     private val client: SupabaseClient,
 ) : NutritionRemoteDataSource {
-    override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> {
+    override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
         requireAuthenticatedUserId()
         return client.postgrest["nutrition_household_week_data"]
             .select(Columns.ALL) {
                 filter {
-                    eq("household_id", spaceId)
+                    eq("household_id", householdId)
                     eq("week_key", weekKey)
                 }
             }
@@ -28,7 +28,7 @@ class NutritionRemoteApi(
     }
 
     override suspend fun upsert(
-        spaceId: String,
+        householdId: String,
         weekKey: String,
         dataKind: String,
         payload: String,
@@ -38,7 +38,7 @@ class NutritionRemoteApi(
         client.postgrest["nutrition_household_week_data"]
             .upsert(
                 NutritionWeekDataRow(
-                    spaceId = spaceId,
+                    householdId = householdId,
                     weekKey = weekKey,
                     dataKind = dataKind,
                     payload = payload,

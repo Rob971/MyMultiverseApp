@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -201,7 +202,7 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 NutritionHubScreen(
-                    spaceName = "Test space",
+                    householdName = "Test household",
                     enabledFeatures = setOf(
                         NutritionSharingFeature.Grocery,
                         NutritionSharingFeature.MealPlan,
@@ -227,7 +228,7 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 NutritionHubScreen(
-                    spaceName = "Test space",
+                    householdName = "Test household",
                     enabledFeatures = setOf(
                         NutritionSharingFeature.Grocery,
                         NutritionSharingFeature.MealPlan,
@@ -255,7 +256,7 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 NutritionHubScreen(
-                    spaceName = "Test space",
+                    householdName = "Test household",
                     enabledFeatures = setOf(
                         NutritionSharingFeature.Grocery,
                         NutritionSharingFeature.MealPlan,
@@ -283,7 +284,7 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 NutritionHubScreen(
-                    spaceName = "Test space",
+                    householdName = "Test household",
                     enabledFeatures = setOf(
                         NutritionSharingFeature.Grocery,
                         NutritionSharingFeature.MealPlan,
@@ -324,6 +325,7 @@ class NutritionUxInstrumentedTest {
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
+                        onDeleteAccount = {},
                     )
                 }
             }
@@ -357,6 +359,7 @@ class NutritionUxInstrumentedTest {
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
+                        onDeleteAccount = {},
                     )
                 }
             }
@@ -388,6 +391,7 @@ class NutritionUxInstrumentedTest {
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
+                        onDeleteAccount = {},
                     )
                 }
             }
@@ -416,6 +420,7 @@ class NutritionUxInstrumentedTest {
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
+                        onDeleteAccount = {},
                     )
                 }
             }
@@ -443,6 +448,7 @@ class NutritionUxInstrumentedTest {
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
+                        onDeleteAccount = {},
                     )
                 }
             }
@@ -471,13 +477,14 @@ class NutritionUxInstrumentedTest {
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
+                        onDeleteAccount = {},
                     )
                 }
             }
         }
 
         composeRule.onNodeWithTag(HomeTestTags.LOADING_INDICATOR).assertIsDisplayed()
-        composeRule.onNodeWithText("Loading your family space...").assertIsDisplayed()
+        composeRule.onNodeWithText("Loading your household...").assertIsDisplayed()
     }
 
     @Test
@@ -499,6 +506,7 @@ class NutritionUxInstrumentedTest {
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
+                        onDeleteAccount = {},
                     )
                 }
             }
@@ -526,12 +534,16 @@ class NutritionUxInstrumentedTest {
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
+                        onDeleteAccount = {},
                     )
                 }
             }
         }
 
-        composeRule.onNodeWithTag(HomeTestTags.LOADING_INDICATOR).assertDoesNotExist()
+        assertTrue(
+            composeRule.onAllNodesWithTag(HomeTestTags.LOADING_INDICATOR)
+                .fetchSemanticsNodes().isEmpty(),
+        )
         composeRule.onNodeWithTag(HomeTestTags.NUTRITION_CARD)
             .performScrollTo()
             .assertIsDisplayed()

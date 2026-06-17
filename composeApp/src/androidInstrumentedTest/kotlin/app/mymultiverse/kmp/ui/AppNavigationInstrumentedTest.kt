@@ -44,7 +44,7 @@ class AppNavigationInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 NutritionHubScreen(
-                    spaceName = "Our household",
+                    householdName = "Our household",
                     enabledFeatures = setOf(
                         NutritionSharingFeature.Grocery,
                         NutritionSharingFeature.MealPlan,

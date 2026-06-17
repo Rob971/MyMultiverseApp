@@ -8,7 +8,7 @@ import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembership
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
-import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
@@ -124,7 +124,7 @@ class SupabaseHouseholdRepository(
                 HouseholdMembershipStatus.Active(
                     membership = HouseholdMembership(
                         household = resolvedHousehold,
-                        role = role.toSpaceMemberRole(),
+                        role = role.toHouseholdMemberRole(),
                     ),
                 )
             }
@@ -133,8 +133,8 @@ class SupabaseHouseholdRepository(
         }
 
     private fun HouseholdMembershipRpcRow.toHousehold(): Household? {
-        val resolvedId = spaceId ?: return null
-        val resolvedName = spaceName ?: return null
+        val resolvedId = householdId ?: return null
+        val resolvedName = householdName ?: return null
         val resolvedOwnerId = ownerId ?: return null
         return Household(
             id = resolvedId,
@@ -147,8 +147,8 @@ class SupabaseHouseholdRepository(
 
     private fun HouseholdRpcRow.toDomain(): Household =
         Household(
-            id = spaceId,
-            name = spaceName,
+            id = householdId,
+            name = householdName,
             ownerId = ownerId,
             ownerDisplayName = ownerDisplayName?.takeIf { it.isNotBlank() },
             nutritionFeatures = (features ?: emptyList()).mapNotNull { it.toNutritionFeature() }.toSet(),
@@ -162,10 +162,10 @@ class SupabaseHouseholdRepository(
             else -> null
         }
 
-    private fun String?.toSpaceMemberRole(): SpaceMemberRole =
+    private fun String?.toHouseholdMemberRole(): HouseholdMemberRole =
         when (this) {
-            "owner" -> SpaceMemberRole.Owner
-            "viewer" -> SpaceMemberRole.Viewer
-            else -> SpaceMemberRole.Editor
+            "owner" -> HouseholdMemberRole.Owner
+            "viewer" -> HouseholdMemberRole.Viewer
+            else -> HouseholdMemberRole.Editor
         }
 }

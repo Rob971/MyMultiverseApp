@@ -10,15 +10,15 @@ import kotlin.test.assertTrue
 
 class AppNavigatorTest {
 
-    private val space = NutritionSpaceContext(
-        id = "space-1",
+    private val householdContext = HouseholdContext(
+        id = "household-1",
         name = "Our household",
         ownerId = "owner-1",
-        features = setOf(NutritionSharingFeature.Grocery),
+        nutritionFeatures = setOf(NutritionSharingFeature.Grocery),
     )
 
     private val household = HouseholdContext(
-        id = "space-1",
+        id = "household-1",
         name = "Our household",
         ownerId = "owner-1",
         ownerDisplayName = "Owner",
@@ -41,11 +41,11 @@ class AppNavigatorTest {
         navigator.navigateTo(AppRoute.Nutrition())
 
         navigator.replaceCurrent(
-            AppRoute.Nutrition(space = space, section = NutritionSection.Hub),
+            AppRoute.Nutrition(household = householdContext, section = NutritionSection.Hub),
         )
 
         assertIs<AppRoute.Nutrition>(navigator.current)
-        assertEquals(space, (navigator.current as AppRoute.Nutrition).space)
+        assertEquals(householdContext, (navigator.current as AppRoute.Nutrition).household)
 
         navigator.navigateBack()
 
@@ -70,8 +70,8 @@ class AppNavigatorTest {
     @Test
     fun navigateBack_fromNutritionSection_returnsToHub() {
         val navigator = navigatorAt(AppRoute.Home)
-        navigator.navigateTo(AppRoute.Nutrition(space = space, section = NutritionSection.Hub))
-        navigator.navigateTo(AppRoute.Nutrition(space = space, section = NutritionSection.Grocery))
+        navigator.navigateTo(AppRoute.Nutrition(household = householdContext, section = NutritionSection.Hub))
+        navigator.navigateTo(AppRoute.Nutrition(household = householdContext, section = NutritionSection.Grocery))
 
         navigator.navigateBack()
 
@@ -84,7 +84,7 @@ class AppNavigatorTest {
     @Test
     fun navigateBack_fromNutritionHub_returnsToHome() {
         val navigator = navigatorAt(AppRoute.Home)
-        navigator.navigateTo(AppRoute.Nutrition(space = space, section = NutritionSection.Hub))
+        navigator.navigateTo(AppRoute.Nutrition(household = householdContext, section = NutritionSection.Hub))
 
         navigator.navigateBack()
 
@@ -94,7 +94,7 @@ class AppNavigatorTest {
     @Test
     fun navigateTo_sameRoute_isNoOp() {
         val navigator = navigatorAt(AppRoute.Home)
-        val route = AppRoute.Nutrition(space = space, section = NutritionSection.Hub)
+        val route = AppRoute.Nutrition(household = householdContext, section = NutritionSection.Hub)
         navigator.navigateTo(route)
 
         navigator.navigateTo(route)
@@ -107,7 +107,7 @@ class AppNavigatorTest {
     @Test
     fun replaceCurrent_sameRoute_isNoOp() {
         val navigator = navigatorAt(AppRoute.Home)
-        val route = AppRoute.Nutrition(space = space, section = NutritionSection.Hub)
+        val route = AppRoute.Nutrition(household = householdContext, section = NutritionSection.Hub)
         navigator.navigateTo(route)
 
         navigator.replaceCurrent(route)

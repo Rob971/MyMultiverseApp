@@ -2,7 +2,7 @@ package app.mymultiverse.kmp.domain.model.sharing
 
 data class HouseholdMembership(
     val household: Household,
-    val role: SpaceMemberRole,
+    val role: HouseholdMemberRole,
 )
 
 sealed interface HouseholdMembershipStatus {
@@ -14,7 +14,7 @@ sealed interface HouseholdMembershipStatus {
         val membership: HouseholdMembership,
     ) : HouseholdMembershipStatus {
         val household: Household get() = membership.household
-        val role: SpaceMemberRole get() = membership.role
+        val role: HouseholdMemberRole get() = membership.role
     }
 
     data class Error(

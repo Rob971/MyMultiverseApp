@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class NutritionWeekDataRow(
-    @SerialName("household_id") val spaceId: String,
+    @SerialName("household_id") val householdId: String,
     @SerialName("week_key") val weekKey: String,
     @SerialName("data_kind") val dataKind: String,
     val payload: String,
