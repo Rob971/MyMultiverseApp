@@ -1,152 +1,278 @@
 # MyMultiverse (KMP)
 
-Kotlin Multiplatform family logistics app built with **Compose Multiplatform**, **Voyager** navigation, **Koin** DI, and **Supabase** for auth and collaborative sharing.
+Kotlin Multiplatform **family logistics** app: shared grocery lists, weekly meal plans, and a local AI nutrition assistant. Built with **Compose Multiplatform**, **Voyager-style navigation**, **Koin** DI, and **Supabase** (Auth, Postgres, Realtime).
 
 Android and iOS share one UI and domain layer; platform code is limited to `androidMain` / `iosMain` bindings.
 
-## Features
+**Audience for this doc:** engineers, QA testers, release owners. For household product rules in depth, see [`docs/household-collaboration.md`](docs/household-collaboration.md).
 
-| Area | Status |
-|------|--------|
-| Home hub | Greeting, navigation into topics |
-| Nutrition | Grocery list, weekly meal plan, local AI assistant |
-| Auth | Email sign-up / sign-in; Google & Apple OAuth (deeplink `app.mymultiverse.kmp://auth/callback`); sign out from Home |
-| Sharing | Nutrition **spaces** with per-space feature toggles |
-| Collaboration | Members by email (direct add or pending invite), roles, groups, group member management |
-| Sync | Offline-first grocery & meal plan per space (local cache + outbox + Supabase); hub sync status banner |
-| Realtime | Live updates when another member edits shared nutrition data |
+---
+
+## Product overview (functional)
+
+MyMultiverse helps a **household** (family or roommates) coordinate day-to-day logistics. Today the shipped module is **Nutrition**; **Adventures** and **Budget** are shown on Home as coming soon but will use the **same household** when released.
+
+| Concept | What it means for users |
+|---------|-------------------------|
+| **Account** | One person, one email (Supabase Auth). Sign up / sign in with email, Google, or Apple. |
+| **Household** | One shared space per user at a time. All modules (Nutrition, future Adventures/Budget) share one household id. |
+| **Gate** | Onboarding screen when signed in but not in a household: accept a pending invite **or** create a new household. |
+| **Invite** | Owner sends invite by email; invitee must **accept** on their device. No silent add. |
+| **Roles** | **Owner** — invite, manage members, edit data. **Editor** — edit shared nutrition. **Viewer** — read-only everywhere. |
+| **Nutrition** | Shared grocery list, weekly meal plan, and AI adviser per calendar week. AI output is **read-only**; user lists are editable (unless viewer). |
+| **Sync** | Grocery and meal plan are **offline-first**: edits save locally, then push to Supabase; other members see changes via pull + Realtime. |
+| **GDPR** | Export personal data from Home; leave household revokes shared access. Account deletion is planned (P2). |
 
 Supported UI languages: English, French, Spanish, German, Italian, Arabic (incl. Saudi), Neapolitan.
 
-## Architecture
+---
 
-Clean architecture with three Kotlin packages under `composeApp/src/commonMain/kotlin/app/mymultiverse/kmp/`:
+## User journeys & screens
+
+### High-level flow
+
+```
+                    ┌─────────────┐
+                    │   Login     │  email / Google / Apple OAuth
+                    └──────┬──────┘
+                           │ authenticated
+                           ▼
+              ┌────────────────────────┐
+              │  Household gate        │  no active household
+              │  • pending invites     │
+              │  • create household    │
+              └───────────┬────────────┘
+                          │ household active
+                          ▼
+              ┌────────────────────────┐
+              │  Home                  │  greeting, pending invites,
+              │  • Nutrition card      │  household card, export data,
+              │  • Household card      │  sign out, language picker
+              │  • Adventures (soon)   │
+              │  • Budget (soon)       │
+              └─────┬──────────┬───────┘
+                    │          │
+         Nutrition  │          │  Household members
+                    ▼          ▼
+         ┌──────────────┐   ┌──────────────────┐
+         │ Nutrition hub│   │ Members screen   │
+         │ grocery      │   │ invite / leave / │
+         │ meal plan    │   │ transfer / delete│
+         │ AI adviser   │   └──────────────────┘
+         └──────────────┘
+```
+
+### Screen map (UI)
+
+| Screen | Package | Purpose | Key `testTag`s |
+|--------|---------|---------|----------------|
+| **Login** | `presentation/screens/auth/` | Sign up, sign in, OAuth; config-missing state when Supabase keys absent | — |
+| **Household gate** | `presentation/screens/household/` | Block modules until create or accept invite; pending invites above create | `HouseholdGateTestTags.*` |
+| **Home** | `presentation/screens/home/` | Hub after household is active | `home_nutrition_card`, `home_household_card`, `home_sign_out_button`, `home_export_personal_data_button` |
+| **Household members** | `presentation/screens/household/` | List members, pending invites, add by email, leave / transfer / dissolve | — |
+| **Nutrition hub** | `presentation/screens/nutrition/` | Week context, sync banner, cards for grocery / meal plan / AI | `nutrition_hub_grocery`, `nutrition_hub_meal_plan`, `nutrition_hub_ai` |
+| **Grocery** | `presentation/screens/nutrition/` | Editable list + read-only AI suggestions | — |
+| **Weekly meal plan** | `presentation/screens/nutrition/` | Lunch/dinner per day; per-meal AI grocery | — |
+| **AI adviser** | `presentation/screens/nutrition/` | Modes: Advice, Grocery, Meal plan (local assistant) | — |
+
+Navigation routes live in `presentation/navigation/AppRoute.kt`. Root composition: `presentation/App.kt` (auth → gate → main stack).
+
+### Household rules (QA cheat sheet)
+
+| Rule | Expected behaviour |
+|------|-------------------|
+| One household per user | Cannot be in two households; invite to someone already in another household fails |
+| Max 20 members | Invite/accept errors at cap (see automated tests) |
+| Invite email = auth email | Invitee must sign in with the **exact** invited address (`lower(trim)`); mismatch shows dedicated error |
+| Viewer | Can open Nutrition and **see** all data; **no** add/edit/delete/clear/AI write |
+| Owner with other members | Must **transfer ownership** before leaving; cannot plain-leave as sole owner |
+| Sole owner, no members | **Delete household** (hard delete), not leave |
+| Pending invite + create | Both visible on gate; create is **not** blocked (invites shown above) |
+| Switch household | Accepting invite while already affiliated prompts leave-then-accept |
+
+Full spec: [`docs/household-collaboration.md`](docs/household-collaboration.md).
+
+---
+
+## Nutrition module (functional)
+
+| Area | Behaviour |
+|------|-----------|
+| **Grocery** | Add, check off, edit, delete items; duplicate detection; clear checked + undo; week-scoped |
+| **Meal plan** | Seven days, lunch/dinner; today highlighted; expand/collapse days |
+| **AI adviser** | On-device assistant: advice text, full-week or today grocery, meal-plan preview + apply |
+| **AI vs editable** | AI grocery/meal suggestions appear in a **read-only** section; never mixed into editable CRUD |
+| **Sync status** | Hub banner: idle, syncing, pending outbox, offline |
+| **Personal mode** | Without Supabase config, nutrition works **local-only** (no household) |
+
+When a household is active, opening Nutrition activates sync for that `household_id` via `NutritionSessionCoordinator` (flush outbox → pull week → subscribe to Realtime).
+
+---
+
+## Architecture (technical)
+
+Clean architecture under `composeApp/src/commonMain/kotlin/app/mymultiverse/kmp/`:
 
 | Layer | Package | Responsibility |
 |-------|---------|----------------|
-| **Domain** | `domain/` | Models, repository interfaces, use cases, pure helpers |
+| **Domain** | `domain/` | Models, repository interfaces, use cases, pure helpers (`WeekCalendar`, `NutritionAiPlanner`) |
 | **Data** | `data/` | Local store, remote API, sync engine, Supabase repositories |
-| **Presentation** | `presentation/` | Compose UI, Voyager routes, screen models, theme, DI |
+| **Presentation** | `presentation/` | Compose UI, navigation, `*ScreenModel`, theme, DI |
 
-**Dependency rule:** domain never depends on Compose, Android, iOS, or data implementations. Presentation talks to **domain ports** only (`NutritionSessionCoordinator`, `AuthRepository`, etc.); Koin wires implementations.
+**Dependency rule:** domain never depends on Compose, Android, iOS, or data implementations. Presentation talks to **domain ports** only (`NutritionSessionCoordinator`, `AuthRepository`, `HouseholdRepository`, etc.); Koin wires implementations in `presentation/di/AppModule.kt`.
 
-### Mobile frontend vs API (data layer)
+### Data layer map
 
 | Package | Role |
 |---------|------|
-| `presentation/` | Compose UI + screen models (no Supabase / Settings imports) |
-| `domain/repository/` | Contracts the UI depends on |
-| `data/local/` | Device cache (`NutritionLocalStore`, sync outbox) |
+| `data/local/` | Device cache (`NutritionLocalStore`, sync outbox in `Settings`) |
 | `data/remote/` | Supabase PostgREST (`NutritionRemoteApi`) |
 | `data/sync/` | Offline-first orchestration (`NutritionSyncEngine`, `OfflineFirstNutritionRepository`, Realtime) |
-| `data/supabase/` | Auth, sharing spaces, collaboration repositories |
+| `data/supabase/` | Auth, household, invites, profiles |
 
 ### Offline-first nutrition sync
 
-When a sharing space is active:
+When a household is active:
 
-1. **Write locally first** — grocery / meal plan changes land in `Settings` immediately.
-2. **Push** — `NutritionSyncEngine` upserts to Supabase; failures enqueue to a durable outbox.
-3. **Pull** — on space activation, pending pushes flush then remote week data is fetched.
+1. **Write locally first** — grocery / meal plan changes land on device immediately.
+2. **Push** — `NutritionSyncEngine` upserts to `nutrition_household_week_data`; failures enqueue to a durable outbox.
+3. **Pull** — on household activation, pending pushes flush then remote week data is fetched.
 4. **Realtime** — other members’ edits stream in; own `updated_by` echoes are ignored.
 
-Personal nutrition (no space) stays local-only via `NutritionRepositoryImpl`.
+Personal nutrition without a configured backend stays local-only via `NutritionRepositoryImpl`.
 
-### Nutrition sharing flow
+---
 
-```
-Login → Home → Nutrition → Sharing spaces → Space hub
-                              ├── People & groups
-                              ├── Grocery (synced)
-                              ├── Meal plan (synced)
-                              └── AI advice (local assistant)
-```
+## Backend (Supabase)
 
-When you open a space (hub, grocery, or meal plan), `NutritionSessionCoordinator` activates an `OfflineFirstNutritionRepository` for that `space_id`, flushes any pending outbox entries, pulls the current week, and subscribes to Supabase Realtime.
+The mobile app talks to **Supabase Auth** (sessions, OAuth) and **PostgREST** (tables + RPCs). Row Level Security (RLS) enforces household membership and viewer read-only rules server-side.
 
-## Prerequisites
+| Concern | Implementation |
+|---------|----------------|
+| **Auth** | Email/password, Google, Apple; redirect `app.mymultiverse.kmp://auth/callback` |
+| **Profiles** | `profiles` row per `auth.users`; bootstrap via `ensure_current_profile()` |
+| **Household lifecycle** | RPCs: `create_household`, `leave_household`, `dissolve_household`, `transfer_household_ownership` |
+| **Invites** | `invite_space_member`, `accept_space_invite`, `list_my_pending_space_invites` (RPC names retain `space_*` for compatibility) |
+| **Membership query** | `household_membership_status`, `resolve_user_household_row` |
+| **Nutrition data** | `nutrition_household_week_data` — one row per `(household_id, week_key, data_kind)` |
+| **GDPR** | `export_my_personal_data` |
+| **Realtime** | `nutrition_household_week_data` in `supabase_realtime` publication |
 
-- **JDK 17**
-- **Android Studio** (latest stable) for Android
-- **Xcode** (macOS) for iOS simulator / device builds
-- A **Supabase** project with migrations applied (see below)
+Migrations: `supabase/migrations/` (applied in filename order). Deploy on `main` via [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml).
 
-## Local setup
-
-### 1. Clone and configure Supabase
-
-```bash
-cp local.properties.example local.properties
-```
-
-Edit `local.properties` and set your publishable/anon key (and optionally override the project URL):
-
-```properties
-supabase.url=https://your-project.supabase.co
-supabase.anonKey=your_supabase_anon_or_publishable_key_here
-```
-
-The Gradle task `generateSupabaseSecrets` embeds both values into `commonMain` at compile time for Android and iOS (never commit `local.properties`). If `supabase.url` is omitted, the default production URL from `composeApp/build.gradle.kts` is used.
-
-Without a key, auth and sharing screens show a “not configured” state; local-only nutrition still works.
-
-**Local secrets (never commit)** — copy from the `*.example` templates; see `.gitignore` for the full list.
-
-| Local file | Template | Purpose |
-|------------|----------|---------|
-| `local.properties` | `local.properties.example` | Supabase URL + anon key (required for auth/sharing) |
-| `composeApp/google-services.json` | `composeApp/google-services.json.example` | Firebase Android config (Crashlytics + App Distribution); required for crash reports on tester APKs |
-
-CI builds use GitHub Secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GOOGLE_SERVICES_JSON` (full contents of `composeApp/google-services.json` for Firebase Crashlytics on tester APKs) instead of local files.
-
-Production migration deploy (`.github/workflows/supabase-deploy.yml`) additionally requires `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, and `SUPABASE_PROJECT_REF` (e.g. `ivjdzreazvkrrirecznk`).
-
-### 2. Apply database migrations
-
-SQL files live in `supabase/migrations/`. Apply them to your Supabase project (Dashboard SQL editor, Supabase CLI, or MCP):
-
-1. `20250615120000_sharing_spaces_foundation.sql` — profiles, groups, spaces, RLS
-2. `20250615120100_revoke_handle_new_user_execute.sql`
-3. `20250615130000_nutrition_sync_and_collaboration.sql` — week data sync, email lookup RPC
-4. `20250615140000_nutrition_realtime.sql` — enables Realtime on `nutrition_space_week_data`
-5. `20250615150000_space_invites_and_group_archival.sql` — pending invites, accept RPC, archive expired event groups
-
-Or with the Supabase CLI linked to your project:
+Apply locally or to a linked project:
 
 ```bash
 ./scripts/apply-supabase-migrations.sh
 ```
 
-Configure **Auth → URL configuration** in Supabase Dashboard:
+Verify household RPCs after deploy:
+
+```bash
+./scripts/verify-supabase-household.sh
+```
+
+### Supabase Auth dashboard
 
 | Field | Value |
 |-------|--------|
 | **Site URL** | `https://mymultiverse.app` (plain URL only — no markdown) |
 | **Redirect URLs** | `app.mymultiverse.kmp://auth/callback` |
 
-Enable Google/Apple providers when using OAuth. A Site URL like `[https://mymultiverse.app](https://mymultiverse.app)` breaks OAuth `/callback` with HTTP 500 `unexpected_failure`.
+Enable Google/Apple providers for OAuth. Ensure **Realtime** is enabled (Database → Replication).
 
-Ensure **Realtime** is enabled for the project (Database → Replication). The last migration adds the table to the `supabase_realtime` publication.
+---
 
-### 3. Run the app
+## Data model (Postgres)
 
-**Android**
+Current table names (post-migration `20250618170000`). Legacy RPC/JSON keys may still say `space_*`.
 
-```bash
-./gradlew :composeApp:assembleDebug
+### Enums
+
+| Type | Values |
+|------|--------|
+| `app_topic` | `nutrition`, `adventures`, `budget` |
+| `nutrition_feature` | `grocery`, `meal_plan`, `ai_advice` (enabled modules per household) |
+| `nutrition_data_kind` | `grocery`, `ai_grocery`, `meal_plan` (week payload rows) |
+| `space_member_role` | `owner`, `editor`, `viewer` |
+| `group_lifecycle` | `persistent`, `event` |
+
+### Core tables
+
+| Table | Purpose |
+|-------|---------|
+| `profiles` | App user profile (`id` = `auth.users.id`, `display_name`, `email`, …) |
+| `households` | Shared household container (`name`, `owner_id`, `topic`; nutrition households use `topic = nutrition`) |
+| `household_members` | Membership: `user_id` **or** `group_id`, `role`, `left_at` (soft leave) |
+| `household_invites` | Pending invites by normalized email; 14-day `expires_at`; `accepted_at` / `declined_at` |
+| `household_modules` | Enabled nutrition features per household (`grocery`, `meal_plan`, `ai_advice`) |
+| `nutrition_household_week_data` | Serialized week payloads: `payload` text, `updated_at`, `updated_by` |
+| `contact_groups` | Reusable person groups (persistent or event-scoped) |
+| `group_members` | Users in a contact group |
+
+**Constraints (product):**
+
+- At most **one active** `household_members` row per `user_id` (`left_at IS NULL`).
+- At most **20** active members per household (enforced in invite/accept RPCs).
+- **Viewers:** RLS on `nutrition_household_week_data` allows `SELECT` only; writes require owner/editor (`space_member_can_write_nutrition`).
+- **Dissolve:** deleting a `households` row cascades to members, invites, modules, and week data.
+
+### Key RPCs (callable by authenticated clients)
+
+| RPC | Purpose |
+|-----|---------|
+| `ensure_current_profile()` | Ensure `profiles` row exists for session user |
+| `household_membership_status()` | Gate: affiliated or not, role, household name |
+| `create_household(p_name)` | Create household + owner membership + default modules |
+| `ensure_household()` | Idempotent household ensure (used by client bootstrap) |
+| `invite_space_member(p_email, p_role)` | Owner sends invite; guards for cap, duplicate, other household |
+| `list_my_pending_space_invites()` | Invites matching session email only |
+| `accept_space_invite(p_invite_id)` | Join household; email match required |
+| `leave_household()` | Member leaves (not sole owner with others) |
+| `dissolve_household()` | Owner hard-deletes household when alone |
+| `transfer_household_ownership(p_new_owner_user_id)` | Sole owner picks new owner |
+| `export_my_personal_data()` | GDPR JSON export |
+| `find_profile_id_by_email(p_email)` | Lookup for collaboration flows |
+
+### Entity relationship (simplified)
+
+```
+auth.users ──1:1── profiles
+profiles ──owns──► households ◄── household_members ──► profiles (or contact_groups)
+households ──1:N── household_invites
+households ──1:N── household_modules (nutrition features)
+households ──1:N── nutrition_household_week_data (per week_key + data_kind)
+contact_groups ──1:N── group_members ──► profiles
 ```
 
-Open the `composeApp` run configuration in Android Studio, or install the APK from `composeApp/build/outputs/apk/debug/`.
+---
 
-**iOS** (macOS)
+## QA & manual testing
 
-```bash
-./gradlew :composeApp:compileKotlinIosSimulatorArm64
-```
+**Primary checklist:** [`firebase-appdistribution-testcases.yaml`](firebase-appdistribution-testcases.yaml) (versioned; included in Firebase release notes).
 
-Open `iosApp/` in Xcode and run on a simulator.
+### Recommended test setup
 
-## Testing
+| Need | Detail |
+|------|--------|
+| **Two accounts / two phones** | Household invite, shared grocery sync, transfer ownership, email mismatch |
+| **Supabase configured** | `local.properties` or CI build with `SUPABASE_URL` + `SUPABASE_ANON_KEY` |
+| **Roles** | Test owner, editor, and viewer on separate accounts |
+| **Viewer pass** | `nutrition-viewer-read-only` — no write controls on grocery, meal plan, AI |
+| **Crashlytics** | Tester APK built with `google-services.json` |
+
+### Test categories in YAML
+
+- **Auth** — email sign-in/up, OAuth redirect, sign out
+- **Household gate** — create, pending invite layout, accept on gate
+- **Invites** — two-phone flow, blocked if already in household, email mismatch
+- **Members** — invite from Home, transfer ownership + leave, max members note
+- **Nutrition** — hub navigation, grocery CRUD, meal plan, AI modes, AI read-only sections
+- **Sync** — status banner, two-phone shared grocery, Supabase persistence smoke
+- **GDPR** — export personal data from Home
+- **i18n** — language picker smoke
+
+### Automated tests
 
 ```bash
 # Unit tests (domain, screen models, i18n parity, Koin graph)
@@ -156,35 +282,101 @@ Open `iosApp/` in Xcode and run on a simulator.
 ./gradlew :composeApp:connectedDebugAndroidTest
 ```
 
-Manual QA checklist for Firebase testers: `firebase-appdistribution-testcases.yaml`.
+CI runs unit tests on every push; instrumented + iOS on PR / `main`.
+
+---
+
+## Prerequisites
+
+- **JDK 17**
+- **Android Studio** (latest stable) for Android
+- **Xcode** (macOS) for iOS simulator / device builds
+- A **Supabase** project with migrations applied (see below)
+
+---
+
+## Local setup
+
+### 1. Clone and configure Supabase
+
+```bash
+cp local.properties.example local.properties
+```
+
+Edit `local.properties`:
+
+```properties
+supabase.url=https://your-project.supabase.co
+supabase.anonKey=your_supabase_anon_or_publishable_key_here
+```
+
+Gradle task `generateSupabaseSecrets` embeds values into `commonMain` at compile time (never commit `local.properties`). Without keys, auth and sharing show “not configured”; local-only nutrition still works.
+
+**Local secrets (never commit):**
+
+| Local file | Template | Purpose |
+|------------|----------|---------|
+| `local.properties` | `local.properties.example` | Supabase URL + anon key |
+| `composeApp/google-services.json` | `composeApp/google-services.json.example` | Firebase (Crashlytics + App Distribution) |
+
+CI uses GitHub Secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GOOGLE_SERVICES_JSON`.
+
+Production migration deploy requires `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`.
+
+### 2. Apply database migrations
+
+All SQL files in `supabase/migrations/` (apply in timestamp order). Prefer:
+
+```bash
+./scripts/apply-supabase-migrations.sh
+```
+
+Or Supabase Dashboard SQL editor for ad-hoc applies. Remote field QA needs migrations through at least `20250618170000` (`households` rename) and `20250618180000` (grants).
+
+### 3. Run the app
+
+**Android**
+
+```bash
+./gradlew :composeApp:assembleDebug
+```
+
+**iOS** (macOS)
+
+```bash
+./gradlew :composeApp:compileKotlinIosSimulatorArm64
+```
+
+Open `iosApp/` in Xcode and run on a simulator.
+
+---
 
 ## CI/CD
 
-GitHub Actions workflow: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml)
+GitHub Actions: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml)
 
 | Trigger | Jobs |
 |---------|------|
-| **Push** to `feature/**` | **Android CI** → **Release** (Firebase + version bump). ~4 min target. |
-| **Push** to `main` / `master` | Android CI + Supabase Migrations + instrumented + iOS (parallel) → Release |
-| **Pull request** into `main` / `master` | Same as main push (merge gate) |
-| **Manual dispatch** (`kmp-ci.yml`) | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `ios-compatibility`, `release` |
+| **Push** to `feature/**` | Android CI → Release (Firebase + version bump) |
+| **Push** to `main` / **PR** | Android CI + Supabase Migrations + instrumented + iOS → Release |
+| **Manual dispatch** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `ios-compatibility`, `release` |
 
-**Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push` on `main` when migrations change. Requires `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`. CI validates migrations locally with `supabase db start` (no remote writes).
+**Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push` on `main` when migrations change.
 
-**Manual `release`:** reuses the APK from the latest successful **Android CI** on that branch (optional `source_run_id`).
+Firebase App Distribution runs on push, PR, and manual release.
 
-Firebase App Distribution runs on every **push**, **pull request** (opened / reopened), manual `all`, and manual `release`.
+---
 
 ## App versioning
 
-Canonical version: [`gradle/app-version.properties`](gradle/app-version.properties) (read by `composeApp/build.gradle.kts` and synced to iOS `Info.plist`).
+Canonical version: [`gradle/app-version.properties`](gradle/app-version.properties).
 
-| Event | Bump | Example `versionName` |
-|-------|------|------------------------|
-| Successful **push** to `feature/**` | Candidate +1, `version.code` +1 | `1.0.5` (RC; third segment) |
-| Successful **push** to `main` / `master` (merge) | LTS patch +1, candidate reset | `1.0.1` |
+| Event | Bump |
+|-------|------|
+| Push to `feature/**` | Candidate +1 |
+| Push to `main` (merge) | LTS patch +1, candidate reset |
 
-CI commits bumps with `chore(version): … [skip ci]` so only user pushes run the full pipeline.
+---
 
 ## Project layout
 
@@ -195,26 +387,30 @@ composeApp/
   src/iosMain/        iOS entry, Koin platform module
   src/commonTest/     Unit tests
   src/androidInstrumentedTest/  UI tests
-supabase/migrations/  Postgres schema + RLS + Realtime
+docs/                 Product specs (e.g. household-collaboration.md)
+supabase/migrations/  Postgres schema + RLS + Realtime + RPCs
 .github/workflows/    CI pipelines
+firebase-appdistribution-testcases.yaml  Manual QA checklist
 ```
 
-## Supabase tables (sharing)
+---
 
-| Table | Purpose |
-|-------|---------|
-| `profiles` | App user profile (linked to `auth.users`) |
-| `contact_groups` | Reusable person groups (long-term or event) |
-| `sharing_spaces` | Topic container (e.g. nutrition) with owner |
-| `space_members` | People or groups granted access to a space |
-| `space_nutrition_features` | Enabled features per space (grocery, meal plan, AI) |
-| `nutrition_space_week_data` | Serialized grocery / meal plan / AI grocery per week |
+## Roadmap (not in v1)
 
-Row Level Security restricts reads and writes to space owners and members.
+Tracked on branch `feature/household-collaboration-p2` / PR #8:
+
+- Push/email invite notifications
+- Child / shared email accounts
+- Account deletion (GDPR)
+- Adventures & Budget modules on `household_modules`
+
+---
 
 ## Agent / contributor notes
 
-See [`AGENTS.md`](AGENTS.md) and [`.cursor/rules/`](.cursor/rules/) for delivery workflow, i18n requirements (all 8 locales for new strings), and layer boundaries.
+See [`AGENTS.md`](AGENTS.md) and [`.cursor/rules/`](.cursor/rules/) for delivery workflow, i18n (all 8 locales for new strings), and layer boundaries.
+
+---
 
 ## License
 
