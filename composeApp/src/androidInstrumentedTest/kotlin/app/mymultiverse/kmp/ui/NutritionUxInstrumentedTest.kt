@@ -185,8 +185,9 @@ class NutritionUxInstrumentedTest {
         composeRule.waitFor { screenModel.aiState.value is NutritionAiState.GroceryList }
         composeRule.waitForState(screenModel.aiGroceryItems) { it.size == 3 }
 
+        composeRule.onNodeWithTag(NutritionAiTestTags.SCROLL_LIST)
+            .performScrollToNode(hasTestTag(NutritionAiTestTags.CLEAR_AI_GROCERY_BUTTON))
         composeRule.onNodeWithTag(NutritionAiTestTags.CLEAR_AI_GROCERY_BUTTON)
-            .performScrollTo()
             .assertIsDisplayed()
             .performClick()
         composeRule.waitForState(screenModel.aiGroceryItems) { it.isEmpty() }
