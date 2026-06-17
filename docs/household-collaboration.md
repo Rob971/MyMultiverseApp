@@ -32,12 +32,12 @@ This document is the **source of truth** for household sharing in MyMultiverse: 
 | **Dissolve household** | **Hard delete** household data (not soft archive) for v1. Confirm in UI with strong destructive copy. |
 | **Pending invites + Create household** | **Do not block** create; use **layout** (invites above create on gate). |
 | **Max household size** | **20** members. |
-| **Rename `sharing_spaces` → `households`** | **Yes** — migration planned; keep stable UUIDs for client cache keys. |
+| **Rename `sharing_spaces` → `households`** | **Done** — migration `20250618170000`; stable UUIDs preserved for client cache keys. |
 | **Trip / Budget** | **Same unique household** as Nutrition (module flags, not separate household rows). |
 | **Invite expiry in UI** | **No** — expiry still enforced server-side (14 days); no countdown in app v1. |
 | **GDPR on leave** | **Yes** — implement leave/export/delete flows per privacy policy (see § GDPR). |
 | **Firebase QA two-phone flow** | **Yes** — simulate in `firebase-appdistribution-testcases.yaml` (see QA section). |
-| **Viewer edits** | **No** — viewers never edit any shared entry; read-only UI + RLS on `nutrition_space_week_data`. |
+| **Viewer edits** | **No** — viewers never edit any shared entry; read-only UI + RLS on `nutrition_household_week_data`. |
 | **Auth email match for invites** | **Required** — sign in with the **exact invited email** (normalized) to see pending invites and accept. No auto-migration when auth email changes. |
 
 ---
@@ -57,7 +57,7 @@ Members have a **role**: `owner`, `editor`, or `viewer`.
 | Editor / Owner | Read and **edit** shared grocery, meal plan, etc. |
 | Viewer | **Read only** — can see shared data, must not change it |
 
-**Implementation:** Postgres policies on `nutrition_space_week_data` allow `INSERT`/`UPDATE`/`DELETE` only when the caller is **owner or editor** on that household. The app disables all write controls when `role = viewer`.
+**Implementation:** Postgres policies on `nutrition_household_week_data` allow `INSERT`/`UPDATE`/`DELETE` only when the caller is **owner or editor** on that household. The app disables all write controls when `role = viewer`.
 
 **Status:** Implemented (migration `20250618150000` + read-only UI).
 
@@ -202,19 +202,19 @@ When a user **leaves** a household (or deletes account):
 
 ---
 
-## Architecture direction
+## Architecture — current schema (post-rename)
 
-### Target tables (migration from `sharing_spaces`)
+Migration `20250618170000` renamed legacy `sharing_spaces` tables. RPC names and JSON keys may still use `space_*` for backward compatibility; PostgREST table names are below.
 
-| Today | Target |
-|-------|--------|
+| Legacy (pre-`20250618170000`) | Current |
+|--------------------------------|---------|
 | `sharing_spaces` (`topic = nutrition`) | `households` |
-| `space_members` | `household_members` (`joined_at`, `left_at`) |
+| `space_members` | `household_members` (`left_at`; `joined_at` not yet added) |
 | `space_invites` | `household_invites` |
 | `space_nutrition_features` | `household_modules` (`nutrition`, `adventures`, `budget`) |
 | `nutrition_space_week_data.space_id` | `nutrition_household_week_data.household_id` (same UUID) |
 
-**One `households` row** powers Nutrition, Adventures, and Budget via `household_modules`.
+**One `households` row** powers Nutrition, Adventures, and Budget via `household_modules` (Adventures/Budget not wired in app yet).
 
 ---
 
@@ -278,3 +278,4 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 | 2025-06-18 | Locked viewer read-only + auth email must match; P0 backlog and QA updated |
 | 2025-06-18 | P1: transfer ownership, GDPR export, `households` table rename shipped |
 | 2025-06-19 | v1 polish: gate hierarchy, invite email snackbar, joined snackbar, dissolve cascade doc, Firebase QA |
+| 2025-06-19 | Architecture section updated post-`households` rename; table names aligned in FAQ |

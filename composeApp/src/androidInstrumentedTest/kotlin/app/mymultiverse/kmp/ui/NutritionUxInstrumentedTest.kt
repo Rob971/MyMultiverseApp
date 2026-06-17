@@ -323,6 +323,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -355,6 +356,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -385,6 +387,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -412,6 +415,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -438,6 +442,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -465,6 +470,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -492,6 +498,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -518,6 +525,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
