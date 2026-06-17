@@ -100,12 +100,39 @@ class HouseholdGateScreenModelTest {
         assertEquals(0, householdRepository.createCalls)
     }
 
+    @Test
+    fun pendingInvites_visibleWhenMembershipIsNone() = runTest(testDispatcher) {
+        val collaboration = FakeSpaceCollaborationRepository()
+        collaboration.inboundProfileEmail = "invitee@example.com"
+        collaboration.addMemberByEmail(
+            spaceId = "household-space-1",
+            email = "invitee@example.com",
+            role = SpaceMemberRole.Editor,
+        )
+
+        val householdRepository = FakeHouseholdRepository(
+            initialMembershipStatus = HouseholdMembershipStatus.None,
+        )
+        householdRepository.setMembershipStatus(HouseholdMembershipStatus.None)
+        val model = model(
+            householdRepository = householdRepository,
+            collaborationRepository = collaboration,
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembershipStatus.None, model.uiState.value.membershipStatus)
+        assertEquals(1, model.uiState.value.pendingInvites.size)
+        assertEquals("invitee@example.com", model.uiState.value.pendingInvites.single().email)
+    }
+
     private fun model(
         householdRepository: FakeHouseholdRepository,
+        collaborationRepository: FakeSpaceCollaborationRepository = FakeSpaceCollaborationRepository(),
     ): HouseholdGateScreenModel =
         HouseholdGateScreenModel(
             householdRepository = householdRepository,
-            collaborationRepository = FakeSpaceCollaborationRepository(),
+            collaborationRepository = collaborationRepository,
             authRepository = FakeAuthRepository(
                 initialState = AuthState.Authenticated(
                     AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),

@@ -640,7 +640,7 @@
     <string name="auth_provider_coming_soon">Questa opzione di accesso sarà disponibile a breve.</string>
     <string name="auth_error_generic">Accesso non riuscito. Controlla i dati e riprova.</string>
     <string name="auth_error_config_missing">Supabase non è configurato in questa build. Aggiungi supabase.anonKey in local.properties.</string>
-    <string name="auth_error_invalid_credentials">Inserisci un\'email e una password valide.</string>
+    <string name="auth_error_invalid_credentials">Inserisci un'email e una password valide.</string>
     <string name="auth_error_invalid_email">Inserisci un indirizzo email valido.</string>
     <string name="auth_error_weak_password">La password deve avere almeno 6 caratteri.</string>
     <string name="auth_error_user_already_exists">Esiste già un account con questa email. Accedi.</string>
@@ -701,7 +701,7 @@
     <string name="auth_pending_invites_subtitle">Sei stato invitato a unirti a %1$s.</string>
     <string name="auth_pending_invites_accept">Accetta</string>
     <string name="auth_pending_invites_decline">Rifiuta</string>
-    <string name="auth_pending_invites_error_generic">Impossibile accettare l\'invito. Riprova.</string>
+    <string name="auth_pending_invites_error_generic">Impossibile accettare l'invito. Riprova.</string>
     <string name="sharing_members_role_owner">Proprietario</string>
     <string name="sharing_members_role_editor">Editor</string>
     <string name="sharing_members_role_viewer">Visualizzatore</string>

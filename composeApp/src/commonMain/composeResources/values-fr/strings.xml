@@ -26,9 +26,9 @@
     <string name="home_logistics_budget_title">Budget</string>
     <string name="home_logistics_budget_description">Dépenses, épargne et finances familiales partagées.</string>
     <string name="nutrition_hub_title">Nutrition</string>
-    <string name="nutrition_entry_loading">Ouverture de l\'espace nutrition du foyer...</string>
-    <string name="nutrition_entry_error_generic">Impossible d\'ouvrir la nutrition. Réessayez.</string>
-    <string name="nutrition_entry_error_not_configured">Supabase n\'est pas configuré pour cette build.</string>
+    <string name="nutrition_entry_loading">Ouverture de l'espace nutrition du foyer...</string>
+    <string name="nutrition_entry_error_generic">Impossible d'ouvrir la nutrition. Réessayez.</string>
+    <string name="nutrition_entry_error_not_configured">Supabase n'est pas configuré pour cette build.</string>
     <string name="nutrition_entry_retry">Réessayer</string>
     <string name="nutrition_hub_subtitle">Courses, repas et conseils adaptés pour la famille.</string>
     <string name="nutrition_hub_sections_title">Cette semaine</string>
@@ -688,10 +688,10 @@
     <string name="sharing_members_error_email_required">Saisissez une adresse e-mail.</string>
     <string name="sharing_members_error_email_not_found">Aucun compte trouvé pour cet e-mail.</string>
     <string name="sharing_members_error_group_name_required">Saisissez un nom de groupe.</string>
-    <string name="sharing_members_error_not_configured">Supabase n\'est pas configuré sur cette version.</string>
+    <string name="sharing_members_error_not_configured">Supabase n'est pas configuré sur cette version.</string>
     <string name="sharing_members_error_cannot_add_self">Vous ne pouvez pas vous inviter vous-même.</string>
     <string name="sharing_members_error_member_already_exists">Cette personne fait déjà partie de votre foyer.</string>
-    <string name="sharing_members_error_insufficient_role">Vous n\'avez pas la permission de gérer les membres.</string>
+    <string name="sharing_members_error_insufficient_role">Vous n'avez pas la permission de gérer les membres.</string>
     <string name="sharing_members_loading">Chargement des membres...</string>
     <string name="nutrition_sync_status_syncing">Synchronisation nutrition partagée...</string>
     <string name="nutrition_sync_status_pending">%1$d modifications en attente de sync</string>
@@ -701,7 +701,7 @@
     <string name="auth_pending_invites_subtitle">Vous êtes invité à rejoindre %1$s.</string>
     <string name="auth_pending_invites_accept">Accepter</string>
     <string name="auth_pending_invites_decline">Refuser</string>
-    <string name="auth_pending_invites_error_generic">Impossible d\'accepter l\'invitation. Réessayez.</string>
+    <string name="auth_pending_invites_error_generic">Impossible d'accepter l'invitation. Réessayez.</string>
     <string name="sharing_members_role_owner">Propriétaire</string>
     <string name="sharing_members_role_editor">Éditeur</string>
     <string name="sharing_members_role_viewer">Lecteur</string>

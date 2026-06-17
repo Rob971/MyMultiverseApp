@@ -492,7 +492,7 @@
     <string name="finance_q_partner_a_spending_title">Partner A: relationship with spending</string>
     <string name="finance_q_partner_a_spending_desc">Helps detect saver-spender dynamics without blaming either partner.</string>
     <string name="finance_q_partner_b_spending_title">Partner B: relationship with spending</string>
-    <string name="finance_q_partner_b_spending_desc">Pairs with Partner A\'s answer so the AI can act as a neutral mediator.</string>
+    <string name="finance_q_partner_b_spending_desc">Pairs with Partner A's answer so the AI can act as a neutral mediator.</string>
     <string name="finance_q_money_talk_title">How often do you talk about money together?</string>
     <string name="finance_q_money_talk_desc">Shapes the tone and cadence of AI insights.</string>
     <string name="finance_q_phase3_title">Phase 3: Future Goals</string>
@@ -520,7 +520,7 @@
     <string name="finance_opt_bill_utilities">Utilities (Electric, Water, Gas, Trash)</string>
     <string name="finance_opt_bill_connectivity">Connectivity (Internet, Mobile/Cell plans)</string>
     <string name="finance_opt_bill_subscriptions">Subscriptions (Netflix, Spotify, Gym, Costco, etc.)</string>
-    <string name="finance_opt_bill_insurance">Insurance (Car, Health, Home/Renter\'s)</string>
+    <string name="finance_opt_bill_insurance">Insurance (Car, Health, Home/Renter's)</string>
     <string name="finance_opt_bill_kids_pets">Kids &amp; Pets (Daycare, Tuition, Pet Insurance)</string>
     <string name="finance_opt_pain_late">Forgetting when a bill is due (Late fees)</string>
     <string name="finance_opt_pain_nagging">The awkwardness of nagging my partner to send their half</string>
@@ -532,7 +532,7 @@
     <string name="finance_opt_manager_a">Partner A does it all</string>
     <string name="finance_opt_manager_b">Partner B does it all</string>
     <string name="finance_opt_manager_together">We try to do it together</string>
-    <string name="finance_opt_manager_chaotic">Honestly, it\'s a bit chaotic</string>
+    <string name="finance_opt_manager_chaotic">Honestly, it's a bit chaotic</string>
     <string name="finance_opt_annoy_bills_due">Forgetting when bills are due</string>
     <string name="finance_opt_annoy_tracking">Tracking who owes what</string>
     <string name="finance_opt_annoy_overspend">Overspending on groceries/dining out</string>
@@ -555,7 +555,7 @@
     <string name="wellness_q_title">Couples Wellness Check-In</string>
     <string name="wellness_q_desc">Capture tiny answers that help the AI mediate, translate and plan for the team without taking sides.</string>
     <string name="wellness_q_conflict_title">De-escalator: what are you fighting about?</string>
-    <string name="wellness_q_conflict_desc">The AI rewrites blame into a calmer \'I feel / I need / can we\' message.</string>
+    <string name="wellness_q_conflict_desc">The AI rewrites blame into a calmer 'I feel / I need / can we' message.</string>
     <string name="wellness_q_conflict_topic_placeholder">Example: dishes, money, bedtime, chores</string>
     <string name="wellness_q_conflict_draft_placeholder">Paste what you want to say before sending it</string>
     <string name="wellness_q_love_language_title">Love language translator</string>
@@ -568,7 +568,7 @@
     <string name="wellness_q_drain_title">What is draining you the most this week?</string>
     <string name="wellness_q_drain_desc">This gives the AI a prevention signal before the couple runs out of fuel.</string>
     <string name="wellness_q_date_night_title">Date night decision maker</string>
-    <string name="wellness_q_date_night_desc">Capture constraints so the AI can remove the \'I don\'t know, what do you want to do?\' loop.</string>
+    <string name="wellness_q_date_night_desc">Capture constraints so the AI can remove the 'I don't know, what do you want to do?' loop.</string>
     <string name="wellness_q_date_night_likes_placeholder">We like sushi, cards, cooking, music...</string>
     <string name="wellness_q_date_night_avoids_placeholder">We do not want to watch a movie</string>
     <string name="wellness_q_golden_rule">Golden rule: You + Them vs. The Problem. The AI should never judge who is right.</string>
@@ -601,7 +601,7 @@
     <string name="longterm_q_desc">Answer four quick prompts and one sentence so the AI can build the project plan for you.</string>
     <string name="longterm_q_milestone_title">What big milestone are you tackling next?</string>
     <string name="longterm_q_milestone_desc">This tells the AI what kind of project mountain it is planning around.</string>
-    <string name="longterm_q_roadblock_title">What\'s the biggest roadblock keeping you from finishing or starting this?</string>
+    <string name="longterm_q_roadblock_title">What's the biggest roadblock keeping you from finishing or starting this?</string>
     <string name="longterm_q_roadblock_desc">This changes whether the AI emphasizes steps, alignment, ownership or momentum.</string>
     <string name="longterm_q_boundaries_title">Boundaries</string>
     <string name="longterm_q_timeline_title">What is your realistic timeline for this?</string>
@@ -619,8 +619,8 @@
     <string name="longterm_opt_milestone_transition">Major life transition (New baby, career change, kids starting school)</string>
     <string name="longterm_opt_milestone_declutter">Decluttering / Deep Organization (Garage, attic, etc.)</string>
     <string name="longterm_opt_roadblock_time">Time: We are too busy with daily life to focus on it.</string>
-    <string name="longterm_opt_roadblock_alignment">Alignment: We aren\'t on the same page about the budget, style, or plan.</string>
-    <string name="longterm_opt_roadblock_overwhelmed">Overwhelmed: We don\'t know the correct order of steps to take.</string>
+    <string name="longterm_opt_roadblock_alignment">Alignment: We aren't on the same page about the budget, style, or plan.</string>
+    <string name="longterm_opt_roadblock_overwhelmed">Overwhelmed: We don't know the correct order of steps to take.</string>
     <string name="longterm_opt_roadblock_accountability">Accountability: We start, but things keep getting pushed to the back burner.</string>
     <string name="longterm_opt_timeline_asap">ASAP (Less than a month)</string>
     <string name="longterm_opt_timeline_medium">Medium-term (1-6 months)</string>

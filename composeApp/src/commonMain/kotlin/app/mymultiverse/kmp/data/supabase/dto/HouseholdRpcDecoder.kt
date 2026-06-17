@@ -20,6 +20,17 @@ internal object HouseholdRpcDecoder {
     fun decodeInviteResult(result: PostgrestResult): InviteSpaceMemberRpcRow =
         decodePayload(result, "invite_space_member_decode_failed")
 
+    fun decodePendingInvites(result: PostgrestResult): List<PendingSpaceInviteRpcRow> =
+        runCatching { result.decodeList<PendingSpaceInviteRpcRow>() }
+            .recoverCatching { listOf(json.decodeFromString<PendingSpaceInviteRpcRow>(result.data)) }
+            .recoverCatching { json.decodeFromString<List<PendingSpaceInviteRpcRow>>(result.data) }
+            .getOrElse { error ->
+                throw IllegalStateException(
+                    "list_my_pending_space_invites_decode_failed: ${error.message}",
+                    error,
+                )
+            }
+
     private inline fun <reified T> decodePayload(
         result: PostgrestResult,
         failureLabel: String,

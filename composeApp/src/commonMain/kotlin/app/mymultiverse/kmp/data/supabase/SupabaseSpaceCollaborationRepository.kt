@@ -18,7 +18,6 @@ import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
 import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
 import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.kmp.domain.sharing.activeInvites
-import app.mymultiverse.kmp.domain.sharing.emailsMatch
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
@@ -94,22 +93,28 @@ class SupabaseSpaceCollaborationRepository(
     }
 
     override suspend fun refreshPendingInvites() {
-        val profileEmail = resolveProfileEmail() ?: run {
+        val currentUserId = runCatching { requireUserId() }.getOrNull() ?: run {
             pendingInvites.value = emptyList()
             return
         }
+        ensureProfile(currentUserId)
 
-        val rows = client.postgrest["space_invites"]
-            .select(Columns.ALL)
-            .decodeList<SpaceInviteRow>()
-            .filter { row -> row.acceptedAt == null && row.declinedAt == null }
-            .filter { row -> emailsMatch(row.email, profileEmail) }
+        val rows = HouseholdRpcDecoder.decodePendingInvites(
+            client.postgrest.rpc("list_my_pending_space_invites"),
+        )
 
-        val spaceNames = loadSpaceNames(rows.map { it.spaceId }.distinct())
         pendingInvites.value = rows
-            .map { it.toSpaceInvite(spaceName = null) }
+            .map { row ->
+                SpaceInvite(
+                    id = row.id,
+                    spaceId = row.spaceId,
+                    spaceName = row.spaceName,
+                    email = row.email,
+                    role = row.role.toSpaceMemberRole(),
+                    expiresAtEpochMillis = row.expiresAt?.toEpochMillis(),
+                )
+            }
             .activeInvites()
-            .map { invite -> invite.copy(spaceName = spaceNames[invite.spaceId] ?: invite.spaceId) }
             .sortedBy { it.spaceName.lowercase() }
     }
 

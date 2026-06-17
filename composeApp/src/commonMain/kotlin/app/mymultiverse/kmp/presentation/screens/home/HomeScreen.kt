@@ -153,11 +153,13 @@ fun HomeContent(
             }
 
             item {
-                PendingInvitesCard(
-                    invites = pendingInvites,
-                    onAccept = onAcceptInvite,
-                    onDecline = onDeclineInvite,
-                )
+                if (!hasActiveHousehold) {
+                    PendingInvitesCard(
+                        invites = pendingInvites,
+                        onAccept = onAcceptInvite,
+                        onDecline = onDeclineInvite,
+                    )
+                }
             }
 
             item {

@@ -60,10 +60,10 @@ class HouseholdGateScreenModel(
                 membershipStatus = HouseholdMembershipStatus.Loading,
                 isCreating = false,
             )
-            runCatching { collaborationRepository.refreshPendingInvites() }
             householdRepository.refreshMembership()
                 .onSuccess { status ->
                     _uiState.value = _uiState.value.copy(membershipStatus = status)
+                    runCatching { collaborationRepository.refreshPendingInvites() }
                 }
                 .onFailure { throwable ->
                     logger.recordError(
@@ -143,6 +143,7 @@ class HouseholdGateScreenModel(
     fun declineInvite(inviteId: String) {
         scope.launch {
             collaborationRepository.declineInvite(inviteId)
+            runCatching { collaborationRepository.refreshPendingInvites() }
         }
     }
 
