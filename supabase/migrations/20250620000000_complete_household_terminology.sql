@@ -63,6 +63,65 @@ as $$
         );
 $$;
 
+drop function if exists public.resolve_user_household_row();
+
+create function public.resolve_user_household_row()
+returns table (
+    household_id uuid,
+    household_name text,
+    owner_id uuid,
+    owner_display_name text,
+    member_role text
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+    v_user_id uuid := auth.uid();
+begin
+    if v_user_id is null then
+        raise exception 'auth_required';
+    end if;
+
+    return query
+    select
+        s.id,
+        s.name,
+        s.owner_id,
+        coalesce(nullif(trim(p.display_name), ''), nullif(trim(p.email), ''), '')::text,
+        case
+            when s.owner_id = v_user_id then 'owner'
+            else coalesce(sm.role::text, 'editor')
+        end
+    from public.households s
+    join public.profiles p on p.id = s.owner_id
+    left join public.household_members sm
+        on sm.household_id = s.id
+       and sm.user_id = v_user_id
+       and sm.left_at is null
+    where s.topic = 'nutrition'
+      and (
+          s.owner_id = v_user_id
+          or sm.user_id is not null
+          or exists (
+              select 1
+              from public.household_members sm2
+              join public.group_members gm on gm.group_id = sm2.group_id
+              where sm2.household_id = s.id
+                and sm2.left_at is null
+                and gm.user_id = v_user_id
+          )
+      )
+    order by (s.owner_id = v_user_id) desc, s.created_at
+    limit 1;
+end;
+$$;
+
+revoke all on function public.resolve_user_household_row() from public;
+grant execute on function public.resolve_user_household_row() to authenticated;
+
 create or replace function public.household_membership_status()
 returns json
 language plpgsql
@@ -199,69 +258,11 @@ begin
 end;
 $$;
 
-revoke all on function public.resolve_user_household_row() from public;
-grant execute on function public.resolve_user_household_row() to authenticated;
-
 revoke all on function public.household_membership_status() from public;
 grant execute on function public.household_membership_status() to authenticated;
 
 revoke all on function public.create_household(text) from public;
 grant execute on function public.create_household(text) to authenticated;
-
-
-create or replace function public.resolve_user_household_row()
-returns table (
-    household_id uuid,
-    household_name text,
-    owner_id uuid,
-    owner_display_name text,
-    member_role text
-)
-language plpgsql
-stable
-security definer
-set search_path = public
-as $$
-declare
-    v_user_id uuid := auth.uid();
-begin
-    if v_user_id is null then
-        raise exception 'auth_required';
-    end if;
-
-    return query
-    select
-        s.id,
-        s.name,
-        s.owner_id,
-        coalesce(nullif(trim(p.display_name), ''), nullif(trim(p.email), ''), '')::text,
-        case
-            when s.owner_id = v_user_id then 'owner'
-            else coalesce(sm.role::text, 'editor')
-        end
-    from public.households s
-    join public.profiles p on p.id = s.owner_id
-    left join public.household_members sm
-        on sm.household_id = s.id
-       and sm.user_id = v_user_id
-       and sm.left_at is null
-    where s.topic = 'nutrition'
-      and (
-          s.owner_id = v_user_id
-          or sm.user_id is not null
-          or exists (
-              select 1
-              from public.household_members sm2
-              join public.group_members gm on gm.group_id = sm2.group_id
-              where sm2.household_id = s.id
-                and sm2.left_at is null
-                and gm.user_id = v_user_id
-          )
-      )
-    order by (s.owner_id = v_user_id) desc, s.created_at
-    limit 1;
-end;
-$$;
 
 create or replace function public.user_has_active_nutrition_household(
     p_user_id uuid,

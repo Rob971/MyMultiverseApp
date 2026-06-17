@@ -1,6 +1,7 @@
 package app.mymultiverse.kmp.presentation.di
 
 import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
+import app.mymultiverse.kmp.domain.observability.CrashReporter
 import app.mymultiverse.kmp.domain.manager.IOSLanguageManager
 import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.data.platform.IosPersonalDataExporter

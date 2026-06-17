@@ -87,7 +87,15 @@ class HouseholdCollaborationInstrumentedTest {
 
         val screenModel = HouseholdMembersScreenModel(
             collaborationRepository = collaboration,
-            householdRepository = InstrumentedHouseholdRepository(),
+            householdRepository = InstrumentedHouseholdRepository(
+                household = app.mymultiverse.kmp.domain.model.sharing.Household(
+                    id = "household-1",
+                    name = "Our household",
+                    ownerId = ownerId,
+                    ownerDisplayName = "Owner User",
+                    nutritionFeatures = emptySet(),
+                ),
+            ),
             sessionCoordinator = InstrumentedNutritionSessionCoordinator(
                 InstrumentedNutritionRepository(WeekCalendar.currentWeekKey()),
             ),
@@ -108,6 +116,13 @@ class HouseholdCollaborationInstrumentedTest {
                     displayName = "Owner User",
                 ),
             ),
+        )
+
+        screenModel.bindHousehold(
+            householdId = household.id,
+            ownerId = household.ownerId,
+            ownerDisplayName = household.ownerDisplayName ?: "Owner User",
+            currentUserId = ownerId,
         )
 
         composeRule.setContent {
