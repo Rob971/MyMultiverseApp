@@ -33,9 +33,17 @@ fi
 echo "OK: Supabase REST reachable (status ${HEALTH_STATUS})"
 
 echo "==> Checking ensure_household RPC is deployed"
-OPENAPI_BODY="$(curl -fsS "${REST_URL}/" \
+OPENAPI_STATUS="$(curl -s -o /tmp/supabase-openapi.json -w '%{http_code}' "${REST_URL}/" \
   -H "apikey: ${ANON_KEY}" \
+  -H "Authorization: Bearer ${ANON_KEY}" \
   -H "Accept: application/openapi+json")"
+OPENAPI_BODY="$(cat /tmp/supabase-openapi.json)"
+rm -f /tmp/supabase-openapi.json
+
+if [[ "${OPENAPI_STATUS}" != "200" ]]; then
+  echo "ERROR: could not fetch PostgREST OpenAPI schema (status ${OPENAPI_STATUS})" >&2
+  exit 1
+fi
 
 if ! echo "${OPENAPI_BODY}" | jq -e '.paths["/rpc/ensure_household"].post' >/dev/null 2>&1; then
   echo "ERROR: ensure_household RPC not found in PostgREST schema. Run: supabase db push" >&2
