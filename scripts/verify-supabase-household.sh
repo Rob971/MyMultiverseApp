@@ -33,24 +33,15 @@ fi
 echo "OK: Supabase REST reachable (status ${HEALTH_STATUS})"
 
 echo "==> Checking ensure_household RPC is deployed"
-RPC_STATUS="$(curl -s -o /dev/null -w '%{http_code}' \
-  -X POST "${REST_URL}/rpc/ensure_household" \
+OPENAPI_BODY="$(curl -fsS "${REST_URL}/" \
   -H "apikey: ${ANON_KEY}" \
-  -H "Authorization: Bearer ${ANON_KEY}" \
-  -H "Content-Type: application/json" \
-  -d '{}')"
+  -H "Accept: application/openapi+json")"
 
-if [[ "${RPC_STATUS}" == "404" ]]; then
-  echo "ERROR: ensure_household RPC not found. Run: supabase db push" >&2
+if ! echo "${OPENAPI_BODY}" | jq -e '.paths["/rpc/ensure_household"].post' >/dev/null 2>&1; then
+  echo "ERROR: ensure_household RPC not found in PostgREST schema. Run: supabase db push" >&2
   exit 1
 fi
-
-if [[ "${RPC_STATUS}" != "200" && "${RPC_STATUS}" != "401" ]]; then
-  echo "ERROR: unexpected ensure_household status ${RPC_STATUS}" >&2
-  exit 1
-fi
-
-echo "OK: ensure_household RPC reachable (status ${RPC_STATUS})"
+echo "OK: ensure_household RPC exposed in PostgREST schema"
 
 if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
   echo "==> Signing in test user ${SUPABASE_TEST_EMAIL}"

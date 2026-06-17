@@ -265,7 +265,7 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 - `household-gate-create-with-invite` — gate hierarchy when invite + create both visible.
 
 **Remote Supabase migrations required for field tests:**  
-`20250617130000`, `20250617140000`, `20250618120000`, `20250618140000`, `20250618150000`, `20250618160000`, `20250618161000`, `20250618170000`.
+`20250617130000`, `20250617140000`, `20250618120000`, `20250618140000`, `20250618150000`, `20250618160000`, `20250618161000`, `20250618170000`, `20250618180000`.
 
 ---
 
