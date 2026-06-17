@@ -55,4 +55,8 @@ class InstrumentedHouseholdRepository(
         state.update { household }
         return Result.success(household)
     }
+
+    override suspend fun leaveHousehold(): Result<Unit> = Result.success(Unit)
+
+    override suspend fun dissolveHousehold(): Result<Unit> = Result.success(Unit)
 }

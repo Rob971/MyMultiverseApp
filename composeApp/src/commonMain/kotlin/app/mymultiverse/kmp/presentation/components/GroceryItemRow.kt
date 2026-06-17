@@ -3,6 +3,7 @@ package app.mymultiverse.kmp.presentation.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -60,8 +61,33 @@ fun GroceryItemRow(
     onSaveEdit: (String) -> Boolean,
     onToggle: () -> Unit,
     onDelete: () -> Unit,
+    readOnly: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
+    if (readOnly) {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .testTag("${GroceryItemRowTestTags.ROW_PREFIX}${item.id}"),
+        ) {
+            GroceryItemCard(
+                item = item,
+                isEditing = false,
+                editLabel = editLabel,
+                editContentDescription = editContentDescription,
+                saveContentDescription = saveContentDescription,
+                cancelEditLabel = cancelEditLabel,
+                toggleContentDescription = toggleContentDescription,
+                onStartEdit = {},
+                onCancelEdit = {},
+                onSaveEdit = { false },
+                onToggle = {},
+                readOnly = true,
+            )
+        }
+        return
+    }
+
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart) {
@@ -113,6 +139,7 @@ fun GroceryItemRow(
             onCancelEdit = onCancelEdit,
             onSaveEdit = onSaveEdit,
             onToggle = onToggle,
+            readOnly = false,
         )
     }
 }
@@ -130,6 +157,7 @@ private fun GroceryItemCard(
     onCancelEdit: () -> Unit,
     onSaveEdit: (String) -> Boolean,
     onToggle: () -> Unit,
+    readOnly: Boolean = false,
 ) {
     var editText by remember(item.id, isEditing) {
         mutableStateOf(item.label)
@@ -145,7 +173,7 @@ private fun GroceryItemCard(
         ) {
             IconButton(
                 onClick = onToggle,
-                enabled = !isEditing,
+                enabled = !isEditing && !readOnly,
                 modifier = Modifier.testTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}"),
             ) {
                 Icon(
@@ -210,7 +238,7 @@ private fun GroceryItemCard(
                     },
                     textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
                 )
-                AnimatedVisibility(visible = !item.isChecked) {
+                AnimatedVisibility(visible = !item.isChecked && !readOnly) {
                     IconButton(
                         onClick = onStartEdit,
                         modifier = Modifier.testTag("${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}${item.id}"),

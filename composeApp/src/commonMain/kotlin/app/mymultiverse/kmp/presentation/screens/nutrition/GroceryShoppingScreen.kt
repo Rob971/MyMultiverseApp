@@ -56,6 +56,7 @@ import app.mymultiverse.kmp.presentation.components.AiReadOnlyGroceryList
 import app.mymultiverse.kmp.presentation.components.EmptyStateCard
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.GroceryInputBar
+import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.kmp.presentation.components.GroceryItemRow
 import app.mymultiverse.kmp.presentation.components.GroceryItemRowTestTags
 import app.mymultiverse.kmp.presentation.components.NutritionFeatureHeader
@@ -83,6 +84,7 @@ fun GroceryShoppingScreen(
 ) {
     val items by screenModel.groceryItems.collectAsState()
     val aiGroceryItems by screenModel.aiGroceryItems.collectAsState()
+    val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     var newItemText by rememberSaveable { mutableStateOf("") }
     var editingItemId by rememberSaveable { mutableStateOf<String?>(null) }
     var refocusInput by rememberSaveable { mutableStateOf(false) }
@@ -204,6 +206,12 @@ fun GroceryShoppingScreen(
                     )
                 }
 
+                if (!canWrite) {
+                    item {
+                        HouseholdViewerReadOnlyNotice()
+                    }
+                }
+
                 if (aiGroceryItems.isNotEmpty()) {
                     item {
                         AiReadOnlyGroceryList(
@@ -218,6 +226,7 @@ fun GroceryShoppingScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .testTag(GroceryListTestTags.CLEAR_AI_GROCERY_BUTTON),
+                            enabled = canWrite,
                         ) {
                             Text(stringResource(Res.string.nutrition_ai_clear_grocery))
                         }
@@ -257,6 +266,7 @@ fun GroceryShoppingScreen(
                                 },
                                 onToggle = { screenModel.toggleGroceryItem(item.id) },
                                 onDelete = { deleteWithUndo(item, index) },
+                                readOnly = !canWrite,
                             )
                         }
                     } else {
@@ -274,9 +284,9 @@ fun GroceryShoppingScreen(
                         item {
                             FamilyLogisticsSectionHeader(
                                 title = sectionCompleted,
-                                actionLabel = clearCheckedLabel,
+                                actionLabel = if (canWrite) clearCheckedLabel else null,
                                 actionModifier = Modifier.testTag(GroceryListTestTags.CLEAR_CHECKED_ACTION),
-                                onAction = { clearCheckedWithUndo() },
+                                onAction = if (canWrite) ({ clearCheckedWithUndo() }) else null,
                             )
                         }
                         items(sections.completed, key = { "done-${it.id}" }) { item ->
@@ -300,22 +310,25 @@ fun GroceryShoppingScreen(
                                 },
                                 onToggle = { screenModel.toggleGroceryItem(item.id) },
                                 onDelete = { deleteWithUndo(item, index) },
+                                readOnly = !canWrite,
                             )
                         }
                     }
                 }
             }
 
-            GroceryInputBar(
-                value = newItemText,
-                onValueChange = { newItemText = it },
-                placeholder = addHint,
-                addContentDescription = addHint,
-                onSubmit = { submitNewItem() },
-                accentColor = accentColor,
-                requestFocus = refocusInput,
-                onFocusRequested = { refocusInput = false },
-            )
+            if (canWrite) {
+                GroceryInputBar(
+                    value = newItemText,
+                    onValueChange = { newItemText = it },
+                    placeholder = addHint,
+                    addContentDescription = addHint,
+                    onSubmit = { submitNewItem() },
+                    accentColor = accentColor,
+                    requestFocus = refocusInput,
+                    onFocusRequested = { refocusInput = false },
+                )
+            }
         }
     }
 }
@@ -336,6 +349,7 @@ private fun GroceryListItem(
     onSaveEdit: (String) -> Boolean,
     onToggle: () -> Unit,
     onDelete: () -> Unit,
+    readOnly: Boolean = false,
 ) {
     GroceryItemRow(
         item = item,
@@ -351,5 +365,6 @@ private fun GroceryListItem(
         onSaveEdit = onSaveEdit,
         onToggle = onToggle,
         onDelete = onDelete,
+        readOnly = readOnly,
     )
 }

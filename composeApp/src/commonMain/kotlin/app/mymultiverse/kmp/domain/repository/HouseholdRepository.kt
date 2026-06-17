@@ -15,4 +15,10 @@ interface HouseholdRepository {
 
     /** Resolves the active household; fails with [household_required] when none exists. */
     suspend fun ensureHousehold(): Result<Household>
+
+    /** Marks the current user as having left their household (non-owners only). */
+    suspend fun leaveHousehold(): Result<Unit>
+
+    /** Hard-deletes the household when the caller is the sole owner with no other members. */
+    suspend fun dissolveHousehold(): Result<Unit>
 }

@@ -126,6 +126,36 @@ class HouseholdGateScreenModelTest {
         assertEquals("invitee@example.com", model.uiState.value.pendingInvites.single().email)
     }
 
+    @Test
+    fun createHousehold_activatesNutritionSession() = runTest(testDispatcher) {
+        val householdRepository = FakeHouseholdRepository(
+            initialMembershipStatus = HouseholdMembershipStatus.None,
+        )
+        householdRepository.setMembershipStatus(HouseholdMembershipStatus.None)
+        val sessionCoordinator = FakeNutritionSessionCoordinator(
+            initialRepository = NutritionRepositoryImpl(MapSettings()),
+        )
+        val model = HouseholdGateScreenModel(
+            householdRepository = householdRepository,
+            collaborationRepository = FakeSpaceCollaborationRepository(),
+            authRepository = FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),
+                ),
+            ),
+            sessionCoordinator = sessionCoordinator,
+            logger = logger,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+
+        advanceUntilIdle()
+        model.onHouseholdNameChange("Rossi home")
+        model.createHousehold()
+        advanceUntilIdle()
+
+        assertEquals("household-space-1", sessionCoordinator.activatedSpaceId)
+    }
+
     private fun model(
         householdRepository: FakeHouseholdRepository,
         collaborationRepository: FakeSpaceCollaborationRepository = FakeSpaceCollaborationRepository(),

@@ -62,6 +62,7 @@ class NutritionUxInstrumentedTest {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         return NutritionScreenModel(
             session = InstrumentedNutritionSessionCoordinator(repository),
+            householdRepository = InstrumentedHouseholdRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(adviceAnswer),
             scope = scope,
             newItemId = { itemId },

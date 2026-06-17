@@ -85,6 +85,22 @@ class SupabaseHouseholdRepository(
         }
     }
 
+    override suspend fun leaveHousehold(): Result<Unit> = runCatching {
+        client.auth.awaitInitialization()
+        requireUserId()
+        client.postgrest.rpc("leave_household")
+        membershipStatus.update { HouseholdMembershipStatus.None }
+        household.update { null }
+    }
+
+    override suspend fun dissolveHousehold(): Result<Unit> = runCatching {
+        client.auth.awaitInitialization()
+        requireUserId()
+        client.postgrest.rpc("dissolve_household")
+        membershipStatus.update { HouseholdMembershipStatus.None }
+        household.update { null }
+    }
+
     private suspend fun requireUserId(): String =
         client.auth.currentUserOrNull()?.id
             ?: client.auth.currentSessionOrNull()?.user?.id

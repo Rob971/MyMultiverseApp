@@ -42,7 +42,11 @@ class FakeHouseholdRepository(
     var ensureCalls = 0
     var refreshCalls = 0
     var createCalls = 0
+    var leaveCalls = 0
+    var dissolveCalls = 0
     var lastCreatedName: String? = null
+    var leaveFailure: Throwable? = null
+    var dissolveFailure: Throwable? = null
 
     override fun observeHousehold(): Flow<Household?> = state.asStateFlow()
 
@@ -76,6 +80,22 @@ class FakeHouseholdRepository(
         ensureFailure?.let { return Result.failure(it) }
         state.update { household }
         return Result.success(household)
+    }
+
+    override suspend fun leaveHousehold(): Result<Unit> {
+        leaveCalls++
+        leaveFailure?.let { return Result.failure(it) }
+        membership.update { HouseholdMembershipStatus.None }
+        state.update { null }
+        return Result.success(Unit)
+    }
+
+    override suspend fun dissolveHousehold(): Result<Unit> {
+        dissolveCalls++
+        dissolveFailure?.let { return Result.failure(it) }
+        membership.update { HouseholdMembershipStatus.None }
+        state.update { null }
+        return Result.success(Unit)
     }
 
     fun setMembershipStatus(status: HouseholdMembershipStatus) {

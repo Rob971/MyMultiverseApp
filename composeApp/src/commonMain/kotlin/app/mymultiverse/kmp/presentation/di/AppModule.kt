@@ -105,6 +105,7 @@ private val presentationModule = module {
     single {
         NutritionScreenModel(
             session = get(),
+            householdRepository = get(),
             aiAssistant = get(),
         )
     }

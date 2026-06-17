@@ -19,6 +19,7 @@ object SharingStringKeys {
         "sharing_members_error_cannot_add_self",
         "sharing_members_error_member_already_exists",
         "sharing_members_error_insufficient_role",
+        "sharing_members_error_invitee_household_already_active",
         "sharing_members_loading",
         "sharing_members_role_owner",
         "sharing_members_role_editor",
@@ -32,6 +33,20 @@ object SharingStringKeys {
         "sharing_members_pending_invite_label",
         "sharing_members_read_only_hint",
         "auth_pending_invites_error_generic",
+        "auth_pending_invites_switch_title",
+        "auth_pending_invites_switch_message",
+        "auth_pending_invites_switch_confirm",
+        "auth_pending_invites_switch_cancel",
+        "auth_pending_invites_email_mismatch",
+        "sharing_members_leave",
+        "sharing_members_leave_confirm_title",
+        "sharing_members_leave_confirm_message",
+        "sharing_members_dissolve",
+        "sharing_members_dissolve_confirm_title",
+        "sharing_members_dissolve_confirm_message",
+        "sharing_members_owner_transfer_required",
+        "sharing_members_error_member_limit",
+        "sharing_members_error_owner_transfer_required",
     )
 
     val localeDirectories: List<String> = NutritionStringKeys.localeDirectories

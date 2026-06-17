@@ -27,4 +27,10 @@ class UnconfiguredHouseholdRepository : HouseholdRepository {
 
     override suspend fun ensureHousehold(): Result<Household> =
         Result.failure(IllegalStateException("supabase_not_configured"))
+
+    override suspend fun leaveHousehold(): Result<Unit> =
+        Result.failure(IllegalStateException("supabase_not_configured"))
+
+    override suspend fun dissolveHousehold(): Result<Unit> =
+        Result.failure(IllegalStateException("supabase_not_configured"))
 }

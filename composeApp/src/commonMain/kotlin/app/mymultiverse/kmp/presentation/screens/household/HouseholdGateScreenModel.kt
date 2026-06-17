@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 
 data class HouseholdGateUiState(
     val membershipStatus: HouseholdMembershipStatus = HouseholdMembershipStatus.Loading,
@@ -28,7 +29,14 @@ data class HouseholdGateUiState(
 
 enum class InviteActionMessage {
     AcceptFailed,
+    EmailMismatch,
 }
+
+data class SwitchHouseholdPrompt(
+    val inviteId: String,
+    val invitedHouseholdName: String,
+    val currentHouseholdName: String,
+)
 
 class HouseholdGateScreenModel(
     private val householdRepository: HouseholdRepository,
@@ -63,6 +71,7 @@ class HouseholdGateScreenModel(
             householdRepository.refreshMembership()
                 .onSuccess { status ->
                     _uiState.value = _uiState.value.copy(membershipStatus = status)
+                    activateNutritionSessionIfActive(status)
                     runCatching { collaborationRepository.refreshPendingInvites() }
                 }
                 .onFailure { throwable ->
@@ -89,13 +98,14 @@ class HouseholdGateScreenModel(
         scope.launch {
             _uiState.value = _uiState.value.copy(isCreating = true)
             householdRepository.createHousehold(name)
-                .onSuccess {
+                .onSuccess { created ->
                     householdRepository.refreshMembership()
                         .onSuccess { status ->
                             _uiState.value = _uiState.value.copy(
                                 membershipStatus = status,
                                 isCreating = false,
                             )
+                            activateNutritionSessionIfActive(status, fallbackSpaceId = created.id)
                         }
                         .onFailure { throwable ->
                             _uiState.value = _uiState.value.copy(
@@ -130,7 +140,7 @@ class HouseholdGateScreenModel(
                         throwable = throwable,
                     )
                     _uiState.value = _uiState.value.copy(
-                        inviteActionMessage = InviteActionMessage.AcceptFailed,
+                        inviteActionMessage = throwable.toInviteActionMessage(),
                     )
                 }
         }
@@ -161,4 +171,22 @@ class HouseholdGateScreenModel(
             "household_required" -> HouseholdGateError.HouseholdRequired
             else -> HouseholdGateError.Generic
         }
+
+    private suspend fun activateNutritionSessionIfActive(
+        status: HouseholdMembershipStatus,
+        fallbackSpaceId: String? = null,
+    ) {
+        val spaceId = when (status) {
+            is HouseholdMembershipStatus.Active -> status.household.id
+            else -> fallbackSpaceId
+        } ?: return
+        runCatching { sessionCoordinator.activateSpace(spaceId) }
+    }
 }
+
+private fun Throwable.toInviteActionMessage(): InviteActionMessage =
+    when {
+        CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INVITE_EMAIL_MISMATCH, message) ->
+            InviteActionMessage.EmailMismatch
+        else -> InviteActionMessage.AcceptFailed
+    }

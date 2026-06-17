@@ -35,14 +35,17 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
+import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_pending_invites_email_mismatch
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_pending_invites_error_generic
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_sign_out
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.household_gate_create_button
@@ -81,12 +84,27 @@ fun HouseholdGateScreen(
             onSignOut = screenModel::signOut,
         )
         HouseholdMembershipStatus.None -> {
+            val authRepository = koinInject<AuthRepository>()
+            val authState by authRepository.authState.collectAsState()
             val snackbarHostState = remember { SnackbarHostState() }
             val inviteErrorMessage = stringResource(Res.string.auth_pending_invites_error_generic)
+            val sessionEmail = (authState as? AuthState.Authenticated)?.user?.email.orEmpty()
+            val emailMismatchMessage = stringResource(
+                Res.string.auth_pending_invites_email_mismatch,
+                uiState.pendingInvites.firstOrNull()?.email.orEmpty(),
+                sessionEmail,
+            )
             LaunchedEffect(uiState.inviteActionMessage) {
-                if (uiState.inviteActionMessage == InviteActionMessage.AcceptFailed) {
-                    snackbarHostState.showSnackbar(inviteErrorMessage)
-                    screenModel.clearInviteActionMessage()
+                when (uiState.inviteActionMessage) {
+                    InviteActionMessage.AcceptFailed -> {
+                        snackbarHostState.showSnackbar(inviteErrorMessage)
+                        screenModel.clearInviteActionMessage()
+                    }
+                    InviteActionMessage.EmailMismatch -> {
+                        snackbarHostState.showSnackbar(emailMismatchMessage)
+                        screenModel.clearInviteActionMessage()
+                    }
+                    null -> Unit
                 }
             }
             HouseholdGateOnboardingContent(

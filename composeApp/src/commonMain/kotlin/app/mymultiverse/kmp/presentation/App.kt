@@ -14,6 +14,7 @@ import androidx.compose.ui.backhandler.BackHandler
 import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.repository.AuthRepository
+import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
 import app.mymultiverse.kmp.presentation.navigation.AppRoute
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
@@ -78,10 +79,17 @@ fun App() {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun AuthenticatedApp() {
+    val householdRepository = koinInject<HouseholdRepository>()
     val gateScreenModel = koinInject<HouseholdGateScreenModel>()
-    val gateUiState by gateScreenModel.uiState.collectAsState()
+    val membershipStatus by householdRepository.observeMembershipStatus().collectAsState(
+        initial = HouseholdMembershipStatus.Loading,
+    )
 
-    when (gateUiState.membershipStatus) {
+    LaunchedEffect(Unit) {
+        gateScreenModel.refreshMembership()
+    }
+
+    when (membershipStatus) {
         is HouseholdMembershipStatus.Active -> AuthenticatedMainApp()
         else -> HouseholdGateScreen(screenModel = gateScreenModel)
     }

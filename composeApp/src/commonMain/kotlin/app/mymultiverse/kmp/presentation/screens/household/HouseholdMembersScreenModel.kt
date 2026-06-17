@@ -4,6 +4,8 @@ import app.mymultiverse.kmp.domain.model.sharing.AddMemberResult
 import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
+import app.mymultiverse.kmp.domain.repository.HouseholdRepository
+import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
 import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import kotlinx.coroutines.CoroutineScope
@@ -23,6 +25,14 @@ sealed interface HouseholdMembersError {
     data object CannotAddSelf : HouseholdMembersError
     data object MemberAlreadyExists : HouseholdMembersError
     data object InsufficientRole : HouseholdMembersError
+    data object InviteeHouseholdAlreadyActive : HouseholdMembersError
+    data object MemberLimitReached : HouseholdMembersError
+    data object OwnerMustTransferOrDissolve : HouseholdMembersError
+}
+
+enum class HouseholdMembersLeaveAction {
+    Leave,
+    Dissolve,
 }
 
 data class HouseholdMembersUiState(
@@ -37,6 +47,11 @@ data class HouseholdMembersUiState(
     val successMessageKey: HouseholdMembersSuccess? = null,
     val error: HouseholdMembersError? = null,
     val dialogError: HouseholdMembersError? = null,
+    val canLeave: Boolean = false,
+    val canDissolve: Boolean = false,
+    val showOwnerTransferHint: Boolean = false,
+    val pendingLeaveAction: HouseholdMembersLeaveAction? = null,
+    val isLeaving: Boolean = false,
 )
 
 enum class HouseholdMembersSuccess {
@@ -46,6 +61,8 @@ enum class HouseholdMembersSuccess {
 
 class HouseholdMembersScreenModel(
     private val collaborationRepository: SpaceCollaborationRepository,
+    private val householdRepository: HouseholdRepository,
+    private val sessionCoordinator: NutritionSessionCoordinator,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
     private val _uiState = MutableStateFlow(HouseholdMembersUiState())
@@ -54,6 +71,7 @@ class HouseholdMembersScreenModel(
     private var activeSpaceId: String? = null
     private var activeOwnerId: String = ""
     private var activeOwnerDisplayName: String = ""
+    private var activeUserIsOwner: Boolean = false
     private var observeJob: Job? = null
 
     fun bindHousehold(
@@ -63,6 +81,7 @@ class HouseholdMembersScreenModel(
         currentUserId: String?,
     ) {
         val canManage = currentUserId != null && currentUserId == ownerId
+        activeUserIsOwner = canManage
         if (activeSpaceId == spaceId &&
             activeOwnerId == ownerId &&
             activeOwnerDisplayName == ownerDisplayName &&
@@ -73,13 +92,26 @@ class HouseholdMembersScreenModel(
         activeSpaceId = spaceId
         activeOwnerId = ownerId
         activeOwnerDisplayName = ownerDisplayName
-        _uiState.update { it.copy(canManageMembers = canManage) }
+        _uiState.update {
+            it.copy(
+                canManageMembers = canManage,
+                canLeave = currentUserId != null && !canManage,
+            )
+        }
 
         observeJob?.cancel()
         observeJob = scope.launch {
             launch {
                 collaborationRepository.observeMembers(spaceId).collect { members ->
-                    _uiState.update { it.copy(members = members) }
+                    _uiState.update { state ->
+                        val otherMembers = members.count { it.role != SpaceMemberRole.Owner }
+                        state.copy(
+                            members = members,
+                            canDissolve = activeUserIsOwner && otherMembers == 0,
+                            showOwnerTransferHint = activeUserIsOwner && otherMembers > 0,
+                            canLeave = !activeUserIsOwner,
+                        )
+                    }
                 }
             }
             launch {
@@ -200,6 +232,38 @@ class HouseholdMembersScreenModel(
         _uiState.update { it.copy(successMessageKey = null) }
     }
 
+    fun requestLeave() {
+        _uiState.update { it.copy(pendingLeaveAction = HouseholdMembersLeaveAction.Leave, error = null) }
+    }
+
+    fun requestDissolve() {
+        _uiState.update { it.copy(pendingLeaveAction = HouseholdMembersLeaveAction.Dissolve, error = null) }
+    }
+
+    fun dismissLeaveDissolve() {
+        _uiState.update { it.copy(pendingLeaveAction = null) }
+    }
+
+    fun confirmLeaveOrDissolve() {
+        val action = _uiState.value.pendingLeaveAction ?: return
+        scope.launch {
+            _uiState.update { it.copy(isLeaving = true, pendingLeaveAction = null, error = null) }
+            sessionCoordinator.deactivate()
+            val result = when (action) {
+                HouseholdMembersLeaveAction.Leave -> householdRepository.leaveHousehold()
+                HouseholdMembersLeaveAction.Dissolve -> householdRepository.dissolveHousehold()
+            }
+            result
+                .onSuccess { householdRepository.refreshMembership() }
+                .onFailure { throwable ->
+                    _uiState.update { state ->
+                        state.copy(error = mapFailure(throwable))
+                    }
+                }
+            _uiState.update { it.copy(isLeaving = false) }
+        }
+    }
+
     private fun mapFailure(throwable: Throwable): HouseholdMembersError {
         val message = throwable.message
         return when {
@@ -213,6 +277,18 @@ class HouseholdMembersScreenModel(
                 HouseholdMembersError.MemberAlreadyExists
             CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INSUFFICIENT_ROLE, message) ->
                 HouseholdMembersError.InsufficientRole
+            CollaborationErrorCodes.messageContains(
+                CollaborationErrorCodes.INVITEE_HOUSEHOLD_ALREADY_ACTIVE,
+                message,
+            ) -> HouseholdMembersError.InviteeHouseholdAlreadyActive
+            CollaborationErrorCodes.messageContains(
+                CollaborationErrorCodes.HOUSEHOLD_MEMBER_LIMIT_REACHED,
+                message,
+            ) -> HouseholdMembersError.MemberLimitReached
+            CollaborationErrorCodes.messageContains(
+                CollaborationErrorCodes.OWNER_MUST_TRANSFER_OR_DISSOLVE,
+                message,
+            ) -> HouseholdMembersError.OwnerMustTransferOrDissolve
             else -> HouseholdMembersError.Generic
         }
     }

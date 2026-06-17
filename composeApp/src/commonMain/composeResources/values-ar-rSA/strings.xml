@@ -38,6 +38,7 @@
     <string name="nutrition_meal_plan_expand_day">إظهار الوجبات</string>
     <string name="nutrition_meal_plan_collapse_day">إخفاء الوجبات</string>
     <string name="nutrition_grocery_title">تسوق الأسبوع</string>
+    <string name="nutrition_household_viewer_readonly_note">لديك صلاحية مشاهد فقط. يمكنك قراءة القوائم والخطط المشتركة ولكن لا يمكنك تعديلها.</string>
     <string name="nutrition_grocery_description">أنشئ قائمة التسوق لهذا الأسبوع وحدّد ما اكتمل.</string>
     <string name="nutrition_meal_plan_title">تخطيط وجبات الأسبوع</string>
     <string name="nutrition_meal_plan_description">خطط الغداء والعشاء لكل يوم من الأسبوع.</string>
@@ -692,6 +693,7 @@
     <string name="sharing_members_error_cannot_add_self">لا يمكنك دعوة نفسك.</string>
     <string name="sharing_members_error_member_already_exists">هذا الشخص موجود بالفعل في أسرتك.</string>
     <string name="sharing_members_error_insufficient_role">ليس لديك إذن لإدارة الأعضاء.</string>
+    <string name="sharing_members_error_invitee_household_already_active">هذا الشخص ينتمي بالفعل إلى أسرة أخرى ولا يمكن إضافته.</string>
     <string name="sharing_members_loading">جارٍ تحميل الأعضاء...</string>
     <string name="nutrition_sync_status_syncing">جارٍ مزامنة التغذية المشتركة...</string>
     <string name="nutrition_sync_status_pending">%1$d تغييرات بانتظار المزامنة</string>
@@ -702,6 +704,11 @@
     <string name="auth_pending_invites_accept">قبول</string>
     <string name="auth_pending_invites_decline">رفض</string>
     <string name="auth_pending_invites_error_generic">تعذر قبول الدعوة. حاول مرة أخرى.</string>
+    <string name="auth_pending_invites_switch_title">تبديل الأسرة؟</string>
+    <string name="auth_pending_invites_switch_message">أنت في %1$s. للانضمام إلى %2$s، يجب أن تغادر أسرتك الحالية أولاً.</string>
+    <string name="auth_pending_invites_switch_confirm">المغادرة والقبول</string>
+    <string name="auth_pending_invites_switch_cancel">إلغاء</string>
+    <string name="auth_pending_invites_email_mismatch">أُرسلت هذه الدعوة إلى %1$s. أنت مسجّل الدخول كـ %2$s. سجّل الدخول بالعنوان المدعو أو اطلب دعوة جديدة.</string>
     <string name="sharing_members_role_owner">المالك</string>
     <string name="sharing_members_role_editor">محرر</string>
     <string name="sharing_members_role_viewer">مشاهد</string>
@@ -722,4 +729,13 @@
     <string name="sharing_members_pending_invite_label">قيد الانتظار · %1$s</string>
     <string name="sharing_members_read_only_hint">يمكن لمالك الأسرة فقط دعوة الأعضاء أو إزالتهم.</string>
     <string name="sharing_members_select_role">مستوى الوصول</string>
+    <string name="sharing_members_leave">مغادرة الأسرة</string>
+    <string name="sharing_members_leave_confirm_title">مغادرة الأسرة؟</string>
+    <string name="sharing_members_leave_confirm_message">ستفقد الوصول إلى القوائم والخطط المشتركة في %1$s.</string>
+    <string name="sharing_members_dissolve">حذف الأسرة</string>
+    <string name="sharing_members_dissolve_confirm_title">حذف الأسرة؟</string>
+    <string name="sharing_members_dissolve_confirm_message">سيؤدي هذا إلى حذف %1$s وجميع البيانات المشتركة نهائياً. لا يمكن التراجع عن ذلك.</string>
+    <string name="sharing_members_owner_transfer_required">انقل الملكية إلى عضو آخر قبل المغادرة بينما يبقى آخرون في الأسرة.</string>
+    <string name="sharing_members_error_member_limit">وصلت هذه الأسرة إلى حد 20 عضواً.</string>
+    <string name="sharing_members_error_owner_transfer_required">انقل الملكية قبل المغادرة أو حذف الأسرة.</string>
 </resources>

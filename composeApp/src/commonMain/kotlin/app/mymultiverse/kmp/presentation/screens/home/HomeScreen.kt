@@ -2,7 +2,18 @@ package app.mymultiverse.kmp.presentation.screens.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -30,6 +41,8 @@ import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import app.mymultiverse.kmp.domain.repository.AuthRepository
+import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
 import org.koin.compose.koinInject
 
@@ -49,6 +62,7 @@ fun HomeScreen(
     onOpenHouseholdMembers: () -> Unit,
 ) {
     val screenModel = koinInject<HomeScreenModel>()
+    val authRepository = koinInject<AuthRepository>()
     val greeting by screenModel.greeting.collectAsState()
     val userDisplayName by screenModel.userDisplayName.collectAsState()
     val household by screenModel.household.collectAsState()
@@ -56,14 +70,55 @@ fun HomeScreen(
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val pendingInvites by screenModel.pendingInvites.collectAsState()
     val inviteActionMessage by screenModel.inviteActionMessage.collectAsState()
+    val switchHouseholdPrompt by screenModel.switchHouseholdPrompt.collectAsState()
+    val authState by authRepository.authState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val inviteErrorMessage = stringResource(Res.string.auth_pending_invites_error_generic)
+    val sessionEmail = (authState as? AuthState.Authenticated)?.user?.email.orEmpty()
+    val emailMismatchMessage = stringResource(
+        Res.string.auth_pending_invites_email_mismatch,
+        pendingInvites.firstOrNull()?.email.orEmpty(),
+        sessionEmail,
+    )
 
     LaunchedEffect(inviteActionMessage) {
-        if (inviteActionMessage == InviteActionMessage.AcceptFailed) {
-            snackbarHostState.showSnackbar(inviteErrorMessage)
-            screenModel.clearInviteActionMessage()
+        when (inviteActionMessage) {
+            InviteActionMessage.AcceptFailed -> {
+                snackbarHostState.showSnackbar(inviteErrorMessage)
+                screenModel.clearInviteActionMessage()
+            }
+            InviteActionMessage.EmailMismatch -> {
+                snackbarHostState.showSnackbar(emailMismatchMessage)
+                screenModel.clearInviteActionMessage()
+            }
+            null -> Unit
         }
+    }
+
+    switchHouseholdPrompt?.let { prompt ->
+        AlertDialog(
+            onDismissRequest = screenModel::dismissSwitchHouseholdPrompt,
+            title = { Text(stringResource(Res.string.auth_pending_invites_switch_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        Res.string.auth_pending_invites_switch_message,
+                        prompt.currentHouseholdName,
+                        prompt.invitedHouseholdName,
+                    ),
+                )
+            },
+            confirmButton = {
+                Button(onClick = screenModel::confirmLeaveAndAccept) {
+                    Text(stringResource(Res.string.auth_pending_invites_switch_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = screenModel::dismissSwitchHouseholdPrompt) {
+                    Text(stringResource(Res.string.auth_pending_invites_switch_cancel))
+                }
+            },
+        )
     }
 
     Scaffold(
@@ -97,7 +152,9 @@ fun HomeScreen(
             onOpenNutrition = onOpenNutrition,
             onOpenHouseholdMembers = onOpenHouseholdMembers,
             onSignOut = { screenModel.signOut() },
-            onAcceptInvite = screenModel::acceptInvite,
+            onAcceptInvite = { inviteId ->
+                pendingInvites.find { it.id == inviteId }?.let(screenModel::onAcceptInviteClicked)
+            },
             onDeclineInvite = screenModel::declineInvite,
             modifier = Modifier.padding(padding),
         )
@@ -153,13 +210,11 @@ fun HomeContent(
             }
 
             item {
-                if (!hasActiveHousehold) {
-                    PendingInvitesCard(
-                        invites = pendingInvites,
-                        onAccept = onAcceptInvite,
-                        onDecline = onDeclineInvite,
-                    )
-                }
+                PendingInvitesCard(
+                    invites = pendingInvites,
+                    onAccept = onAcceptInvite,
+                    onDecline = onDeclineInvite,
+                )
             }
 
             item {

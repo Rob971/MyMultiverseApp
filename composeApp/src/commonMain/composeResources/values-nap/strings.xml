@@ -38,6 +38,7 @@
     <string name="nutrition_meal_plan_expand_day">Fa' vedé 'e pasti</string>
     <string name="nutrition_meal_plan_collapse_day">Annascunne 'e pasti</string>
     <string name="nutrition_grocery_title">Spesa 'e semmana</string>
+    <string name="nutrition_household_viewer_readonly_note">Hai accesso viewer. Può leggere 'e liste e 'e piani condivisi ma nun può cagnà.</string>
     <string name="nutrition_grocery_description">Fà e spunta 'a lista d' 'a spesa 'e sta settimana.</string>
     <string name="nutrition_meal_plan_title">Piano pasti 'e semmana</string>
     <string name="nutrition_meal_plan_description">Pianifica pranzo e cena pe' ogni juorno 'e semmana.</string>
@@ -692,6 +693,7 @@
     <string name="sharing_members_error_cannot_add_self">Nun te può invità te stesso.</string>
     <string name="sharing_members_error_member_already_exists">Sta persona è già int'a famiglia.</string>
     <string name="sharing_members_error_insufficient_role">Nun tien'e permesso pe' gestì 'e membri.</string>
+    <string name="sharing_members_error_invitee_household_already_active">Sta persona appiene già a 'n'ata famiglia e nun se può azzeccà.</string>
     <string name="sharing_members_loading">Caricamento membri...</string>
     <string name="nutrition_sync_status_syncing">Sto sincronizzanno 'a nutrizione condivisa...</string>
     <string name="nutrition_sync_status_pending">%1$d cagnature aspettanno 'a sync</string>
@@ -702,6 +704,11 @@
     <string name="auth_pending_invites_accept">Accetta</string>
     <string name="auth_pending_invites_decline">Rifiuta</string>
     <string name="auth_pending_invites_error_generic">Nun s'è pututo accettà ll'invito. Próva arreto.</string>
+    <string name="auth_pending_invites_switch_title">Cagnà famiglia?</string>
+    <string name="auth_pending_invites_switch_message">Staje int'a %1$s. Pe' trasì int'a %2$s, primma devi lassà 'a famiglia toja attuale.</string>
+    <string name="auth_pending_invites_switch_confirm">Lassa e accetta</string>
+    <string name="auth_pending_invites_switch_cancel">Annulla</string>
+    <string name="auth_pending_invites_email_mismatch">St'invito è stato mannato a %1$s. Staje entrato comm'a %2$s. Trà cu l'indirizzo invitato o dimanna n'invito nuovo.</string>
     <string name="sharing_members_role_owner">Proprietario</string>
     <string name="sharing_members_role_editor">Editor</string>
     <string name="sharing_members_role_viewer">Chi guarda</string>
@@ -722,4 +729,13 @@
     <string name="sharing_members_pending_invite_label">'N attesa · %1$s</string>
     <string name="sharing_members_read_only_hint">Solo 'o proprietario d' 'a famiglia può invità o levà membri.</string>
     <string name="sharing_members_select_role">Livello 'e accesso</string>
+    <string name="sharing_members_leave">Lassa 'a famiglia</string>
+    <string name="sharing_members_leave_confirm_title">Lassà 'a famiglia?</string>
+    <string name="sharing_members_leave_confirm_message">Perderai l'accesso a ll'liste e 'e piani condivisi int'a %1$s.</string>
+    <string name="sharing_members_dissolve">Scancella 'a famiglia</string>
+    <string name="sharing_members_dissolve_confirm_title">Scancellà 'a famiglia?</string>
+    <string name="sharing_members_dissolve_confirm_message">Chesto scancella pe' sempe %1$s e tutt' 'e dati condivisi. Nun se può annullà.</string>
+    <string name="sharing_members_owner_transfer_required">Passa 'a pruprietà a n'atu membro primma 'e lassà mentr' 'e ll'ati stann' ancora int'a famiglia.</string>
+    <string name="sharing_members_error_member_limit">Sta famiglia ha raggiunto 'o limite 'e 20 membri.</string>
+    <string name="sharing_members_error_owner_transfer_required">Passa 'a pruprietà primma 'e lassà o scancellà 'a famiglia.</string>
 </resources>

@@ -38,6 +38,7 @@
     <string name="nutrition_meal_plan_expand_day">Mostra pasti</string>
     <string name="nutrition_meal_plan_collapse_day">Nascondi pasti</string>
     <string name="nutrition_grocery_title">Spesa settimanale</string>
+    <string name="nutrition_household_viewer_readonly_note">Accesso in sola lettura. Puoi leggere liste e piani condivisi ma non modificarli.</string>
     <string name="nutrition_grocery_description">Crea e spunta la lista della spesa di questa settimana.</string>
     <string name="nutrition_meal_plan_title">Piano pasti settimanale</string>
     <string name="nutrition_meal_plan_description">Pianifica pranzo e cena per ogni giorno della settimana.</string>
@@ -692,6 +693,7 @@
     <string name="sharing_members_error_cannot_add_self">Non puoi invitare te stesso.</string>
     <string name="sharing_members_error_member_already_exists">Questa persona è già nella tua famiglia.</string>
     <string name="sharing_members_error_insufficient_role">Non hai il permesso di gestire i membri.</string>
+    <string name="sharing_members_error_invitee_household_already_active">Questa persona appartiene già a un altro nucleo familiare e non può essere aggiunta.</string>
     <string name="sharing_members_loading">Caricamento membri...</string>
     <string name="nutrition_sync_status_syncing">Sincronizzazione nutrizione condivisa...</string>
     <string name="nutrition_sync_status_pending">%1$d modifiche in attesa di sync</string>
@@ -702,6 +704,11 @@
     <string name="auth_pending_invites_accept">Accetta</string>
     <string name="auth_pending_invites_decline">Rifiuta</string>
     <string name="auth_pending_invites_error_generic">Impossibile accettare l'invito. Riprova.</string>
+    <string name="auth_pending_invites_switch_title">Cambiare famiglia?</string>
+    <string name="auth_pending_invites_switch_message">Sei in %1$s. Per unirti a %2$s, devi prima lasciare la tua famiglia attuale.</string>
+    <string name="auth_pending_invites_switch_confirm">Esci e accetta</string>
+    <string name="auth_pending_invites_switch_cancel">Annulla</string>
+    <string name="auth_pending_invites_email_mismatch">Questo invito è stato inviato a %1$s. Hai effettuato l'accesso come %2$s. Accedi con l'indirizzo invitato o chiedi un nuovo invito.</string>
     <string name="sharing_members_role_owner">Proprietario</string>
     <string name="sharing_members_role_editor">Editor</string>
     <string name="sharing_members_role_viewer">Visualizzatore</string>
@@ -722,4 +729,13 @@
     <string name="sharing_members_pending_invite_label">In sospeso · %1$s</string>
     <string name="sharing_members_read_only_hint">Solo il proprietario della famiglia può invitare o rimuovere membri.</string>
     <string name="sharing_members_select_role">Livello di accesso</string>
+    <string name="sharing_members_leave">Lascia la famiglia</string>
+    <string name="sharing_members_leave_confirm_title">Lasciare la famiglia?</string>
+    <string name="sharing_members_leave_confirm_message">Perderai l'accesso alle liste e ai piani condivisi in %1$s.</string>
+    <string name="sharing_members_dissolve">Elimina famiglia</string>
+    <string name="sharing_members_dissolve_confirm_title">Eliminare la famiglia?</string>
+    <string name="sharing_members_dissolve_confirm_message">Questo elimina definitivamente %1$s e tutti i dati condivisi. Non può essere annullato.</string>
+    <string name="sharing_members_owner_transfer_required">Trasferisci la proprietà a un altro membro prima di uscire mentre altri restano nella famiglia.</string>
+    <string name="sharing_members_error_member_limit">Questa famiglia ha raggiunto il limite di 20 membri.</string>
+    <string name="sharing_members_error_owner_transfer_required">Trasferisci la proprietà prima di lasciare o eliminare la famiglia.</string>
 </resources>

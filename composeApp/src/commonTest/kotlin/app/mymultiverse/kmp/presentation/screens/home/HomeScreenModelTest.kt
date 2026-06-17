@@ -226,6 +226,39 @@ class HomeScreenModelTest {
     }
 
     @Test
+    fun onAcceptInviteClicked_whenAffiliated_showsSwitchPrompt() = runTest(testDispatcher) {
+        val screenModel = HomeScreenModel(
+            getGreetingUseCase = GetGreetingUseCase(FakeGreetingRepository(Greeting("Welcome home"))),
+            authRepository = FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),
+                ),
+            ),
+            householdRepository = FakeHouseholdRepository(),
+            collaborationRepository = FakeSpaceCollaborationRepository(),
+            sessionCoordinator = FakeNutritionSessionCoordinator(
+                initialRepository = NutritionRepositoryImpl(MapSettings()),
+            ),
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        advanceUntilIdle()
+
+        val invite = SpaceInvite(
+            id = "invite-1",
+            spaceId = "space-2",
+            spaceName = "Partner home",
+            email = "test@example.com",
+            role = SpaceMemberRole.Editor,
+            expiresAtEpochMillis = 4_102_444_800_000L,
+        )
+        screenModel.onAcceptInviteClicked(invite)
+        advanceUntilIdle()
+
+        assertEquals("Partner home", screenModel.switchHouseholdPrompt.value?.invitedHouseholdName)
+        assertEquals("Our household", screenModel.switchHouseholdPrompt.value?.currentHouseholdName)
+    }
+
+    @Test
     fun refresh_stillLoadsPendingInvitesInBackground() = runTest(testDispatcher) {
         val collaborationRepository = TrackingSpaceCollaborationRepository()
         val screenModel = HomeScreenModel(

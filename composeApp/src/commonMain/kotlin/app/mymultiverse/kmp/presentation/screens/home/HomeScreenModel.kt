@@ -7,11 +7,14 @@ import app.mymultiverse.kmp.domain.auth.resolvedDisplayName
 import app.mymultiverse.kmp.domain.model.sharing.Household
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
+import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.SpaceCollaborationRepository
+import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
+import app.mymultiverse.kmp.presentation.screens.household.SwitchHouseholdPrompt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -37,6 +40,8 @@ class HomeScreenModel(
     private val _household = MutableStateFlow<Household?>(null)
     val household: StateFlow<Household?> = _household.asStateFlow()
 
+    private var latestMembershipStatus: HouseholdMembershipStatus = HouseholdMembershipStatus.Loading
+
     val hasActiveHousehold: StateFlow<Boolean> = householdRepository
         .observeMembershipStatus()
         .map { it is HouseholdMembershipStatus.Active }
@@ -47,6 +52,9 @@ class HomeScreenModel(
 
     private val _inviteActionMessage = MutableStateFlow<InviteActionMessage?>(null)
     val inviteActionMessage: StateFlow<InviteActionMessage?> = _inviteActionMessage.asStateFlow()
+
+    private val _switchHouseholdPrompt = MutableStateFlow<SwitchHouseholdPrompt?>(null)
+    val switchHouseholdPrompt: StateFlow<SwitchHouseholdPrompt?> = _switchHouseholdPrompt.asStateFlow()
 
     val pendingInvites: StateFlow<List<SpaceInvite>> = collaborationRepository
         .observePendingInvites()
@@ -61,6 +69,16 @@ class HomeScreenModel(
         )
 
     init {
+        scope.launch {
+            householdRepository.observeMembershipStatus().collect { status ->
+                latestMembershipStatus = status
+                if (status is HouseholdMembershipStatus.Active) {
+                    _household.value = status.household
+                } else if (status == HouseholdMembershipStatus.None) {
+                    _household.value = null
+                }
+            }
+        }
         refresh()
     }
 
@@ -85,6 +103,7 @@ class HomeScreenModel(
                 .onSuccess { status ->
                     if (status is HouseholdMembershipStatus.Active) {
                         _household.value = status.household
+                        activateNutritionSession(status.household.id)
                     } else {
                         _household.value = null
                     }
@@ -105,6 +124,36 @@ class HomeScreenModel(
         }
     }
 
+    fun onAcceptInviteClicked(invite: SpaceInvite) {
+        if (latestMembershipStatus is HouseholdMembershipStatus.Active) {
+            val currentName = (latestMembershipStatus as HouseholdMembershipStatus.Active).household.name
+            _switchHouseholdPrompt.value = SwitchHouseholdPrompt(
+                inviteId = invite.id,
+                invitedHouseholdName = invite.spaceName,
+                currentHouseholdName = currentName,
+            )
+        } else {
+            acceptInvite(invite.id)
+        }
+    }
+
+    fun dismissSwitchHouseholdPrompt() {
+        _switchHouseholdPrompt.value = null
+    }
+
+    fun confirmLeaveAndAccept() {
+        val prompt = _switchHouseholdPrompt.value ?: return
+        _switchHouseholdPrompt.value = null
+        scope.launch {
+            _inviteActionMessage.value = null
+            exitCurrentHousehold()
+                .onSuccess { acceptInvite(prompt.inviteId) }
+                .onFailure {
+                    _inviteActionMessage.value = InviteActionMessage.AcceptFailed
+                }
+        }
+    }
+
     fun acceptInvite(inviteId: String) {
         scope.launch {
             _inviteActionMessage.value = null
@@ -114,11 +163,13 @@ class HomeScreenModel(
                         .onSuccess { status ->
                             if (status is HouseholdMembershipStatus.Active) {
                                 _household.value = status.household
+                                activateNutritionSession(status.household.id)
                             }
+                            runCatching { collaborationRepository.refreshPendingInvites() }
                         }
                 }
-                .onFailure {
-                    _inviteActionMessage.value = InviteActionMessage.AcceptFailed
+                .onFailure { throwable ->
+                    _inviteActionMessage.value = throwable.toInviteActionMessage()
                 }
         }
     }
@@ -130,7 +181,22 @@ class HomeScreenModel(
     fun declineInvite(inviteId: String) {
         scope.launch {
             collaborationRepository.declineInvite(inviteId)
+            runCatching { collaborationRepository.refreshPendingInvites() }
         }
+    }
+
+    private suspend fun exitCurrentHousehold(): Result<Unit> {
+        val status = householdRepository.refreshMembership().getOrNull()
+        if (status !is HouseholdMembershipStatus.Active) return Result.success(Unit)
+        sessionCoordinator.deactivate()
+        return when (status.role) {
+            SpaceMemberRole.Owner -> householdRepository.dissolveHousehold()
+            else -> householdRepository.leaveHousehold()
+        }
+    }
+
+    private suspend fun activateNutritionSession(spaceId: String) {
+        runCatching { sessionCoordinator.activateSpace(spaceId) }
     }
 
     private fun displayNameForAuthState(state: AuthState): String? =
@@ -139,3 +205,10 @@ class HomeScreenModel(
             else -> null
         }
 }
+
+private fun Throwable.toInviteActionMessage(): InviteActionMessage =
+    when {
+        CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INVITE_EMAIL_MISMATCH, message) ->
+            InviteActionMessage.EmailMismatch
+        else -> InviteActionMessage.AcceptFailed
+    }

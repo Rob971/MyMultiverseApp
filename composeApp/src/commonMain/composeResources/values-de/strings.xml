@@ -38,6 +38,7 @@
     <string name="nutrition_meal_plan_expand_day">Mahlzeiten anzeigen</string>
     <string name="nutrition_meal_plan_collapse_day">Mahlzeiten ausblenden</string>
     <string name="nutrition_grocery_title">Wocheneinkauf</string>
+    <string name="nutrition_household_viewer_readonly_note">Nur Lesezugriff. Du kannst geteilte Listen und Pläne lesen, aber nicht bearbeiten.</string>
     <string name="nutrition_grocery_description">Erstellen und abhaken Sie die Einkaufsliste dieser Woche.</string>
     <string name="nutrition_meal_plan_title">Wochenplan für Mahlzeiten</string>
     <string name="nutrition_meal_plan_description">Planen Sie Mittag- und Abendessen für jeden Wochentag.</string>
@@ -692,6 +693,7 @@
     <string name="sharing_members_error_cannot_add_self">Du kannst dich nicht selbst einladen.</string>
     <string name="sharing_members_error_member_already_exists">Diese Person ist bereits in deinem Haushalt.</string>
     <string name="sharing_members_error_insufficient_role">Du hast keine Berechtigung, Mitglieder zu verwalten.</string>
+    <string name="sharing_members_error_invitee_household_already_active">Diese Person gehört bereits zu einem anderen Haushalt und kann nicht hinzugefügt werden.</string>
     <string name="sharing_members_loading">Mitglieder werden geladen...</string>
     <string name="nutrition_sync_status_syncing">Geteilte Ernährung wird synchronisiert...</string>
     <string name="nutrition_sync_status_pending">%1$d Änderungen warten auf Sync</string>
@@ -702,6 +704,11 @@
     <string name="auth_pending_invites_accept">Annehmen</string>
     <string name="auth_pending_invites_decline">Ablehnen</string>
     <string name="auth_pending_invites_error_generic">Einladung konnte nicht angenommen werden. Bitte erneut versuchen.</string>
+    <string name="auth_pending_invites_switch_title">Haushalt wechseln?</string>
+    <string name="auth_pending_invites_switch_message">Du bist in %1$s. Um %2$s beizutreten, musst du zuerst deinen aktuellen Haushalt verlassen.</string>
+    <string name="auth_pending_invites_switch_confirm">Verlassen und annehmen</string>
+    <string name="auth_pending_invites_switch_cancel">Abbrechen</string>
+    <string name="auth_pending_invites_email_mismatch">Diese Einladung wurde an %1$s gesendet. Du bist angemeldet als %2$s. Melde dich mit der eingeladenen Adresse an oder bitte um eine neue Einladung.</string>
     <string name="sharing_members_role_owner">Besitzer</string>
     <string name="sharing_members_role_editor">Bearbeiter</string>
     <string name="sharing_members_role_viewer">Betrachter</string>
@@ -722,4 +729,13 @@
     <string name="sharing_members_pending_invite_label">Ausstehend · %1$s</string>
     <string name="sharing_members_read_only_hint">Nur der Haushaltsinhaber kann Mitglieder einladen oder entfernen.</string>
     <string name="sharing_members_select_role">Zugriffsstufe</string>
+    <string name="sharing_members_leave">Haushalt verlassen</string>
+    <string name="sharing_members_leave_confirm_title">Haushalt verlassen?</string>
+    <string name="sharing_members_leave_confirm_message">Du verlierst den Zugriff auf geteilte Listen und Pläne in %1$s.</string>
+    <string name="sharing_members_dissolve">Haushalt löschen</string>
+    <string name="sharing_members_dissolve_confirm_title">Haushalt löschen?</string>
+    <string name="sharing_members_dissolve_confirm_message">Dies löscht %1$s und alle geteilten Daten dauerhaft. Das kann nicht rückgängig gemacht werden.</string>
+    <string name="sharing_members_owner_transfer_required">Übertrage die Inhaberschaft an ein anderes Mitglied, bevor du gehst, solange noch andere im Haushalt sind.</string>
+    <string name="sharing_members_error_member_limit">Dieser Haushalt hat das Limit von 20 Mitgliedern erreicht.</string>
+    <string name="sharing_members_error_owner_transfer_required">Übertrage die Inhaberschaft, bevor du den Haushalt verlässt oder löschst.</string>
 </resources>

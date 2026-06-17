@@ -38,6 +38,7 @@
     <string name="nutrition_meal_plan_expand_day">Show meals</string>
     <string name="nutrition_meal_plan_collapse_day">Hide meals</string>
     <string name="nutrition_grocery_title">Grocery shopping</string>
+    <string name="nutrition_household_viewer_readonly_note">You have viewer access. You can read shared lists and plans but cannot edit them.</string>
     <string name="nutrition_grocery_description">Build and check off this week's shopping list.</string>
     <string name="nutrition_meal_plan_title">Week food planning</string>
     <string name="nutrition_meal_plan_description">Plan lunch and dinner for each day of the week.</string>
@@ -693,6 +694,7 @@
     <string name="sharing_members_error_cannot_add_self">You cannot invite yourself.</string>
     <string name="sharing_members_error_member_already_exists">This person is already in your household.</string>
     <string name="sharing_members_error_insufficient_role">You do not have permission to manage members.</string>
+    <string name="sharing_members_error_invitee_household_already_active">This person already belongs to another household and cannot be added.</string>
     <string name="sharing_members_loading">Loading members...</string>
     <string name="nutrition_sync_status_syncing">Syncing shared nutrition...</string>
     <string name="nutrition_sync_status_pending">%1$d changes waiting to sync</string>
@@ -703,6 +705,11 @@
     <string name="auth_pending_invites_accept">Accept</string>
     <string name="auth_pending_invites_decline">Decline</string>
     <string name="auth_pending_invites_error_generic">Could not accept the invite. Try again.</string>
+    <string name="auth_pending_invites_switch_title">Switch household?</string>
+    <string name="auth_pending_invites_switch_message">You are in %1$s. To join %2$s, you must leave your current household first.</string>
+    <string name="auth_pending_invites_switch_confirm">Leave and accept</string>
+    <string name="auth_pending_invites_switch_cancel">Cancel</string>
+    <string name="auth_pending_invites_email_mismatch">This invitation was sent to %1$s. You are signed in as %2$s. Sign in with the invited address or ask for a new invite.</string>
     <string name="sharing_members_role_owner">Owner</string>
     <string name="sharing_members_role_editor">Editor</string>
     <string name="sharing_members_role_viewer">Viewer</string>
@@ -723,4 +730,13 @@
     <string name="sharing_members_pending_invites_title">Pending invites</string>
     <string name="sharing_members_pending_invite_label">Pending · %1$s</string>
     <string name="sharing_members_read_only_hint">Only the household owner can invite or remove members.</string>
+    <string name="sharing_members_leave">Leave household</string>
+    <string name="sharing_members_leave_confirm_title">Leave household?</string>
+    <string name="sharing_members_leave_confirm_message">You will lose access to shared lists and meal plans in %1$s.</string>
+    <string name="sharing_members_dissolve">Delete household</string>
+    <string name="sharing_members_dissolve_confirm_title">Delete household?</string>
+    <string name="sharing_members_dissolve_confirm_message">This permanently deletes %1$s and all shared data. This cannot be undone.</string>
+    <string name="sharing_members_owner_transfer_required">Transfer ownership to another member before you can leave while others remain in the household.</string>
+    <string name="sharing_members_error_member_limit">This household has reached the 20-member limit.</string>
+    <string name="sharing_members_error_owner_transfer_required">Transfer ownership before leaving or deleting the household.</string>
 </resources>

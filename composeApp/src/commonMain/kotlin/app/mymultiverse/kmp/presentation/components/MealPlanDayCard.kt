@@ -61,6 +61,7 @@ fun MealPlanDayCard(
     onDinnerChange: (String) -> Unit,
     onGenerateGroceryForMeal: (MealSlot) -> Unit,
     loadingMeal: MealSlot? = null,
+    readOnly: Boolean = false,
     modifier: Modifier = Modifier,
     initiallyExpanded: Boolean = isToday,
 ) {
@@ -132,6 +133,7 @@ fun MealPlanDayCard(
                         generateGroceryLabel = generateGroceryLabel,
                         onGenerateGrocery = { onGenerateGroceryForMeal(MealSlot.Lunch) },
                         isGeneratingGrocery = loadingMeal == MealSlot.Lunch,
+                        readOnly = readOnly,
                         modifier = Modifier.fillMaxWidth(),
                         fieldTestTag = MealPlanTestTags.lunchField(dayIndex),
                         generateGroceryTestTag = MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch),
@@ -144,6 +146,7 @@ fun MealPlanDayCard(
                         generateGroceryLabel = generateGroceryLabel,
                         onGenerateGrocery = { onGenerateGroceryForMeal(MealSlot.Dinner) },
                         isGeneratingGrocery = loadingMeal == MealSlot.Dinner,
+                        readOnly = readOnly,
                         modifier = Modifier.fillMaxWidth(),
                         fieldTestTag = MealPlanTestTags.dinnerField(dayIndex),
                         generateGroceryTestTag = MealPlanTestTags.groceryButton(dayIndex, MealSlot.Dinner),
@@ -163,6 +166,7 @@ private fun MealPlanMealField(
     generateGroceryLabel: String,
     onGenerateGrocery: () -> Unit,
     isGeneratingGrocery: Boolean,
+    readOnly: Boolean = false,
     modifier: Modifier = Modifier,
     fieldTestTag: String,
     generateGroceryTestTag: String,
@@ -178,6 +182,7 @@ private fun MealPlanMealField(
             placeholder = { Text(label) },
             shape = FamilyLogisticsDesign.fieldShape,
             minLines = 2,
+            readOnly = readOnly,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { /* focus moves naturally */ }),
             colors = OutlinedTextFieldDefaults.colors(
@@ -186,7 +191,7 @@ private fun MealPlanMealField(
                 cursorColor = accentColor,
             ),
         )
-        if (value.isNotBlank()) {
+        if (value.isNotBlank() && !readOnly) {
             TextButton(
                 onClick = onGenerateGrocery,
                 enabled = !isGeneratingGrocery,

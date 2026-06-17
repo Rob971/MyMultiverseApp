@@ -12,6 +12,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -47,9 +48,19 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_member
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_cannot_add_self
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_email_required
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_generic
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_invitee_household_already_active
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_insufficient_role
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_member_already_exists
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_not_configured
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_dissolve
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_dissolve_confirm_message
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_dissolve_confirm_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_member_limit
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_owner_transfer_required
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_leave
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_leave_confirm_message
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_leave_confirm_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_owner_transfer_required
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_sent
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_loading
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_member_added
@@ -186,6 +197,36 @@ fun HouseholdMembersScreen(
                         )
                     }
                 }
+                if (uiState.showOwnerTransferHint) {
+                    item {
+                        Text(
+                            text = stringResource(Res.string.sharing_members_owner_transfer_required),
+                            color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
+                        )
+                    }
+                }
+                if (uiState.canLeave) {
+                    item {
+                        OutlinedButton(
+                            onClick = screenModel::requestLeave,
+                            enabled = !uiState.isLeaving,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(Res.string.sharing_members_leave))
+                        }
+                    }
+                }
+                if (uiState.canDissolve) {
+                    item {
+                        OutlinedButton(
+                            onClick = screenModel::requestDissolve,
+                            enabled = !uiState.isLeaving,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(Res.string.sharing_members_dissolve))
+                        }
+                    }
+                }
                 if (errorMessage != null) {
                     item {
                         Text(
@@ -261,6 +302,46 @@ fun HouseholdMembersScreen(
             },
         )
     }
+
+    uiState.pendingLeaveAction?.let { action ->
+        val title = when (action) {
+            HouseholdMembersLeaveAction.Leave ->
+                stringResource(Res.string.sharing_members_leave_confirm_title)
+            HouseholdMembersLeaveAction.Dissolve ->
+                stringResource(Res.string.sharing_members_dissolve_confirm_title)
+        }
+        val message = when (action) {
+            HouseholdMembersLeaveAction.Leave ->
+                stringResource(Res.string.sharing_members_leave_confirm_message, household.name)
+            HouseholdMembersLeaveAction.Dissolve ->
+                stringResource(Res.string.sharing_members_dissolve_confirm_message, household.name)
+        }
+        val confirmLabel = when (action) {
+            HouseholdMembersLeaveAction.Leave -> stringResource(Res.string.sharing_members_leave)
+            HouseholdMembersLeaveAction.Dissolve -> stringResource(Res.string.sharing_members_dissolve)
+        }
+        AlertDialog(
+            onDismissRequest = screenModel::dismissLeaveDissolve,
+            title = { Text(title) },
+            text = { Text(message) },
+            confirmButton = {
+                Button(
+                    onClick = screenModel::confirmLeaveOrDissolve,
+                    enabled = !uiState.isLeaving,
+                ) {
+                    Text(confirmLabel)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = screenModel::dismissLeaveDissolve,
+                    enabled = !uiState.isLeaving,
+                ) {
+                    Text(stringResource(Res.string.sharing_members_cancel))
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -272,6 +353,12 @@ private fun mapErrorMessage(error: HouseholdMembersError): String =
         HouseholdMembersError.CannotAddSelf -> stringResource(Res.string.sharing_members_error_cannot_add_self)
         HouseholdMembersError.MemberAlreadyExists -> stringResource(Res.string.sharing_members_error_member_already_exists)
         HouseholdMembersError.InsufficientRole -> stringResource(Res.string.sharing_members_error_insufficient_role)
+        HouseholdMembersError.InviteeHouseholdAlreadyActive ->
+            stringResource(Res.string.sharing_members_error_invitee_household_already_active)
+        HouseholdMembersError.MemberLimitReached ->
+            stringResource(Res.string.sharing_members_error_member_limit)
+        HouseholdMembersError.OwnerMustTransferOrDissolve ->
+            stringResource(Res.string.sharing_members_error_owner_transfer_required)
     }
 
 @Composable

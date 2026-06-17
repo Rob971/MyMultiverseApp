@@ -38,6 +38,7 @@
     <string name="nutrition_meal_plan_expand_day">Ver comidas</string>
     <string name="nutrition_meal_plan_collapse_day">Ocultar comidas</string>
     <string name="nutrition_grocery_title">Compra semanal</string>
+    <string name="nutrition_household_viewer_readonly_note">Acceso de solo lectura. Puedes leer listas y planes compartidos pero no editarlos.</string>
     <string name="nutrition_grocery_description">Crea y marca la lista de la compra de esta semana.</string>
     <string name="nutrition_meal_plan_title">Plan de comidas semanal</string>
     <string name="nutrition_meal_plan_description">Planifica almuerzo y cena para cada día de la semana.</string>
@@ -692,6 +693,7 @@
     <string name="sharing_members_error_cannot_add_self">No puedes invitarte a ti mismo.</string>
     <string name="sharing_members_error_member_already_exists">Esta persona ya está en tu hogar.</string>
     <string name="sharing_members_error_insufficient_role">No tienes permiso para gestionar miembros.</string>
+    <string name="sharing_members_error_invitee_household_already_active">Esta persona ya pertenece a otro hogar y no puede añadirse.</string>
     <string name="sharing_members_loading">Cargando miembros...</string>
     <string name="nutrition_sync_status_syncing">Sincronizando nutrición compartida...</string>
     <string name="nutrition_sync_status_pending">%1$d cambios pendientes de sincronizar</string>
@@ -702,6 +704,11 @@
     <string name="auth_pending_invites_accept">Aceptar</string>
     <string name="auth_pending_invites_decline">Rechazar</string>
     <string name="auth_pending_invites_error_generic">No se pudo aceptar la invitación. Inténtalo de nuevo.</string>
+    <string name="auth_pending_invites_switch_title">¿Cambiar de hogar?</string>
+    <string name="auth_pending_invites_switch_message">Estás en %1$s. Para unirte a %2$s, primero debes abandonar tu hogar actual.</string>
+    <string name="auth_pending_invites_switch_confirm">Abandonar y aceptar</string>
+    <string name="auth_pending_invites_switch_cancel">Cancelar</string>
+    <string name="auth_pending_invites_email_mismatch">Esta invitación se envió a %1$s. Has iniciado sesión como %2$s. Inicia sesión con la dirección invitada o pide una nueva invitación.</string>
     <string name="sharing_members_role_owner">Propietario</string>
     <string name="sharing_members_role_editor">Editor</string>
     <string name="sharing_members_role_viewer">Lector</string>
@@ -722,4 +729,13 @@
     <string name="sharing_members_pending_invite_label">Pendiente · %1$s</string>
     <string name="sharing_members_read_only_hint">Solo el propietario del hogar puede invitar o quitar miembros.</string>
     <string name="sharing_members_select_role">Nivel de acceso</string>
+    <string name="sharing_members_leave">Abandonar hogar</string>
+    <string name="sharing_members_leave_confirm_title">¿Abandonar el hogar?</string>
+    <string name="sharing_members_leave_confirm_message">Perderás el acceso a las listas y planes compartidos en %1$s.</string>
+    <string name="sharing_members_dissolve">Eliminar hogar</string>
+    <string name="sharing_members_dissolve_confirm_title">¿Eliminar el hogar?</string>
+    <string name="sharing_members_dissolve_confirm_message">Esto elimina permanentemente %1$s y todos los datos compartidos. No se puede deshacer.</string>
+    <string name="sharing_members_owner_transfer_required">Transfiere la propiedad a otro miembro antes de irte mientras otros permanezcan en el hogar.</string>
+    <string name="sharing_members_error_member_limit">Este hogar ha alcanzado el límite de 20 miembros.</string>
+    <string name="sharing_members_error_owner_transfer_required">Transfiere la propiedad antes de abandonar o eliminar el hogar.</string>
 </resources>
