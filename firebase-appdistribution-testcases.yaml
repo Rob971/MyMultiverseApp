@@ -1,14 +1,15 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: Nutrition, Adventures, and Budget share one household (2+ members).
 
-version: 9
-updated: 2026-06-16
+version: 13
+updated: 2026-06-19
 
 summary: |
   Verify auth, household members on Home (shared across nutrition, adventures, budget),
   nutrition hub (grocery / meal plan / AI adviser), CRUD on shared week data, sync status,
   Crashlytics on tester builds, and sign-out.
   Adventures and Budget cards on Home remain coming soon but use the same household when shipped.
+  Viewers are read-only: they cannot edit any shared nutrition entry. Invites require auth email to match.
   - id: auth-sign-in
     title: Email sign-in and sign-up
     steps:
@@ -35,12 +36,64 @@ summary: |
       - Login screen returns.
 
   - id: home-pending-invite
-    title: Accept a pending household invite
+    title: Accept a pending household invite (gate)
     steps:
-      - Sign in as a user who has a pending household invite.
-      - On Home, tap Accept on the invite card.
+      - Sign in as a user who has a pending household invite and no household yet.
+      - On the household gate (onboarding screen), tap Accept on the invite card.
     expected:
-      - Invite card disappears; opening Nutrition lands on the shared household hub.
+      - Snackbar shows you joined the invited household name.
+      - Full Home appears; invite card is gone.
+      - Opening Nutrition lands on the shared household hub.
+
+  - id: household-gate-pending-invite-two-phone
+    title: Two-phone invite — invitee sees invite on gate (simulate with two accounts)
+    steps:
+      - Phone A: sign in, create a household, open Household members, invite Phone B's exact login email.
+      - Phone B: sign up or sign in with that email; do not create a household first.
+      - Phone B: on the household gate, confirm the pending invite card appears above Create household.
+      - Phone B: tap Accept.
+    expected:
+      - Phone B reaches Home; both devices show the same household name on Home / Household card.
+      - Phone A sees Phone B on the members list after refresh (or after B accepts).
+
+  - id: household-invite-blocked-already-member
+    title: Inviter blocked when invitee already belongs to another household
+    steps:
+      - Phone B: sign in and create a household (or join one).
+      - Phone A: sign in, create a different household, open Household members, invite Phone B's email.
+    expected:
+      - Add-person dialog stays open with a clear error that this person already belongs to another household.
+      - No new pending invite is created for B on A's household.
+
+  - id: household-invite-email-mismatch
+    title: Invite accept blocked when auth email does not match
+    steps:
+      - Phone A invites maria@gmail.com.
+      - Sign in (or stay signed in) as a different email, e.g. maria@work.com, with a pending invite still addressed to maria@gmail.com.
+      - Try to accept the invite from the gate or Home pending-invite card.
+    expected:
+      - Accept fails with a clear message that the invite was sent to another email and you are signed in as {session_email}.
+      - User is told to sign in with the invited address or request a new invite.
+
+  - id: nutrition-viewer-read-only
+    title: Viewer role cannot edit shared nutrition data
+    steps:
+      - Owner invites a second account as Viewer (not Editor) and invitee accepts.
+      - Sign in as the viewer; open Nutrition → Grocery, Meal plan, and AI adviser.
+      - Attempt to add, edit, toggle, delete, or clear items.
+    expected:
+      - All lists remain visible (read-only).
+      - No add bar, edit actions, delete, clear, or AI write actions are available.
+      - If a write is forced (e.g. stale client), server rejects it.
+
+  - id: household-shared-nutrition-two-phone
+    title: Two-phone shared grocery (same household)
+    steps:
+      - Complete household-gate-pending-invite-two-phone so A and B share one household.
+      - Phone A: open Nutrition → Grocery, add or edit an item, wait for sync (online).
+      - Phone B: open Nutrition → Grocery, pull to refresh or wait for realtime if enabled.
+    expected:
+      - Phone B sees Phone A's grocery change in the same week/household scope.
 
   - id: home-personalized-greeting
     title: Personalized home greeting after sign-in
@@ -51,14 +104,24 @@ summary: |
       - Banner supporting line greets you by name (e.g. Hello, Roberto).
       - Greeting persists while you stay signed in and navigate back to Home.
 
-  - id: nutrition-household-bootstrap
-    title: Open nutrition (single household)
+  - id: household-gate-onboarding
+    title: Household gate blocks modules until setup
     steps:
-      - From Home, open Nutrition on a fresh account (no household yet).
-      - Wait for the loading state to finish.
+      - Sign in with a new account that has no household and no pending invites.
+      - Observe the onboarding screen instead of the full Home module grid.
+      - Enter a household name and tap Create household.
+    expected:
+      - Full Home appears with Nutrition enabled after household is created.
+      - Adventures and Budget remain coming soon.
+
+  - id: nutrition-household-bootstrap
+    title: Open nutrition after household is active
+    steps:
+      - Complete household onboarding (create or accept invite).
+      - From Home, open Nutrition.
     expected:
       - Nutrition hub opens directly (no space picker).
-      - Household is auto-created on first access with grocery, meal plan, and AI advice enabled.
+      - Household must exist before Nutrition is reachable from Home.
 
   - id: home-household-members
     title: Invite household members from Home
@@ -69,7 +132,41 @@ summary: |
       - Members screen explains the household is shared across nutrition, adventures, and budget.
       - Owner can invite; editors/viewers see read-only member list.
       - Pending invites appear on the members screen until accepted.
-      - Snackbar confirms invite sent or member added.
+      - Snackbar confirms invitation sent to the exact email address (invitee must accept on their device).
+
+  - id: household-transfer-ownership-leave
+    title: Owner transfers ownership then leaves
+    steps:
+      - Sign in as household owner with at least one editor member (two accounts).
+      - Open Household members → Transfer ownership → pick the editor → confirm.
+      - Sign in as the former owner (now editor) → Leave household.
+    expected:
+      - New owner appears on the members list; former owner is editor.
+      - Former owner reaches the household gate after leaving; shared data is no longer accessible.
+
+  - id: home-export-personal-data
+    title: Export personal data (GDPR)
+    steps:
+      - Sign in and open Home.
+      - Tap Export my data above the version label.
+    expected:
+      - Success snackbar appears (profile + household affiliation metadata exported server-side).
+
+  - id: household-gate-create-with-invite
+    title: Gate layout when pending invite exists
+    steps:
+      - Sign in with a pending invite and no household.
+      - Observe the gate screen before accepting or creating.
+    expected:
+      - Pending invite card is prominent above a divider.
+      - Create household uses secondary (outlined) styling; create is not blocked.
+
+  - id: household-max-members
+    title: Household member cap (20)
+    steps:
+      - Not practical for manual QA on every build; verify in automated tests or staging scripts.
+    expected:
+      - Product rule: at most 20 members per household; invite/accept returns a clear error at cap (when enforced).
 
   - id: nutrition-household-members
     title: Invite household members (legacy note)

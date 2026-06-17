@@ -99,6 +99,8 @@ Without a key, auth and sharing screens show a “not configured” state; local
 
 CI builds use GitHub Secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GOOGLE_SERVICES_JSON` (full contents of `composeApp/google-services.json` for Firebase Crashlytics on tester APKs) instead of local files.
 
+Production migration deploy (`.github/workflows/supabase-deploy.yml`) additionally requires `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, and `SUPABASE_PROJECT_REF` (e.g. `ivjdzreazvkrrirecznk`).
+
 ### 2. Apply database migrations
 
 SQL files live in `supabase/migrations/`. Apply them to your Supabase project (Dashboard SQL editor, Supabase CLI, or MCP):
@@ -162,12 +164,14 @@ GitHub Actions workflow: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-
 
 | Trigger | Jobs |
 |---------|------|
-| **Push** to `feature/**` | **Fast:** unit tests + APK (~6 min target). Firebase distribute. Instrumented + iOS skipped. |
-| **Push** to `main` / `master` | Fast + instrumented UI tests + iOS compile + Firebase |
-| **Pull request** into `main` / `master` | Fast + instrumented + iOS + Firebase (merge gate) |
-| **Manual dispatch** | Pick one job: `all`, `android-unit-tests`, `android-instrumented-tests`, `android-apk` (APK only), `firebase-release`, `ios-compatibility` |
+| **Push** to `feature/**` | **Android CI** → **Release** (Firebase + version bump). ~4 min target. |
+| **Push** to `main` / `master` | Android CI + Supabase Migrations + instrumented + iOS (parallel) → Release |
+| **Pull request** into `main` / `master` | Same as main push (merge gate) |
+| **Manual dispatch** (`kmp-ci.yml`) | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `ios-compatibility`, `release` |
 
-**Manual dispatch:** run any single job from Actions → KMP CI → Run workflow. For `firebase-release` only, the workflow reuses the APK from the latest successful pipeline on that branch (unit + instrumented must have passed). Optionally set `source_run_id` to a specific run.
+**Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push` on `main` when migrations change. Requires `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`. CI validates migrations locally with `supabase db start` (no remote writes).
+
+**Manual `release`:** reuses the APK from the latest successful **Android CI** on that branch (optional `source_run_id`).
 
 Firebase App Distribution runs on every **push**, **pull request** (opened / reopened), manual `all`, and manual `firebase-release`.
 

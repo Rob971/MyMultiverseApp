@@ -79,6 +79,7 @@ import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiReadOnlyGroceryList
 import app.mymultiverse.kmp.presentation.components.nutritionDayLabel
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsCardSurface
+import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsDesign
 import app.mymultiverse.kmp.presentation.components.NutritionFeatureHeader
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
@@ -113,10 +114,12 @@ fun NutritionAiAdviceScreen(
 ) {
     val aiState by screenModel.aiState.collectAsState()
     val aiGrocery by screenModel.aiGroceryItems.collectAsState()
+    val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     var criteria by rememberSaveable { mutableStateOf("") }
     var mode by rememberSaveable { mutableStateOf(NutritionAiMode.Advice) }
     var fullWeekScope by rememberSaveable { mutableStateOf(true) }
     val isLoading = aiState is NutritionAiState.Loading
+    val inputsEnabled = canWrite && !isLoading
     val todayIndex = remember(screenModel.weekKey) { WeekCalendar.todayIndexInWeek(screenModel.weekKey) }
     val accentColor = SharedJourneyColors.MediterraneanTeal
     val snackbarHostState = remember { SnackbarHostState() }
@@ -204,6 +207,12 @@ fun NutritionAiAdviceScreen(
                 )
             }
 
+            if (!canWrite) {
+                item {
+                    HouseholdViewerReadOnlyNotice()
+                }
+            }
+
             item {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -212,21 +221,21 @@ fun NutritionAiAdviceScreen(
                     ModeChip(
                         label = stringResource(Res.string.nutrition_ai_mode_advice),
                         selected = mode == NutritionAiMode.Advice,
-                        enabled = !isLoading,
+                        enabled = inputsEnabled,
                         modifier = Modifier.testTag(NutritionAiTestTags.MODE_ADVICE),
                         onClick = { mode = NutritionAiMode.Advice },
                     )
                     ModeChip(
                         label = stringResource(Res.string.nutrition_ai_mode_grocery),
                         selected = mode == NutritionAiMode.GroceryList,
-                        enabled = !isLoading,
+                        enabled = inputsEnabled,
                         modifier = Modifier.testTag(NutritionAiTestTags.MODE_GROCERY),
                         onClick = { mode = NutritionAiMode.GroceryList },
                     )
                     ModeChip(
                         label = stringResource(Res.string.nutrition_ai_mode_meal_plan),
                         selected = mode == NutritionAiMode.MealPlan,
-                        enabled = !isLoading,
+                        enabled = inputsEnabled,
                         modifier = Modifier.testTag(NutritionAiTestTags.MODE_MEAL_PLAN),
                         onClick = { mode = NutritionAiMode.MealPlan },
                     )
@@ -242,14 +251,14 @@ fun NutritionAiAdviceScreen(
                         ModeChip(
                             label = stringResource(Res.string.nutrition_ai_scope_full_week),
                             selected = fullWeekScope,
-                            enabled = !isLoading,
+                            enabled = inputsEnabled,
                             modifier = Modifier.testTag(NutritionAiTestTags.SCOPE_FULL_WEEK),
                             onClick = { fullWeekScope = true },
                         )
                         ModeChip(
                             label = stringResource(Res.string.nutrition_ai_scope_today),
                             selected = !fullWeekScope,
-                            enabled = !isLoading,
+                            enabled = inputsEnabled,
                             modifier = Modifier.testTag(NutritionAiTestTags.SCOPE_TODAY),
                             onClick = { fullWeekScope = false },
                         )
@@ -272,7 +281,7 @@ fun NutritionAiAdviceScreen(
                     suggestions.forEach { suggestion ->
                         SuggestionChip(
                             label = suggestion,
-                            enabled = !isLoading,
+                            enabled = inputsEnabled,
                             onClick = { criteria = suggestion },
                         )
                     }
@@ -290,7 +299,7 @@ fun NutritionAiAdviceScreen(
                     shape = FamilyLogisticsDesign.fieldShape,
                     minLines = 3,
                     maxLines = 5,
-                    enabled = !isLoading,
+                    enabled = inputsEnabled,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = accentColor,
                         focusedLabelColor = accentColor,
@@ -305,7 +314,7 @@ fun NutritionAiAdviceScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag(NutritionAiTestTags.GENERATE_BUTTON),
-                    enabled = criteria.isNotBlank() && !isLoading,
+                    enabled = canWrite && criteria.isNotBlank() && !isLoading,
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(

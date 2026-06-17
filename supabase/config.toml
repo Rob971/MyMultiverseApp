@@ -1,0 +1,27 @@
+# Local development and CI migration validation.
+# Production deploy: .github/workflows/supabase-deploy.yml (db push on main only).
+
+project_id = "kmp-voyager-local"
+
+[api]
+enabled = false
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = false
+
+[inbucket]
+enabled = false
+
+[storage]
+enabled = false
+
+[auth]
+enabled = true
+
+[edge_runtime]
+enabled = false

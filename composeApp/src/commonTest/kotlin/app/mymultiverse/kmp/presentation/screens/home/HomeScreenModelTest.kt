@@ -4,6 +4,7 @@ import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.model.auth.AuthUser
 import app.mymultiverse.kmp.domain.model.sharing.AddMemberResult
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.domain.model.sharing.SpaceInvite
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMember
 import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
@@ -18,6 +19,7 @@ import app.mymultiverse.kmp.presentation.di.FakeAuthRepository
 import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
 import app.mymultiverse.kmp.presentation.di.FakeSpaceCollaborationRepository
+import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
 import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,6 +34,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeScreenModelTest {
@@ -226,6 +229,39 @@ class HomeScreenModelTest {
     }
 
     @Test
+    fun onAcceptInviteClicked_whenAffiliated_showsSwitchPrompt() = runTest(testDispatcher) {
+        val screenModel = HomeScreenModel(
+            getGreetingUseCase = GetGreetingUseCase(FakeGreetingRepository(Greeting("Welcome home"))),
+            authRepository = FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),
+                ),
+            ),
+            householdRepository = FakeHouseholdRepository(),
+            collaborationRepository = FakeSpaceCollaborationRepository(),
+            sessionCoordinator = FakeNutritionSessionCoordinator(
+                initialRepository = NutritionRepositoryImpl(MapSettings()),
+            ),
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        advanceUntilIdle()
+
+        val invite = SpaceInvite(
+            id = "invite-1",
+            spaceId = "space-2",
+            spaceName = "Partner home",
+            email = "test@example.com",
+            role = SpaceMemberRole.Editor,
+            expiresAtEpochMillis = 4_102_444_800_000L,
+        )
+        screenModel.onAcceptInviteClicked(invite)
+        advanceUntilIdle()
+
+        assertEquals("Partner home", screenModel.switchHouseholdPrompt.value?.invitedHouseholdName)
+        assertEquals("Our household", screenModel.switchHouseholdPrompt.value?.currentHouseholdName)
+    }
+
+    @Test
     fun refresh_stillLoadsPendingInvitesInBackground() = runTest(testDispatcher) {
         val collaborationRepository = TrackingSpaceCollaborationRepository()
         val screenModel = HomeScreenModel(
@@ -246,6 +282,42 @@ class HomeScreenModelTest {
         advanceUntilIdle()
 
         assertEquals(1, collaborationRepository.refreshPendingInvitesCalls)
+    }
+
+    @Test
+    fun acceptInvite_emitsJoinedMessage() = runTest(testDispatcher) {
+        val collaborationRepository = FakeSpaceCollaborationRepository()
+        val screenModel = HomeScreenModel(
+            getGreetingUseCase = GetGreetingUseCase(FakeGreetingRepository(Greeting("Welcome home"))),
+            authRepository = FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),
+                ),
+            ),
+            householdRepository = FakeHouseholdRepository(
+                initialMembershipStatus = HouseholdMembershipStatus.None,
+            ),
+            collaborationRepository = collaborationRepository,
+            sessionCoordinator = FakeNutritionSessionCoordinator(
+                initialRepository = NutritionRepositoryImpl(MapSettings()),
+            ),
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        advanceUntilIdle()
+
+        collaborationRepository.addMemberByEmail(
+            spaceId = "household-space-1",
+            email = "partner@example.com",
+            role = SpaceMemberRole.Editor,
+        )
+        val invite = collaborationRepository.latestOutboundInvite("household-space-1")
+            ?: error("expected outbound invite")
+        screenModel.acceptInvite(invite.id, invite.spaceName)
+        advanceUntilIdle()
+
+        val message = screenModel.inviteActionMessage.value
+        assertTrue(message is InviteActionMessage.Joined)
+        assertEquals("Test Space", (message as InviteActionMessage.Joined).householdName)
     }
 }
 

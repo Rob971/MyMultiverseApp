@@ -17,6 +17,18 @@ class FakeSpaceCollaborationRepository : SpaceCollaborationRepository {
     private val outboundInvitesBySpace = mutableMapOf<String, MutableStateFlow<List<SpaceInvite>>>()
     private val pendingInvites = MutableStateFlow<List<SpaceInvite>>(emptyList())
     var inboundProfileEmail: String = "invitee@example.com"
+    var addMemberFailure: Throwable? = null
+    var emailsAlreadyInAnotherHousehold: Set<String> = emptySet()
+
+    private fun createInvite(spaceId: String, email: String, role: SpaceMemberRole): SpaceInvite =
+        SpaceInvite(
+            id = "invite-${outboundInvitesFlow(spaceId).value.size + 1}",
+            spaceId = spaceId,
+            spaceName = "Test Space",
+            email = email.lowercase(),
+            role = role,
+            expiresAtEpochMillis = null,
+        )
 
     override fun observeMembers(spaceId: String): Flow<List<SpaceMember>> =
         membersFlow(spaceId).asStateFlow()
@@ -55,33 +67,18 @@ class FakeSpaceCollaborationRepository : SpaceCollaborationRepository {
         email: String,
         role: SpaceMemberRole,
     ): Result<AddMemberResult> {
+        addMemberFailure?.let { return Result.failure(it) }
         val trimmed = email.trim()
         if (trimmed.isEmpty()) return Result.failure(IllegalArgumentException("member_email_required"))
-        if (trimmed.contains("invite")) {
-            val invite = SpaceInvite(
-                id = "invite-${outboundInvitesFlow(spaceId).value.size + 1}",
-                spaceId = spaceId,
-                spaceName = "Test Space",
-                email = trimmed.lowercase(),
-                role = role,
-                expiresAtEpochMillis = null,
-            )
-            outboundInvitesFlow(spaceId).update { current ->
-                current.filterNot { emailsMatch(it.email, trimmed) } + invite
-            }
-            return Result.success(AddMemberResult.InviteSent)
+        if (emailsAlreadyInAnotherHousehold.any { emailsMatch(it, trimmed) }) {
+            return Result.failure(IllegalStateException("invitee_household_already_active"))
         }
 
-        val member = SpaceMember(
-            id = "member-${membersFlow(spaceId).value.size + 1}",
-            spaceId = spaceId,
-            kind = SpaceMemberKind.Person,
-            displayName = trimmed,
-            role = role,
-            referenceId = trimmed,
-        )
-        membersFlow(spaceId).update { current -> current + member }
-        return Result.success(AddMemberResult.Added)
+        val invite = createInvite(spaceId, trimmed, role)
+        outboundInvitesFlow(spaceId).update { current ->
+            current.filterNot { emailsMatch(it.email, trimmed) } + invite
+        }
+        return Result.success(AddMemberResult.InviteSent)
     }
 
     override suspend fun removeMember(memberId: String): Result<Unit> {
@@ -126,4 +123,26 @@ class FakeSpaceCollaborationRepository : SpaceCollaborationRepository {
 
     private fun outboundInvitesFlow(spaceId: String): MutableStateFlow<List<SpaceInvite>> =
         outboundInvitesBySpace.getOrPut(spaceId) { MutableStateFlow(emptyList()) }
+
+    fun latestOutboundInvite(spaceId: String): SpaceInvite? =
+        outboundInvitesBySpace[spaceId]?.value?.lastOrNull()
+
+    fun seedMember(
+        spaceId: String,
+        member: SpaceMember,
+        ownerId: String,
+        ownerDisplayName: String,
+    ) {
+        membersFlow(spaceId).value = listOf(
+            SpaceMember(
+                id = "owner-$ownerId",
+                spaceId = spaceId,
+                kind = SpaceMemberKind.Person,
+                displayName = ownerDisplayName,
+                role = SpaceMemberRole.Owner,
+                referenceId = ownerId,
+            ),
+            member,
+        )
+    }
 }

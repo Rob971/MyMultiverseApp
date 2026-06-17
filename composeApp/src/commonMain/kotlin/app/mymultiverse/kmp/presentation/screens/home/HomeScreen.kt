@@ -2,10 +2,23 @@ package app.mymultiverse.kmp.presentation.screens.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -28,42 +41,155 @@ import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import app.mymultiverse.kmp.domain.repository.AuthRepository
+import app.mymultiverse.kmp.domain.model.auth.AuthState
+import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
 import org.koin.compose.koinInject
 
 object HomeTestTags {
     const val NUTRITION_CARD = "home_nutrition_card"
     const val HOUSEHOLD_CARD = "home_household_card"
     const val SIGN_OUT_BUTTON = "home_sign_out_button"
+    const val EXPORT_DATA_BUTTON = "home_export_personal_data_button"
     const val APP_VERSION_LABEL = "home_app_version_label"
     const val LOADING_INDICATOR = "home_loading_indicator"
     const val GREETING_LINE = "home_greeting_line"
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onOpenNutrition: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
 ) {
     val screenModel = koinInject<HomeScreenModel>()
+    val authRepository = koinInject<AuthRepository>()
     val greeting by screenModel.greeting.collectAsState()
     val userDisplayName by screenModel.userDisplayName.collectAsState()
     val household by screenModel.household.collectAsState()
+    val hasActiveHousehold by screenModel.hasActiveHousehold.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val pendingInvites by screenModel.pendingInvites.collectAsState()
-
-    HomeContent(
-        greeting = greeting,
-        userDisplayName = userDisplayName,
-        householdName = household?.name,
-        isRefreshing = isRefreshing,
-        pendingInvites = pendingInvites,
-        onRefreshClick = { screenModel.refresh() },
-        onOpenNutrition = onOpenNutrition,
-        onOpenHouseholdMembers = onOpenHouseholdMembers,
-        onSignOut = { screenModel.signOut() },
-        onAcceptInvite = screenModel::acceptInvite,
-        onDeclineInvite = screenModel::declineInvite,
+    val inviteActionMessage by screenModel.inviteActionMessage.collectAsState()
+    val switchHouseholdPrompt by screenModel.switchHouseholdPrompt.collectAsState()
+    val personalDataExportMessage by screenModel.personalDataExportMessage.collectAsState()
+    val authState by authRepository.authState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val inviteErrorMessage = stringResource(Res.string.auth_pending_invites_error_generic)
+    val sessionEmail = (authState as? AuthState.Authenticated)?.user?.email.orEmpty()
+    val emailMismatchMessage = stringResource(
+        Res.string.auth_pending_invites_email_mismatch,
+        pendingInvites.firstOrNull()?.email.orEmpty(),
+        sessionEmail,
     )
+    val exportSuccessMessage = stringResource(Res.string.home_export_personal_data_success)
+    val exportErrorMessage = stringResource(Res.string.home_export_personal_data_error)
+    val joinedInviteMessage = (inviteActionMessage as? InviteActionMessage.Joined)?.householdName
+        ?.let { name -> stringResource(Res.string.auth_household_joined_success, name) }
+
+    LaunchedEffect(joinedInviteMessage) {
+        joinedInviteMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            screenModel.clearInviteActionMessage()
+        }
+    }
+
+    LaunchedEffect(personalDataExportMessage) {
+        when (personalDataExportMessage) {
+            PersonalDataExportMessage.Success -> {
+                snackbarHostState.showSnackbar(exportSuccessMessage)
+                screenModel.clearPersonalDataExportMessage()
+            }
+            PersonalDataExportMessage.Error -> {
+                snackbarHostState.showSnackbar(exportErrorMessage)
+                screenModel.clearPersonalDataExportMessage()
+            }
+            null -> Unit
+        }
+    }
+
+    LaunchedEffect(inviteActionMessage) {
+        when (val message = inviteActionMessage) {
+            InviteActionMessage.AcceptFailed -> {
+                snackbarHostState.showSnackbar(inviteErrorMessage)
+                screenModel.clearInviteActionMessage()
+            }
+            InviteActionMessage.EmailMismatch -> {
+                snackbarHostState.showSnackbar(emailMismatchMessage)
+                screenModel.clearInviteActionMessage()
+            }
+            is InviteActionMessage.Joined -> Unit
+            null -> Unit
+        }
+    }
+
+    switchHouseholdPrompt?.let { prompt ->
+        AlertDialog(
+            onDismissRequest = screenModel::dismissSwitchHouseholdPrompt,
+            title = { Text(stringResource(Res.string.auth_pending_invites_switch_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        Res.string.auth_pending_invites_switch_message,
+                        prompt.currentHouseholdName,
+                        prompt.invitedHouseholdName,
+                    ),
+                )
+            },
+            confirmButton = {
+                Button(onClick = screenModel::confirmLeaveAndAccept) {
+                    Text(stringResource(Res.string.auth_pending_invites_switch_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = screenModel::dismissSwitchHouseholdPrompt) {
+                    Text(stringResource(Res.string.auth_pending_invites_switch_cancel))
+                }
+            },
+        )
+    }
+
+    Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = { },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                actions = {
+                    TextButton(
+                        onClick = { screenModel.signOut() },
+                        modifier = Modifier.testTag(HomeTestTags.SIGN_OUT_BUTTON),
+                    ) {
+                        Text(stringResource(Res.string.auth_sign_out))
+                    }
+                    LanguagePicker()
+                },
+            )
+        },
+        containerColor = Color.Transparent,
+    ) { padding ->
+        HomeContent(
+            greeting = greeting,
+            userDisplayName = userDisplayName,
+            householdName = household?.name,
+            hasActiveHousehold = hasActiveHousehold,
+            isRefreshing = isRefreshing,
+            pendingInvites = pendingInvites,
+            onRefreshClick = { screenModel.refresh() },
+            onOpenNutrition = onOpenNutrition,
+            onOpenHouseholdMembers = onOpenHouseholdMembers,
+            onSignOut = { screenModel.signOut() },
+            onAcceptInvite = { inviteId ->
+                pendingInvites.find { it.id == inviteId }?.let { invite ->
+                    screenModel.onAcceptInviteClicked(invite)
+                }
+            },
+            onDeclineInvite = screenModel::declineInvite,
+            onExportPersonalData = screenModel::exportPersonalData,
+            modifier = Modifier.padding(padding),
+        )
+    }
 }
 
 @Composable
@@ -71,6 +197,7 @@ fun HomeContent(
     greeting: Greeting?,
     userDisplayName: String?,
     householdName: String?,
+    hasActiveHousehold: Boolean,
     isRefreshing: Boolean,
     pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.SpaceInvite>,
     onRefreshClick: () -> Unit,
@@ -79,8 +206,11 @@ fun HomeContent(
     onSignOut: () -> Unit,
     onAcceptInvite: (String) -> Unit,
     onDeclineInvite: (String) -> Unit,
+    onExportPersonalData: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
+    val requiresHouseholdLabel = stringResource(Res.string.home_logistics_requires_household)
     val greetingSelection = HomeGreetingSelection.select(
         greetingReady = greeting != null,
         userDisplayName = userDisplayName,
@@ -94,35 +224,14 @@ fun HomeContent(
         HomeGreetingSelection.Generic -> stringResource(Res.string.home_greeting)
     }
 
-    Scaffold(
-        contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = {
-            @OptIn(ExperimentalMaterial3Api::class)
-            TopAppBar(
-                title = { },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                actions = {
-                    TextButton(
-                        onClick = onSignOut,
-                        modifier = Modifier.testTag(HomeTestTags.SIGN_OUT_BUTTON),
-                    ) {
-                        Text(stringResource(Res.string.auth_sign_out))
-                    }
-                    LanguagePicker()
-                },
-            )
-        },
-        containerColor = Color.Transparent,
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .navigationBarsPadding()
-                .imePadding(),
-            contentPadding = screenListPadding(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .navigationBarsPadding()
+            .imePadding(),
+        contentPadding = screenListPadding(),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
             item {
                 JourneyBanner(
                     headline = stringResource(Res.string.home_banner_headline),
@@ -189,6 +298,8 @@ fun HomeContent(
                     accentColor = SharedJourneyColors.SageSoft,
                     icon = AppIcons.Restaurant,
                     modifier = Modifier.testTag(HomeTestTags.NUTRITION_CARD),
+                    enabled = hasActiveHousehold,
+                    badge = if (hasActiveHousehold) null else requiresHouseholdLabel,
                     onClick = onOpenNutrition,
                 )
             }
@@ -219,6 +330,26 @@ fun HomeContent(
 
             item {
                 Spacer(Modifier.height(24.dp))
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    TextButton(
+                        onClick = onExportPersonalData,
+                        modifier = Modifier.testTag(HomeTestTags.EXPORT_DATA_BUTTON),
+                    ) {
+                        Text(
+                            stringResource(Res.string.home_export_personal_data),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = SharedJourneyColors.InkMuted,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+            }
+
+            item {
+                Spacer(Modifier.height(8.dp))
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center,
@@ -256,5 +387,4 @@ fun HomeContent(
                 )
             }
         }
-    }
 }

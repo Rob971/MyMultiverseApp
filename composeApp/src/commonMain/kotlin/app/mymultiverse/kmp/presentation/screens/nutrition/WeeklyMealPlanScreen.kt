@@ -38,6 +38,7 @@ import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiReadOnlyGroceryList
 import app.mymultiverse.kmp.presentation.components.nutritionDayLabel
+import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.MealPlanDayCard
 import app.mymultiverse.kmp.presentation.components.NutritionFeatureHeader
@@ -56,6 +57,7 @@ fun WeeklyMealPlanScreen(
 ) {
     val mealPlan by screenModel.mealPlan.collectAsState()
     val aiGrocery by screenModel.aiGroceryItems.collectAsState()
+    val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val mealGroceryLoading by screenModel.mealGroceryLoading.collectAsState()
     val mealGroceryResult by screenModel.mealGroceryResult.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -135,6 +137,12 @@ fun WeeklyMealPlanScreen(
                 )
             }
 
+            if (!canWrite) {
+                item {
+                    HouseholdViewerReadOnlyNotice()
+                }
+            }
+
             if (aiGrocery.isNotEmpty()) {
                 item {
                     AiReadOnlyGroceryList(
@@ -179,6 +187,7 @@ fun WeeklyMealPlanScreen(
                             )
                         },
                         loadingMeal = loadingSlotFor(todayEntry.index),
+                        readOnly = !canWrite,
                         initiallyExpanded = true,
                     )
                 }
@@ -214,6 +223,7 @@ fun WeeklyMealPlanScreen(
                             )
                         },
                         loadingMeal = loadingSlotFor(entry.index),
+                        readOnly = !canWrite,
                         initiallyExpanded = false,
                     )
                 }

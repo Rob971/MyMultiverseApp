@@ -19,6 +19,7 @@ object NutritionStringKeys {
         "nutrition_meal_plan_expand_day",
         "nutrition_meal_plan_collapse_day",
         "nutrition_grocery_title",
+        "nutrition_household_viewer_readonly_note",
         "nutrition_grocery_description",
         "nutrition_meal_plan_title",
         "nutrition_meal_plan_description",

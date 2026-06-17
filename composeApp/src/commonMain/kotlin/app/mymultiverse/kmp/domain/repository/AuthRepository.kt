@@ -17,4 +17,7 @@ interface AuthRepository {
     suspend fun signInWithApple(): Result<Unit>
 
     suspend fun signOut()
+
+    /** GDPR: exports profile and household affiliation metadata as JSON. */
+    suspend fun exportPersonalData(): Result<String>
 }

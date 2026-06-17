@@ -18,7 +18,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 
 /**
- * Subscribes to [nutrition_space_week_data] changes for a single space/week and
+ * Subscribes to [nutrition_household_week_data] changes for a single space/week and
  * forwards remote edits to the active [OfflineFirstNutritionRepository].
  */
 class NutritionSpaceRealtimeSync(
@@ -37,8 +37,8 @@ class NutritionSpaceRealtimeSync(
             val channel = client.channel("nutrition-$spaceId-$weekKey")
             try {
                 val collector = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
-                    table = "nutrition_space_week_data"
-                    filter("space_id", FilterOperator.EQ, spaceId)
+                    table = "nutrition_household_week_data"
+                    filter("household_id", FilterOperator.EQ, spaceId)
                     filter("week_key", FilterOperator.EQ, weekKey)
                 }.onEach { action ->
                     val record = when (action) {

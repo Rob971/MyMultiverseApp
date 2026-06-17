@@ -62,6 +62,7 @@ class NutritionUxInstrumentedTest {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         return NutritionScreenModel(
             session = InstrumentedNutritionSessionCoordinator(repository),
+            householdRepository = InstrumentedHouseholdRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(adviceAnswer),
             scope = scope,
             newItemId = { itemId },
@@ -313,6 +314,7 @@ class NutritionUxInstrumentedTest {
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
                         householdName = "Our household",
+                        hasActiveHousehold = true,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
@@ -321,6 +323,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -344,6 +347,7 @@ class NutritionUxInstrumentedTest {
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
                         householdName = null,
+                        hasActiveHousehold = true,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
@@ -352,6 +356,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -373,6 +378,7 @@ class NutritionUxInstrumentedTest {
                         greeting = Greeting("ready"),
                         userDisplayName = "Roberto",
                         householdName = null,
+                        hasActiveHousehold = true,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
@@ -381,6 +387,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -399,6 +406,7 @@ class NutritionUxInstrumentedTest {
                         greeting = Greeting("ready"),
                         userDisplayName = "maria",
                         householdName = null,
+                        hasActiveHousehold = true,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
@@ -407,6 +415,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -424,6 +433,7 @@ class NutritionUxInstrumentedTest {
                         greeting = Greeting("ready"),
                         userDisplayName = null,
                         householdName = null,
+                        hasActiveHousehold = true,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
@@ -432,6 +442,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -450,6 +461,7 @@ class NutritionUxInstrumentedTest {
                         greeting = null,
                         userDisplayName = "Roberto",
                         householdName = null,
+                        hasActiveHousehold = true,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
@@ -458,6 +470,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -476,6 +489,7 @@ class NutritionUxInstrumentedTest {
                         greeting = null,
                         userDisplayName = null,
                         householdName = null,
+                        hasActiveHousehold = true,
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
@@ -484,6 +498,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }
@@ -501,6 +516,7 @@ class NutritionUxInstrumentedTest {
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
                         householdName = null,
+                        hasActiveHousehold = true,
                         isRefreshing = true,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
@@ -509,6 +525,7 @@ class NutritionUxInstrumentedTest {
                         onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        onExportPersonalData = {},
                     )
                 }
             }

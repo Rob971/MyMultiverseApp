@@ -7,9 +7,12 @@ import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
+import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
+import app.mymultiverse.kmp.domain.sharing.canWriteHouseholdData
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import kotlinx.coroutines.flow.flatMapLatest
@@ -40,6 +43,7 @@ sealed class NutritionAiState {
 
 class NutritionScreenModel(
     private val session: NutritionSessionCoordinator,
+    private val householdRepository: HouseholdRepository,
     private val aiAssistant: NutritionAiAssistantService,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
     private val newItemId: () -> String = { "${Random.nextLong()}_${Random.nextInt()}" },
@@ -69,6 +73,16 @@ class NutritionScreenModel(
     val syncStatus: StateFlow<NutritionSyncStatus> = session.observeSyncStatus()
         .stateIn(scope, SharingStarted.Eagerly, NutritionSyncStatus.Idle)
 
+    val canWriteHouseholdData: StateFlow<Boolean> = householdRepository
+        .observeMembershipStatus()
+        .map { status ->
+            when (status) {
+                is HouseholdMembershipStatus.Active -> status.role.canWriteHouseholdData()
+                else -> true
+            }
+        }
+        .stateIn(scope, SharingStarted.Eagerly, true)
+
     suspend fun activateSpace(spaceId: String) {
         session.activateSpace(spaceId)
     }
@@ -92,6 +106,7 @@ class NutritionScreenModel(
     val mealGroceryResult: StateFlow<MealGroceryResult?> = _mealGroceryResult.asStateFlow()
 
     fun addGroceryItem(label: String): Boolean {
+        if (!canWriteHouseholdData.value) return false
         val trimmed = label.trim()
         if (trimmed.isEmpty()) return false
         if (GroceryListPresentation.isDuplicateLabel(groceryItems.value, trimmed)) return false
@@ -105,6 +120,7 @@ class NutritionScreenModel(
     }
 
     fun updateGroceryItemLabel(id: String, label: String): Boolean {
+        if (!canWriteHouseholdData.value) return false
         val trimmed = label.trim()
         if (trimmed.isEmpty()) return false
         if (GroceryListPresentation.isDuplicateLabel(groceryItems.value, trimmed, excludingId = id)) {
@@ -120,6 +136,7 @@ class NutritionScreenModel(
     }
 
     fun restoreGroceryItem(item: GroceryItem, index: Int) {
+        if (!canWriteHouseholdData.value) return
         scope.launch {
             val current = groceryItems.value.toMutableList()
             val insertAt = index.coerceIn(0, current.size)
@@ -131,6 +148,7 @@ class NutritionScreenModel(
     }
 
     fun clearCheckedGroceryItems(): List<GroceryItem> {
+        if (!canWriteHouseholdData.value) return emptyList()
         val snapshot = groceryItems.value
         val updated = snapshot.filterNot { it.isChecked }
         if (updated.size == snapshot.size) return emptyList()
@@ -141,7 +159,7 @@ class NutritionScreenModel(
     }
 
     fun restoreGroceryItemsSnapshot(items: List<GroceryItem>) {
-        if (items.isEmpty()) return
+        if (!canWriteHouseholdData.value || items.isEmpty()) return
         scope.launch {
             val currentById = groceryItems.value.associateBy { it.id }
             val restoredIds = items.map { it.id }.toSet()
@@ -152,6 +170,7 @@ class NutritionScreenModel(
     }
 
     fun toggleGroceryItem(id: String) {
+        if (!canWriteHouseholdData.value) return
         scope.launch {
             val updated = groceryItems.value.map { item ->
                 if (item.id == id) item.copy(isChecked = !item.isChecked) else item
@@ -161,12 +180,14 @@ class NutritionScreenModel(
     }
 
     fun removeGroceryItem(id: String) {
+        if (!canWriteHouseholdData.value) return
         scope.launch {
             repository.saveGroceryItems(groceryItems.value.filterNot { it.id == id })
         }
     }
 
     fun updateMeal(dayIndex: Int, lunch: String? = null, dinner: String? = null) {
+        if (!canWriteHouseholdData.value) return
         if (dayIndex !in 0 until WeeklyMealPlan.DAYS_IN_WEEK) return
         scope.launch {
             val current = mealPlan.value
@@ -185,6 +206,7 @@ class NutritionScreenModel(
         criteria: String,
         mealPlanScope: MealPlanGenerationScope = MealPlanGenerationScope.FullWeek,
     ) {
+        if (!canWriteHouseholdData.value) return
         scope.launch {
             _aiState.value = NutritionAiState.Loading
             when (mode) {
@@ -219,6 +241,7 @@ class NutritionScreenModel(
     }
 
     fun applyPreviewedMealPlan() {
+        if (!canWriteHouseholdData.value) return
         val preview = _aiState.value as? NutritionAiState.MealPlanPreview ?: return
         scope.launch {
             repository.saveMealPlan(preview.plan)
@@ -227,6 +250,7 @@ class NutritionScreenModel(
     }
 
     fun clearAiGrocery(): List<GroceryItem> {
+        if (!canWriteHouseholdData.value) return emptyList()
         val snapshot = aiGroceryItems.value
         if (snapshot.isEmpty()) return emptyList()
         scope.launch {
@@ -236,7 +260,7 @@ class NutritionScreenModel(
     }
 
     fun restoreAiGroceryItems(items: List<GroceryItem>) {
-        if (items.isEmpty()) return
+        if (!canWriteHouseholdData.value || items.isEmpty()) return
         scope.launch {
             val restoredIds = items.map { it.id }.toSet()
             repository.saveAiGroceryItems(items + aiGroceryItems.value.filterNot { it.id in restoredIds })
@@ -244,6 +268,7 @@ class NutritionScreenModel(
     }
 
     fun generateGroceryForMeal(dayIndex: Int, slot: MealSlot, dayLabel: String) {
+        if (!canWriteHouseholdData.value) return
         if (dayIndex !in 0 until WeeklyMealPlan.DAYS_IN_WEEK) return
         val day = mealPlan.value.days[dayIndex]
         val mealText = when (slot) {
@@ -289,6 +314,7 @@ class NutritionScreenModel(
     }
 
     private suspend fun appendAiGrocery(labels: List<String>): Int {
+        if (!canWriteHouseholdData.value) return 0
         val seen = aiGroceryItems.value.map { it.label.trim().lowercase() }.toMutableSet()
         val newItems = buildList {
             labels.forEach { raw ->

@@ -4,7 +4,10 @@ import app.mymultiverse.kmp.domain.model.sharing.SpaceMemberRole
 import app.mymultiverse.kmp.domain.sharing.HOUSEHOLD_RECOMMENDED_MIN_MEMBERS
 import app.mymultiverse.kmp.domain.sharing.householdMemberCount
 import app.mymultiverse.kmp.domain.sharing.isHouseholdReadyForCollaboration
+import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
+import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
 import app.mymultiverse.kmp.presentation.di.FakeSpaceCollaborationRepository
+import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -24,14 +27,22 @@ class HouseholdMembersScreenModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var repository: FakeSpaceCollaborationRepository
+    private lateinit var householdRepository: FakeHouseholdRepository
+    private lateinit var sessionCoordinator: FakeNutritionSessionCoordinator
     private lateinit var model: HouseholdMembersScreenModel
 
     @BeforeTest
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         repository = FakeSpaceCollaborationRepository()
+        householdRepository = FakeHouseholdRepository()
+        sessionCoordinator = FakeNutritionSessionCoordinator(
+            initialRepository = app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl(MapSettings()),
+        )
         model = HouseholdMembersScreenModel(
             collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
     }
@@ -42,7 +53,7 @@ class HouseholdMembersScreenModelTest {
     }
 
     @Test
-    fun submitAddPerson_withUnknownEmail_sendsInviteAndTracksOutbound() = runTest(testDispatcher) {
+    fun submitAddPerson_withUnknownEmail_closesDialogAndTracksOutbound() = runTest(testDispatcher) {
         model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddPersonDialog()
         model.onEmailChange("invite@example.com")
@@ -51,13 +62,40 @@ class HouseholdMembersScreenModelTest {
         model.submitAddPerson("space-1")
         advanceUntilIdle()
 
+        assertFalse(model.uiState.value.showAddPersonDialog)
         assertEquals(HouseholdMembersSuccess.InviteSent, model.uiState.value.successMessageKey)
         assertEquals(1, model.uiState.value.outboundInvites.size)
         assertEquals("invite@example.com", model.uiState.value.outboundInvites.single().email)
     }
 
     @Test
-    fun submitAddPerson_withKnownEmail_addsMember() = runTest(testDispatcher) {
+    fun submitAddPerson_withBlankEmail_keepsDialogOpenWithInlineError() = runTest(testDispatcher) {
+        model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.openAddPersonDialog()
+
+        model.submitAddPerson("space-1")
+        advanceUntilIdle()
+
+        assertTrue(model.uiState.value.showAddPersonDialog)
+        assertEquals(HouseholdMembersError.EmailRequired, model.uiState.value.dialogError)
+    }
+
+    @Test
+    fun submitAddPerson_whenRepositoryFails_keepsDialogOpenWithError() = runTest(testDispatcher) {
+        repository.addMemberFailure = IllegalStateException("insufficient_role")
+        model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.openAddPersonDialog()
+        model.onEmailChange("partner@example.com")
+
+        model.submitAddPerson("space-1")
+        advanceUntilIdle()
+
+        assertTrue(model.uiState.value.showAddPersonDialog)
+        assertEquals(HouseholdMembersError.InsufficientRole, model.uiState.value.dialogError)
+    }
+
+    @Test
+    fun submitAddPerson_withKnownEmail_sendsInvite() = runTest(testDispatcher) {
         model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddPersonDialog()
         model.onEmailChange("member@example.com")
@@ -65,8 +103,26 @@ class HouseholdMembersScreenModelTest {
         model.submitAddPerson("space-1")
         advanceUntilIdle()
 
-        assertEquals(HouseholdMembersSuccess.MemberAdded, model.uiState.value.successMessageKey)
+        assertEquals(HouseholdMembersSuccess.InviteSent, model.uiState.value.successMessageKey)
         assertFalse(model.uiState.value.showAddPersonDialog)
+        assertEquals(1, model.uiState.value.outboundInvites.size)
+    }
+
+    @Test
+    fun submitAddPerson_whenInviteeAlreadyInHousehold_showsInlineError() = runTest(testDispatcher) {
+        repository.emailsAlreadyInAnotherHousehold = setOf("taken@example.com")
+        model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.openAddPersonDialog()
+        model.onEmailChange("taken@example.com")
+
+        model.submitAddPerson("space-1")
+        advanceUntilIdle()
+
+        assertTrue(model.uiState.value.showAddPersonDialog)
+        assertEquals(
+            HouseholdMembersError.InviteeHouseholdAlreadyActive,
+            model.uiState.value.dialogError,
+        )
     }
 
     @Test
@@ -74,6 +130,48 @@ class HouseholdMembersScreenModelTest {
         model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "editor-1")
         advanceUntilIdle()
 
+        assertFalse(model.uiState.value.canManageMembers)
+    }
+
+    @Test
+    fun confirmLeave_callsHouseholdRepositoryAndDeactivatesSession() = runTest(testDispatcher) {
+        model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "editor-1")
+        advanceUntilIdle()
+
+        model.requestLeave()
+        model.confirmLeaveOrDissolve()
+        advanceUntilIdle()
+
+        assertEquals(1, householdRepository.leaveCalls)
+        assertEquals(1, sessionCoordinator.deactivateCount)
+    }
+
+    @Test
+    fun confirmTransferOwnership_updatesHouseholdAndRefreshesMembers() = runTest(testDispatcher) {
+        repository.seedMember(
+            spaceId = "space-1",
+            member = app.mymultiverse.kmp.domain.model.sharing.SpaceMember(
+                id = "member-1",
+                spaceId = "space-1",
+                kind = app.mymultiverse.kmp.domain.model.sharing.SpaceMemberKind.Person,
+                displayName = "Partner",
+                role = SpaceMemberRole.Editor,
+                referenceId = "partner-id",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold("space-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        advanceUntilIdle()
+
+        model.openTransferDialog()
+        model.selectTransferMember("partner-id")
+        model.confirmTransferOwnership("space-1")
+        advanceUntilIdle()
+
+        assertEquals(1, householdRepository.transferCalls)
+        assertEquals("partner-id", householdRepository.lastTransferTargetId)
+        assertEquals(HouseholdMembersSuccess.OwnershipTransferred, model.uiState.value.successMessageKey)
         assertFalse(model.uiState.value.canManageMembers)
     }
 
@@ -88,6 +186,11 @@ class HouseholdMembersScreenModelTest {
         model.openAddPersonDialog()
         model.onEmailChange("partner@example.com")
         model.submitAddPerson("household-1")
+        advanceUntilIdle()
+
+        val inviteId = model.uiState.value.outboundInvites.single().id
+        repository.acceptInvite(inviteId)
+        repository.refreshMembers("household-1", ownerId = "owner", ownerDisplayName = "Owner")
         advanceUntilIdle()
 
         assertEquals(HOUSEHOLD_RECOMMENDED_MIN_MEMBERS, householdMemberCount(model.uiState.value.members))

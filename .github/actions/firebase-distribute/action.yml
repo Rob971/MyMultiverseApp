@@ -1,0 +1,139 @@
+name: Firebase App Distribution
+description: Upload a debug APK to Firebase App Distribution
+
+inputs:
+  apk-path:
+    description: Path to the debug APK file
+    required: true
+  firebase-app-id:
+    description: Firebase Android app ID
+    required: true
+  firebase-project-id:
+    description: Firebase project ID
+    required: true
+  firebase-tools-version:
+    description: Pinned firebase-tools version
+    required: true
+  firebase-service-account-json:
+    description: Firebase service account JSON
+    required: true
+  firebase-testers:
+    description: Comma-separated tester emails
+    required: false
+    default: ""
+  firebase-groups:
+    description: Comma-separated tester groups
+    required: false
+    default: ""
+  github-ref-name:
+    description: Branch or tag name for release notes
+    required: true
+  github-sha:
+    description: Commit SHA for release notes
+    required: true
+
+outputs:
+  outcome:
+    description: Distribution step outcome
+    value: ${{ steps.distribute.outcome }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js for Firebase CLI
+      uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+
+    - name: Cache Firebase CLI
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: firebase-tools-${{ inputs.firebase-tools-version }}-npm
+        restore-keys: |
+          firebase-tools-${{ inputs.firebase-tools-version }}-
+          firebase-tools-
+
+    - name: Write Firebase service account
+      shell: bash
+      env:
+        FIREBASE_SERVICE_ACCOUNT_JSON: ${{ inputs.firebase-service-account-json }}
+      run: |
+        if [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
+          echo "FIREBASE_SERVICE_ACCOUNT_JSON secret is required for Firebase App Distribution."
+          exit 1
+        fi
+        printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
+
+    - name: Distribute debug APK to Firebase App Distribution
+      id: distribute
+      shell: bash
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        FIREBASE_TESTERS: ${{ inputs.firebase-testers }}
+        FIREBASE_GROUPS: ${{ inputs.firebase-groups }}
+      run: |
+        apk_path="${{ inputs.apk-path }}"
+        app_version="unknown"
+        if [ -f gradle/app-version.properties ]; then
+          lts="$(grep '^version.lts=' gradle/app-version.properties | cut -d= -f2-)"
+          candidate="$(grep '^version.candidate=' gradle/app-version.properties | cut -d= -f2-)"
+          # shellcheck source=scripts/format-app-version.sh
+          source ./scripts/format-app-version.sh
+          app_version="$(format_app_version "$lts" "${candidate:-0}")"
+        fi
+        release_notes="v${app_version} — debug build from ${{ inputs.github-ref-name }} at ${{ inputs.github-sha }}."
+        if [ -f firebase-appdistribution-testcases.yaml ]; then
+          checklist=$(grep -E '^  - id:' firebase-appdistribution-testcases.yaml | sed 's/^  - id: /- /' | head -12)
+          release_notes=$(printf '%s\n\nQA checklist (firebase-appdistribution-testcases.yaml):\n%s' "$release_notes" "$checklist")
+        fi
+
+        args=(
+          "$apk_path"
+          "--app" "${{ inputs.firebase-app-id }}"
+          "--project" "${{ inputs.firebase-project-id }}"
+          "--release-notes" "$release_notes"
+        )
+
+        if [ -n "$FIREBASE_TESTERS" ]; then
+          args+=("--testers" "$FIREBASE_TESTERS")
+        fi
+
+        if [ -n "$FIREBASE_GROUPS" ]; then
+          args+=("--groups" "$FIREBASE_GROUPS")
+        fi
+
+        set -o pipefail
+        npx -y firebase-tools@${{ inputs.firebase-tools-version }} appdistribution:distribute "${args[@]}" 2>&1 | tee "$RUNNER_TEMP/firebase-distribution.log"
+
+    - name: Publish Firebase release status
+      if: always()
+      shell: bash
+      env:
+        FIREBASE_DISTRIBUTION_OUTCOME: ${{ steps.distribute.outcome }}
+      run: |
+        {
+          echo "## Firebase App Distribution"
+          echo
+          echo "- Distribution step: \`$FIREBASE_DISTRIBUTION_OUTCOME\`"
+          if [ -f "$RUNNER_TEMP/firebase-distribution.log" ]; then
+            echo
+            echo "### Firebase Links"
+            grep -Eo 'https://[^[:space:]]+' "$RUNNER_TEMP/firebase-distribution.log" | while read -r url; do
+              label="Firebase link"
+              case "$url" in
+                *console.firebase.google.com*) label="Firebase console" ;;
+                *appdistribution.firebase.google.com*) label="Tester release" ;;
+              esac
+              echo "- [$label]($url)"
+            done
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload Firebase release report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: firebase-release-report
+        path: ${{ runner.temp }}/firebase-distribution.log
+        if-no-files-found: ignore

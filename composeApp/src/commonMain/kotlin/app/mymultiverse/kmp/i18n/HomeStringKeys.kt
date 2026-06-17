@@ -15,6 +15,7 @@ object HomeStringKeys {
         "home_household_title",
         "home_household_description",
         "home_household_description_named",
+        "home_logistics_requires_household",
         "home_logistics_adventures_title",
         "home_logistics_adventures_description",
         "home_logistics_budget_title",
@@ -25,6 +26,9 @@ object HomeStringKeys {
         "home_greeting_personalized",
         "home_app_version",
         "home_app_version_rc",
+        "home_export_personal_data",
+        "home_export_personal_data_success",
+        "home_export_personal_data_error",
         "action_back",
     )
 

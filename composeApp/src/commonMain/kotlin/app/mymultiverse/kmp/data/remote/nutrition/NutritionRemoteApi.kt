@@ -17,10 +17,10 @@ class NutritionRemoteApi(
 ) : NutritionRemoteDataSource {
     override suspend fun fetchWeek(spaceId: String, weekKey: String): List<NutritionWeekDataRow> {
         requireAuthenticatedUserId()
-        return client.postgrest["nutrition_space_week_data"]
+        return client.postgrest["nutrition_household_week_data"]
             .select(Columns.ALL) {
                 filter {
-                    eq("space_id", spaceId)
+                    eq("household_id", spaceId)
                     eq("week_key", weekKey)
                 }
             }
@@ -35,7 +35,7 @@ class NutritionRemoteApi(
     ) {
         val userId = requireAuthenticatedUserId()
         ensureProfile(userId)
-        client.postgrest["nutrition_space_week_data"]
+        client.postgrest["nutrition_household_week_data"]
             .upsert(
                 NutritionWeekDataRow(
                     spaceId = spaceId,
@@ -46,7 +46,7 @@ class NutritionRemoteApi(
                     updatedBy = userId,
                 ),
             ) {
-                onConflict = "space_id,week_key,data_kind"
+                onConflict = "household_id,week_key,data_kind"
             }
     }
 
