@@ -13,6 +13,7 @@ import app.mymultiverse.kmp.domain.repository.HouseholdCollaborationRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.kmp.presentation.di.FakeAuthRepository
@@ -36,6 +37,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -62,15 +64,16 @@ class HomeScreenModelTest {
         ),
         personalDataExporter: FakePersonalDataExporter = FakePersonalDataExporter(),
         pushNotificationRegistrar: FakePushNotificationRegistrar = FakePushNotificationRegistrar(),
+        sessionCoordinator: FakeNutritionSessionCoordinator = FakeNutritionSessionCoordinator(
+            initialRepository = NutritionRepositoryImpl(MapSettings()),
+        ),
     ): HomeScreenModel =
         HomeScreenModel(
             getGreetingUseCase = GetGreetingUseCase(repository),
             authRepository = authRepository,
             householdRepository = FakeHouseholdRepository(),
             collaborationRepository = FakeHouseholdCollaborationRepository(),
-            sessionCoordinator = FakeNutritionSessionCoordinator(
-                initialRepository = NutritionRepositoryImpl(MapSettings()),
-            ),
+            sessionCoordinator = sessionCoordinator,
             personalDataExporter = personalDataExporter,
             pushNotificationRegistrar = pushNotificationRegistrar,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
@@ -332,6 +335,151 @@ class HomeScreenModelTest {
         val message = screenModel.inviteActionMessage.value
         assertTrue(message is InviteActionMessage.Joined)
         assertEquals("Test Household", (message as InviteActionMessage.Joined).householdName)
+    }
+
+    @Test
+    fun exportPersonalData_whenShareSucceeds_emitsSuccessMessage() = runTest(testDispatcher) {
+        val exporter = FakePersonalDataExporter(shareResult = true)
+        val authRepository = FakeAuthRepository(
+            initialState = AuthState.Authenticated(
+                AuthUser(id = "user-1", email = "test@example.com", displayName = "Test User"),
+            ),
+        )
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            authRepository = authRepository,
+            personalDataExporter = exporter,
+        )
+
+        screenModel.exportPersonalData()
+        advanceUntilIdle()
+
+        assertEquals(PersonalDataExportMessage.Success, screenModel.personalDataExportMessage.value)
+        assertTrue(exporter.lastSharedContent?.contains("test@example.com") == true)
+    }
+
+    @Test
+    fun exportPersonalData_whenShareUnavailable_emitsShareUnavailableMessage() = runTest(testDispatcher) {
+        val exporter = FakePersonalDataExporter(shareResult = false)
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            personalDataExporter = exporter,
+        )
+
+        screenModel.exportPersonalData()
+        advanceUntilIdle()
+
+        assertEquals(PersonalDataExportMessage.ShareUnavailable, screenModel.personalDataExportMessage.value)
+    }
+
+    @Test
+    fun exportPersonalData_whenRepositoryFails_emitsErrorMessage() = runTest(testDispatcher) {
+        val authRepository = FakeAuthRepository(
+            initialState = AuthState.Authenticated(
+                AuthUser(id = "user-1", email = "test@example.com", displayName = "Test User"),
+            ),
+        ).apply {
+            exportPersonalDataResult = Result.failure(IllegalStateException("export_failed"))
+        }
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            authRepository = authRepository,
+        )
+
+        screenModel.exportPersonalData()
+        advanceUntilIdle()
+
+        assertEquals(PersonalDataExportMessage.Error, screenModel.personalDataExportMessage.value)
+    }
+
+    @Test
+    fun confirmDeleteAccount_onSuccess_deactivatesSessionAndDeletesAccount() = runTest(testDispatcher) {
+        val authRepository = FakeAuthRepository(
+            initialState = AuthState.Authenticated(
+                AuthUser(id = "user-1", email = "test@example.com", displayName = "Test User"),
+            ),
+        )
+        val sessionCoordinator = FakeNutritionSessionCoordinator(
+            initialRepository = NutritionRepositoryImpl(MapSettings()),
+        )
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            authRepository = authRepository,
+            sessionCoordinator = sessionCoordinator,
+        )
+
+        screenModel.requestDeleteAccount()
+        assertTrue(screenModel.showDeleteAccountDialog.value)
+        screenModel.confirmDeleteAccount()
+        advanceUntilIdle()
+
+        assertFalse(screenModel.showDeleteAccountDialog.value)
+        assertEquals(DeleteAccountMessage.Success, screenModel.deleteAccountMessage.value)
+        assertEquals(1, sessionCoordinator.deactivateCount)
+        assertEquals(1, authRepository.deleteAccountCalls)
+    }
+
+    @Test
+    fun confirmDeleteAccount_whenOwnerMustTransfer_emitsOwnerMessage() = runTest(testDispatcher) {
+        val authRepository = FakeAuthRepository(
+            initialState = AuthState.Authenticated(
+                AuthUser(id = "user-1", email = "test@example.com", displayName = "Test User"),
+            ),
+        ).apply {
+            deleteAccountResult = Result.failure(
+                IllegalStateException(CollaborationErrorCodes.OWNER_MUST_TRANSFER_OR_DISSOLVE),
+            )
+        }
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            authRepository = authRepository,
+        )
+
+        screenModel.confirmDeleteAccount()
+        advanceUntilIdle()
+
+        assertEquals(DeleteAccountMessage.OwnerMustTransfer, screenModel.deleteAccountMessage.value)
+    }
+
+    @Test
+    fun confirmDeleteAccount_onGenericFailure_emitsErrorMessage() = runTest(testDispatcher) {
+        val authRepository = FakeAuthRepository(
+            initialState = AuthState.Authenticated(
+                AuthUser(id = "user-1", email = "test@example.com", displayName = "Test User"),
+            ),
+        ).apply {
+            deleteAccountResult = Result.failure(IllegalStateException("delete_failed"))
+        }
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            authRepository = authRepository,
+        )
+
+        screenModel.confirmDeleteAccount()
+        advanceUntilIdle()
+
+        assertEquals(DeleteAccountMessage.Error, screenModel.deleteAccountMessage.value)
+    }
+
+    @Test
+    fun dismissDeleteAccountDialog_hidesDialogWithoutDeleting() = runTest(testDispatcher) {
+        val authRepository = FakeAuthRepository(
+            initialState = AuthState.Authenticated(
+                AuthUser(id = "user-1", email = "test@example.com", displayName = "Test User"),
+            ),
+        )
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            authRepository = authRepository,
+        )
+
+        screenModel.requestDeleteAccount()
+        screenModel.dismissDeleteAccountDialog()
+        advanceUntilIdle()
+
+        assertFalse(screenModel.showDeleteAccountDialog.value)
+        assertNull(screenModel.deleteAccountMessage.value)
+        assertEquals(0, authRepository.deleteAccountCalls)
     }
 }
 

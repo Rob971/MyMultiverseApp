@@ -8,6 +8,7 @@ on:
     paths:
       - "supabase/migrations/**"
       - "supabase/config.toml"
+      - "supabase/functions/**"
   workflow_dispatch:
 
 concurrency:
@@ -21,7 +22,7 @@ jobs:
   deploy-migrations:
     name: Deploy migrations
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     if: >-
       ${{ !startsWith(github.event.head_commit.message, 'chore(version):') }}
 
@@ -29,6 +30,8 @@ jobs:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
     steps:
       - name: Checkout
@@ -53,3 +56,112 @@ jobs:
         run: |
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
           supabase db push
+
+      - name: Install psql client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Configure notification outbox delivery
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "WARN: SUPABASE_URL/SUPABASE_ANON_KEY not set — outbox auto-dispatch not configured."
+            exit 0
+          fi
+          ./scripts/configure-household-notification-delivery.sh
+
+      - name: Verify notification outbox delivery
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Skipping delivery verify (SUPABASE_URL/SUPABASE_ANON_KEY not set)."
+            exit 0
+          fi
+          ./scripts/verify-household-notification-delivery.sh
+
+  deploy-edge-functions:
+    name: Deploy edge functions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: deploy-migrations
+    if: >-
+      ${{ !startsWith(github.event.head_commit.message, 'chore(version):') }}
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      INVITE_FROM_EMAIL: ${{ secrets.INVITE_FROM_EMAIL }}
+      FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
+      APNS_KEY_ID: ${{ secrets.APNS_KEY_ID }}
+      APNS_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
+      APNS_PRIVATE_KEY: ${{ secrets.APNS_PRIVATE_KEY }}
+      APNS_BUNDLE_ID: ${{ secrets.APNS_BUNDLE_ID }}
+      APNS_USE_SANDBOX: ${{ secrets.APNS_USE_SANDBOX }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Require deploy secrets
+        run: |
+          missing=0
+          for name in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_PROJECT_REF SUPABASE_URL SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "Missing repository secret: ${name}"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Edge function deploy requires Supabase project + runtime secrets (see README Backend → Edge functions)."
+            exit 1
+          fi
+          if [ -z "$RESEND_API_KEY" ]; then
+            echo "WARN: RESEND_API_KEY not set — invite emails will be log-only until configured."
+          fi
+          if [ -z "$INVITE_FROM_EMAIL" ]; then
+            echo "INVITE_FROM_EMAIL not set; function default invites@mymultiverse.app will be used."
+          fi
+          if [ -z "$FCM_SERVICE_ACCOUNT_JSON" ]; then
+            echo "WARN: FCM_SERVICE_ACCOUNT_JSON not set — Android push delivery will be skipped until configured."
+          fi
+          if [ -z "$APNS_KEY_ID" ] || [ -z "$APNS_TEAM_ID" ] || [ -z "$APNS_PRIVATE_KEY" ]; then
+            echo "WARN: APNS_KEY_ID/APNS_TEAM_ID/APNS_PRIVATE_KEY not set — iOS push delivery will be skipped until configured."
+          fi
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: latest
+
+      - name: Link project
+        run: |
+          supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Set edge function secrets
+        run: |
+          invite_from="${INVITE_FROM_EMAIL:-invites@mymultiverse.app}"
+          apns_bundle="${APNS_BUNDLE_ID:-app.mymultiverse.kmp}"
+          apns_sandbox="${APNS_USE_SANDBOX:-true}"
+          supabase secrets set \
+            "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}" \
+            "RESEND_API_KEY=${RESEND_API_KEY:-}" \
+            "INVITE_FROM_EMAIL=${invite_from}" \
+            "FCM_SERVICE_ACCOUNT_JSON=${FCM_SERVICE_ACCOUNT_JSON:-}" \
+            "APNS_KEY_ID=${APNS_KEY_ID:-}" \
+            "APNS_TEAM_ID=${APNS_TEAM_ID:-}" \
+            "APNS_PRIVATE_KEY=${APNS_PRIVATE_KEY:-}" \
+            "APNS_BUNDLE_ID=${apns_bundle}" \
+            "APNS_USE_SANDBOX=${apns_sandbox}" \
+            --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy P2 edge functions
+        run: |
+          supabase functions deploy notify-household-invite --project-ref "$SUPABASE_PROJECT_REF"
+          supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Smoke probe edge functions
+        run: ./scripts/verify-supabase-edge-functions.sh

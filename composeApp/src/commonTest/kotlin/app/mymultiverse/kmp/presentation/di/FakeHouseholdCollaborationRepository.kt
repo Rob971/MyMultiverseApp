@@ -18,6 +18,7 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
     private val pendingInvites = MutableStateFlow<List<HouseholdInvite>>(emptyList())
     var inboundProfileEmail: String = "invitee@example.com"
     var addMemberFailure: Throwable? = null
+    var addDependantFailure: Throwable? = null
     var emailsAlreadyInAnotherHousehold: Set<String> = emptySet()
 
     private fun createInvite(householdId: String, email: String, role: HouseholdMemberRole): HouseholdInvite =
@@ -119,6 +120,7 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
     }
 
     override suspend fun addDependant(householdId: String, displayName: String): Result<Unit> {
+        addDependantFailure?.let { return Result.failure(it) }
         val trimmed = displayName.trim()
         if (trimmed.isEmpty()) return Result.failure(IllegalArgumentException("dependant_name_required"))
         val member = HouseholdMember(

@@ -21,7 +21,7 @@ MyMultiverse helps a **household** (family or roommates) coordinate day-to-day l
 | **Roles** | **Owner** — invite, manage members, edit data. **Editor** — edit shared nutrition. **Viewer** — read-only everywhere. |
 | **Nutrition** | Shared grocery list, weekly meal plan, and AI adviser per calendar week. AI output is **read-only**; user lists are editable (unless viewer). |
 | **Sync** | Grocery and meal plan are **offline-first**: edits save locally, then push to Supabase; other members see changes via pull + Realtime. |
-| **GDPR** | Export personal data from Home; leave household revokes shared access. Account deletion is planned (P2). |
+| **GDPR** | Export personal data from Home (share sheet on Android/iOS); delete account from Home (`delete-account` edge function). Leave household revokes shared access. Legal review of external privacy copy remains outside engineering. |
 
 Supported UI languages: English, French, Spanish, German, Italian, Arabic (incl. Saudi), Neapolitan.
 
@@ -155,10 +155,11 @@ The mobile app talks to **Supabase Auth** (sessions, OAuth) and **PostgREST** (t
 | **Invites** | `invite_household_member`, `accept_household_invite`, `list_my_pending_household_invites` |
 | **Membership query** | `household_membership_status`, `resolve_user_household_row` |
 | **Nutrition data** | `nutrition_household_week_data` — one row per `(household_id, week_key, data_kind)` |
-| **GDPR** | `export_my_personal_data` |
+| **GDPR** | `export_my_personal_data`, `prepare_account_deletion`, Edge Function `delete-account` |
+| **Invite notifications** | `household_notification_outbox` + Edge Function `notify-household-invite` (email via Resend) |
 | **Realtime** | `nutrition_household_week_data` in `supabase_realtime` publication |
 
-Migrations: `supabase/migrations/` (applied in filename order). Deploy on `main` via [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml).
+Migrations: `supabase/migrations/` (applied in filename order). Edge functions: `supabase/functions/`. Deploy on `main` via [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml) (`db push` + `functions deploy`).
 
 Apply locally or to a linked project:
 
@@ -170,6 +171,66 @@ Verify household RPCs after deploy:
 
 ```bash
 ./scripts/verify-supabase-household.sh
+```
+
+Verify P2 edge functions after deploy:
+
+```bash
+./scripts/verify-supabase-edge-functions.sh
+```
+
+Verify outbox auto-dispatch is wired (remote project + `psql`):
+
+```bash
+./scripts/verify-household-notification-delivery.sh
+```
+
+After migrations deploy, CI runs `scripts/configure-household-notification-delivery.sh` to store the project URL and anon key in `private.household_notification_delivery_config` (used by the `pg_net` trigger).
+
+### Edge functions (P2)
+
+| Function | Trigger | Purpose |
+|----------|---------|---------|
+| `notify-household-invite` | **Automatic:** `AFTER INSERT` trigger on `household_notification_outbox` (`pg_net` → edge function) | Process outbox rows; send invite email when `RESEND_API_KEY` is set |
+| `delete-account` | App Home → delete account | `prepare_account_deletion` RPC then `auth.admin.deleteUser` (service role) |
+
+**GitHub repository secrets** (for [`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)):
+
+| Secret | Used by | Required |
+|--------|---------|----------|
+| `SUPABASE_ACCESS_TOKEN` | Migrations + functions deploy | Yes |
+| `SUPABASE_DB_PASSWORD` | `db push` / link | Yes |
+| `SUPABASE_PROJECT_REF` | Link + deploy | Yes |
+| `SUPABASE_URL` | Smoke probe | Functions job |
+| `SUPABASE_ANON_KEY` | Smoke probe; auto-injected in function runtime | Functions job |
+| `SUPABASE_SERVICE_ROLE_KEY` | Edge function secrets (`delete-account`, outbox admin) | Yes for functions job |
+| `RESEND_API_KEY` | Invite emails via Resend | Optional (log-only when unset) |
+| `INVITE_FROM_EMAIL` | Resend `from` address | Optional (defaults to `invites@mymultiverse.app`) |
+| `FCM_SERVICE_ACCOUNT_JSON` | FCM HTTP v1 push from `notify-household-invite` (Firebase service account JSON) | Optional (Android push skipped when unset) |
+| `APNS_KEY_ID` / `APNS_TEAM_ID` / `APNS_PRIVATE_KEY` | APNs HTTP/2 push for iOS device tokens (`.p8` key contents) | Optional (iOS push skipped when unset) |
+| `APNS_BUNDLE_ID` | APNs topic (defaults to `app.mymultiverse.kmp`) | Optional |
+| `APNS_USE_SANDBOX` | `true` for debug/simulator tokens, `false` for TestFlight/App Store | Optional (defaults to `true`) |
+
+**Android push (client):** copy `composeApp/google-services.json.example` → `google-services.json` (same file as Crashlytics). When present, the app registers a real FCM token on Home refresh and requests `POST_NOTIFICATIONS` on API 33+.
+
+**iOS push (client):** enable **Push Notifications** capability in Xcode for `iosApp`, use a physical device or sandbox APNs, sign in so Home refresh registers the token. Export share uses the system share sheet (`UIActivityViewController`).
+
+Set function secrets manually (one-off or when not using CI):
+
+```bash
+supabase link --project-ref "$SUPABASE_PROJECT_REF"
+supabase secrets set \
+  SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
+  RESEND_API_KEY="$RESEND_API_KEY" \
+  INVITE_FROM_EMAIL="invites@mymultiverse.app" \
+  FCM_SERVICE_ACCOUNT_JSON="$FCM_SERVICE_ACCOUNT_JSON" \
+  APNS_KEY_ID="$APNS_KEY_ID" \
+  APNS_TEAM_ID="$APNS_TEAM_ID" \
+  APNS_PRIVATE_KEY="$APNS_PRIVATE_KEY" \
+  APNS_BUNDLE_ID="app.mymultiverse.kmp" \
+  APNS_USE_SANDBOX="true"
+supabase functions deploy notify-household-invite --project-ref "$SUPABASE_PROJECT_REF"
+supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
 ```
 
 ### Supabase Auth dashboard
@@ -251,6 +312,8 @@ contact_groups ──1:N── group_members ──► profiles
 
 **Primary checklist:** [`firebase-appdistribution-testcases.yaml`](firebase-appdistribution-testcases.yaml) (versioned; included in Firebase release notes).
 
+**P2 staging sign-off:** [`docs/p2-staging-qa-checklist.md`](docs/p2-staging-qa-checklist.md) — export, delete account, dependant, invite notification (two devices).
+
 ### Recommended test setup
 
 | Need | Detail |
@@ -319,7 +382,7 @@ Gradle task `generateSupabaseSecrets` embeds values into `commonMain` at compile
 | `local.properties` | `local.properties.example` | Supabase URL + anon key |
 | `composeApp/google-services.json` | `composeApp/google-services.json.example` | Firebase (Crashlytics + App Distribution) |
 
-CI uses GitHub Secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GOOGLE_SERVICES_JSON`.
+CI uses GitHub Secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GOOGLE_SERVICES_JSON`. Optional `SUPABASE_TEST_EMAIL` + `SUPABASE_TEST_PASSWORD` enable authenticated Supabase smoke tests in CI (`verify-supabase-household.sh`).
 
 Production migration deploy requires `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`.
 
@@ -361,7 +424,7 @@ GitHub Actions: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml)
 | **Push** to `main` / **PR** | Android CI + Supabase Migrations + instrumented + iOS → Release |
 | **Manual dispatch** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `ios-compatibility`, `release` |
 
-**Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push` on `main` when migrations change.
+**Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push` and P2 edge functions deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change; also `workflow_dispatch`.
 
 Firebase App Distribution runs on push, PR, and manual release.
 
@@ -387,7 +450,7 @@ composeApp/
   src/iosMain/        iOS entry, Koin platform module
   src/commonTest/     Unit tests
   src/androidInstrumentedTest/  UI tests
-docs/                 Product specs (e.g. household-collaboration.md)
+docs/                 Product specs (household-collaboration.md, household-collaboration-p2.md, p2-staging-qa-checklist.md)
 supabase/migrations/  Postgres schema + RLS + Realtime + RPCs
 .github/workflows/    CI pipelines
 firebase-appdistribution-testcases.yaml  Manual QA checklist
@@ -395,14 +458,17 @@ firebase-appdistribution-testcases.yaml  Manual QA checklist
 
 ---
 
-## Roadmap (not in v1)
+## Roadmap (post-P2)
 
-Tracked on branch `feature/household-collaboration-p2` / PR #8:
+**Shipped on `main` (P2, PR #8 + [`feature/p2-closeout`](docs/household-collaboration-p2-closeout.md) / PR #9):** push/email invite notifications, household dependants (display-only), GDPR account deletion + export share, outbox automation, edge function deploy pipeline.
 
-- Push/email invite notifications
-- Child / shared email accounts
-- Account deletion (GDPR)
-- Adventures & Budget modules on `household_modules`
+**Still open:**
+
+| Track | Items |
+|-------|--------|
+| **Ops / QA** | GitHub secrets for edge deploy + push; staging sign-off ([`docs/p2-staging-qa-checklist.md`](docs/p2-staging-qa-checklist.md)) |
+| **Product** | Shared-email child login accounts (explicitly deferred); Adventures & Budget on `household_modules` |
+| **Legal** | External privacy policy wording review |
 
 ---
 

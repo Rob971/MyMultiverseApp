@@ -86,12 +86,17 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_TEST_EMAIL: ${{ secrets.SUPABASE_TEST_EMAIL }}
+          SUPABASE_TEST_PASSWORD: ${{ secrets.SUPABASE_TEST_PASSWORD }}
         run: |
           chmod +x ./scripts/verify-supabase-household.sh
           {
             echo "supabase.url=${SUPABASE_URL}"
             echo "supabase.anonKey=${SUPABASE_ANON_KEY}"
           } > local.properties
+          if [ -z "${SUPABASE_TEST_EMAIL:-}" ] || [ -z "${SUPABASE_TEST_PASSWORD:-}" ]; then
+            echo "::notice title=Supabase test account::Add SUPABASE_TEST_EMAIL and SUPABASE_TEST_PASSWORD repository secrets for authenticated RPC round-trip in CI."
+          fi
           ./scripts/verify-supabase-household.sh
 
   android-ci:

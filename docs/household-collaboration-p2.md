@@ -1,9 +1,11 @@
 # Household collaboration P2 — implementation spec
 
-**Branch:** `feature/household-collaboration-p2` · **PR:** #8  
+**Merged:** PR #8 (`feature/household-collaboration-p2`) · **Closeout:** PR #9 (`feature/p2-closeout`)  
 **Depends on:** v1 shipped on `main` (PR #7)
 
 This document locks scope for P2 tracks **A–D**. Adventures/Budget modules remain **out of P2** (separate product track).
+
+**Production closeout plan:** [`household-collaboration-p2-closeout.md`](household-collaboration-p2-closeout.md)
 
 ---
 
@@ -12,7 +14,7 @@ This document locks scope for P2 tracks **A–D**. Adventures/Budget modules rem
 | Item | Decision |
 |------|----------|
 | **Trigger** | After successful `invite_household_member` RPC, enqueue row in `household_notification_outbox` |
-| **Delivery** | Supabase Edge Function `notify-household-invite` processes outbox (webhook or scheduled invoke) |
+| **Delivery** | `AFTER INSERT` trigger on `household_notification_outbox` invokes Edge Function `notify-household-invite` via `pg_net` |
 | **Email** | Transactional email to invitee address via `RESEND_API_KEY` (or log-only when unset) |
 | **Push** | FCM/APNs to tokens in `user_device_tokens` when invitee already has an account |
 | **Deep link** | `app.mymultiverse.kmp://auth/callback` → gate shows pending invite (existing flow) |
@@ -52,8 +54,8 @@ This document locks scope for P2 tracks **A–D**. Adventures/Budget modules rem
 
 | Item | Decision |
 |------|----------|
-| **Instrumented tests** | Viewer read-only grocery (no input bar, banner visible); owner transfer button opens dialog |
-| **Firebase QA** | New cases: `home-export-share`, `home-delete-account`, `household-add-dependant`, `household-invite-notification` (manual push/email) |
+| **Instrumented tests** | Viewer read-only grocery (no input bar, banner visible); transfer ownership covered by unit tests (flaky instrumented test removed) |
+| **Firebase QA** | New cases: `home-export-personal-data`, `home-delete-account`, `household-add-dependant`, `household-invite-notification` (manual push/email) |
 
 ---
 
@@ -68,9 +70,11 @@ This document locks scope for P2 tracks **A–D**. Adventures/Budget modules rem
 
 ## Definition of done (P2 A–D)
 
-- [ ] Migrations applied; edge functions deployed with secrets documented
+- [x] Migrations applied; edge functions deploy + secrets documented ([`supabase-deploy.yml`](../.github/workflows/supabase-deploy.yml), [README](../README.md))
 - [x] All new strings in 8 locales; parity tests green
-- [x] Unit tests for new screen-model / repository paths
-- [x] Instrumented tests for D
+- [x] Unit tests for new screen-model / repository paths (export, delete, dependants)
+- [x] Instrumented tests for D (viewer read-only)
 - [x] `firebase-appdistribution-testcases.yaml` updated
 - [x] `./gradlew :composeApp:testDebugUnitTest` green
+- [ ] Staging manual QA sign-off ([`p2-staging-qa-checklist.md`](p2-staging-qa-checklist.md))
+- [ ] Legal review of external privacy/deletion copy

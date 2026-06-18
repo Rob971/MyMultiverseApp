@@ -8,13 +8,12 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 /**
- * P2 stub: registers a placeholder token until FCM is wired.
- * Backend accepts the token for future push delivery.
+ * Registers the device push token with Supabase via [register_device_token] RPC.
  */
 class SupabasePushNotificationRegistrar(
     private val client: SupabaseClient,
     private val platform: String,
-    private val tokenProvider: () -> String?,
+    private val tokenProvider: suspend () -> String?,
 ) : PushNotificationRegistrar {
     override suspend fun registerCurrentDeviceToken() {
         val token = tokenProvider() ?: return

@@ -18,6 +18,7 @@ androidx-test-runner = "1.6.2"
 compose-ui-test = "1.8.2"
 kermit = "2.0.5"
 firebase-crashlytics = "19.4.0"
+firebase-messaging = "24.1.0"
 google-services = "4.4.2"
 firebase-crashlytics-gradle = "3.0.3"
 
@@ -60,6 +61,8 @@ androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "compose-ui-test" }
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics-ktx", version.ref = "firebase-crashlytics" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging-ktx", version.ref = "firebase-messaging" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutines" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

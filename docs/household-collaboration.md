@@ -19,8 +19,8 @@ This document is the **source of truth** for household sharing in MyMultiverse: 
 | **Max 20 members** | A household may have at most **20** people (owners + members). Enforce in invite/accept RPCs. |
 | **Viewer read-only** | Users with role **viewer** cannot edit **any** shared entry (grocery, meal plan, AI lists). They may read only. Enforced in **UI** (disabled controls) and **Postgres RLS** (no INSERT/UPDATE/DELETE on shared nutrition data). |
 | **Invite email must match auth** | Pending invites are listed and accept succeeds only when the signed-in user's auth/profile email matches the invite email (`lower(trim)`). Mismatch → invite hidden or `invite_email_mismatch` on accept. |
-| **Child / shared email accounts** | v2; v1 = one auth account per email. |
-| **Push / email invite notifications** | v2; v1 = invitee sees invite when opening the app on the gate. |
+| **Child / shared email accounts** | v2; v1 = one auth account per email. **Household dependants** (display-only, no login) shipped in P2 — not shared-email login. |
+| **Push / email invite notifications** | **P2 shipped** — outbox + `notify-household-invite` (Resend email + FCM/APNs when configured). v1 gate flow unchanged when notifications are off. |
 
 ---
 
@@ -198,7 +198,7 @@ When a user **leaves** a household (or deletes account):
 3. **Household content** — user’s edits may remain in shared payloads attributed by `updated_by`; leaving does not delete the whole household’s groceries for other members (unless **dissolve** by owner).
 4. **Document** in-app privacy/settings copy and external privacy policy; implement export/delete tickets as engineering work.
 
-**Status:** P1 — `export_my_personal_data` RPC + Home export action; leave dialog includes data-retention note. Account deletion flow remains P2/legal.
+**Status:** P1 export RPC + Home export action; P2 — `prepare_account_deletion` + `delete-account` edge function + Home delete UI; platform share sheets (Android/iOS). **Legal review** of external privacy/deletion wording remains outside engineering.
 
 ---
 
@@ -214,12 +214,13 @@ Household collaboration uses **household-only** terminology in app code, RPCs, a
 
 | # | Topic | Notes |
 |---|--------|-------|
-| 1 | **Child / shared family email** | Deferred v2 |
-| 2 | **Push/email on invite** | Deferred v2 |
+| 1 | **Child / shared family email login** | Deferred v2 (dependants without login shipped P2) |
+| 2 | **Push/email production ops** | Code shipped; requires Resend/FCM/APNs secrets + staging QA |
 | 3 | **Viewer RLS + read-only UI** | **Done** |
 | 4 | **GDPR legal copy** | Engineering hooks done; legal review of exact wording |
 | 5 | **`households` migration timing** | **Done** — migration `20250618170000` |
-| 6 | **Hard delete cascade scope** | **Confirmed** — `dissolve_household` deletes the `households` row; FK `ON DELETE CASCADE` removes `household_members`, `household_invites`, `household_modules`, and `nutrition_household_week_data` for that id. |
+| 6 | **Hard delete cascade scope** | **Confirmed** — `dissolve_household` deletes the `households` row; FK `ON DELETE CASCADE` removes related rows. |
+| 7 | **Adventures / Budget modules** | Product track; same `households` row via `household_modules` |
 
 ---
 
@@ -235,10 +236,12 @@ Household collaboration uses **household-only** terminology in app code, RPCs, a
 | **P0** | **Viewer RLS** — block INSERT/UPDATE/DELETE on nutrition week data for viewers — **done** |
 | **P0** | **Auth email match** — list + accept paths; QA in Firebase YAML — **done** |
 | **P1** | `leave_household`, `dissolve_household` — **done**; `transfer_ownership` — **done** |
-| **P1** | GDPR export hook + leave privacy copy — **done** (account delete deferred) |
+| **P1** | GDPR export hook + leave privacy copy — **done** |
 | **P1** | Household-only terminology (tables `20250618170000`, RPCs/JSON `20250620000000`) — **done** |
-| **P2** | Push/email notifications |
-| **P2** | Child accounts |
+| **P2** | Push/email notifications + outbox automation — **done** (ops secrets + QA pending) |
+| **P2** | GDPR account deletion + export share — **done** |
+| **P2** | Household dependants (no login) — **done** |
+| **P2** | Shared-email child login — **deferred** |
 
 ---
 
@@ -254,6 +257,9 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 
 - `household-transfer-ownership-leave` — owner transfers, then leaves as editor.
 - `home-export-personal-data` — GDPR export from Home.
+- `home-delete-account` — GDPR account deletion (disposable test account).
+- `household-add-dependant` — add display-only dependant on Members screen.
+- `household-invite-notification` — invite email/push (manual; requires Resend + FCM/APNs secrets).
 - `household-gate-create-with-invite` — gate hierarchy when invite + create both visible.
 
 **Remote Supabase migrations required for field tests:**  
@@ -272,6 +278,7 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 | 2025-06-19 | v1 polish: gate hierarchy, invite email snackbar, joined snackbar, dissolve cascade doc, Firebase QA |
 | 2025-06-19 | Architecture section updated post-`households` rename; table names aligned in FAQ |
 | 2026-06-17 | v1 merged to `main` (PR #7); post-merge status and P2 backlog documented |
+| 2026-06-18 | P2 A–D shipped on `main` (PR #8); closeout ops/platform/docs in PR #9 (`feature/p2-closeout`) |
 
 ---
 
@@ -286,11 +293,19 @@ Household collaboration **v1** merged via PR #7 (`9fb4895`, 2026-06-17). P0 + P1
 | Manual two-phone QA (`firebase-appdistribution-testcases.yaml` v13) | Recommended before wide distribution |
 | Supabase deploy secrets (`SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`) | Add for automated `db push` on `main` |
 
-**Next (P2 and follow-ups):**
+**P2 status (code on `main`; production wiring via [`household-collaboration-p2-closeout.md`](household-collaboration-p2-closeout.md)):**
+
+| Track | Status |
+|-------|--------|
+| **A** Push/email + outbox | Code shipped; deploy secrets + staging QA |
+| **B** GDPR delete + export share | Code shipped |
+| **C** Dependants | Shipped (shared-email login still deferred) |
+| **D** Polish + tests | Shipped |
+
+**Next (post-P2):**
 
 | Track | Items |
 |-------|--------|
-| **P2** | Push/email invite notifications; child/shared email accounts |
-| **GDPR** | Account deletion flow; legal review of privacy wording; export share/save-to-file UX |
-| **Polish** | Instrumented UI tests for viewer read-only + transfer ownership |
-| **Product** | Adventures / Budget on `household_modules` |
+| **Ops / QA** | Edge function secrets, [`p2-staging-qa-checklist.md`](p2-staging-qa-checklist.md) sign-off |
+| **Legal** | External privacy policy / deletion copy review |
+| **Product** | Adventures / Budget on `household_modules`; shared-email child accounts (v2) |

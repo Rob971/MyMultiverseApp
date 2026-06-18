@@ -32,6 +32,7 @@ val generateFirebaseBuildFlags = tasks.register("generateFirebaseBuildFlags") {
 
             internal object FirebaseBuildFlags {
                 const val CRASHLYTICS_ENABLED: Boolean = $firebaseCrashlyticsEnabled
+                const val PUSH_ENABLED: Boolean = $firebaseCrashlyticsEnabled
             }
             """.trimIndent(),
         )
@@ -160,6 +161,8 @@ kotlin {
             implementation(libs.androidx.appcompat)
             implementation(libs.ktor.client.android)
             implementation(libs.firebase.crashlytics)
+            implementation(libs.firebase.messaging)
+            implementation(libs.kotlinx.coroutines.play.services)
         }
         androidMain {
             kotlin.srcDir(layout.buildDirectory.dir("generated/firebase/kotlin"))

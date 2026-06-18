@@ -19,6 +19,7 @@ import app.mymultiverse.kmp.presentation.components.NapolitanBackground
 import app.mymultiverse.kmp.presentation.navigation.AppRoute
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.navigation.rememberAppNavigator
+import app.mymultiverse.kmp.presentation.PlatformPushSetup
 import app.mymultiverse.kmp.presentation.screens.auth.LoginScreen
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreen
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
@@ -40,6 +41,8 @@ fun App() {
         LaunchedEffect(Unit) {
             logger.startSession()
         }
+
+        PlatformPushSetup()
 
         LaunchedEffect(authState) {
             logger.onAuthStateChanged(authState)
