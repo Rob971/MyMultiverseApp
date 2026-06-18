@@ -111,13 +111,13 @@ Work in order where dependencies apply. Each PR should be independently mergeabl
 
 ---
 
-### PR 7 — Tests: unit coverage gaps
+### PR 7 — Tests: unit coverage gaps ✅ in `feature/p2-closeout`
 
-| Task | File |
-|------|------|
-| `exportPersonalData` / `confirmDeleteAccount` | `HomeScreenModelTest` |
-| Dependants add/remove | `HouseholdMembersScreenModelTest` |
-| Optional | Restore stable transfer-ownership instrumented test **or** document unit-only coverage in P2 DoD |
+| Task | Status |
+|------|--------|
+| `HomeScreenModelTest` — export/delete account flows | Done |
+| `HouseholdMembersScreenModelTest` — dependant add/remove | Done |
+| Transfer ownership instrumented test | Unit-only (`confirmTransferOwnership`); flaky instrumented test removed intentionally |
 
 **Acceptance:** `./gradlew :composeApp:testDebugUnitTest` green; new tests cover happy/error paths.
 

@@ -1,6 +1,9 @@
 package app.mymultiverse.kmp.presentation.screens.household
 
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
+import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.kmp.domain.sharing.HOUSEHOLD_RECOMMENDED_MIN_MEMBERS
 import app.mymultiverse.kmp.domain.sharing.householdMemberCount
 import app.mymultiverse.kmp.domain.sharing.isHouseholdReadyForCollaboration
@@ -195,5 +198,67 @@ class HouseholdMembersScreenModelTest {
 
         assertEquals(HOUSEHOLD_RECOMMENDED_MIN_MEMBERS, householdMemberCount(model.uiState.value.members))
         assertTrue(isHouseholdReadyForCollaboration(model.uiState.value.members))
+    }
+
+    @Test
+    fun submitAddDependant_withValidName_closesDialogAndShowsSuccess() = runTest(testDispatcher) {
+        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.openAddDependantDialog()
+        model.onDependantNameChange("Mia")
+
+        model.submitAddDependant("household-1")
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.showAddDependantDialog)
+        assertEquals(HouseholdMembersSuccess.DependantAdded, model.uiState.value.successMessageKey)
+        assertEquals(2, model.uiState.value.members.size)
+        assertTrue(
+            model.uiState.value.members.any {
+                it.kind == HouseholdMemberKind.Dependant && it.displayName == "Mia"
+            },
+        )
+    }
+
+    @Test
+    fun submitAddDependant_withBlankName_keepsDialogOpenWithInlineError() = runTest(testDispatcher) {
+        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.openAddDependantDialog()
+
+        model.submitAddDependant("household-1")
+        advanceUntilIdle()
+
+        assertTrue(model.uiState.value.showAddDependantDialog)
+        assertEquals(HouseholdMembersError.Generic, model.uiState.value.dialogError)
+    }
+
+    @Test
+    fun submitAddDependant_whenRepositoryFails_keepsDialogOpenWithError() = runTest(testDispatcher) {
+        repository.addDependantFailure = IllegalStateException(CollaborationErrorCodes.INSUFFICIENT_ROLE)
+        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.openAddDependantDialog()
+        model.onDependantNameChange("Mia")
+
+        model.submitAddDependant("household-1")
+        advanceUntilIdle()
+
+        assertTrue(model.uiState.value.showAddDependantDialog)
+        assertEquals(HouseholdMembersError.InsufficientRole, model.uiState.value.dialogError)
+    }
+
+    @Test
+    fun removeDependant_removesMemberFromList() = runTest(testDispatcher) {
+        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.openAddDependantDialog()
+        model.onDependantNameChange("Mia")
+        model.submitAddDependant("household-1")
+        advanceUntilIdle()
+
+        val dependant = model.uiState.value.members.single { it.kind == HouseholdMemberKind.Dependant }
+        model.removeMember(dependant, "household-1")
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.members.any { it.kind == HouseholdMemberKind.Dependant })
+        assertEquals(1, model.uiState.value.members.size)
+        assertEquals(HouseholdMemberRole.Owner, model.uiState.value.members.single().role)
     }
 }

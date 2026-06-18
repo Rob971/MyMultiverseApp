@@ -13,6 +13,11 @@ class FakeAuthRepository(
     private val _authState = MutableStateFlow(initialState)
     override val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
+    var exportPersonalDataResult: Result<String>? = null
+    var deleteAccountResult: Result<Unit>? = null
+    var deleteAccountCalls: Int = 0
+        private set
+
     override suspend fun restoreSession() = Unit
 
     override suspend fun signInWithEmail(email: String, password: String): Result<Unit> {
@@ -43,7 +48,10 @@ class FakeAuthRepository(
     }
 
     override suspend fun exportPersonalData(): Result<String> =
-        Result.success("""{"exported_at":"test","profile":{"email":"test@example.com"}}""")
+        exportPersonalDataResult ?: Result.success("""{"exported_at":"test","profile":{"email":"test@example.com"}}""")
 
-    override suspend fun deleteAccount(): Result<Unit> = Result.success(Unit)
+    override suspend fun deleteAccount(): Result<Unit> {
+        deleteAccountCalls++
+        return deleteAccountResult ?: Result.success(Unit)
+    }
 }
