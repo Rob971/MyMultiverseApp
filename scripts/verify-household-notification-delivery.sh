@@ -5,6 +5,10 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/supabase-remote-psql.sh
+source "${SCRIPT_DIR}/lib/supabase-remote-psql.sh"
+
 for name in SUPABASE_PROJECT_REF SUPABASE_DB_PASSWORD; do
   if [[ -z "${!name:-}" ]]; then
     echo "ERROR: ${name} must be set" >&2
@@ -12,18 +16,7 @@ for name in SUPABASE_PROJECT_REF SUPABASE_DB_PASSWORD; do
   fi
 done
 
-if ! command -v psql >/dev/null 2>&1; then
-  echo "ERROR: psql is required (install postgresql-client)" >&2
-  exit 1
-fi
-
-export PGPASSWORD="${SUPABASE_DB_PASSWORD}"
-PGHOST="db.${SUPABASE_PROJECT_REF}.supabase.co"
-PGPORT=5432
-PGUSER=postgres
-PGDATABASE=postgres
-
-PSQL=(psql "host=${PGHOST} port=${PGPORT} dbname=${PGDATABASE} user=${PGUSER} sslmode=require" -v ON_ERROR_STOP=1 -tA)
+PSQL=(supabase_remote_psql -v ON_ERROR_STOP=1 -tA)
 
 echo "==> Checking household_notification_outbox_dispatch trigger"
 TRIGGER_COUNT="$("${PSQL[@]}" -c "

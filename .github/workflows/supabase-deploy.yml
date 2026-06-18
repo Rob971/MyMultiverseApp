@@ -9,6 +9,10 @@ on:
       - "supabase/migrations/**"
       - "supabase/config.toml"
       - "supabase/functions/**"
+      - "scripts/configure-household-notification-delivery.sh"
+      - "scripts/verify-household-notification-delivery.sh"
+      - "scripts/lib/supabase-remote-psql.sh"
+      - ".github/workflows/supabase-deploy.yml"
   workflow_dispatch:
 
 concurrency:
