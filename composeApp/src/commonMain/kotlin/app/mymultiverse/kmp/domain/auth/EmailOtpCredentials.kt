@@ -4,14 +4,22 @@ object EmailOtpCredentials {
     const val OTP_LENGTH = 6
 
     fun validationError(email: String, code: String): EmailOtpValidationError? {
-        val trimmedEmail = email.trim()
+        emailValidationError(email)?.let { return it }
         val trimmedCode = code.trim()
         when {
-            trimmedEmail.isBlank() || trimmedCode.isBlank() -> return EmailOtpValidationError.MissingFields
-            !isLikelyEmail(trimmedEmail) -> return EmailOtpValidationError.InvalidEmail
+            trimmedCode.isBlank() -> return EmailOtpValidationError.MissingFields
             !isValidOtpCode(trimmedCode) -> return EmailOtpValidationError.InvalidCode
         }
         return null
+    }
+
+    fun emailValidationError(email: String): EmailOtpValidationError? {
+        val trimmedEmail = email.trim()
+        return when {
+            trimmedEmail.isBlank() -> EmailOtpValidationError.MissingFields
+            !isLikelyEmail(trimmedEmail) -> EmailOtpValidationError.InvalidEmail
+            else -> null
+        }
     }
 
     private fun isLikelyEmail(value: String): Boolean {

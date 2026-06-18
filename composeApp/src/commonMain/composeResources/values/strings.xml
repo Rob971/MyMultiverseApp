@@ -748,5 +748,29 @@
     <string name="sharing_members_dependent_hint">Children and others without their own login appear here only.</string>
     <string name="sharing_members_kind_dependent">Dependant</string>
         <string name="auth_household_joined_success">You joined %1$s.</string>
+
+    <string name="invite_join_title">Join %1$s</string>
+    <string name="invite_join_subtitle">%1$s invited you to share groceries and meal plans together.</string>
+    <string name="invite_join_loading_preview">Loading invitation…</string>
+    <string name="invite_join_email_helper">Invitation sent to this address</string>
+    <string name="invite_join_email_warning">This invite was sent to %1$s. Use that address to join.</string>
+    <string name="invite_join_continue_button">Continue</string>
+    <string name="invite_join_or_divider">or</string>
+    <string name="invite_join_otp_title">Enter your code</string>
+    <string name="invite_join_otp_subtitle">We sent a 6-digit code to %1$s</string>
+    <string name="invite_join_otp_label">Verification code</string>
+    <string name="invite_join_otp_resend">Resend code</string>
+    <string name="invite_join_otp_resend_wait">Resend in %1$d s</string>
+    <string name="invite_join_back_to_email">Wrong email? Go back</string>
+    <string name="invite_join_error_not_found">This invitation is no longer available.</string>
+    <string name="invite_join_error_expired">This invitation has expired. Ask for a new one.</string>
+    <string name="invite_join_error_declined">This invitation was declined.</string>
+    <string name="invite_join_error_already_accepted">This invitation was already accepted.</string>
+    <string name="invite_join_error_generic">Could not load this invitation. Try again.</string>
+    <string name="invite_join_error_invalid_email">Enter a valid email address.</string>
+    <string name="invite_join_error_otp_invalid">That code is not valid. Check and try again.</string>
+    <string name="invite_join_error_otp_expired">This code expired. Resend a new one.</string>
+    <string name="invite_join_error_otp_rate_limited">Too many attempts. Wait a moment and try again.</string>
+    <string name="invite_join_apple_email_hint">Use the email address that received this invitation (not Hide My Email).</string>
         <string name="household_gate_create_divider">Or start a new household</string>
 </resources>

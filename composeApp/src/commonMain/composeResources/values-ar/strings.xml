@@ -747,5 +747,29 @@
     <string name="sharing_members_dependent_hint">Children and others without their own login appear here only.</string>
     <string name="sharing_members_kind_dependent">Dependant</string>
         <string name="auth_household_joined_success">انضممت إلى %1$s.</string>
+
+    <string name="invite_join_title">انضم إلى %1$s</string>
+    <string name="invite_join_subtitle">دعاك %1$s لمشاركة التسوق وخطط الوجبات.</string>
+    <string name="invite_join_loading_preview">جارٍ تحميل الدعوة…</string>
+    <string name="invite_join_email_helper">أُرسلت الدعوة إلى هذا البريد</string>
+    <string name="invite_join_email_warning">أُرسلت هذه الدعوة إلى %1$s. استخدم هذا البريد للانضمام.</string>
+    <string name="invite_join_continue_button">متابعة</string>
+    <string name="invite_join_or_divider">أو</string>
+    <string name="invite_join_otp_title">أدخل الرمز</string>
+    <string name="invite_join_otp_subtitle">أرسلنا رمزًا من 6 أرقام إلى %1$s</string>
+    <string name="invite_join_otp_label">رمز التحقق</string>
+    <string name="invite_join_otp_resend">إعادة إرسال الرمز</string>
+    <string name="invite_join_otp_resend_wait">إعادة الإرسال خلال %1$d ث</string>
+    <string name="invite_join_back_to_email">بريد خاطئ؟ رجوع</string>
+    <string name="invite_join_error_not_found">هذه الدعوة لم تعد متاحة.</string>
+    <string name="invite_join_error_expired">انتهت صلاحية هذه الدعوة. اطلب دعوة جديدة.</string>
+    <string name="invite_join_error_declined">تم رفض هذه الدعوة.</string>
+    <string name="invite_join_error_already_accepted">تم قبول هذه الدعوة مسبقًا.</string>
+    <string name="invite_join_error_generic">تعذر تحميل الدعوة. حاول مرة أخرى.</string>
+    <string name="invite_join_error_invalid_email">أدخل بريدًا إلكترونيًا صالحًا.</string>
+    <string name="invite_join_error_otp_invalid">الرمز غير صالح. تحقق وحاول مرة أخرى.</string>
+    <string name="invite_join_error_otp_expired">انتهت صلاحية الرمز. أعد الإرسال.</string>
+    <string name="invite_join_error_otp_rate_limited">محاولات كثيرة. انتظر قليلًا ثم حاول مرة أخرى.</string>
+    <string name="invite_join_apple_email_hint">استخدم البريد الذي استلم الدعوة (وليس إخفاء بريدي).</string>
         <string name="household_gate_create_divider">أو إنشاء أسرة جديدة</string>
 </resources>
