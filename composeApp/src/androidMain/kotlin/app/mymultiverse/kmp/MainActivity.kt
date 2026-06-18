@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.LaunchedEffect
 import app.mymultiverse.kmp.data.observability.FirebaseBuildFlags
 import app.mymultiverse.kmp.data.platform.AndroidNotificationChannels
+import app.mymultiverse.kmp.data.invite.InviteRedirectEvents
+import app.mymultiverse.kmp.data.invite.InviteRedirectUrls
 import app.mymultiverse.kmp.data.supabase.AuthRedirectEvents
 import app.mymultiverse.kmp.presentation.App
 import app.mymultiverse.kmp.presentation.di.appModule
@@ -19,17 +21,24 @@ class MainActivity : AppCompatActivity() {
         if (FirebaseBuildFlags.PUSH_ENABLED) {
             AndroidNotificationChannels.ensureCreated(this)
         }
-        val launchRedirectUrl = intent?.data?.toString()
+        val launchAuthRedirectUrl = intent?.data?.toString()
             ?.takeIf(AuthRedirectEvents::isAuthRedirect)
+        val launchInviteRedirectUrl = intent?.data?.toString()
+            ?.takeIf(InviteRedirectUrls::isInviteRedirect)
         setContent {
             KoinApplication(application = {
                 androidContext(this@MainActivity)
                 modules(appModule)
             }) {
                 App()
-                if (launchRedirectUrl != null) {
-                    LaunchedEffect(launchRedirectUrl) {
-                        AuthRedirectEvents.emit(launchRedirectUrl)
+                if (launchAuthRedirectUrl != null) {
+                    LaunchedEffect(launchAuthRedirectUrl) {
+                        AuthRedirectEvents.emit(launchAuthRedirectUrl)
+                    }
+                }
+                if (launchInviteRedirectUrl != null) {
+                    LaunchedEffect(launchInviteRedirectUrl) {
+                        InviteRedirectEvents.emit(launchInviteRedirectUrl)
                     }
                 }
             }
@@ -40,9 +49,14 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         deliverAuthRedirect(intent)
+        deliverInviteRedirect(intent)
     }
 
     private fun deliverAuthRedirect(intent: Intent?) {
         intent?.data?.toString()?.let(AuthRedirectEvents::emit)
+    }
+
+    private fun deliverInviteRedirect(intent: Intent?) {
+        intent?.data?.toString()?.let(InviteRedirectEvents::emit)
     }
 }
