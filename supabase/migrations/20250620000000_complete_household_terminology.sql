@@ -63,7 +63,7 @@ as $$
         );
 $$;
 
-drop function if exists public.resolve_user_household_row();
+drop function if exists public.resolve_user_household_row() cascade;
 
 create function public.resolve_user_household_row()
 returns table (
@@ -263,6 +263,8 @@ grant execute on function public.household_membership_status() to authenticated;
 
 revoke all on function public.create_household(text) from public;
 grant execute on function public.create_household(text) to authenticated;
+
+drop function if exists public.user_has_active_nutrition_household(uuid, uuid);
 
 create or replace function public.user_has_active_nutrition_household(
     p_user_id uuid,
@@ -557,6 +559,8 @@ grant execute on function public.transfer_household_ownership(uuid) to authentic
 
 -- P1 GDPR: export signed-in user's profile and active household affiliation metadata.
 
+drop function if exists public.household_active_member_count(uuid);
+
 create or replace function public.household_active_member_count(p_household_id uuid)
 returns integer
 language sql
@@ -585,6 +589,8 @@ as $$
         0
     );
 $$;
+
+drop function if exists public.add_household_dependant(uuid, text);
 
 create or replace function public.add_household_dependant(p_household_id uuid, p_display_name text)
 returns uuid

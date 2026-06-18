@@ -118,13 +118,6 @@ class HouseholdCollaborationInstrumentedTest {
             ),
         )
 
-        screenModel.bindHousehold(
-            householdId = household.id,
-            ownerId = household.ownerId,
-            ownerDisplayName = household.ownerDisplayName ?: "Owner User",
-            currentUserId = ownerId,
-        )
-
         composeRule.setContent {
             AppTheme {
                 HouseholdMembersScreen(
@@ -137,8 +130,7 @@ class HouseholdCollaborationInstrumentedTest {
         }
 
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithTag(HouseholdMembersTestTags.TRANSFER_OWNERSHIP_BUTTON)
-                .fetchSemanticsNodes().isNotEmpty()
+            screenModel.uiState.value.canTransferOwnership
         }
 
         composeRule.onNodeWithTag(HouseholdMembersTestTags.TRANSFER_OWNERSHIP_BUTTON).performClick()
