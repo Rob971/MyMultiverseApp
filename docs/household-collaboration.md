@@ -132,6 +132,14 @@ Sign in → **gate** (if unaffiliated) → accept invite → **home** + snackbar
 
 **Status:** Implemented (`auth_household_joined_success` on gate and home accept).
 
+#### Invite preview & deep links (backend)
+
+Each pending invite row has a unique `token` (`household_invites.token`). When an owner sends an invite, `invite_household_member` enqueues `household_notification_outbox` with `invite_token` in the payload (alongside `invite_id`, household metadata, etc.) so email/push handlers can build deep links.
+
+`preview_household_invite(p_token)` is a **security definer** RPC callable by **anon** and **authenticated** clients before sign-in. It returns invite metadata (`invite_id`, `household_id`, `household_name`, `inviter_name`, `invitee_email`, `role`, `expires_at`) or raises: `invite_token_required`, `invite_not_found`, `invite_declined`, `invite_already_accepted`, `invite_expired`.
+
+**Status:** Migration `20250622000000` — app deep-link UX not yet wired.
+
 ---
 
 ### 5. Leave, transfer, dissolve

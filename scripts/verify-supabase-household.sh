@@ -98,6 +98,28 @@ if [[ "${TOKEN_STATUS}" != "400" && "${TOKEN_STATUS}" != "401" && "${TOKEN_STATU
 fi
 echo "OK: register_device_token RPC endpoint exists (status ${TOKEN_STATUS} without auth)"
 
+echo "==> Checking preview_household_invite RPC is deployed"
+PREVIEW_STATUS="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${REST_URL}/rpc/preview_household_invite" \
+  -H "apikey: ${ANON_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"p_token":""}')"
+
+if [[ "${PREVIEW_STATUS}" == "404" ]]; then
+  echo "ERROR: preview_household_invite RPC not found (404). Run: supabase db push" >&2
+  exit 1
+fi
+
+if [[ "${PREVIEW_STATUS}" =~ ^5 ]]; then
+  echo "ERROR: preview_household_invite probe failed (status ${PREVIEW_STATUS})." >&2
+  exit 1
+fi
+
+if [[ "${PREVIEW_STATUS}" != "400" && "${PREVIEW_STATUS}" != "401" && "${PREVIEW_STATUS}" != "403" ]]; then
+  echo "ERROR: unexpected preview_household_invite response (status ${PREVIEW_STATUS}). Expected 400/401/403 without auth." >&2
+  exit 1
+fi
+echo "OK: preview_household_invite RPC endpoint exists (status ${PREVIEW_STATUS} without auth)"
+
 if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
   echo "==> Signing in test user ${SUPABASE_TEST_EMAIL}"
   TOKEN_RESPONSE="$(curl -fsS -X POST "${AUTH_URL}/token?grant_type=password" \
