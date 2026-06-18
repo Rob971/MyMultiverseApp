@@ -28,6 +28,7 @@ struct iOSApp: App {
 			ContentView()
 				.onOpenURL { url in
 					AuthRedirectBridge.shared.handle(url: url.absoluteString)
+					InviteRedirectBridge.shared.handle(url: url.absoluteString)
 				}
 		}
 	}
