@@ -4,6 +4,7 @@ import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
 import app.mymultiverse.kmp.domain.observability.CrashReporter
 import app.mymultiverse.kmp.domain.manager.IOSLanguageManager
 import app.mymultiverse.kmp.domain.manager.LanguageManager
+import app.mymultiverse.kmp.data.platform.IosApnsTokenProvider
 import app.mymultiverse.kmp.data.platform.IosPersonalDataExporter
 import app.mymultiverse.kmp.data.platform.NoOpPushNotificationRegistrar
 import app.mymultiverse.kmp.data.platform.SupabasePushNotificationRegistrar
@@ -25,7 +26,9 @@ actual fun platformModule(): Module = module {
     single<PushNotificationRegistrar> {
         val client = get<SupabaseClientHolder>().client
         if (client != null) {
-            SupabasePushNotificationRegistrar(client, "ios") { "ios-stub-token" }
+            SupabasePushNotificationRegistrar(client, "ios") {
+                IosApnsTokenProvider.currentToken()
+            }
         } else {
             NoOpPushNotificationRegistrar()
         }

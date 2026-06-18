@@ -206,9 +206,14 @@ After migrations deploy, CI runs `scripts/configure-household-notification-deliv
 | `SUPABASE_SERVICE_ROLE_KEY` | Edge function secrets (`delete-account`, outbox admin) | Yes for functions job |
 | `RESEND_API_KEY` | Invite emails via Resend | Optional (log-only when unset) |
 | `INVITE_FROM_EMAIL` | Resend `from` address | Optional (defaults to `invites@mymultiverse.app`) |
-| `FCM_SERVICE_ACCOUNT_JSON` | FCM HTTP v1 push from `notify-household-invite` (Firebase service account JSON) | Optional (push skipped when unset) |
+| `FCM_SERVICE_ACCOUNT_JSON` | FCM HTTP v1 push from `notify-household-invite` (Firebase service account JSON) | Optional (Android push skipped when unset) |
+| `APNS_KEY_ID` / `APNS_TEAM_ID` / `APNS_PRIVATE_KEY` | APNs HTTP/2 push for iOS device tokens (`.p8` key contents) | Optional (iOS push skipped when unset) |
+| `APNS_BUNDLE_ID` | APNs topic (defaults to `app.mymultiverse.kmp`) | Optional |
+| `APNS_USE_SANDBOX` | `true` for debug/simulator tokens, `false` for TestFlight/App Store | Optional (defaults to `true`) |
 
 **Android push (client):** copy `composeApp/google-services.json.example` → `google-services.json` (same file as Crashlytics). When present, the app registers a real FCM token on Home refresh and requests `POST_NOTIFICATIONS` on API 33+.
+
+**iOS push (client):** enable **Push Notifications** capability in Xcode for `iosApp`, use a physical device or sandbox APNs, sign in so Home refresh registers the token. Export share uses the system share sheet (`UIActivityViewController`).
 
 Set function secrets manually (one-off or when not using CI):
 
@@ -218,7 +223,12 @@ supabase secrets set \
   SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
   RESEND_API_KEY="$RESEND_API_KEY" \
   INVITE_FROM_EMAIL="invites@mymultiverse.app" \
-  FCM_SERVICE_ACCOUNT_JSON="$FCM_SERVICE_ACCOUNT_JSON"
+  FCM_SERVICE_ACCOUNT_JSON="$FCM_SERVICE_ACCOUNT_JSON" \
+  APNS_KEY_ID="$APNS_KEY_ID" \
+  APNS_TEAM_ID="$APNS_TEAM_ID" \
+  APNS_PRIVATE_KEY="$APNS_PRIVATE_KEY" \
+  APNS_BUNDLE_ID="app.mymultiverse.kmp" \
+  APNS_USE_SANDBOX="true"
 supabase functions deploy notify-household-invite --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
 ```

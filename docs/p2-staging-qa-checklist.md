@@ -16,6 +16,8 @@ Run on **staging** (Supabase + Firebase tester APK) with **two phones / two acco
 | PR2 merged: outbox `pg_net` trigger + delivery config | ☐ |
 | `RESEND_API_KEY` set (for invite email) | ☐ |
 | `FCM_SERVICE_ACCOUNT_JSON` set (for Android invite push) | ☐ |
+| `APNS_KEY_ID` / `APNS_TEAM_ID` / `APNS_PRIVATE_KEY` set (for iOS invite push) | ☐ |
+| Xcode Push Notifications capability enabled for `iosApp` | ☐ |
 | Tester APK with `google-services.json` (FCM + Crashlytics) | ☐ |
 | Two test accounts (owner + invitee) | ☐ |
 
@@ -28,7 +30,7 @@ Run on **staging** (Supabase + Firebase tester APK) with **two phones / two acco
 | Step | Pass |
 |------|------|
 | Sign in → Home → **Export my data** | ☐ |
-| Share sheet opens with JSON (Android) or snackbar if share unavailable (iOS until PR5) | ☐ |
+| Share sheet opens with JSON on iOS and Android | ☐ |
 | JSON includes profile + household affiliation | ☐ |
 
 **Device / build:** _______________ **Tester:** _______________ **Date:** _______________

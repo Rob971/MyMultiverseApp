@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { isDeliverableIosToken, sendIosInvitePush } from "./apns.ts";
 import { isDeliverableAndroidToken, sendAndroidInvitePush } from "./fcm.ts";
 
 const corsHeaders = {
@@ -23,6 +24,11 @@ Deno.serve(async (req) => {
     const resendApiKey = Deno.env.get("RESEND_API_KEY") ?? "";
     const fromEmail = Deno.env.get("INVITE_FROM_EMAIL") ?? "invites@mymultiverse.app";
     const fcmServiceAccountJson = Deno.env.get("FCM_SERVICE_ACCOUNT_JSON") ?? "";
+    const apnsKeyId = Deno.env.get("APNS_KEY_ID") ?? "";
+    const apnsTeamId = Deno.env.get("APNS_TEAM_ID") ?? "";
+    const apnsPrivateKey = Deno.env.get("APNS_PRIVATE_KEY") ?? "";
+    const apnsBundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "app.mymultiverse.kmp";
+    const apnsUseSandbox = (Deno.env.get("APNS_USE_SANDBOX") ?? "true").toLowerCase() !== "false";
 
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
@@ -97,12 +103,15 @@ Deno.serve(async (req) => {
           household_id: String(payload.household_id ?? ""),
         };
 
-        let pushSent = 0;
-        if (fcmServiceAccountJson) {
-          for (const row of tokens ?? []) {
-            const token = String(row.token ?? "");
-            const platform = String(row.platform ?? "");
-            if (!isDeliverableAndroidToken(token, platform)) continue;
+        let androidPushSent = 0;
+        let iosPushSent = 0;
+        const apnsConfigured = Boolean(apnsKeyId && apnsTeamId && apnsPrivateKey);
+
+        for (const tokenRow of tokens ?? []) {
+          const token = String(tokenRow.token ?? "");
+          const platform = String(tokenRow.platform ?? "");
+
+          if (fcmServiceAccountJson && isDeliverableAndroidToken(token, platform)) {
             const ok = await sendAndroidInvitePush(
               fcmServiceAccountJson,
               token,
@@ -110,15 +119,33 @@ Deno.serve(async (req) => {
               pushBody,
               pushData,
             );
-            if (ok) pushSent += 1;
+            if (ok) androidPushSent += 1;
+            continue;
+          }
+
+          if (apnsConfigured && isDeliverableIosToken(token, platform)) {
+            const ok = await sendIosInvitePush(
+              apnsTeamId,
+              apnsKeyId,
+              apnsPrivateKey,
+              apnsBundleId,
+              apnsUseSandbox,
+              token,
+              pushTitle,
+              pushBody,
+              pushData,
+            );
+            if (ok) iosPushSent += 1;
           }
         }
 
         console.log("push_delivery", {
           userId: inviteeUserId,
           tokenCount: tokens?.length ?? 0,
-          pushSent,
+          androidPushSent,
+          iosPushSent,
           fcmConfigured: Boolean(fcmServiceAccountJson),
+          apnsConfigured,
         });
       }
 

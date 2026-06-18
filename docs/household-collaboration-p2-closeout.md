@@ -85,13 +85,14 @@ Work in order where dependencies apply. Each PR should be independently mergeabl
 
 ---
 
-### PR 5 — Platform: iOS APNs + export share sheet
+### PR 5 — Platform: iOS APNs + export share sheet ✅ in `feature/p2-closeout`
 
-| Task | Details |
-|------|---------|
-| APNs | Capabilities, token registration; replace `ios-stub-token` in `PlatformModule.kt` |
-| `IosPersonalDataExporter` | `UIActivityViewController` share JSON (currently returns `false`) |
-| Edge function | APNs send path in `notify-household-invite` |
+| Task | Status |
+|------|--------|
+| `UIActivityViewController` export share (`IosPersonalDataExporter`) | Done |
+| APNs token via `AppDelegate` + `PushTokenBridge` + `PlatformPushSetup` | Done |
+| Edge function APNs HTTP/2 send (`APNS_*` secrets) | Done |
+| Xcode Push Notifications capability + APNs secrets + device QA | **Ops / QA** |
 
 **Acceptance:** Export opens share sheet on iOS; push token registered when permitted.
 
