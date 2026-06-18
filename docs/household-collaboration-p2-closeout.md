@@ -41,23 +41,17 @@ Work in order where dependencies apply. Each PR should be independently mergeabl
 
 ---
 
-### PR 2 — Ops: outbox delivery automation
+### PR 2 — Ops: outbox delivery automation ✅ in `feature/p2-closeout`
 
 **Why second:** Enqueue alone does not send email/push until something invokes the function.
 
-| Option | Pros | Cons |
-|--------|------|------|
-| **A. DB webhook** on `household_notification_outbox` INSERT | Near real-time | Requires Supabase webhook + function URL auth |
-| **B. pg_cron** poll + `net.http_post` to function | No external webhook | Migration + cron extension |
-| **C. Scheduled GitHub Action** | Simple, no DB change | Latency, not tied to insert |
-
-**Recommended:** Option A or B per team ops preference; document in `docs/household-collaboration.md`.
-
-| Task | Details |
-|------|---------|
-| Migration or dashboard config | Webhook/cron definition |
-| Idempotency | Edge function already should handle duplicate invokes; verify |
-| Test | Insert outbox row in staging → email received (or log when `RESEND_API_KEY` unset) |
+| Task | Status |
+|------|--------|
+| Migration: `pg_net` trigger on `household_notification_outbox` INSERT | Done |
+| `configure-household-notification-delivery.sh` + CI step after `db push` | Done |
+| `verify-household-notification-delivery.sh` in deploy workflow | Done |
+| `deploy-edge-functions` waits on `deploy-migrations` | Done |
+| Manual E2E: invite on staging → email / processed outbox row | Pending QA |
 
 **Acceptance:** New invite enqueue triggers delivery without manual function invoke.
 

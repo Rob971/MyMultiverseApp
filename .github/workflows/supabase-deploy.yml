@@ -22,7 +22,7 @@ jobs:
   deploy-migrations:
     name: Deploy migrations
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     if: >-
       ${{ !startsWith(github.event.head_commit.message, 'chore(version):') }}
 
@@ -30,6 +30,8 @@ jobs:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
     steps:
       - name: Checkout
@@ -55,10 +57,30 @@ jobs:
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
           supabase db push
 
+      - name: Install psql client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Configure notification outbox delivery
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "WARN: SUPABASE_URL/SUPABASE_ANON_KEY not set — outbox auto-dispatch not configured."
+            exit 0
+          fi
+          ./scripts/configure-household-notification-delivery.sh
+
+      - name: Verify notification outbox delivery
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Skipping delivery verify (SUPABASE_URL/SUPABASE_ANON_KEY not set)."
+            exit 0
+          fi
+          ./scripts/verify-household-notification-delivery.sh
+
   deploy-edge-functions:
     name: Deploy edge functions
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    needs: deploy-migrations
     if: >-
       ${{ !startsWith(github.event.head_commit.message, 'chore(version):') }}
 

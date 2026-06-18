@@ -179,11 +179,19 @@ Verify P2 edge functions after deploy:
 ./scripts/verify-supabase-edge-functions.sh
 ```
 
+Verify outbox auto-dispatch is wired (remote project + `psql`):
+
+```bash
+./scripts/verify-household-notification-delivery.sh
+```
+
+After migrations deploy, CI runs `scripts/configure-household-notification-delivery.sh` to store the project URL and anon key in `private.household_notification_delivery_config` (used by the `pg_net` trigger).
+
 ### Edge functions (P2)
 
 | Function | Trigger | Purpose |
 |----------|---------|---------|
-| `notify-household-invite` | Manual invoke, webhook, or cron (PR2) | Process `household_notification_outbox` rows; send invite email when `RESEND_API_KEY` is set |
+| `notify-household-invite` | **Automatic:** `AFTER INSERT` trigger on `household_notification_outbox` (`pg_net` → edge function) | Process outbox rows; send invite email when `RESEND_API_KEY` is set |
 | `delete-account` | App Home → delete account | `prepare_account_deletion` RPC then `auth.admin.deleteUser` (service role) |
 
 **GitHub repository secrets** (for [`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)):

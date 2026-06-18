@@ -22,7 +22,7 @@ alwaysApply: false
 ### Supabase
 
 - **CI validation (no remote writes):** `supabase db start` applies all migrations on ephemeral Postgres; remote smoke via `scripts/verify-supabase-household.sh` on PR/`main` only.
-- **Deploy:** `supabase-deploy.yml` runs `db push` and edge function deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change. Migrations: `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`. Functions: also `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`; optional `RESEND_API_KEY`, `INVITE_FROM_EMAIL`. Smoke: `scripts/verify-supabase-edge-functions.sh`.
+- **Deploy:** `supabase-deploy.yml` runs `db push`, configures outbox `pg_net` delivery, and edge function deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change. Migrations: `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`; optional `SUPABASE_URL` + `SUPABASE_ANON_KEY` for outbox auto-dispatch config. Functions: also `SUPABASE_SERVICE_ROLE_KEY`; optional `RESEND_API_KEY`, `INVITE_FROM_EMAIL`. Smoke: `scripts/verify-supabase-edge-functions.sh`, `scripts/verify-household-notification-delivery.sh`.
 - **Android builds:** `SUPABASE_URL` + `SUPABASE_ANON_KEY` → `local.properties` via composite setup action.
 - **`GOOGLE_SERVICES_JSON`:** enables Crashlytics in CI debug APKs.
 

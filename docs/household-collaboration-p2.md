@@ -12,7 +12,7 @@ This document locks scope for P2 tracks **A–D**. Adventures/Budget modules rem
 | Item | Decision |
 |------|----------|
 | **Trigger** | After successful `invite_household_member` RPC, enqueue row in `household_notification_outbox` |
-| **Delivery** | Supabase Edge Function `notify-household-invite` processes outbox (webhook or scheduled invoke) |
+| **Delivery** | `AFTER INSERT` trigger on `household_notification_outbox` invokes Edge Function `notify-household-invite` via `pg_net` |
 | **Email** | Transactional email to invitee address via `RESEND_API_KEY` (or log-only when unset) |
 | **Push** | FCM/APNs to tokens in `user_device_tokens` when invitee already has an account |
 | **Deep link** | `app.mymultiverse.kmp://auth/callback` → gate shows pending invite (existing flow) |
