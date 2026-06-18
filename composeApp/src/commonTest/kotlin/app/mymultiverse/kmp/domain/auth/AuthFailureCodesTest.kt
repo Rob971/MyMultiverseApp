@@ -36,4 +36,28 @@ class AuthFailureCodesTest {
         )
         assertEquals(AuthFailureCodes.EMAIL_CONFIRMATION_REQUIRED, code)
     }
+
+    @Test
+    fun fromThrowable_mapsOtpInvalid() {
+        val code = AuthFailureCodes.fromThrowable(
+            IllegalStateException("Invalid OTP"),
+        )
+        assertEquals(AuthFailureCodes.OTP_INVALID, code)
+    }
+
+    @Test
+    fun fromThrowable_mapsOtpExpired() {
+        val code = AuthFailureCodes.fromThrowable(
+            IllegalStateException("Token has expired or is invalid"),
+        )
+        assertEquals(AuthFailureCodes.OTP_EXPIRED, code)
+    }
+
+    @Test
+    fun fromThrowable_mapsOtpRateLimited() {
+        val code = AuthFailureCodes.fromThrowable(
+            IllegalStateException("Email rate limit exceeded"),
+        )
+        assertEquals(AuthFailureCodes.OTP_RATE_LIMITED, code)
+    }
 }

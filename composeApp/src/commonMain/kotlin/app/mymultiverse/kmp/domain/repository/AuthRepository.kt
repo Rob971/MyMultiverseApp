@@ -12,6 +12,10 @@ interface AuthRepository {
 
     suspend fun signUpWithEmail(email: String, password: String): Result<Unit>
 
+    suspend fun sendEmailOtp(email: String): Result<Unit>
+
+    suspend fun verifyEmailOtp(email: String, code: String): Result<Unit>
+
     suspend fun signInWithGoogle(): Result<Unit>
 
     suspend fun signInWithApple(): Result<Unit>

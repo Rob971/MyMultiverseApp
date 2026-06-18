@@ -8,6 +8,9 @@ object AuthFailureCodes {
     const val USER_ALREADY_EXISTS = "user_already_exists"
     const val EMAIL_NOT_CONFIRMED = "email_not_confirmed"
     const val SIGN_UP_DISABLED = "sign_up_disabled"
+    const val OTP_INVALID = "otp_invalid"
+    const val OTP_EXPIRED = "otp_expired"
+    const val OTP_RATE_LIMITED = "otp_rate_limited"
     const val GENERIC = "generic"
 
     fun fromThrowable(throwable: Throwable): String {
@@ -39,6 +42,16 @@ object AuthFailureCodes {
                 message.contains("unable to validate email") -> INVALID_EMAIL
             message.contains("signup_disabled") ||
                 message.contains("signups not allowed") -> SIGN_UP_DISABLED
+            message.contains("otp expired") ||
+                message.contains("token has expired") ||
+                message.contains("otp_expired") -> OTP_EXPIRED
+            message.contains("rate limit") ||
+                message.contains("too many requests") ||
+                message.contains("otp_rate_limited") -> OTP_RATE_LIMITED
+            message.contains("invalid otp") ||
+                message.contains("otp invalid") ||
+                message.contains("otp_invalid") ||
+                message.contains("invalid token") -> OTP_INVALID
             else -> GENERIC
         }
     }
