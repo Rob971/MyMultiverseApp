@@ -38,14 +38,16 @@ echo "OK: dispatch trigger present"
 echo "==> Checking delivery config row"
 CONFIG_OK="$(supabase_remote_query_scalar "
 select case
-    when count(*) = 1
-     and char_length(trim(project_url)) > 0
-     and char_length(trim(invoke_bearer_token)) > 0
+    when exists (
+        select 1
+        from private.household_notification_delivery_config
+        where id = 1
+          and char_length(trim(project_url)) > 0
+          and char_length(trim(invoke_bearer_token)) > 0
+    )
     then 'yes'
     else 'no'
-end
-from private.household_notification_delivery_config
-where id = 1;
+end;
 ")"
 
 if [[ "${CONFIG_OK}" != "yes" ]]; then
