@@ -54,6 +54,50 @@ if [[ "${RPC_STATUS}" != "400" && "${RPC_STATUS}" != "401" && "${RPC_STATUS}" !=
 fi
 echo "OK: ensure_household RPC endpoint exists (status ${RPC_STATUS} without auth)"
 
+echo "==> Checking export_my_personal_data RPC is deployed"
+EXPORT_STATUS="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${REST_URL}/rpc/export_my_personal_data" \
+  -H "apikey: ${ANON_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{}')"
+
+if [[ "${EXPORT_STATUS}" == "404" ]]; then
+  echo "ERROR: export_my_personal_data RPC not found (404). Run: supabase db push" >&2
+  exit 1
+fi
+
+if [[ "${EXPORT_STATUS}" =~ ^5 ]]; then
+  echo "ERROR: export_my_personal_data probe failed (status ${EXPORT_STATUS})." >&2
+  exit 1
+fi
+
+if [[ "${EXPORT_STATUS}" != "400" && "${EXPORT_STATUS}" != "401" && "${EXPORT_STATUS}" != "403" ]]; then
+  echo "ERROR: unexpected export_my_personal_data response (status ${EXPORT_STATUS}). Expected 400/401/403 without auth." >&2
+  exit 1
+fi
+echo "OK: export_my_personal_data RPC endpoint exists (status ${EXPORT_STATUS} without auth)"
+
+echo "==> Checking register_device_token RPC is deployed"
+TOKEN_STATUS="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${REST_URL}/rpc/register_device_token" \
+  -H "apikey: ${ANON_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"p_platform":"android","p_token":"probe"}')"
+
+if [[ "${TOKEN_STATUS}" == "404" ]]; then
+  echo "ERROR: register_device_token RPC not found (404). Run: supabase db push" >&2
+  exit 1
+fi
+
+if [[ "${TOKEN_STATUS}" =~ ^5 ]]; then
+  echo "ERROR: register_device_token probe failed (status ${TOKEN_STATUS})." >&2
+  exit 1
+fi
+
+if [[ "${TOKEN_STATUS}" != "400" && "${TOKEN_STATUS}" != "401" && "${TOKEN_STATUS}" != "403" ]]; then
+  echo "ERROR: unexpected register_device_token response (status ${TOKEN_STATUS}). Expected 400/401/403 without auth." >&2
+  exit 1
+fi
+echo "OK: register_device_token RPC endpoint exists (status ${TOKEN_STATUS} without auth)"
+
 if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
   echo "==> Signing in test user ${SUPABASE_TEST_EMAIL}"
   TOKEN_RESPONSE="$(curl -fsS -X POST "${AUTH_URL}/token?grant_type=password" \
@@ -116,8 +160,35 @@ if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
   fi
 
   echo "OK: nutrition persistence round-trip succeeded for week ${WEEK_KEY}"
+
+  echo "==> Calling export_my_personal_data as authenticated user"
+  EXPORT_JSON="$(curl -fsS -X POST "${REST_URL}/rpc/export_my_personal_data" \
+    -H "apikey: ${ANON_KEY}" \
+    -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d '{}')"
+
+  if ! echo "${EXPORT_JSON}" | jq -e '.profile.id != null' >/dev/null; then
+    echo "ERROR: export_my_personal_data did not return profile.id" >&2
+    echo "${EXPORT_JSON}" >&2
+    exit 1
+  fi
+  echo "OK: export_my_personal_data returned profile metadata"
+
+  echo "==> Registering CI verify device token"
+  REGISTER_STATUS="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${REST_URL}/rpc/register_device_token" \
+    -H "apikey: ${ANON_KEY}" \
+    -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d '{"p_platform":"android","p_token":"ci-verify-token"}')"
+
+  if [[ "${REGISTER_STATUS}" != "200" && "${REGISTER_STATUS}" != "204" ]]; then
+    echo "ERROR: register_device_token failed with status ${REGISTER_STATUS}" >&2
+    exit 1
+  fi
+  echo "OK: register_device_token succeeded"
 else
-  echo "SKIP: set SUPABASE_TEST_EMAIL and SUPABASE_TEST_PASSWORD to run authenticated persistence round-trip"
+  echo "SKIP: set SUPABASE_TEST_EMAIL and SUPABASE_TEST_PASSWORD to run authenticated persistence + P2 RPC round-trip"
 fi
 
 echo "All Supabase household checks passed."

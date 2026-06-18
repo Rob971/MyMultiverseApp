@@ -298,6 +298,8 @@ contact_groups ──1:N── group_members ──► profiles
 
 **Primary checklist:** [`firebase-appdistribution-testcases.yaml`](firebase-appdistribution-testcases.yaml) (versioned; included in Firebase release notes).
 
+**P2 staging sign-off:** [`docs/p2-staging-qa-checklist.md`](docs/p2-staging-qa-checklist.md) — export, delete account, dependant, invite notification (two devices).
+
 ### Recommended test setup
 
 | Need | Detail |
@@ -366,7 +368,7 @@ Gradle task `generateSupabaseSecrets` embeds values into `commonMain` at compile
 | `local.properties` | `local.properties.example` | Supabase URL + anon key |
 | `composeApp/google-services.json` | `composeApp/google-services.json.example` | Firebase (Crashlytics + App Distribution) |
 
-CI uses GitHub Secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GOOGLE_SERVICES_JSON`.
+CI uses GitHub Secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GOOGLE_SERVICES_JSON`. Optional `SUPABASE_TEST_EMAIL` + `SUPABASE_TEST_PASSWORD` enable authenticated Supabase smoke tests in CI (`verify-supabase-household.sh`).
 
 Production migration deploy requires `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`.
 

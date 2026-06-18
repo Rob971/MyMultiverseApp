@@ -57,13 +57,14 @@ Work in order where dependencies apply. Each PR should be independently mergeabl
 
 ---
 
-### PR 3 — QA: staging manual checklist + CI secrets (parallel-friendly)
+### PR 3 — QA: staging manual checklist + CI secrets ✅ in `feature/p2-closeout`
 
-| Task | Details |
-|------|---------|
-| Run Firebase YAML cases | `home-export-personal-data`, `home-delete-account`, `household-add-dependant`, `household-invite-notification` on two devices |
-| CI | Add `SUPABASE_TEST_EMAIL` / `SUPABASE_TEST_PASSWORD` repo secrets; un-skip authenticated path in `verify-supabase-household.sh` |
-| Record results | Short checklist in this doc or PR description |
+| Task | Status |
+|------|--------|
+| `docs/p2-staging-qa-checklist.md` for manual P2 sign-off | Done |
+| KMP CI: pass `SUPABASE_TEST_EMAIL` / `SUPABASE_TEST_PASSWORD` to verify script | Done |
+| Extended `verify-supabase-household.sh` — P2 RPC probes + auth round-trip | Done |
+| Add test-account secrets in GitHub + run manual checklist on staging | **Ops / QA** |
 
 **Acceptance:** Checklist signed off on staging; CI household verify includes auth round-trip when secrets present.
 
