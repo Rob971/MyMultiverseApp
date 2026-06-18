@@ -61,9 +61,6 @@ jobs:
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
           supabase db push
 
-      - name: Install psql client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
-
       - name: Configure notification outbox delivery
         run: |
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then

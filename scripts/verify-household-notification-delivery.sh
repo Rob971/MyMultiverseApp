@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Verify outbox dispatch trigger + delivery config on a linked Supabase project.
 #
-# Requires: psql, SUPABASE_PROJECT_REF, SUPABASE_DB_PASSWORD
+# Requires: SUPABASE_PROJECT_REF, SUPABASE_DB_PASSWORD
+# CI: SUPABASE_ACCESS_TOKEN (uses supabase db query --linked)
 
 set -euo pipefail
 
@@ -16,11 +17,9 @@ for name in SUPABASE_PROJECT_REF SUPABASE_DB_PASSWORD; do
   fi
 done
 
-PSQL=(supabase_remote_psql -v ON_ERROR_STOP=1 -tA)
-
 echo "==> Checking household_notification_outbox_dispatch trigger"
-TRIGGER_COUNT="$("${PSQL[@]}" -c "
-select count(*)
+TRIGGER_COUNT="$(supabase_remote_query_scalar "
+select count(*)::text
 from pg_trigger t
 join pg_class c on c.oid = t.tgrelid
 join pg_namespace n on n.oid = c.relnamespace
@@ -37,7 +36,7 @@ fi
 echo "OK: dispatch trigger present"
 
 echo "==> Checking delivery config row"
-CONFIG_OK="$("${PSQL[@]}" -c "
+CONFIG_OK="$(supabase_remote_query_scalar "
 select case
     when count(*) = 1
      and char_length(trim(project_url)) > 0

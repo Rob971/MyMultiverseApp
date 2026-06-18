@@ -2,7 +2,8 @@
 # Upsert private.household_notification_delivery_config so outbox INSERT triggers
 # invoke notify-household-invite via pg_net.
 #
-# Requires: psql, SUPABASE_PROJECT_REF, SUPABASE_DB_PASSWORD, SUPABASE_URL, SUPABASE_ANON_KEY
+# Requires: SUPABASE_PROJECT_REF, SUPABASE_DB_PASSWORD, SUPABASE_URL, SUPABASE_ANON_KEY
+# CI: SUPABASE_ACCESS_TOKEN (uses supabase db query --linked)
 
 set -euo pipefail
 
@@ -17,12 +18,11 @@ for name in SUPABASE_PROJECT_REF SUPABASE_DB_PASSWORD SUPABASE_URL SUPABASE_ANON
   fi
 done
 
+project_url="$(escape_sql_literal "${SUPABASE_URL}")"
+bearer_token="$(escape_sql_literal "${SUPABASE_ANON_KEY}")"
+
 echo "==> Configuring household notification outbox delivery"
-supabase_remote_psql \
-  -v ON_ERROR_STOP=1 \
-  -v project_url="${SUPABASE_URL}" \
-  -v bearer_token="${SUPABASE_ANON_KEY}" \
-  <<'SQL'
+supabase_remote_query "
 insert into private.household_notification_delivery_config (
     id,
     project_url,
@@ -31,14 +31,14 @@ insert into private.household_notification_delivery_config (
 )
 values (
     1,
-    :'project_url',
-    :'bearer_token',
+    '${project_url}',
+    '${bearer_token}',
     now()
 )
 on conflict (id) do update
 set project_url = excluded.project_url,
     invoke_bearer_token = excluded.invoke_bearer_token,
     updated_at = now();
-SQL
+"
 
 echo "OK: household notification delivery config updated"
