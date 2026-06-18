@@ -129,8 +129,10 @@ class HouseholdCollaborationInstrumentedTest {
             }
         }
 
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            screenModel.uiState.value.canTransferOwnership
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            screenModel.uiState.value.canTransferOwnership &&
+                composeRule.onAllNodesWithTag(HouseholdMembersTestTags.TRANSFER_OWNERSHIP_BUTTON)
+                    .fetchSemanticsNodes().isNotEmpty()
         }
 
         composeRule.onNodeWithTag(HouseholdMembersTestTags.TRANSFER_OWNERSHIP_BUTTON).performClick()

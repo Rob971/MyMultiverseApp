@@ -890,10 +890,10 @@ create policy profiles_select_household_peers
 drop function if exists public.list_my_pending_space_invites();
 drop function if exists public.invite_space_member(uuid, text, public.household_member_role);
 drop function if exists public.accept_space_invite(uuid);
-drop function if exists public.is_space_owner(uuid);
-drop function if exists public.is_space_member(uuid);
-drop function if exists public.space_member_can_write_nutrition(uuid);
-drop function if exists public.profiles_share_space(uuid, uuid);
+drop function if exists public.is_space_owner(uuid) cascade;
+drop function if exists public.is_space_member(uuid) cascade;
+drop function if exists public.space_member_can_write_nutrition(uuid) cascade;
+drop function if exists public.profiles_share_space(uuid, uuid) cascade;
 
 revoke all on function public.list_my_pending_household_invites() from public;
 grant execute on function public.list_my_pending_household_invites() to authenticated;
