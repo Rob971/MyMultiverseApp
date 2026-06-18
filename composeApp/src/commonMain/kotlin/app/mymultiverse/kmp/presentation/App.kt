@@ -26,6 +26,9 @@ import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdGateScreen
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdGateScreenModel
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersFlow
+import app.mymultiverse.kmp.presentation.screens.invite.JoinHouseholdScreen
+import app.mymultiverse.kmp.presentation.invite.InviteJoinAcceptState
+import app.mymultiverse.kmp.presentation.invite.InviteJoinFlowCoordinator
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionFlow
 import app.mymultiverse.kmp.presentation.theme.AppTheme
 import org.koin.compose.koinInject
@@ -35,11 +38,14 @@ import org.koin.compose.koinInject
 fun App() {
     AppTheme {
         val authRepository = koinInject<AuthRepository>()
+        val inviteFlow = koinInject<InviteJoinFlowCoordinator>()
         val logger = koinInject<AppLogger>()
         val authState by authRepository.authState.collectAsState(initial = AuthState.Loading)
+        val pendingInviteToken by inviteFlow.pendingInviteToken.collectAsState()
 
         LaunchedEffect(Unit) {
             logger.startSession()
+            inviteFlow.start()
         }
 
         PlatformPushSetup()
@@ -66,9 +72,17 @@ fun App() {
                 AuthState.Unauthenticated,
                 AuthState.ConfigurationMissing,
                 -> {
-                    LoginScreen(
-                        showConfigMissing = state is AuthState.ConfigurationMissing,
-                    )
+                    val inviteToken = pendingInviteToken?.takeIf { it.isNotBlank() }
+                    if (inviteToken != null) {
+                        JoinHouseholdScreen(
+                            inviteToken = inviteToken,
+                            showConfigMissing = state is AuthState.ConfigurationMissing,
+                        )
+                    } else {
+                        LoginScreen(
+                            showConfigMissing = state is AuthState.ConfigurationMissing,
+                        )
+                    }
                 }
 
                 is AuthState.Authenticated -> {
@@ -84,12 +98,31 @@ fun App() {
 private fun AuthenticatedApp() {
     val householdRepository = koinInject<HouseholdRepository>()
     val gateScreenModel = koinInject<HouseholdGateScreenModel>()
+    val inviteFlow = koinInject<InviteJoinFlowCoordinator>()
+    val pendingInviteToken by inviteFlow.pendingInviteToken.collectAsState()
+    val acceptState by inviteFlow.acceptState.collectAsState()
     val membershipStatus by householdRepository.observeMembershipStatus().collectAsState(
         initial = HouseholdMembershipStatus.Loading,
     )
 
+    LaunchedEffect(pendingInviteToken) {
+        if (!pendingInviteToken.isNullOrBlank()) {
+            inviteFlow.acceptPendingInviteIfNeeded()
+        }
+    }
+
     LaunchedEffect(Unit) {
         gateScreenModel.refreshMembership()
+    }
+
+    if (!pendingInviteToken.isNullOrBlank() && acceptState is InviteJoinAcceptState.Accepting) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
+        }
+        return
     }
 
     when (membershipStatus) {

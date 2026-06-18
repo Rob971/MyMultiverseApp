@@ -35,6 +35,7 @@ import app.mymultiverse.kmp.presentation.screens.household.HouseholdGateScreenMo
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersEntryScreenModel
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersScreenModel
 import app.mymultiverse.kmp.presentation.screens.invite.JoinHouseholdScreenModel
+import app.mymultiverse.kmp.presentation.invite.InviteJoinFlowCoordinator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -102,6 +103,7 @@ private val presentationModule = module {
     singleOf(::HomeScreenModel)
     singleOf(::LoginScreenModel)
     singleOf(::JoinHouseholdScreenModel)
+    singleOf(::InviteJoinFlowCoordinator)
     singleOf(::NutritionEntryScreenModel)
     singleOf(::HouseholdGateScreenModel)
     singleOf(::HouseholdMembersEntryScreenModel)
