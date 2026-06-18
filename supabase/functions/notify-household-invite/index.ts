@@ -7,6 +7,7 @@ import {
   buildInviteEmailSubject,
   buildInviteEmailText,
 } from "./invite-content.ts";
+import { buildInvitePushData, inviteTokenFromPayload } from "./invite-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,7 +24,7 @@ async function resolveInviteToken(
   admin: SupabaseClient,
   payload: Record<string, unknown>,
 ): Promise<string | null> {
-  const fromPayload = String(payload.invite_token ?? "").trim();
+  const fromPayload = inviteTokenFromPayload(payload);
   if (fromPayload) return fromPayload;
 
   const inviteId = String(payload.invite_id ?? "").trim();
@@ -154,14 +155,7 @@ Deno.serve(async (req) => {
 
         const pushTitle = `${inviterName} invited you`;
         const pushBody = `Join ${householdName} on MyMultiverse`;
-        const pushData: Record<string, string> = {
-          type: "household_invite",
-          invite_id: String(payload.invite_id ?? ""),
-          household_id: String(payload.household_id ?? ""),
-        };
-        if (inviteToken) {
-          pushData.invite_token = inviteToken;
-        }
+        const pushData = buildInvitePushData(payload, inviteToken);
 
         let androidPushSent = 0;
         let iosPushSent = 0;

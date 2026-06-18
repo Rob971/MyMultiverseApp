@@ -76,6 +76,18 @@ jobs:
           chmod +x ./scripts/ci-validate-supabase-migrations.sh
           ./scripts/ci-validate-supabase-migrations.sh
 
+      - name: Set up Deno
+        if: hashFiles('scripts/test-supabase-invite-edge.sh') != ''
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Test invite edge function helpers
+        if: hashFiles('scripts/test-supabase-invite-edge.sh') != ''
+        run: |
+          chmod +x ./scripts/test-supabase-invite-edge.sh
+          ./scripts/test-supabase-invite-edge.sh
+
       - name: Smoke-test linked Supabase project
         uses: ./.github/actions/require-supabase-secrets
         with:
