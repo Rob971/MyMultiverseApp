@@ -155,10 +155,11 @@ The mobile app talks to **Supabase Auth** (sessions, OAuth) and **PostgREST** (t
 | **Invites** | `invite_household_member`, `accept_household_invite`, `list_my_pending_household_invites` |
 | **Membership query** | `household_membership_status`, `resolve_user_household_row` |
 | **Nutrition data** | `nutrition_household_week_data` — one row per `(household_id, week_key, data_kind)` |
-| **GDPR** | `export_my_personal_data` |
+| **GDPR** | `export_my_personal_data`, `prepare_account_deletion`, Edge Function `delete-account` |
+| **Invite notifications** | `household_notification_outbox` + Edge Function `notify-household-invite` (email via Resend) |
 | **Realtime** | `nutrition_household_week_data` in `supabase_realtime` publication |
 
-Migrations: `supabase/migrations/` (applied in filename order). Deploy on `main` via [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml).
+Migrations: `supabase/migrations/` (applied in filename order). Edge functions: `supabase/functions/`. Deploy on `main` via [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml) (`db push` + `functions deploy`).
 
 Apply locally or to a linked project:
 
@@ -170,6 +171,44 @@ Verify household RPCs after deploy:
 
 ```bash
 ./scripts/verify-supabase-household.sh
+```
+
+Verify P2 edge functions after deploy:
+
+```bash
+./scripts/verify-supabase-edge-functions.sh
+```
+
+### Edge functions (P2)
+
+| Function | Trigger | Purpose |
+|----------|---------|---------|
+| `notify-household-invite` | Manual invoke, webhook, or cron (PR2) | Process `household_notification_outbox` rows; send invite email when `RESEND_API_KEY` is set |
+| `delete-account` | App Home → delete account | `prepare_account_deletion` RPC then `auth.admin.deleteUser` (service role) |
+
+**GitHub repository secrets** (for [`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)):
+
+| Secret | Used by | Required |
+|--------|---------|----------|
+| `SUPABASE_ACCESS_TOKEN` | Migrations + functions deploy | Yes |
+| `SUPABASE_DB_PASSWORD` | `db push` / link | Yes |
+| `SUPABASE_PROJECT_REF` | Link + deploy | Yes |
+| `SUPABASE_URL` | Smoke probe | Functions job |
+| `SUPABASE_ANON_KEY` | Smoke probe; auto-injected in function runtime | Functions job |
+| `SUPABASE_SERVICE_ROLE_KEY` | Edge function secrets (`delete-account`, outbox admin) | Yes for functions job |
+| `RESEND_API_KEY` | Invite emails via Resend | Optional (log-only when unset) |
+| `INVITE_FROM_EMAIL` | Resend `from` address | Optional (defaults to `invites@mymultiverse.app`) |
+
+Set function secrets manually (one-off or when not using CI):
+
+```bash
+supabase link --project-ref "$SUPABASE_PROJECT_REF"
+supabase secrets set \
+  SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
+  RESEND_API_KEY="$RESEND_API_KEY" \
+  INVITE_FROM_EMAIL="invites@mymultiverse.app"
+supabase functions deploy notify-household-invite --project-ref "$SUPABASE_PROJECT_REF"
+supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
 ```
 
 ### Supabase Auth dashboard
@@ -361,7 +400,7 @@ GitHub Actions: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml)
 | **Push** to `main` / **PR** | Android CI + Supabase Migrations + instrumented + iOS → Release |
 | **Manual dispatch** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `ios-compatibility`, `release` |
 
-**Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push` on `main` when migrations change.
+**Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push` and P2 edge functions deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change; also `workflow_dispatch`.
 
 Firebase App Distribution runs on push, PR, and manual release.
 

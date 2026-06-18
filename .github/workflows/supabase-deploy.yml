@@ -8,6 +8,7 @@ on:
     paths:
       - "supabase/migrations/**"
       - "supabase/config.toml"
+      - "supabase/functions/**"
   workflow_dispatch:
 
 concurrency:
@@ -53,3 +54,72 @@ jobs:
         run: |
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
           supabase db push
+
+  deploy-edge-functions:
+    name: Deploy edge functions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: >-
+      ${{ !startsWith(github.event.head_commit.message, 'chore(version):') }}
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      INVITE_FROM_EMAIL: ${{ secrets.INVITE_FROM_EMAIL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Require deploy secrets
+        run: |
+          missing=0
+          for name in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_PROJECT_REF SUPABASE_URL SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "Missing repository secret: ${name}"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Edge function deploy requires Supabase project + runtime secrets (see README Backend → Edge functions)."
+            exit 1
+          fi
+          if [ -z "$RESEND_API_KEY" ]; then
+            echo "WARN: RESEND_API_KEY not set — invite emails will be log-only until configured."
+          fi
+          if [ -z "$INVITE_FROM_EMAIL" ]; then
+            echo "INVITE_FROM_EMAIL not set; function default invites@mymultiverse.app will be used."
+          fi
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: latest
+
+      - name: Link project
+        run: |
+          supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Set edge function secrets
+        run: |
+          invite_from="${INVITE_FROM_EMAIL:-invites@mymultiverse.app}"
+          supabase secrets set \
+            "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}" \
+            "RESEND_API_KEY=${RESEND_API_KEY:-}" \
+            "INVITE_FROM_EMAIL=${invite_from}" \
+            --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy P2 edge functions
+        run: |
+          supabase functions deploy notify-household-invite --project-ref "$SUPABASE_PROJECT_REF"
+          supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Smoke probe edge functions
+        run: ./scripts/verify-supabase-edge-functions.sh

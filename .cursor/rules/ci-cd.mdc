@@ -11,7 +11,7 @@ alwaysApply: false
 | Workflow | When | Purpose |
 |----------|------|---------|
 | [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml) | Push, PR, manual | Android unit+APK, merge-gate instrumented/iOS, Supabase migration validation |
-| [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml) | `main` migration push, manual | `supabase db push` to linked project (secrets required) |
+| [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml) | `main` supabase push, manual | `db push` + deploy `notify-household-invite` / `delete-account` + smoke probe |
 
 ### KMP CI jobs (tiered)
 
@@ -22,7 +22,7 @@ alwaysApply: false
 ### Supabase
 
 - **CI validation (no remote writes):** `supabase db start` applies all migrations on ephemeral Postgres; remote smoke via `scripts/verify-supabase-household.sh` on PR/`main` only.
-- **Deploy:** `supabase-deploy.yml` runs `db push` on `main` when `supabase/migrations/**` changes. Requires secrets `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`.
+- **Deploy:** `supabase-deploy.yml` runs `db push` and edge function deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change. Migrations: `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`. Functions: also `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`; optional `RESEND_API_KEY`, `INVITE_FROM_EMAIL`. Smoke: `scripts/verify-supabase-edge-functions.sh`.
 - **Android builds:** `SUPABASE_URL` + `SUPABASE_ANON_KEY` → `local.properties` via composite setup action.
 - **`GOOGLE_SERVICES_JSON`:** enables Crashlytics in CI debug APKs.
 
