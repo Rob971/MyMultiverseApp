@@ -43,8 +43,13 @@ if [[ "${RPC_STATUS}" == "404" ]]; then
   exit 1
 fi
 
-if [[ "${RPC_STATUS}" != "401" && "${RPC_STATUS}" != "403" ]]; then
-  echo "ERROR: unexpected ensure_household response (status ${RPC_STATUS}). Expected 401/403 without auth." >&2
+if [[ "${RPC_STATUS}" =~ ^5 ]]; then
+  echo "ERROR: ensure_household probe failed (status ${RPC_STATUS})." >&2
+  exit 1
+fi
+
+if [[ "${RPC_STATUS}" != "400" && "${RPC_STATUS}" != "401" && "${RPC_STATUS}" != "403" ]]; then
+  echo "ERROR: unexpected ensure_household response (status ${RPC_STATUS}). Expected 400/401/403 without auth." >&2
   exit 1
 fi
 echo "OK: ensure_household RPC endpoint exists (status ${RPC_STATUS} without auth)"
