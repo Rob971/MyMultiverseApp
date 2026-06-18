@@ -191,7 +191,7 @@ After migrations deploy, CI runs `scripts/configure-household-notification-deliv
 
 | Function | Trigger | Purpose |
 |----------|---------|---------|
-| `notify-household-invite` | **Automatic:** `AFTER INSERT` trigger on `household_notification_outbox` (`pg_net` → edge function) | Process outbox rows; send invite email when `RESEND_API_KEY` is set |
+| `notify-household-invite` | **Automatic:** `AFTER INSERT` trigger on `household_notification_outbox` (`pg_net` → edge function) | Process outbox rows; send branded invite email with `app.mymultiverse.kmp://invite?token=…` when `RESEND_API_KEY` is set |
 | `delete-account` | App Home → delete account | `prepare_account_deletion` RPC then `auth.admin.deleteUser` (service role) |
 
 **GitHub repository secrets** (for [`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)):

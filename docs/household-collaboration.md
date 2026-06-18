@@ -128,9 +128,11 @@ Show pending invites even when affiliated. Accept opens confirmation:
 
 ### 4. Invitee login flow
 
-Sign in → **gate** (if unaffiliated) → accept invite → **home** + snackbar “You joined **{name}**”.
+**Target (invite deep link):** Email/push tap → `app.mymultiverse.kmp://invite?token=…` → preview invite → OTP/OAuth with invited email → accept → **home** + snackbar “You joined **{name}**”.
 
-**Status:** Implemented (`auth_household_joined_success` on gate and home accept).
+**Legacy (no deep link):** Sign in → **gate** (if unaffiliated) → accept invite → **home** + snackbar.
+
+**Status:** Gate accept implemented (`auth_household_joined_success`). Deep-link Join flow + branded invite email in progress (`feature/invite-email-and-push-payload`, `feature/invite-join-screen`).
 
 #### Invite preview & deep links (backend)
 

@@ -17,8 +17,10 @@ This document locks scope for P2 tracks **A–D**. Adventures/Budget modules rem
 | **Delivery** | `AFTER INSERT` trigger on `household_notification_outbox` invokes Edge Function `notify-household-invite` via `pg_net` |
 | **Email** | Transactional email to invitee address via `RESEND_API_KEY` (or log-only when unset) |
 | **Push** | FCM/APNs to tokens in `user_device_tokens` when invitee already has an account |
-| **Deep link** | `app.mymultiverse.kmp://auth/callback` → gate shows pending invite (existing flow) |
-| **v1 unchanged** | Invitee still sees invite on gate without notification |
+| **Deep link** | `app.mymultiverse.kmp://invite?token={invite_token}` → Join Household flow (client branch B+); legacy gate fallback when opened without token |
+| **Email CTA** | Branded Resend HTML with **Accept invitation** button + plain-text deep link |
+| **Push data** | `type`, `invite_id`, `household_id`, `invite_token` (when known) |
+| **v1 unchanged** | Invitee still sees invite on gate when signed in without deep link |
 
 **Client:** `PushNotificationRegistrar` (expect/actual) registers token after auth; `register_device_token` RPC upserts token.
 
