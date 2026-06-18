@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { isDeliverableAndroidToken, sendAndroidInvitePush } from "./fcm.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,6 +22,7 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const resendApiKey = Deno.env.get("RESEND_API_KEY") ?? "";
     const fromEmail = Deno.env.get("INVITE_FROM_EMAIL") ?? "invites@mymultiverse.app";
+    const fcmServiceAccountJson = Deno.env.get("FCM_SERVICE_ACCOUNT_JSON") ?? "";
 
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
@@ -87,9 +89,36 @@ Deno.serve(async (req) => {
           .select("token, platform")
           .eq("user_id", inviteeUserId);
 
-        console.log("push_tokens_pending", {
+        const pushTitle = `${inviterName} invited you`;
+        const pushBody = `Join ${householdName} on MyMultiverse`;
+        const pushData = {
+          type: "household_invite",
+          invite_id: String(payload.invite_id ?? ""),
+          household_id: String(payload.household_id ?? ""),
+        };
+
+        let pushSent = 0;
+        if (fcmServiceAccountJson) {
+          for (const row of tokens ?? []) {
+            const token = String(row.token ?? "");
+            const platform = String(row.platform ?? "");
+            if (!isDeliverableAndroidToken(token, platform)) continue;
+            const ok = await sendAndroidInvitePush(
+              fcmServiceAccountJson,
+              token,
+              pushTitle,
+              pushBody,
+              pushData,
+            );
+            if (ok) pushSent += 1;
+          }
+        }
+
+        console.log("push_delivery", {
           userId: inviteeUserId,
           tokenCount: tokens?.length ?? 0,
+          pushSent,
+          fcmConfigured: Boolean(fcmServiceAccountJson),
         });
       }
 

@@ -206,6 +206,9 @@ After migrations deploy, CI runs `scripts/configure-household-notification-deliv
 | `SUPABASE_SERVICE_ROLE_KEY` | Edge function secrets (`delete-account`, outbox admin) | Yes for functions job |
 | `RESEND_API_KEY` | Invite emails via Resend | Optional (log-only when unset) |
 | `INVITE_FROM_EMAIL` | Resend `from` address | Optional (defaults to `invites@mymultiverse.app`) |
+| `FCM_SERVICE_ACCOUNT_JSON` | FCM HTTP v1 push from `notify-household-invite` (Firebase service account JSON) | Optional (push skipped when unset) |
+
+**Android push (client):** copy `composeApp/google-services.json.example` → `google-services.json` (same file as Crashlytics). When present, the app registers a real FCM token on Home refresh and requests `POST_NOTIFICATIONS` on API 33+.
 
 Set function secrets manually (one-off or when not using CI):
 
@@ -214,7 +217,8 @@ supabase link --project-ref "$SUPABASE_PROJECT_REF"
 supabase secrets set \
   SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
   RESEND_API_KEY="$RESEND_API_KEY" \
-  INVITE_FROM_EMAIL="invites@mymultiverse.app"
+  INVITE_FROM_EMAIL="invites@mymultiverse.app" \
+  FCM_SERVICE_ACCOUNT_JSON="$FCM_SERVICE_ACCOUNT_JSON"
 supabase functions deploy notify-household-invite --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
 ```

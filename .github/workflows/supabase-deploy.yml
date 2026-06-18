@@ -93,6 +93,7 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       INVITE_FROM_EMAIL: ${{ secrets.INVITE_FROM_EMAIL }}
+      FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
 
     steps:
       - name: Checkout
@@ -119,6 +120,9 @@ jobs:
           if [ -z "$INVITE_FROM_EMAIL" ]; then
             echo "INVITE_FROM_EMAIL not set; function default invites@mymultiverse.app will be used."
           fi
+          if [ -z "$FCM_SERVICE_ACCOUNT_JSON" ]; then
+            echo "WARN: FCM_SERVICE_ACCOUNT_JSON not set — Android push delivery will be skipped until configured."
+          fi
 
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v2
@@ -136,6 +140,7 @@ jobs:
             "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}" \
             "RESEND_API_KEY=${RESEND_API_KEY:-}" \
             "INVITE_FROM_EMAIL=${invite_from}" \
+            "FCM_SERVICE_ACCOUNT_JSON=${FCM_SERVICE_ACCOUNT_JSON:-}" \
             --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Deploy P2 edge functions

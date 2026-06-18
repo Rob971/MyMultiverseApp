@@ -70,14 +70,14 @@ Work in order where dependencies apply. Each PR should be independently mergeabl
 
 ---
 
-### PR 4 — Platform: Android FCM + real push token
+### PR 4 — Platform: Android FCM + real push token ✅ in `feature/p2-closeout`
 
-| Task | Details |
-|------|---------|
-| Firebase / FCM setup | `google-services.json`, Gradle plugin if not present |
-| `SupabasePushNotificationRegistrar` | Replace `android-stub-*` with `FirebaseMessaging.getInstance().token` |
-| Permissions | POST_NOTIFICATIONS (API 33+) |
-| Edge function | Implement FCM send in `notify-household-invite` (currently logs `push_tokens_pending`) |
+| Task | Status |
+|------|--------|
+| `firebase-messaging` + `AndroidFcmTokenProvider` + `MyMultiverseFirebaseMessagingService` | Done |
+| `POST_NOTIFICATIONS` + default notification channel | Done |
+| Edge function FCM HTTP v1 send (`FCM_SERVICE_ACCOUNT_JSON`) | Done |
+| Set `FCM_SERVICE_ACCOUNT_JSON` in GitHub + manual invite push QA | **Ops / QA** |
 
 **Acceptance:** Real device token in `user_device_tokens`; push received on invite (staging).
 

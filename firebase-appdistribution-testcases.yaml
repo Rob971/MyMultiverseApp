@@ -179,7 +179,7 @@ summary: |
       - Check B's email inbox and device notifications.
     expected:
       - B receives invite email when Resend is configured in Supabase secrets.
-      - B may receive a push notification when FCM/APNs tokens are registered (stub tokens log-only until production push is wired).
+      - B receives an Android push notification when FCM is configured (app `google-services.json` + `FCM_SERVICE_ACCOUNT_JSON` on the edge function). iOS push remains PR5.
 
   - id: household-gate-create-with-invite
     title: Gate layout when pending invite exists

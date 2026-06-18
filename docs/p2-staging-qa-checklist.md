@@ -15,7 +15,8 @@ Run on **staging** (Supabase + Firebase tester APK) with **two phones / two acco
 | PR1 merged: edge functions deployed; `SUPABASE_SERVICE_ROLE_KEY` set | ☐ |
 | PR2 merged: outbox `pg_net` trigger + delivery config | ☐ |
 | `RESEND_API_KEY` set (for invite email) | ☐ |
-| Tester APK from `main` with Supabase configured | ☐ |
+| `FCM_SERVICE_ACCOUNT_JSON` set (for Android invite push) | ☐ |
+| Tester APK with `google-services.json` (FCM + Crashlytics) | ☐ |
 | Two test accounts (owner + invitee) | ☐ |
 
 ---
