@@ -20,6 +20,9 @@ internal object HouseholdRpcDecoder {
     fun decodeInviteResult(result: PostgrestResult): InviteHouseholdMemberRpcRow =
         decodePayload(result, "invite_household_member_decode_failed")
 
+    fun decodeInvitePreview(result: PostgrestResult): PreviewHouseholdInviteRpcRow =
+        decodePayload(result, "preview_household_invite_decode_failed")
+
     fun decodePendingInvites(result: PostgrestResult): List<PendingHouseholdInviteRpcRow> =
         runCatching { result.decodeList<PendingHouseholdInviteRpcRow>() }
             .recoverCatching { listOf(json.decodeFromString<PendingHouseholdInviteRpcRow>(result.data)) }

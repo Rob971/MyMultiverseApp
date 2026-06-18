@@ -2,6 +2,7 @@ package app.mymultiverse.kmp.domain.repository
 
 import app.mymultiverse.kmp.domain.model.sharing.AddMemberResult
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvitePreview
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import kotlinx.coroutines.flow.Flow
@@ -16,6 +17,8 @@ interface HouseholdCollaborationRepository {
     suspend fun refreshMembers(householdId: String, ownerId: String, ownerDisplayName: String)
 
     suspend fun refreshPendingInvites()
+
+    suspend fun previewInvite(token: String): Result<HouseholdInvitePreview>
 
     suspend fun refreshOutboundInvites(householdId: String)
 

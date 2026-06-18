@@ -500,6 +500,9 @@ private class HangingHouseholdCollaborationRepository : HouseholdCollaborationRe
         suspendCancellableCoroutine<Unit> { }
     }
 
+    override suspend fun previewInvite(token: String): Result<app.mymultiverse.kmp.domain.model.sharing.HouseholdInvitePreview> =
+        Result.failure(UnsupportedOperationException())
+
     override suspend fun refreshOutboundInvites(householdId: String) = Unit
 
     override suspend fun addMemberByEmail(

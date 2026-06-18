@@ -2,6 +2,7 @@ package app.mymultiverse.kmp.presentation.di
 
 import app.mymultiverse.kmp.domain.model.sharing.AddMemberResult
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvitePreview
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
@@ -51,6 +52,25 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
                 referenceId = ownerId,
             ),
         ) + current
+    }
+
+    var previewInviteResult: Result<HouseholdInvitePreview>? = null
+    var previewInviteCalls: Int = 0
+        private set
+
+    override suspend fun previewInvite(token: String): Result<HouseholdInvitePreview> {
+        previewInviteCalls += 1
+        return previewInviteResult ?: Result.success(
+            HouseholdInvitePreview(
+                inviteId = "invite-preview",
+                householdId = "household-1",
+                householdName = "Test Household",
+                inviterName = "Alex",
+                inviteeEmail = inboundProfileEmail,
+                role = HouseholdMemberRole.Editor,
+                expiresAtEpochMillis = null,
+            ),
+        )
     }
 
     override suspend fun refreshPendingInvites() {

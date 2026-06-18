@@ -7,6 +7,22 @@ import kotlin.test.assertNull
 class EmailOtpCredentialsTest {
 
     @Test
+    fun emailValidationError_rejectsInvalidEmail() {
+        assertEquals(
+            EmailOtpValidationError.InvalidEmail,
+            EmailOtpCredentials.emailValidationError("not-an-email"),
+        )
+    }
+
+    @Test
+    fun emailValidationError_acceptsValidEmail() {
+        assertEquals(
+            null,
+            EmailOtpCredentials.emailValidationError("user@example.com"),
+        )
+    }
+
+    @Test
     fun validationError_rejectsBlankFields() {
         assertEquals(
             EmailOtpValidationError.MissingFields,

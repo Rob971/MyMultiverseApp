@@ -747,5 +747,29 @@
     <string name="sharing_members_dependent_hint">Children and others without their own login appear here only.</string>
     <string name="sharing_members_kind_dependent">Dependant</string>
         <string name="auth_household_joined_success">T'ê unito a %1$s.</string>
+
+    <string name="invite_join_title">Tràve a %1$s</string>
+    <string name="invite_join_subtitle">%1$s t'ha invitato a spartì 'a spesa e 'e menù.</string>
+    <string name="invite_join_loading_preview">Stongo carrecanno ll'invito…</string>
+    <string name="invite_join_email_helper">Invito mannato a st'indirizzo</string>
+    <string name="invite_join_email_warning">St'invito è stato mannato a %1$s. Miette st'indirizzo pe' trasì.</string>
+    <string name="invite_join_continue_button">Continua</string>
+    <string name="invite_join_or_divider">o</string>
+    <string name="invite_join_otp_title">Miette 'o codice</string>
+    <string name="invite_join_otp_subtitle">Avemmo mannato nu codice 'e 6 cifre a %1$s</string>
+    <string name="invite_join_otp_label">Codice 'e verifica</string>
+    <string name="invite_join_otp_resend">Mannà arreto 'o codice</string>
+    <string name="invite_join_otp_resend_wait">Mannà arreto tra %1$d s</string>
+    <string name="invite_join_back_to_email">Email sbagliata? Torna arreto</string>
+    <string name="invite_join_error_not_found">St'invito nun è cchiù disponibile.</string>
+    <string name="invite_join_error_expired">St'invito è sciuso. Dimanna n'invito nuovo.</string>
+    <string name="invite_join_error_declined">St'invito è stato rifiutato.</string>
+    <string name="invite_join_error_already_accepted">St'invito è già stato accettato.</string>
+    <string name="invite_join_error_generic">Nun se pò carrecà ll'invito. Próva arreto.</string>
+    <string name="invite_join_error_invalid_email">Miette n'indirizzo email valido.</string>
+    <string name="invite_join_error_otp_invalid">Codice nun valido. Controlla e próva arreto.</string>
+    <string name="invite_join_error_otp_expired">'O codice è sciuso. Mannane n'atu.</string>
+    <string name="invite_join_error_otp_rate_limited">Tropp'attempt. Aspetta un poco e próva arreto.</string>
+    <string name="invite_join_apple_email_hint">Miette ll'email ca ha ricevuto ll'invito (nun Hide My Email).</string>
         <string name="household_gate_create_divider">O crea 'na famiglia nova</string>
 </resources>

@@ -747,5 +747,29 @@
     <string name="sharing_members_dependent_hint">Children and others without their own login appear here only.</string>
     <string name="sharing_members_kind_dependent">Dependant</string>
         <string name="auth_household_joined_success">Vous avez rejoint %1$s.</string>
+
+    <string name="invite_join_title">Rejoindre %1$s</string>
+    <string name="invite_join_subtitle">%1$s vous a invité à partager courses et repas.</string>
+    <string name="invite_join_loading_preview">Chargement de l'invitation…</string>
+    <string name="invite_join_email_helper">Invitation envoyée à cette adresse</string>
+    <string name="invite_join_email_warning">Cette invitation a été envoyée à %1$s. Utilisez cette adresse pour rejoindre.</string>
+    <string name="invite_join_continue_button">Continuer</string>
+    <string name="invite_join_or_divider">ou</string>
+    <string name="invite_join_otp_title">Saisissez votre code</string>
+    <string name="invite_join_otp_subtitle">Nous avons envoyé un code à 6 chiffres à %1$s</string>
+    <string name="invite_join_otp_label">Code de vérification</string>
+    <string name="invite_join_otp_resend">Renvoyer le code</string>
+    <string name="invite_join_otp_resend_wait">Renvoyer dans %1$d s</string>
+    <string name="invite_join_back_to_email">Mauvais e-mail ? Revenir</string>
+    <string name="invite_join_error_not_found">Cette invitation n'est plus disponible.</string>
+    <string name="invite_join_error_expired">Cette invitation a expiré. Demandez-en une nouvelle.</string>
+    <string name="invite_join_error_declined">Cette invitation a été refusée.</string>
+    <string name="invite_join_error_already_accepted">Cette invitation a déjà été acceptée.</string>
+    <string name="invite_join_error_generic">Impossible de charger cette invitation. Réessayez.</string>
+    <string name="invite_join_error_invalid_email">Saisissez une adresse e-mail valide.</string>
+    <string name="invite_join_error_otp_invalid">Ce code n'est pas valide. Vérifiez et réessayez.</string>
+    <string name="invite_join_error_otp_expired">Ce code a expiré. Renvoyez-en un nouveau.</string>
+    <string name="invite_join_error_otp_rate_limited">Trop de tentatives. Patientez puis réessayez.</string>
+    <string name="invite_join_apple_email_hint">Utilisez l'adresse e-mail qui a reçu l'invitation (pas Masquer mon e-mail).</string>
         <string name="household_gate_create_divider">Ou créer un nouveau foyer</string>
 </resources>

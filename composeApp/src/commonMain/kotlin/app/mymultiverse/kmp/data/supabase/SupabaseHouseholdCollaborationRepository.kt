@@ -13,6 +13,7 @@ import app.mymultiverse.kmp.data.supabase.dto.HouseholdMemberRow
 import app.mymultiverse.kmp.data.supabase.dto.HouseholdRow
 import app.mymultiverse.kmp.domain.model.sharing.AddMemberResult
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvitePreview
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
@@ -135,6 +136,28 @@ class SupabaseHouseholdCollaborationRepository(
             }
             .activeInvites()
             .sortedBy { it.householdName.lowercase() }
+    }
+
+    override suspend fun previewInvite(token: String): Result<HouseholdInvitePreview> = runCatching {
+        val trimmedToken = token.trim()
+        require(trimmedToken.isNotEmpty()) { CollaborationErrorCodes.INVITE_TOKEN_REQUIRED }
+
+        val row = HouseholdRpcDecoder.decodeInvitePreview(
+            client.postgrest.rpc(
+                "preview_household_invite",
+                buildJsonObject { put("p_token", trimmedToken) },
+            ),
+        )
+
+        HouseholdInvitePreview(
+            inviteId = row.inviteId,
+            householdId = row.householdId,
+            householdName = row.householdName,
+            inviterName = row.inviterName,
+            inviteeEmail = row.inviteeEmail.trim().lowercase(),
+            role = row.role.toHouseholdMemberRole(),
+            expiresAtEpochMillis = row.expiresAt?.toEpochMillis(),
+        )
     }
 
     override suspend fun refreshOutboundInvites(householdId: String) {

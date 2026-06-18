@@ -22,6 +22,9 @@ class UnconfiguredHouseholdCollaborationRepository : HouseholdCollaborationRepos
 
     override suspend fun refreshPendingInvites() = Unit
 
+    override suspend fun previewInvite(token: String): Result<app.mymultiverse.kmp.domain.model.sharing.HouseholdInvitePreview> =
+        Result.failure(IllegalStateException("supabase_not_configured"))
+
     override suspend fun refreshOutboundInvites(householdId: String) = Unit
 
     override suspend fun addMemberByEmail(
