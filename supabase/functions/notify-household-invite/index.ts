@@ -1,6 +1,13 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { isDeliverableIosToken, sendIosInvitePush } from "./apns.ts";
 import { isDeliverableAndroidToken, sendAndroidInvitePush } from "./fcm.ts";
+import {
+  buildInviteDeepLink,
+  buildInviteEmailHtml,
+  buildInviteEmailSubject,
+  buildInviteEmailText,
+} from "./invite-content.ts";
+import { buildInvitePushData, inviteTokenFromPayload } from "./invite-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +19,31 @@ type OutboxRow = {
   kind: string;
   payload: Record<string, unknown>;
 };
+
+async function resolveInviteToken(
+  admin: SupabaseClient,
+  payload: Record<string, unknown>,
+): Promise<string | null> {
+  const fromPayload = inviteTokenFromPayload(payload);
+  if (fromPayload) return fromPayload;
+
+  const inviteId = String(payload.invite_id ?? "").trim();
+  if (!inviteId) return null;
+
+  const { data, error } = await admin
+    .from("household_invites")
+    .select("token")
+    .eq("id", inviteId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("invite_token_lookup_failed", error.message);
+    return null;
+  }
+
+  const token = data?.token ? String(data.token).trim() : "";
+  return token || null;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -66,23 +98,49 @@ Deno.serve(async (req) => {
       const inviteeEmail = String(payload.invitee_email ?? "");
       const householdName = String(payload.household_name ?? "MyMultiverse");
       const inviterName = String(payload.inviter_name ?? "Someone");
+      const inviteToken = await resolveInviteToken(admin, payload);
 
       if (resendApiKey && inviteeEmail) {
+        const emailContent = inviteToken
+          ? {
+            inviterName,
+            householdName,
+            inviteeEmail,
+            inviteDeepLink: buildInviteDeepLink(inviteToken),
+          }
+          : null;
+
         const emailResponse = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${resendApiKey}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            from: fromEmail,
-            to: [inviteeEmail],
-            subject: `${inviterName} invited you to ${householdName}`,
-            html: `<p>${inviterName} invited you to join <strong>${householdName}</strong> on MyMultiverse.</p><p>Open the app and sign in with <strong>${inviteeEmail}</strong> to accept.</p>`,
-          }),
+          body: JSON.stringify(
+            emailContent
+              ? {
+                from: fromEmail,
+                to: [inviteeEmail],
+                subject: buildInviteEmailSubject(emailContent),
+                html: buildInviteEmailHtml(emailContent),
+                text: buildInviteEmailText(emailContent),
+              }
+              : {
+                from: fromEmail,
+                to: [inviteeEmail],
+                subject: `${inviterName} invited you to ${householdName}`,
+                html: `<p>${inviterName} invited you to join <strong>${householdName}</strong> on MyMultiverse.</p><p>Open the app and sign in with <strong>${inviteeEmail}</strong> to accept.</p>`,
+                text: [
+                  `${inviterName} invited you to join ${householdName} on MyMultiverse.`,
+                  `Open the app and sign in with ${inviteeEmail} to accept.`,
+                ].join("\n"),
+              },
+          ),
         });
         if (!emailResponse.ok) {
           console.error("resend_failed", await emailResponse.text());
+        } else if (!inviteToken) {
+          console.warn("invite_email_sent_without_token", { inviteeEmail, householdName });
         }
       } else {
         console.log("invite_notification_skipped", { inviteeEmail, householdName });
@@ -97,11 +155,7 @@ Deno.serve(async (req) => {
 
         const pushTitle = `${inviterName} invited you`;
         const pushBody = `Join ${householdName} on MyMultiverse`;
-        const pushData = {
-          type: "household_invite",
-          invite_id: String(payload.invite_id ?? ""),
-          household_id: String(payload.household_id ?? ""),
-        };
+        const pushData = buildInvitePushData(payload, inviteToken);
 
         let androidPushSent = 0;
         let iosPushSent = 0;
@@ -144,6 +198,7 @@ Deno.serve(async (req) => {
           tokenCount: tokens?.length ?? 0,
           androidPushSent,
           iosPushSent,
+          hasInviteToken: Boolean(inviteToken),
           fcmConfigured: Boolean(fcmServiceAccountJson),
           apnsConfigured,
         });
