@@ -33,15 +33,21 @@ fi
 echo "OK: Supabase REST reachable (status ${HEALTH_STATUS})"
 
 echo "==> Checking ensure_household RPC is deployed"
-OPENAPI_BODY="$(curl -fsS "${REST_URL}/" \
+RPC_STATUS="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${REST_URL}/rpc/ensure_household" \
   -H "apikey: ${ANON_KEY}" \
-  -H "Accept: application/openapi+json")"
+  -H "Content-Type: application/json" \
+  -d '{}')"
 
-if ! echo "${OPENAPI_BODY}" | jq -e '.paths["/rpc/ensure_household"].post' >/dev/null 2>&1; then
-  echo "ERROR: ensure_household RPC not found in PostgREST schema. Run: supabase db push" >&2
+if [[ "${RPC_STATUS}" == "404" ]]; then
+  echo "ERROR: ensure_household RPC not found (404). Run: supabase db push" >&2
   exit 1
 fi
-echo "OK: ensure_household RPC exposed in PostgREST schema"
+
+if [[ "${RPC_STATUS}" != "401" && "${RPC_STATUS}" != "403" ]]; then
+  echo "ERROR: unexpected ensure_household response (status ${RPC_STATUS}). Expected 401/403 without auth." >&2
+  exit 1
+fi
+echo "OK: ensure_household RPC endpoint exists (status ${RPC_STATUS} without auth)"
 
 if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
   echo "==> Signing in test user ${SUPABASE_TEST_EMAIL}"
