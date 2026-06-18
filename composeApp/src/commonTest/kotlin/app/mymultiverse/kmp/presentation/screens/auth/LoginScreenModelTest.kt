@@ -155,6 +155,11 @@ private class RecordingAuthRepository(
         return signUpResult
     }
 
+    override suspend fun sendEmailOtp(email: String): Result<Unit> = Result.success(Unit)
+
+    override suspend fun verifyEmailOtp(email: String, code: String): Result<Unit> =
+        signInWithEmail(email, code)
+
     override suspend fun signInWithGoogle(): Result<Unit> =
         Result.failure(UnsupportedOperationException("google_oauth_not_configured"))
 

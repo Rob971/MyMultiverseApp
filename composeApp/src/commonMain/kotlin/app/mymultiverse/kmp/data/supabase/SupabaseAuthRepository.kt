@@ -9,7 +9,9 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.functions.functions
 import io.github.jan.supabase.auth.providers.Apple
 import io.github.jan.supabase.auth.providers.Google
+import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.providers.builtin.OTP
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
@@ -71,6 +73,26 @@ class SupabaseAuthRepository(
             } else {
                 throw IllegalStateException(AuthFailureCodes.EMAIL_CONFIRMATION_REQUIRED)
             }
+        }
+
+    override suspend fun sendEmailOtp(email: String): Result<Unit> =
+        runCatching {
+            client.auth.awaitInitialization()
+            client.auth.signInWith(OTP) {
+                this.email = email.trim()
+            }
+        }
+
+    override suspend fun verifyEmailOtp(email: String, code: String): Result<Unit> =
+        runCatching {
+            client.auth.awaitInitialization()
+            client.auth.verifyEmailOtp(
+                type = OtpType.Email.EMAIL,
+                email = email.trim(),
+                token = code.trim(),
+            )
+            syncAuthStateFromCurrentSession()
+            checkNotNull(currentAuthUser()) { "sign_in_failed" }
         }
 
     override suspend fun signInWithGoogle(): Result<Unit> =
