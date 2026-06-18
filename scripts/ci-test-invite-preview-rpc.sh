@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CI: smoke-test preview_household_invite on the local Supabase stack (after supabase db start).
+# CI: smoke-test preview_household_invite on the local Supabase stack (after supabase start).
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -18,7 +18,7 @@ fi
 eval "$(supabase status -o env 2>/dev/null | grep -E '^(API_URL|ANON_KEY)=')"
 
 if [[ -z "${API_URL:-}" || -z "${ANON_KEY:-}" ]]; then
-  echo "ERROR: local Supabase is not running. Run supabase db start first." >&2
+  echo "ERROR: local Supabase is not running. Run supabase start first." >&2
   exit 1
 fi
 
