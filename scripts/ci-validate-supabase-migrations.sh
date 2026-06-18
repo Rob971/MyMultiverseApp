@@ -38,8 +38,8 @@ if [[ "$migration_count" -eq 0 ]]; then
 fi
 echo "OK: ${migration_count} migration files"
 
-echo "==> Applying migrations locally (supabase db start)"
-supabase db start
+echo "==> Applying migrations locally (supabase start — full stack for RPC smoke tests)"
+supabase start
 
 if [[ -x "./scripts/ci-test-invite-preview-rpc.sh" ]]; then
   echo "==> Smoke-testing invite preview RPC on local stack"
