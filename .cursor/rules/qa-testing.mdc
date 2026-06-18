@@ -18,6 +18,7 @@ alwaysApply: false
 - Screen models: `runTest` + `TestDispatcher`; `advanceUntilIdle()` after async `update*` calls that use `scope.launch`.
 - Fakes must implement **full** service interfaces (all methods, including new API additions).
 - i18n: `NutritionLocaleStringsTest` / `HomeStringKeys`—every locale file must define required keys.
+- **Invite flows** (deep link, OTP, preview RPC, edge email): add unit tests in `commonTest` for every new parser/store/validator; Deno tests for edge-function pure helpers; extend `scripts/verify-supabase-household.sh` / `scripts/ci-test-invite-preview-rpc.sh` for RPC smoke checks.
 
 ## Instrumented tests
 
@@ -41,6 +42,7 @@ When changing user-visible nutrition/grocery/meal/AI flows, update `firebase-app
 ```bash
 ./gradlew :composeApp:testDebugUnitTest
 ./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid
+./scripts/test-supabase-invite-edge.sh   # when invite edge helpers exist (requires Deno)
 ```
 
 Run instrumented tests locally or via CI (push, or `workflow_dispatch` with `all` / `android` / `android-instrumented-tests`).
