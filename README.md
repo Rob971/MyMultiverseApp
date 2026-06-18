@@ -21,7 +21,7 @@ MyMultiverse helps a **household** (family or roommates) coordinate day-to-day l
 | **Roles** | **Owner** — invite, manage members, edit data. **Editor** — edit shared nutrition. **Viewer** — read-only everywhere. |
 | **Nutrition** | Shared grocery list, weekly meal plan, and AI adviser per calendar week. AI output is **read-only**; user lists are editable (unless viewer). |
 | **Sync** | Grocery and meal plan are **offline-first**: edits save locally, then push to Supabase; other members see changes via pull + Realtime. |
-| **GDPR** | Export personal data from Home; leave household revokes shared access. Account deletion is planned (P2). |
+| **GDPR** | Export personal data from Home (share sheet on Android/iOS); delete account from Home (`delete-account` edge function). Leave household revokes shared access. Legal review of external privacy copy remains outside engineering. |
 
 Supported UI languages: English, French, Spanish, German, Italian, Arabic (incl. Saudi), Neapolitan.
 
@@ -450,7 +450,7 @@ composeApp/
   src/iosMain/        iOS entry, Koin platform module
   src/commonTest/     Unit tests
   src/androidInstrumentedTest/  UI tests
-docs/                 Product specs (e.g. household-collaboration.md)
+docs/                 Product specs (household-collaboration.md, household-collaboration-p2.md, p2-staging-qa-checklist.md)
 supabase/migrations/  Postgres schema + RLS + Realtime + RPCs
 .github/workflows/    CI pipelines
 firebase-appdistribution-testcases.yaml  Manual QA checklist
@@ -458,14 +458,17 @@ firebase-appdistribution-testcases.yaml  Manual QA checklist
 
 ---
 
-## Roadmap (not in v1)
+## Roadmap (post-P2)
 
-Tracked on branch `feature/household-collaboration-p2` / PR #8:
+**Shipped on `main` (P2, PR #8 + [`feature/p2-closeout`](docs/household-collaboration-p2-closeout.md) / PR #9):** push/email invite notifications, household dependants (display-only), GDPR account deletion + export share, outbox automation, edge function deploy pipeline.
 
-- Push/email invite notifications
-- Child / shared email accounts
-- Account deletion (GDPR)
-- Adventures & Budget modules on `household_modules`
+**Still open:**
+
+| Track | Items |
+|-------|--------|
+| **Ops / QA** | GitHub secrets for edge deploy + push; staging sign-off ([`docs/p2-staging-qa-checklist.md`](docs/p2-staging-qa-checklist.md)) |
+| **Product** | Shared-email child login accounts (explicitly deferred); Adventures & Budget on `household_modules` |
+| **Legal** | External privacy policy wording review |
 
 ---
 

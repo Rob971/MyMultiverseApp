@@ -6,15 +6,15 @@
 
 ---
 
-## Status snapshot (main)
+## Status snapshot (code complete on `feature/p2-closeout`)
 
-| Area | Shipped | Not production-complete |
-|------|---------|-------------------------|
-| **Track A** | Outbox + enqueue, `register_device_token`, edge function source, registrar hook on Home | Edge deploy, secrets, outbox automation, real FCM/APNs |
-| **Track B** | RPCs, Home UI, `delete-account` source | Edge deploy, iOS share sheet, Android share intent, manual QA |
-| **Track C** | Table/RPCs, Members UI, cap, Firebase YAML | Dependants unit tests |
-| **Track D** | Viewer instrumented test, Firebase YAML, transfer unit tests | Full manual checklist; flaky transfer instrumented test removed |
-| **Cross-cutting** | Migrations CI green | Function deploy workflow, CI auth round-trip secrets, doc drift |
+| Area | Shipped in code | Ops / QA before wide distribution |
+|------|-----------------|-----------------------------------|
+| **Track A** | Outbox, `pg_net` trigger, edge deploy CI, FCM/APNs send, device token registration | Resend/FCM/APNs secrets; invite notification manual QA |
+| **Track B** | Delete account UI + edge function, export share (Android/iOS) | Disposable-account delete QA; legal copy |
+| **Track C** | Dependants table/RPCs/UI + unit tests | `household-add-dependant` manual QA |
+| **Track D** | Viewer instrumented test, Firebase YAML, transfer unit tests | Full [`p2-staging-qa-checklist.md`](p2-staging-qa-checklist.md) |
+| **Cross-cutting** | CI auth round-trip wiring, docs aligned | GitHub secrets; merge PR #9 → run Supabase Deploy on `main` |
 
 ---
 
@@ -100,14 +100,13 @@ Work in order where dependencies apply. Each PR should be independently mergeabl
 
 ---
 
-### PR 6 — Platform: Android personal data export share
+### PR 6 — Platform: Android personal data export share ✅ in `feature/p2-closeout`
 
-| Task | Details |
-|------|---------|
-| `AndroidPersonalDataExporter` (or equivalent) | `ACTION_SEND` intent with JSON MIME type |
-| Instrumented or manual | Align with Firebase `home-export-share` case |
+| Task | Status |
+|------|--------|
+| `AndroidPersonalDataExporter` (`ACTION_SEND` JSON) | Done (shipped with Track B) |
 
-**Acceptance:** Export shares/saves JSON on Android (not snackbar-only).
+**Acceptance:** Export shares/saves JSON on Android.
 
 ---
 
@@ -123,16 +122,16 @@ Work in order where dependencies apply. Each PR should be independently mergeabl
 
 ---
 
-### PR 8 — Docs + DoD
+### PR 8 — Docs + DoD ✅ in `feature/p2-closeout`
 
-| Task | Details |
-|------|---------|
-| `docs/household-collaboration.md` | Remove “deferred v2” for push/email and dependants where now shipped |
-| `README.md` | Account deletion: shipped (P2), not “planned” |
-| `docs/household-collaboration-p2.md` | Check off “migrations + edge deploy documented”; link closeout doc |
-| Legal | External privacy policy / deletion copy review (tracked outside repo) |
+| Task | Status |
+|------|--------|
+| `docs/household-collaboration.md` — P2 shipped, dependants vs shared-email clarified | Done |
+| `README.md` — GDPR + post-P2 roadmap | Done |
+| `docs/household-collaboration-p2.md` — DoD checkboxes + closeout link | Done |
+| Legal sign-off | **External** — tracked outside repo |
 
-**Acceptance:** No doc drift vs main behavior; P2 DoD checklist complete except legal sign-off.
+**Acceptance:** No doc drift vs code; engineering DoD complete except legal + staging QA.
 
 ---
 
@@ -178,16 +177,22 @@ flowchart TD
 
 ## Definition of done (production-complete P2)
 
-- [ ] Edge functions deployed; secrets set; documented in README
-- [ ] Outbox processed automatically (no manual invoke)
-- [ ] Staging manual QA checklist passed (two devices)
-- [ ] Android: real FCM token + export share (if release requires)
-- [ ] iOS: APNs token + export share sheet (if release requires)
-- [ ] Unit tests for export/delete/dependants
-- [ ] Docs/README aligned; legal copy reviewed
-- [ ] `./gradlew :composeApp:testDebugUnitTest` green
+**Engineering (code + docs):**
 
-**Minimum viable prod (email invites + account deletion):** PR 1 + PR 2 + PR 3 + PR 8 (docs). Push and native share are UX enhancements for full Track A/B.
+- [x] Edge functions + deploy workflow; secrets documented in README
+- [x] Outbox processed automatically (`pg_net` trigger + delivery config)
+- [x] Android FCM token + export share; iOS APNs token + export share
+- [x] Unit tests for export/delete/dependants
+- [x] Docs/README aligned with shipped behaviour
+- [x] `./gradlew :composeApp:testDebugUnitTest` green
+
+**Before wide distribution (ops / QA / legal):**
+
+- [ ] GitHub + Supabase secrets set; `supabase-deploy` green on `main` after merge
+- [ ] Staging manual QA checklist passed (two devices) — [`p2-staging-qa-checklist.md`](p2-staging-qa-checklist.md)
+- [ ] Legal review of external privacy/deletion copy
+
+**Minimum viable prod (email invites + account deletion):** merge closeout PR → set deploy secrets → run staging QA for invite email + delete account.
 
 ---
 
