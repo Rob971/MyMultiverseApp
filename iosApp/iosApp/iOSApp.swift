@@ -1,8 +1,17 @@
 import SwiftUI
 import UIKit
+import UserNotifications
 import ComposeApp
 
-final class AppDelegate: NSObject, UIApplicationDelegate {
+final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+	func application(
+		_ application: UIApplication,
+		didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+	) -> Bool {
+		UNUserNotificationCenter.current().delegate = self
+		return true
+	}
+
 	func application(
 		_ application: UIApplication,
 		didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
@@ -16,6 +25,20 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 		didFailToRegisterForRemoteNotificationsWithError error: Error
 	) {
 		print("apns_register_failed: \(error.localizedDescription)")
+	}
+
+	func userNotificationCenter(
+		_ center: UNUserNotificationCenter,
+		didReceive response: UNNotificationResponse,
+		withCompletionHandler completionHandler: @escaping () -> Void
+	) {
+		defer { completionHandler() }
+		guard let token = response.notification.request.content.userInfo["invite_token"] as? String,
+		      !token.isEmpty else {
+			return
+		}
+		let url = "app.mymultiverse.kmp://invite?token=\(token)"
+		InviteRedirectBridge.shared.handle(url: url)
 	}
 }
 

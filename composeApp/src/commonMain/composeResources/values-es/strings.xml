@@ -771,5 +771,7 @@
     <string name="invite_join_error_otp_expired">Este código ha caducado. Reenvía uno nuevo.</string>
     <string name="invite_join_error_otp_rate_limited">Demasiados intentos. Espera un momento e inténtalo de nuevo.</string>
     <string name="invite_join_apple_email_hint">Usa el correo que recibió la invitación (no Ocultar mi correo).</string>
+    <string name="invite_join_email_mismatch_title">Inicia sesión con el correo invitado</string>
+    <string name="invite_join_sign_out_retry">Cerrar sesión e intentar de nuevo</string>
         <string name="household_gate_create_divider">O crear un hogar nuevo</string>
 </resources>

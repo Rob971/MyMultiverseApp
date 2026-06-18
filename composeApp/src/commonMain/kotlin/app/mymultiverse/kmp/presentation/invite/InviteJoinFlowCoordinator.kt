@@ -16,12 +16,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+data class InviteEmailMismatchContext(
+    val invitedEmail: String,
+    val householdName: String,
+)
+
 sealed interface InviteJoinAcceptState {
     data object Idle : InviteJoinAcceptState
 
     data object Accepting : InviteJoinAcceptState
 
-    data class Failed(val error: InviteJoinAcceptError) : InviteJoinAcceptState
+    data class Failed(
+        val error: InviteJoinAcceptError,
+        val mismatchContext: InviteEmailMismatchContext? = null,
+    ) : InviteJoinAcceptState
+
+    data class Succeeded(val householdName: String) : InviteJoinAcceptState
 }
 
 enum class InviteJoinAcceptError {
@@ -71,6 +81,26 @@ class InviteJoinFlowCoordinator(
         acceptInFlight = false
     }
 
+    fun clearAcceptSuccess() {
+        if (_acceptState.value is InviteJoinAcceptState.Succeeded) {
+            _acceptState.value = InviteJoinAcceptState.Idle
+        }
+    }
+
+    fun dismissAcceptFailure() {
+        if (_acceptState.value is InviteJoinAcceptState.Failed) {
+            _acceptState.value = InviteJoinAcceptState.Idle
+            acceptInFlight = false
+        }
+    }
+
+    fun retryAfterEmailMismatch(signOut: suspend () -> Unit) {
+        scope.launch {
+            dismissAcceptFailure()
+            signOut()
+        }
+    }
+
     fun acceptPendingInviteIfNeeded() {
         val token = _pendingInviteToken.value?.takeIf { it.isNotBlank() } ?: return
         if (acceptInFlight || _acceptState.value is InviteJoinAcceptState.Accepting) return
@@ -79,36 +109,55 @@ class InviteJoinFlowCoordinator(
         _acceptState.value = InviteJoinAcceptState.Accepting
         scope.launch {
             try {
-                completeJoinFromToken(token)
-                _acceptState.value = InviteJoinAcceptState.Idle
+                val preview = completeJoinFromToken(token)
+                _acceptState.value = InviteJoinAcceptState.Succeeded(preview.householdName)
             } catch (throwable: Throwable) {
-                logger.recordError(
-                    tag = "InviteJoinFlow",
-                    message = "accept_pending_invite_failed: ${throwable.message}",
-                    throwable = throwable,
-                )
-                _acceptState.value = InviteJoinAcceptState.Failed(mapAcceptError(throwable))
+                if (_acceptState.value !is InviteJoinAcceptState.Failed) {
+                    logger.recordError(
+                        tag = "InviteJoinFlow",
+                        message = "accept_pending_invite_failed: ${throwable.message}",
+                        throwable = throwable,
+                    )
+                    _acceptState.value = InviteJoinAcceptState.Failed(
+                        error = InviteJoinAcceptError.Generic,
+                    )
+                }
             } finally {
                 acceptInFlight = false
             }
         }
     }
 
-    private suspend fun completeJoinFromToken(token: String) {
+    private suspend fun completeJoinFromToken(token: String): HouseholdInvitePreview {
         val preview = collaborationRepository.previewInvite(token).getOrElse { throwable ->
             clearPendingInvite()
             throw throwable
         }
-        collaborationRepository.acceptInvite(preview.inviteId).getOrThrow()
+        collaborationRepository.acceptInvite(preview.inviteId).getOrElse { throwable ->
+            val error = mapAcceptError(throwable)
+            if (error == InviteJoinAcceptError.EmailMismatch) {
+                _acceptState.value = InviteJoinAcceptState.Failed(
+                    error = error,
+                    mismatchContext = InviteEmailMismatchContext(
+                        invitedEmail = preview.inviteeEmail,
+                        householdName = preview.householdName,
+                    ),
+                )
+            }
+            throw throwable
+        }
         clearPendingInvite()
         householdRepository.refreshMembership()
             .onSuccess { status -> activateNutritionSessionIfActive(status) }
+        return preview
     }
 
     private fun persistPendingToken(token: String) {
         inviteSessionStore.setPendingInviteToken(token)
         _pendingInviteToken.value = token
-        _acceptState.value = InviteJoinAcceptState.Idle
+        if (_acceptState.value !is InviteJoinAcceptState.Succeeded) {
+            _acceptState.value = InviteJoinAcceptState.Idle
+        }
         acceptInFlight = false
     }
 

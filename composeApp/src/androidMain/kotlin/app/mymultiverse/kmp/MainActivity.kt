@@ -9,6 +9,7 @@ import app.mymultiverse.kmp.data.observability.FirebaseBuildFlags
 import app.mymultiverse.kmp.data.platform.AndroidNotificationChannels
 import app.mymultiverse.kmp.data.invite.InviteRedirectEvents
 import app.mymultiverse.kmp.data.invite.InviteRedirectUrls
+import app.mymultiverse.kmp.data.invite.extractInvitePushRedirectUrl
 import app.mymultiverse.kmp.data.supabase.AuthRedirectEvents
 import app.mymultiverse.kmp.presentation.App
 import app.mymultiverse.kmp.presentation.di.appModule
@@ -25,6 +26,7 @@ class MainActivity : AppCompatActivity() {
             ?.takeIf(AuthRedirectEvents::isAuthRedirect)
         val launchInviteRedirectUrl = intent?.data?.toString()
             ?.takeIf(InviteRedirectUrls::isInviteRedirect)
+            ?: intent?.extractInvitePushRedirectUrl()
         setContent {
             KoinApplication(application = {
                 androidContext(this@MainActivity)
@@ -57,6 +59,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun deliverInviteRedirect(intent: Intent?) {
-        intent?.data?.toString()?.let(InviteRedirectEvents::emit)
+        intent?.data?.toString()
+            ?.takeIf(InviteRedirectUrls::isInviteRedirect)
+            ?.let(InviteRedirectEvents::emit)
+        intent?.extractInvitePushRedirectUrl()?.let(InviteRedirectEvents::emit)
     }
 }
