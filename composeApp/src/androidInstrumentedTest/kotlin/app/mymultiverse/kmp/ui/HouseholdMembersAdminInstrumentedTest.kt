@@ -96,9 +96,9 @@ class HouseholdMembersAdminInstrumentedTest {
 
         composeRule.onNodeWithText("Change role").performClick()
         composeRule.onNodeWithText("Household admin").performClick()
-        composeRule.onNodeWithText("Add").performClick()
+        composeRule.onNodeWithTag(HouseholdMembersTestTags.ROLE_CHANGE_CONFIRM_BUTTON).performClick()
         composeRule.onNodeWithText("Make household admin?").assertIsDisplayed()
-        composeRule.onNodeWithText("Add").performClick()
+        composeRule.onNodeWithTag(HouseholdMembersTestTags.PROMOTE_ADMIN_CONFIRM_BUTTON).performClick()
 
         composeRule.waitFor(timeoutMillis = 5_000) {
             collaborationRepository.lastRoleUpdate?.second == HouseholdMemberRole.Admin

@@ -115,6 +115,8 @@ object HouseholdMembersTestTags {
     const val TRANSFER_OWNERSHIP_BUTTON = "household_members_transfer_ownership"
     const val TRANSFER_DIALOG = "household_members_transfer_dialog"
     const val ADD_DEPENDANT_BUTTON = "household_members_add_dependant"
+    const val ROLE_CHANGE_CONFIRM_BUTTON = "household_members_role_change_confirm"
+    const val PROMOTE_ADMIN_CONFIRM_BUTTON = "household_members_promote_admin_confirm"
 }
 
 @Composable
@@ -517,6 +519,7 @@ fun HouseholdMembersScreen(
                         }
                     },
                     enabled = !uiState.isUpdatingRole && target != null,
+                    modifier = Modifier.testTag(HouseholdMembersTestTags.ROLE_CHANGE_CONFIRM_BUTTON),
                 ) {
                     if (uiState.isUpdatingRole) {
                         CircularProgressIndicator(
@@ -558,6 +561,7 @@ fun HouseholdMembersScreen(
                         screenModel.confirmRoleChange(household.id)
                     },
                     enabled = !uiState.isUpdatingRole,
+                    modifier = Modifier.testTag(HouseholdMembersTestTags.PROMOTE_ADMIN_CONFIRM_BUTTON),
                 ) {
                     Text(stringResource(Res.string.sharing_members_confirm_add))
                 }

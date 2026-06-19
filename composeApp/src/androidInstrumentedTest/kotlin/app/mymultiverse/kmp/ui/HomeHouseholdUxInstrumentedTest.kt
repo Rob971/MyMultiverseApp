@@ -8,7 +8,6 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.presentation.components.HouseholdNameChipTestTags
@@ -100,11 +99,14 @@ class HomeHouseholdUxInstrumentedTest {
     }
 
     @Test
-    fun onboarding_typeName_updatesField() {
+    fun onboarding_createButtonDisabledWhenNameBlank() {
         composeRule.setContent {
             AppTheme {
                 HomeOnboardingContent(
-                    onboardingUiState = HomeOnboardingUiState(),
+                    onboardingUiState = HomeOnboardingUiState(
+                        householdNameInput = "",
+                        nameAvailability = HouseholdNameAvailability.Unknown,
+                    ),
                     pendingInvites = emptyList(),
                     sessionEmail = "tester@example.com",
                     onNameChange = {},
@@ -116,9 +118,7 @@ class HomeHouseholdUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(HomeTestTags.ONBOARDING_CREATE_NAME_FIELD)
-            .performTextInput("Family Hub")
-        composeRule.onNodeWithText("Family Hub").assertIsDisplayed()
+        composeRule.onNodeWithTag(HomeTestTags.ONBOARDING_CREATE_BUTTON).assertIsNotEnabled()
     }
 
     @Test
@@ -149,7 +149,7 @@ class HomeHouseholdUxInstrumentedTest {
         }
 
         composeRule.onNodeWithTag(HouseholdNameChipTestTags.CHIP).assertIsDisplayed()
-        composeRule.onNodeWithTag(HouseholdNameChipTestTags.EDIT).performClick()
+        composeRule.onNodeWithTag(HouseholdNameChipTestTags.CHIP).performClick()
         assertTrue(renameOpened)
     }
 
