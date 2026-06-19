@@ -1,9 +1,13 @@
 import {
+  buildAndroidIntentLink,
   buildInviteDeepLink,
   buildInviteEmailHtml,
   buildInviteEmailSubject,
   buildInviteEmailText,
+  buildInviteOpenPageHtml,
+  buildInviteWebLink,
   escapeHtml,
+  resolveInviteOpenLinkBase,
 } from "./invite-content.ts";
 
 function assertEquals(actual: unknown, expected: unknown, message: string) {
@@ -26,6 +30,30 @@ Deno.test("buildInviteDeepLink encodes token query param", () => {
   );
 });
 
+Deno.test("buildInviteWebLink uses HTTPS open base", () => {
+  assertEquals(
+    buildInviteWebLink("abc 123", "https://example.supabase.co/functions/v1/invite-open"),
+    "https://example.supabase.co/functions/v1/invite-open?token=abc%20123",
+    "web link",
+  );
+});
+
+Deno.test("resolveInviteOpenLinkBase prefers configured base", () => {
+  assertEquals(
+    resolveInviteOpenLinkBase("https://mymultiverse.app/invite/", "https://x.supabase.co"),
+    "https://mymultiverse.app/invite",
+    "configured base",
+  );
+});
+
+Deno.test("resolveInviteOpenLinkBase falls back to Supabase function URL", () => {
+  assertEquals(
+    resolveInviteOpenLinkBase("", "https://x.supabase.co/"),
+    "https://x.supabase.co/functions/v1/invite-open",
+    "supabase fallback",
+  );
+});
+
 Deno.test("escapeHtml escapes user-controlled copy", () => {
   assertEquals(
     escapeHtml(`Rossi <3 & "family"`),
@@ -39,29 +67,47 @@ Deno.test("buildInviteEmailSubject uses inviter and household", () => {
     inviterName: "Marco",
     householdName: "Rossi family",
     inviteeEmail: "maria@example.com",
+    inviteWebLink: "https://example.com/invite-open?token=t",
     inviteDeepLink: "app.mymultiverse.kmp://invite?token=t",
   });
   assertEquals(subject, "Marco invited you to Rossi family", "subject");
 });
 
-Deno.test("buildInviteEmailHtml includes CTA and deep link", () => {
+Deno.test("buildInviteEmailHtml uses HTTPS web link for CTA", () => {
   const html = buildInviteEmailHtml({
     inviterName: "Marco",
     householdName: "Rossi family",
     inviteeEmail: "maria@example.com",
+    inviteWebLink: "https://example.com/invite-open?token=secret-token",
     inviteDeepLink: "app.mymultiverse.kmp://invite?token=secret-token",
   });
   assertIncludes(html, "Accept invitation", "cta label");
-  assertIncludes(html, "app.mymultiverse.kmp://invite?token=secret-token", "deep link");
+  assertIncludes(html, 'href="https://example.com/invite-open?token=secret-token"', "https cta href");
+  assertIncludes(html, "https://example.com/invite-open?token=secret-token", "https fallback link");
   assertIncludes(html, "maria@example.com", "invitee email");
 });
 
-Deno.test("buildInviteEmailText includes deep link", () => {
+Deno.test("buildInviteEmailText includes HTTPS web link", () => {
   const text = buildInviteEmailText({
     inviterName: "Marco",
     householdName: "Rossi family",
     inviteeEmail: "maria@example.com",
+    inviteWebLink: "https://example.com/invite-open?token=secret-token",
     inviteDeepLink: "app.mymultiverse.kmp://invite?token=secret-token",
   });
-  assertIncludes(text, "Accept invitation: app.mymultiverse.kmp://invite?token=secret-token", "plain text link");
+  assertIncludes(text, "Accept invitation: https://example.com/invite-open?token=secret-token", "plain text link");
+});
+
+Deno.test("buildInviteOpenPageHtml redirects to custom scheme", () => {
+  const html = buildInviteOpenPageHtml("app.mymultiverse.kmp://invite?token=secret-token");
+  assertIncludes(html, "app.mymultiverse.kmp://invite?token=secret-token", "deep link");
+  assertIncludes(html, "Open MyMultiverse", "open button");
+});
+
+Deno.test("buildAndroidIntentLink targets app package", () => {
+  assertIncludes(
+    buildAndroidIntentLink("app.mymultiverse.kmp://invite?token=abc"),
+    "package=app.mymultiverse.kmp",
+    "android package",
+  );
 });

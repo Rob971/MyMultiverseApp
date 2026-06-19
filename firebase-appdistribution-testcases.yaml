@@ -188,9 +188,11 @@ summary: |
   - id: household-invite-deeplink
     title: Invite deep link from email
     steps:
-      - Open the invite link from email on a device without the app signed in (`app.mymultiverse.kmp://invite?token=…`).
+      - Tap the HTTPS invite link from email (opens invite-open landing page, then MyMultiverse app).
+      - Or paste the same HTTPS link into the mobile browser if the button is unavailable.
       - Complete OTP or OAuth with the invited email.
     expected:
+      - Landing page offers Open MyMultiverse; app opens to join flow with token preserved.
       - Join screen shows household name and inviter.
       - After auth, user lands on Home with “You joined {household}” snackbar.
 

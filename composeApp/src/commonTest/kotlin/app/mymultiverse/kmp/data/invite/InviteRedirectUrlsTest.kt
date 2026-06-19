@@ -23,6 +23,13 @@ class InviteRedirectUrlsTest {
     }
 
     @Test
+    fun build_encodesTokenForDeepLink() {
+        val url = InviteRedirectUrls.build("abc 123")
+        assertEquals("app.mymultiverse.kmp://invite?token=abc%20123", url)
+        assertEquals("abc 123", InviteRedirectUrls.parseToken(url))
+    }
+
+    @Test
     fun parseToken_returnsNullForNonInviteUrl() {
         assertNull(InviteRedirectUrls.parseToken("app.mymultiverse.kmp://auth"))
         assertNull(InviteRedirectUrls.parseToken("https://example.com/invite?token=abc"))
