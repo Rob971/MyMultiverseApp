@@ -15,7 +15,36 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-eval "$(supabase status -o env 2>/dev/null | grep -E '^(API_URL|ANON_KEY)=')"
+load_local_supabase_credentials() {
+  local status_json line key value
+  status_json="$(supabase status -o json 2>/dev/null || true)"
+
+  if [[ -n "$status_json" && "$status_json" != "null" ]]; then
+    API_URL="$(echo "$status_json" | jq -r '.API_URL // empty')"
+    ANON_KEY="$(echo "$status_json" | jq -r '
+      .ANON_KEY //
+      .PUBLISHABLE_KEY //
+      .SUPABASE_PUBLISHABLE_KEY //
+      .publishable_key //
+      empty
+    ')"
+  fi
+
+  while IFS='=' read -r key value; do
+    value="${value%\"}"
+    value="${value#\"}"
+    case "$key" in
+      API_URL)
+        [[ -z "${API_URL:-}" ]] && API_URL="$value"
+        ;;
+      ANON_KEY|PUBLISHABLE_KEY|SUPABASE_PUBLISHABLE_KEY)
+        [[ -z "${ANON_KEY:-}" ]] && ANON_KEY="$value"
+        ;;
+    esac
+  done < <(supabase status -o env 2>/dev/null || true)
+}
+
+load_local_supabase_credentials
 
 if [[ -z "${API_URL:-}" || -z "${ANON_KEY:-}" ]]; then
   echo "ERROR: local Supabase is not running. Run supabase start first." >&2
@@ -24,11 +53,18 @@ fi
 
 REST_URL="${API_URL%/}/rest/v1"
 
+rpc_auth_headers() {
+  printf '%s\n' "-H" "apikey: ${ANON_KEY}"
+  if [[ "$ANON_KEY" == eyJ* ]]; then
+    printf '%s\n' "-H" "Authorization: Bearer ${ANON_KEY}"
+  fi
+}
+
 echo "==> preview_household_invite rejects blank token"
 PREVIEW_BODY="$(mktemp)"
+mapfile -t AUTH_HEADERS < <(rpc_auth_headers)
 PREVIEW_STATUS="$(curl -s -o "${PREVIEW_BODY}" -w '%{http_code}' -X POST "${REST_URL}/rpc/preview_household_invite" \
-  -H "apikey: ${ANON_KEY}" \
-  -H "Authorization: Bearer ${ANON_KEY}" \
+  "${AUTH_HEADERS[@]}" \
   -H "Content-Type: application/json" \
   -d '{"p_token":""}')"
 
@@ -51,8 +87,7 @@ echo "OK: preview_household_invite invite_token_required"
 echo "==> preview_household_invite rejects unknown token"
 UNKNOWN_BODY="$(mktemp)"
 UNKNOWN_STATUS="$(curl -s -o "${UNKNOWN_BODY}" -w '%{http_code}' -X POST "${REST_URL}/rpc/preview_household_invite" \
-  -H "apikey: ${ANON_KEY}" \
-  -H "Authorization: Bearer ${ANON_KEY}" \
+  "${AUTH_HEADERS[@]}" \
   -H "Content-Type: application/json" \
   -d '{"p_token":"nonexistent-token-for-ci-smoke"}')"
 
