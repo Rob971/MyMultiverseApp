@@ -430,7 +430,7 @@ private fun HomeErrorContent(
 }
 
 @Composable
-private fun HomeOnboardingContent(
+fun HomeOnboardingContent(
     onboardingUiState: HomeOnboardingUiState,
     pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite>,
     sessionEmail: String,

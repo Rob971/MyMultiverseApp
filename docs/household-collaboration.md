@@ -30,7 +30,10 @@ This document is the **source of truth** for household sharing in MyMultiverse: 
 |-------|----------|
 | **Owner leaves with other members** | Owner may **transfer ownership** when they are the **only owner** and other members remain. Plain “Leave” is not offered to the sole owner without transfer or dissolve. |
 | **Dissolve household** | **Hard delete** household data (not soft archive) for v1. Confirm in UI with strong destructive copy. |
-| **Pending invites + Create household** | **Do not block** create; use **layout** (invites above create on gate). |
+| **Pending invites + Create household** | **Do not block** create; use **layout** (invites above create on **Home onboarding**). |
+| **Unique household names** | Globally unique among active households (Unicode-aware normalization); duplicate prod names deduped in migration `20250623100001`. |
+| **Household admin role** | Owner promotes editor → **admin**; admin invites/manages members; cannot transfer/dissolve or promote admin. |
+| **Rename household** | Owner or admin renames from Welcome banner chip (`rename_household` RPC). |
 | **Max household size** | **20** members. |
 | **Household-only terminology** | **Done** — migration `20250620000000`; RPCs/helpers/JSON use `household_*` only (no `space_*` aliases). Table rename `sharing_spaces` → `households` was `20250618170000`. |
 | **Trip / Budget** | **Same unique household** as Nutrition (module flags, not separate household rows). |
@@ -130,7 +133,7 @@ Show pending invites even when affiliated. Accept opens confirmation:
 
 **Target (invite deep link):** Email/push tap → `app.mymultiverse.kmp://invite?token=…` → preview invite → OTP/OAuth with invited email → accept → **home** + snackbar “You joined **{name}**”.
 
-**Legacy (no deep link):** Sign in → **gate** (if unaffiliated) → accept invite → **home** + snackbar.
+**Legacy (no deep link):** Sign in → **Home onboarding** (if unaffiliated) → accept invite → **welcome Home** + snackbar.
 
 **Status:** Gate accept implemented (`auth_household_joined_success`). Deep-link Join flow + branded invite email in progress (`feature/invite-email-and-push-payload`, `feature/invite-join-screen`).
 
@@ -148,7 +151,7 @@ Each pending invite row has a unique `token` (`household_invites.token`). When a
 
 | Who | Action |
 |-----|--------|
-| **Editor / viewer** | **Leave household** → confirm → gate (unaffiliated) |
+| **Editor / viewer** | **Leave household** → confirm → **Home onboarding** (unaffiliated) |
 | **Only owner, other members exist** | **Transfer ownership** to another member, then may leave |
 | **Only owner, no other members** | **Delete household** (hard delete) — not plain Leave |
 | **Any member** | GDPR-related **export/delete my data** where required (see § GDPR) |
@@ -259,7 +262,11 @@ Household collaboration uses **household-only** terminology in app code, RPCs, a
 
 Documented in **`firebase-appdistribution-testcases.yaml`**:
 
-- `household-gate-pending-invite` — invitee sees invite on gate (not home), accepts, reaches home.
+- `home-pending-invite` / `household-gate-pending-invite-two-phone` — invitee sees invite on **Home onboarding**, accepts, reaches welcome Home.
+- `home-onboarding-create-household` — topics hidden until household exists; unique name on create.
+- `home-rename-household` — owner/admin rename from Welcome banner.
+- `household-admin-role` — owner promotes editor to household admin.
+- `household-onboarding-create-with-invite` — onboarding hierarchy when invite + create both visible.
 - `household-invite-blocked-already-member` — inviter sees error if invitee already in another household.
 - `household-shared-nutrition-two-phones` — A edits grocery, B sees update in same household.
 - `household-invite-email-mismatch` — wrong signed-in email cannot accept; dedicated mismatch message.
@@ -270,7 +277,7 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 - `home-delete-account` — GDPR account deletion (disposable test account).
 - `household-add-dependant` — add display-only dependant on Members screen.
 - `household-invite-notification` — invite email/push (manual; requires Resend + FCM/APNs secrets).
-- `household-gate-create-with-invite` — gate hierarchy when invite + create both visible.
+- `household-gate-create-with-invite` — **deprecated id**; use `household-onboarding-create-with-invite`.
 
 **Remote Supabase migrations required for field tests:**  
 `20250617130000`, `20250617140000`, `20250618120000`, `20250618140000`, `20250618150000`, `20250618160000`, `20250618161000`, `20250618170000`, `20250618180000`.
@@ -285,7 +292,7 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 | 2025-06-18 | Locked product decisions; FAQ for RLS viewer + email change; GDPR; QA |
 | 2025-06-18 | Locked viewer read-only + auth email must match; P0 backlog and QA updated |
 | 2025-06-18 | P1: transfer ownership, GDPR export, `households` table rename shipped |
-| 2025-06-19 | v1 polish: gate hierarchy, invite email snackbar, joined snackbar, dissolve cascade doc, Firebase QA |
+| 2026-06-19 | PR #12: Home onboarding (gate merged), unique names, rename, admin role; Firebase QA v14 |
 | 2025-06-19 | Architecture section updated post-`households` rename; table names aligned in FAQ |
 | 2026-06-17 | v1 merged to `main` (PR #7); post-merge status and P2 backlog documented |
 | 2026-06-18 | P2 A–D shipped on `main` (PR #8); closeout ops/platform/docs in PR #9 (`feature/p2-closeout`) |

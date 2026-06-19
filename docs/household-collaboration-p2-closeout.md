@@ -188,8 +188,8 @@ flowchart TD
 
 **Before wide distribution (ops / QA / legal):**
 
-- [ ] GitHub + Supabase secrets set; `supabase-deploy` green on `main` after merge
-- [ ] Staging manual QA checklist passed (two devices) — [`p2-staging-qa-checklist.md`](p2-staging-qa-checklist.md)
+- [x] GitHub + Supabase secrets set; `supabase-deploy` green on `main` after merge
+- [ ] Staging manual QA checklist passed (two devices) — [`p2-staging-qa-checklist.md`](p2-staging-qa-checklist.md) + [`qa-signoff-v14-home-onboarding.md`](qa-signoff-v14-home-onboarding.md)
 - [ ] Legal review of external privacy/deletion copy
 
 **Minimum viable prod (email invites + account deletion):** merge closeout PR → set deploy secrets → run staging QA for invite email + delete account.

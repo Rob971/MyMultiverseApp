@@ -58,10 +58,20 @@ class InstrumentedHouseholdCollaborationRepository : HouseholdCollaborationRepos
 
     override suspend fun removeMember(memberId: String): Result<Unit> = Result.success(Unit)
 
+    var lastRoleUpdate: Pair<String, HouseholdMemberRole>? = null
+
     override suspend fun updateMemberRole(
         memberId: String,
         role: HouseholdMemberRole,
-    ): Result<Unit> = Result.success(Unit)
+    ): Result<Unit> {
+        lastRoleUpdate = memberId to role
+        membersByHousehold.forEach { (_, flow) ->
+            flow.value = flow.value.map { member ->
+                if (member.id == memberId) member.copy(role = role) else member
+            }
+        }
+        return Result.success(Unit)
+    }
 
     override suspend fun acceptInvite(inviteId: String): Result<Unit> = Result.success(Unit)
 

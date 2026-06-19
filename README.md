@@ -16,9 +16,9 @@ MyMultiverse helps a **household** (family or roommates) coordinate day-to-day l
 |---------|-------------------------|
 | **Account** | One person, one email (Supabase Auth). Sign up / sign in with email, Google, or Apple. |
 | **Household** | One shared household per user at a time. All modules (Nutrition, future Adventures/Budget) share one household id. |
-| **Gate** | Onboarding screen when signed in but not in a household: accept a pending invite **or** create a new household. |
+| **Home onboarding** | When signed in without a household, **Home** shows invites + create-household (no separate gate screen). Topic cards appear only after a household is active. |
 | **Invite** | Owner sends invite by email; invitee must **accept** on their device. No silent add. |
-| **Roles** | **Owner** — invite, manage members, edit data. **Editor** — edit shared nutrition. **Viewer** — read-only everywhere. |
+| **Roles** | **Owner** — transfer/dissolve, promote admin, full control. **Household admin** — invite (editor/viewer), manage members; cannot transfer/dissolve or promote admin. **Editor** — edit shared nutrition. **Viewer** — read-only everywhere. |
 | **Nutrition** | Shared grocery list, weekly meal plan, and AI adviser per calendar week. AI output is **read-only**; user lists are editable (unless viewer). |
 | **Sync** | Grocery and meal plan are **offline-first**: edits save locally, then push to Supabase; other members see changes via pull + Realtime. |
 | **GDPR** | Export personal data from Home (share sheet on Android/iOS); delete account from Home (`delete-account` edge function). Leave household revokes shared access. Legal review of external privacy copy remains outside engineering. |
@@ -38,16 +38,13 @@ Supported UI languages: English, French, Spanish, German, Italian, Arabic (incl.
                            │ authenticated
                            ▼
               ┌────────────────────────┐
-              │  Household gate        │  no active household
-              │  • pending invites     │
-              │  • create household    │
-              └───────────┬────────────┘
-                          │ household active
-                          ▼
-              ┌────────────────────────┐
-              │  Home                  │  greeting, pending invites,
-              │  • Nutrition card      │  household card, export data,
-              │  • Household card      │  sign out, language picker
+              │  Home                  │
+              │  • onboarding (no      │
+              │    household): invites │
+              │    + create household  │
+              │  • welcome: greeting,  │
+              │    rename chip, cards  │
+              │  • Nutrition (enabled) │
               │  • Adventures (soon)   │
               │  • Budget (soon)       │
               └─────┬──────────┬───────┘
@@ -57,7 +54,7 @@ Supported UI languages: English, French, Spanish, German, Italian, Arabic (incl.
          ┌──────────────┐   ┌──────────────────┐
          │ Nutrition hub│   │ Members screen   │
          │ grocery      │   │ invite / leave / │
-         │ meal plan    │   │ transfer / delete│
+         │ meal plan    │   │ transfer / admin │
          │ AI adviser   │   └──────────────────┘
          └──────────────┘
 ```
@@ -66,16 +63,15 @@ Supported UI languages: English, French, Spanish, German, Italian, Arabic (incl.
 
 | Screen | Package | Purpose | Key `testTag`s |
 |--------|---------|---------|----------------|
-| **Login** | `presentation/screens/auth/` | Sign up, sign in, OAuth; config-missing state when Supabase keys absent | — |
-| **Household gate** | `presentation/screens/household/` | Block modules until create or accept invite; pending invites above create | `HouseholdGateTestTags.*` |
-| **Home** | `presentation/screens/home/` | Hub after household is active | `home_nutrition_card`, `home_household_card`, `home_sign_out_button`, `home_export_personal_data_button` |
-| **Household members** | `presentation/screens/household/` | List members, pending invites, add by email, leave / transfer / dissolve | — |
+| **Login** | `presentation/screens/auth/` | Sign up, sign in, OAuth; contextual sign-in vs sign-up subtitle | — |
+| **Home** | `presentation/screens/home/` | Onboarding (no household) or welcome hub; rename chip; topic cards | `home_nutrition_card`, `home_household_card`, `home_onboarding_create_name`, `home_household_name_edit` |
+| **Household members** | `presentation/screens/household/` | List members, pending invites, add by email, admin role, leave / transfer / dissolve | `household_members_add_person`, `household_members_row_*` |
 | **Nutrition hub** | `presentation/screens/nutrition/` | Week context, sync banner, cards for grocery / meal plan / AI | `nutrition_hub_grocery`, `nutrition_hub_meal_plan`, `nutrition_hub_ai` |
 | **Grocery** | `presentation/screens/nutrition/` | Editable list + read-only AI suggestions | — |
 | **Weekly meal plan** | `presentation/screens/nutrition/` | Lunch/dinner per day; per-meal AI grocery | — |
 | **AI adviser** | `presentation/screens/nutrition/` | Modes: Advice, Grocery, Meal plan (local assistant) | — |
 
-Navigation routes live in `presentation/navigation/AppRoute.kt`. Root composition: `presentation/App.kt` (auth → gate → main stack).
+Navigation routes live in `presentation/navigation/AppRoute.kt`. Root composition: `presentation/App.kt` (auth → Home with onboarding/welcome phases → main stack).
 
 ### Household rules (QA cheat sheet)
 
@@ -87,7 +83,10 @@ Navigation routes live in `presentation/navigation/AppRoute.kt`. Root compositio
 | Viewer | Can open Nutrition and **see** all data; **no** add/edit/delete/clear/AI write |
 | Owner with other members | Must **transfer ownership** before leaving; cannot plain-leave as sole owner |
 | Sole owner, no members | **Delete household** (hard delete), not leave |
-| Pending invite + create | Both visible on gate; create is **not** blocked (invites shown above) |
+| Pending invite + create | Both visible on **Home onboarding**; create is **not** blocked (invites shown above) |
+| Unique household name | Names are globally unique (Unicode-aware); create/rename blocked when taken |
+| Rename household | Owner or household admin can rename from Welcome banner chip |
+| Admin role | Owner promotes editor → household admin; admin manages members but cannot transfer/dissolve |
 | Switch household | Accepting invite while already affiliated prompts leave-then-accept |
 
 Full spec: [`docs/household-collaboration.md`](docs/household-collaboration.md).
@@ -151,7 +150,7 @@ The mobile app talks to **Supabase Auth** (sessions, OAuth) and **PostgREST** (t
 |---------|----------------|
 | **Auth** | Email/password, Google, Apple; redirect `app.mymultiverse.kmp://auth/callback` |
 | **Profiles** | `profiles` row per `auth.users`; bootstrap via `ensure_current_profile()` |
-| **Household lifecycle** | RPCs: `create_household`, `leave_household`, `dissolve_household`, `transfer_household_ownership` |
+| **Household lifecycle** | RPCs: `create_household`, `rename_household`, `check_household_name_available`, `leave_household`, `dissolve_household`, `transfer_household_ownership` |
 | **Invites** | `invite_household_member`, `accept_household_invite`, `list_my_pending_household_invites` |
 | **Membership query** | `household_membership_status`, `resolve_user_household_row` |
 | **Nutrition data** | `nutrition_household_week_data` — one row per `(household_id, week_key, data_kind)` |
@@ -255,7 +254,7 @@ Current table and RPC names (post-migrations `20250618170000`, `20250620000000`)
 | `app_topic` | `nutrition`, `adventures`, `budget` |
 | `nutrition_feature` | `grocery`, `meal_plan`, `ai_advice` (enabled modules per household) |
 | `nutrition_data_kind` | `grocery`, `ai_grocery`, `meal_plan` (week payload rows) |
-| `household_member_role` | `owner`, `editor`, `viewer` |
+| `household_member_role` | `owner`, `admin`, `editor`, `viewer` |
 | `group_lifecycle` | `persistent`, `event` |
 
 ### Core tables
@@ -284,7 +283,9 @@ Current table and RPC names (post-migrations `20250618170000`, `20250620000000`)
 |-----|---------|
 | `ensure_current_profile()` | Ensure `profiles` row exists for session user |
 | `household_membership_status()` | Gate: affiliated or not, role, household name |
-| `create_household(p_name)` | Create household + owner membership + default modules |
+| `create_household(p_name)` | Create household + owner membership + default modules; rejects duplicate names |
+| `rename_household(p_household_id, p_name)` | Owner or admin renames household |
+| `check_household_name_available(p_name, p_exclude_household_id)` | Availability probe for create/rename UI |
 | `ensure_household()` | Idempotent household ensure (used by client bootstrap) |
 | `invite_household_member(p_email, p_role)` | Owner sends invite; guards for cap, duplicate, other household |
 | `list_my_pending_household_invites()` | Invites matching session email only |
@@ -314,6 +315,8 @@ contact_groups ──1:N── group_members ──► profiles
 
 **P2 staging sign-off:** [`docs/p2-staging-qa-checklist.md`](docs/p2-staging-qa-checklist.md) — export, delete account, dependant, invite notification (two devices).
 
+**Home onboarding sign-off (v14):** [`docs/qa-signoff-v14-home-onboarding.md`](docs/qa-signoff-v14-home-onboarding.md) — onboarding, rename, admin role; maps Firebase cases to automated coverage.
+
 ### Recommended test setup
 
 | Need | Detail |
@@ -326,8 +329,10 @@ contact_groups ──1:N── group_members ──► profiles
 
 ### Test categories in YAML
 
-- **Auth** — email sign-in/up, OAuth redirect, sign out
-- **Household gate** — create, pending invite layout, accept on gate
+- **Auth** — email sign-in/up (contextual subtitles), OAuth redirect, sign out
+- **Home onboarding** — create household, pending invite layout, accept on Home, unique name validation
+- **Home welcome** — rename household (owner/admin), topic cards after household active
+- **Members / admin** — promote to household admin, admin member management limits
 - **Invites** — two-phone flow, blocked if already in household, email mismatch
 - **Members** — invite from Home, transfer ownership + leave, max members note
 - **Nutrition** — hub navigation, grocery CRUD, meal plan, AI modes, AI read-only sections
@@ -451,7 +456,7 @@ composeApp/
   src/iosMain/        iOS entry, Koin platform module
   src/commonTest/     Unit tests
   src/androidInstrumentedTest/  UI tests
-docs/                 Product specs (household-collaboration.md, household-collaboration-p2.md, p2-staging-qa-checklist.md)
+docs/                 Product specs (household-collaboration.md, household-collaboration-p2.md, p2-staging-qa-checklist.md, qa-signoff-v14-home-onboarding.md)
 supabase/migrations/  Postgres schema + RLS + Realtime + RPCs
 .github/workflows/    CI pipelines
 firebase-appdistribution-testcases.yaml  Manual QA checklist
@@ -463,11 +468,13 @@ firebase-appdistribution-testcases.yaml  Manual QA checklist
 
 **Shipped on `main` (P2, PR #8 + [`feature/p2-closeout`](docs/household-collaboration-p2-closeout.md) / PR #9):** push/email invite notifications, household dependants (display-only), GDPR account deletion + export share, outbox automation, edge function deploy pipeline.
 
+**Shipped on `main` (PR #12):** unified Home onboarding (gate merged into Home), globally unique household names, rename from Welcome, household admin role, login subtitle polish.
+
 **Still open:**
 
 | Track | Items |
 |-------|--------|
-| **Ops / QA** | GitHub secrets for edge deploy + push; staging sign-off ([`docs/p2-staging-qa-checklist.md`](docs/p2-staging-qa-checklist.md)) |
+| **Ops / QA** | Optional `SUPABASE_TEST_EMAIL` / `SUPABASE_TEST_PASSWORD` for CI auth round-trip; staging sign-off ([`docs/p2-staging-qa-checklist.md`](docs/p2-staging-qa-checklist.md), [`docs/qa-signoff-v14-home-onboarding.md`](docs/qa-signoff-v14-home-onboarding.md)) |
 | **Product** | Shared-email child login accounts (explicitly deferred); Adventures & Budget on `household_modules` |
 | **Legal** | External privacy policy wording review |
 

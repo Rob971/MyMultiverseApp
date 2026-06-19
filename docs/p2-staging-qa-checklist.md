@@ -12,8 +12,8 @@ Run on **staging** (Supabase + Firebase tester APK) with **two phones / two acco
 
 | Item | Done |
 |------|------|
-| PR1 merged: edge functions deployed; `SUPABASE_SERVICE_ROLE_KEY` set | ☐ |
-| PR2 merged: outbox `pg_net` trigger + delivery config | ☐ |
+| PR1 merged: edge functions deployed; `SUPABASE_SERVICE_ROLE_KEY` set | ☑ (Supabase Deploy green on `main`) |
+| PR2 merged: outbox `pg_net` trigger + delivery config | ☑ |
 | `RESEND_API_KEY` set (for invite email) | ☐ |
 | `FCM_SERVICE_ACCOUNT_JSON` set (for Android invite push) | ☐ |
 | `APNS_KEY_ID` / `APNS_TEAM_ID` / `APNS_PRIVATE_KEY` set (for iOS invite push) | ☐ |
@@ -72,11 +72,24 @@ Use a **disposable** test account (not the shared CI smoke user).
 | B receives invite email (Resend configured) | ☐ |
 | Email contains **Accept invitation** button and `app.mymultiverse.kmp://invite?token=…` link | ☐ |
 | Outbox row gets `processed_at` without manual function invoke | ☐ |
-| B sees pending invite on gate (existing flow) | ☐ |
+| B sees pending invite on **Home onboarding** (existing flow) | ☐ |
 | Tap email link opens app with invite token (after client deep-link branch merges) | ☐ N/A |
 | Push notification includes `invite_token` (optional until FCM/APNs wired) | ☐ N/A |
 
 **Device / build:** _______________ **Tester:** _______________ **Date:** _______________
+
+---
+
+## Home onboarding v14 (PR #12)
+
+See [`qa-signoff-v14-home-onboarding.md`](qa-signoff-v14-home-onboarding.md) for rename, admin role, and onboarding layout cases.
+
+| Case id | Pass |
+|---------|------|
+| `home-onboarding-create-household` | ☐ |
+| `home-rename-household` | ☐ |
+| `household-admin-role` | ☐ |
+| `household-onboarding-create-with-invite` | ☐ |
 
 ---
 
