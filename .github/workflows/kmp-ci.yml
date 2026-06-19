@@ -26,7 +26,6 @@ on:
           - android-ci
           - android-instrumented-tests
           - supabase-migrations
-          - ios-compatibility
           - release
       source_run_id:
         description: "For release-only: workflow run ID with a successful Android CI artifact (defaults to latest on branch)."
@@ -257,15 +256,14 @@ jobs:
           emulator-options: ${{ steps.emulator-boot.outputs.opts }}
           script: ./gradlew :composeApp:connectedDebugAndroidTest ${{ env.GRADLE_BUILD_ARGS }}
 
+  # DISABLED: macOS runners bill at 10× Linux. Re-enable by restoring the
+  # workflow_dispatch option and the `if` below.
   ios-compatibility:
     name: iOS Compatibility Signal
     runs-on: macos-15
     timeout-minutes: 10
     continue-on-error: true
-    # macOS minutes bill at 10× Linux — manual only unless explicitly dispatched.
-    if: >-
-      ${{ github.event_name == 'workflow_dispatch' &&
-          (github.event.inputs.job == 'all' || github.event.inputs.job == 'ios-compatibility') }}
+    if: false
 
     steps:
       - name: Checkout
