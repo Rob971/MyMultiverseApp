@@ -51,6 +51,14 @@ class InstrumentedHouseholdRepository(
     override suspend fun createHousehold(name: String): Result<Household> =
         Result.success(household.copy(name = name))
 
+    override suspend fun checkHouseholdNameAvailable(
+        name: String,
+        excludeHouseholdId: String?,
+    ): Result<Boolean> = Result.success(true)
+
+    override suspend fun renameHousehold(newName: String): Result<Household> =
+        Result.success(household.copy(name = newName))
+
     override suspend fun ensureHousehold(): Result<Household> {
         ensureCalls++
         ensureFailure?.let { return Result.failure(it) }

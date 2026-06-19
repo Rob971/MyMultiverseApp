@@ -20,7 +20,7 @@ import app.mymultiverse.kmp.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.kmp.presentation.components.MealPlanTestTags
 import app.mymultiverse.kmp.presentation.screens.nutrition.GroceryListTestTags
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
-import app.mymultiverse.kmp.presentation.screens.home.HomeContent
+import app.mymultiverse.kmp.presentation.screens.home.HomeWelcomeContent
 import app.mymultiverse.kmp.presentation.screens.home.HomeTestTags
 import app.mymultiverse.kmp.presentation.screens.nutrition.GroceryShoppingScreen
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionAiAdviceScreen
@@ -311,17 +311,17 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 InstrumentedKoinHost {
-                    HomeContent(
+                    HomeWelcomeContent(
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
                         householdName = "Our household",
-                        hasActiveHousehold = true,
+                        canRenameHousehold = false,
+                        onRenameHousehold = {},
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = { openedHousehold = true },
-                        onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
@@ -345,17 +345,17 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 InstrumentedKoinHost {
-                    HomeContent(
+                    HomeWelcomeContent(
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
                         householdName = null,
-                        hasActiveHousehold = true,
+                        canRenameHousehold = false,
+                        onRenameHousehold = {},
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = { openedNutrition = true },
                         onOpenHouseholdMembers = {},
-                        onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
@@ -377,17 +377,17 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 InstrumentedKoinHost {
-                    HomeContent(
+                    HomeWelcomeContent(
                         greeting = Greeting("ready"),
                         userDisplayName = "Roberto",
                         householdName = null,
-                        hasActiveHousehold = true,
+                        canRenameHousehold = false,
+                        onRenameHousehold = {},
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
@@ -406,17 +406,17 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 InstrumentedKoinHost {
-                    HomeContent(
+                    HomeWelcomeContent(
                         greeting = Greeting("ready"),
                         userDisplayName = "maria",
                         householdName = null,
-                        hasActiveHousehold = true,
+                        canRenameHousehold = false,
+                        onRenameHousehold = {},
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
@@ -434,17 +434,17 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 InstrumentedKoinHost {
-                    HomeContent(
+                    HomeWelcomeContent(
                         greeting = Greeting("ready"),
                         userDisplayName = null,
                         householdName = null,
-                        hasActiveHousehold = true,
+                        canRenameHousehold = false,
+                        onRenameHousehold = {},
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
@@ -463,17 +463,17 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 InstrumentedKoinHost {
-                    HomeContent(
+                    HomeWelcomeContent(
                         greeting = null,
                         userDisplayName = "Roberto",
                         householdName = null,
-                        hasActiveHousehold = true,
+                        canRenameHousehold = false,
+                        onRenameHousehold = {},
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
@@ -492,17 +492,17 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 InstrumentedKoinHost {
-                    HomeContent(
+                    HomeWelcomeContent(
                         greeting = null,
                         userDisplayName = null,
                         householdName = null,
-                        hasActiveHousehold = true,
+                        canRenameHousehold = false,
+                        onRenameHousehold = {},
                         isRefreshing = false,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
@@ -520,17 +520,17 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 InstrumentedKoinHost {
-                    HomeContent(
+                    HomeWelcomeContent(
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
                         householdName = null,
-                        hasActiveHousehold = true,
+                        canRenameHousehold = false,
+                        onRenameHousehold = {},
                         isRefreshing = true,
                         pendingInvites = emptyList(),
                         onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onSignOut = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
                         onExportPersonalData = {},
