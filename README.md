@@ -420,7 +420,7 @@ GitHub Actions: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml)
 
 | Trigger | Jobs |
 |---------|------|
-| **Push** to `feature/**` | *(disabled — use manual dispatch to save Actions minutes)* |
+| **Push** to `feature/**` | Android CI → Release (Linux only; iOS skipped) |
 | **Push** to `main` / **PR** | Android CI + Supabase Migrations + instrumented → Release |
 | **Manual dispatch** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, **`ios-compatibility`** (macOS — manual only), `release` |
 
@@ -436,7 +436,7 @@ Canonical version: [`gradle/app-version.properties`](gradle/app-version.properti
 
 | Event | Bump |
 |-------|------|
-| Push to `feature/**` | *(manual dispatch only)* |
+| Push to `feature/**` | Candidate +1 |
 | Push to `main` (merge) | LTS patch +1, candidate reset |
 
 ---

@@ -15,9 +15,9 @@ alwaysApply: false
 
 ### KMP CI jobs (tiered)
 
-- **Push `feature/**`:** disabled (use **Actions → KMP CI → Run workflow** to avoid burning minutes on every commit).
-- **PR / `main` push:** `Android CI`, `Supabase Migrations`, and `Android Instrumented UI Tests` in parallel; then `Release` on success. Target **&lt;7 min** wall clock.
-- **Manual dispatch:** `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, **`ios-compatibility`** (macOS 10× billing — not auto on PR/push), `release` (reuse APK via optional `source_run_id`).
+- **Push `feature/**`:** `Android CI` → `Release` (Linux only, ~4 min). iOS does **not** run.
+- **PR / `main` push:** `Android CI`, `Supabase Migrations`, and `Android Instrumented UI Tests` in parallel; then `Release`.
+- **Manual dispatch:** `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, **`ios-compatibility`** (macOS 10× billing — quarantined here), `release`.
 
 ### Supabase
 
