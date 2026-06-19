@@ -56,6 +56,11 @@ load_local_supabase_credentials() {
 
 load_local_supabase_credentials
 
+# Newer Supabase CLI omits API_URL when [api] is disabled; default local Kong port.
+if [[ -z "${API_URL:-}" && -n "${ANON_KEY:-}" ]]; then
+  API_URL="http://127.0.0.1:54321"
+fi
+
 if [[ -z "${API_URL:-}" || -z "${ANON_KEY:-}" ]]; then
   echo "ERROR: local Supabase is not running. Run supabase start first." >&2
   echo "DEBUG: supabase status -o json (first 500 chars):" >&2
@@ -68,12 +73,29 @@ fi
 
 REST_URL="${API_URL%/}/rest/v1"
 
+wait_for_rest() {
+  local deadline=$((SECONDS + 90))
+  mapfile -t AUTH_HEADERS < <(rpc_auth_headers)
+  while (( SECONDS < deadline )); do
+    if curl -sf -o /dev/null "${AUTH_HEADERS[@]}" "${REST_URL}/"; then
+      return 0
+    fi
+    sleep 2
+  done
+  echo "ERROR: PostgREST not reachable at ${REST_URL} (is [api] enabled in supabase/config.toml?)" >&2
+  supabase status 2>&1 | head -30 >&2 || true
+  exit 1
+}
+
 rpc_auth_headers() {
   printf '%s\n' "-H" "apikey: ${ANON_KEY}"
   if [[ "$ANON_KEY" == eyJ* ]]; then
     printf '%s\n' "-H" "Authorization: Bearer ${ANON_KEY}"
   fi
 }
+
+echo "==> Waiting for PostgREST at ${REST_URL}"
+wait_for_rest
 
 echo "==> preview_household_invite rejects blank token"
 PREVIEW_BODY="$(mktemp)"

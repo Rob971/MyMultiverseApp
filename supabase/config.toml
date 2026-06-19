@@ -1,10 +1,12 @@
 # Local development and CI migration validation.
+# API must stay enabled so CI can smoke-test preview_household_invite via PostgREST.
 # Production deploy: .github/workflows/supabase-deploy.yml (db push on main only).
 
 project_id = "kmp-voyager-local"
 
 [api]
-enabled = false
+enabled = true
+port = 54321
 
 [db]
 port = 54322
