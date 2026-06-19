@@ -420,9 +420,9 @@ GitHub Actions: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml)
 
 | Trigger | Jobs |
 |---------|------|
-| **Push** to `feature/**` | Android CI → Release (Firebase + version bump) |
-| **Push** to `main` / **PR** | Android CI + Supabase Migrations + instrumented + iOS → Release |
-| **Manual dispatch** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `ios-compatibility`, `release` |
+| **Push** to `feature/**` | *(disabled — use manual dispatch to save Actions minutes)* |
+| **Push** to `main` / **PR** | Android CI + Supabase Migrations + instrumented → Release |
+| **Manual dispatch** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, **`ios-compatibility`** (macOS — manual only), `release` |
 
 **Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push` and P2 edge functions deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change; also `workflow_dispatch`.
 
@@ -436,7 +436,7 @@ Canonical version: [`gradle/app-version.properties`](gradle/app-version.properti
 
 | Event | Bump |
 |-------|------|
-| Push to `feature/**` | Candidate +1 |
+| Push to `feature/**` | *(manual dispatch only)* |
 | Push to `main` (merge) | LTS patch +1, candidate reset |
 
 ---

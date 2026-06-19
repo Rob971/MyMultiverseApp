@@ -1,11 +1,11 @@
 name: KMP CI
 
 on:
+  # main/master only — feature pushes use workflow_dispatch to avoid burning Actions minutes.
   push:
     branches:
       - main
       - master
-      - "feature/**"
   pull_request:
     branches:
       - main
@@ -13,6 +13,7 @@ on:
     types:
       - opened
       - reopened
+      - synchronize
   workflow_dispatch:
     inputs:
       job:
@@ -116,8 +117,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     if: >-
-      ${{ github.event_name == 'push' ||
-          github.event_name == 'pull_request' ||
+      ${{ github.event_name == 'pull_request' ||
+          (github.event_name == 'push' &&
+            (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
           (github.event_name == 'workflow_dispatch' &&
             (github.event.inputs.job == 'all' ||
               github.event.inputs.job == 'android-ci')) }}
@@ -261,12 +263,10 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 10
     continue-on-error: true
+    # macOS minutes bill at 10× Linux — manual only unless explicitly dispatched.
     if: >-
-      ${{ github.event_name == 'pull_request' ||
-          (github.event_name == 'push' &&
-            (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
-          (github.event_name == 'workflow_dispatch' &&
-            (github.event.inputs.job == 'all' || github.event.inputs.job == 'ios-compatibility')) }}
+      ${{ github.event_name == 'workflow_dispatch' &&
+          (github.event.inputs.job == 'all' || github.event.inputs.job == 'ios-compatibility') }}
 
     steps:
       - name: Checkout
