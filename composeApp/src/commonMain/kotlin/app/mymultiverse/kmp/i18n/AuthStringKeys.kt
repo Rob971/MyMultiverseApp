@@ -4,6 +4,8 @@ object AuthStringKeys {
     val all: Set<String> = setOf(
         "auth_title",
         "auth_subtitle",
+        "auth_subtitle_sign_in",
+        "auth_subtitle_sign_up",
         "auth_email_label",
         "auth_password_label",
         "auth_sign_in_button",

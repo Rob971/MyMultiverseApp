@@ -15,6 +15,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
+import app.mymultiverse.kmp.data.observability.AppLogger
+import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
+import app.mymultiverse.kmp.domain.observability.DiagnosticsContext
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.kmp.presentation.di.FakeAuthRepository
 import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
@@ -28,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -37,6 +41,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -44,6 +49,7 @@ import kotlin.test.assertTrue
 class HomeScreenModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
+    private val logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "test"))
 
     @BeforeTest
     fun setUp() {
@@ -62,6 +68,8 @@ class HomeScreenModelTest {
                 AuthUser(id = "test-user", email = "test@example.com", displayName = "Test User"),
             ),
         ),
+        householdRepository: FakeHouseholdRepository = FakeHouseholdRepository(),
+        collaborationRepository: FakeHouseholdCollaborationRepository = FakeHouseholdCollaborationRepository(),
         personalDataExporter: FakePersonalDataExporter = FakePersonalDataExporter(),
         pushNotificationRegistrar: FakePushNotificationRegistrar = FakePushNotificationRegistrar(),
         sessionCoordinator: FakeNutritionSessionCoordinator = FakeNutritionSessionCoordinator(
@@ -71,11 +79,12 @@ class HomeScreenModelTest {
         HomeScreenModel(
             getGreetingUseCase = GetGreetingUseCase(repository),
             authRepository = authRepository,
-            householdRepository = FakeHouseholdRepository(),
-            collaborationRepository = FakeHouseholdCollaborationRepository(),
+            householdRepository = householdRepository,
+            collaborationRepository = collaborationRepository,
             sessionCoordinator = sessionCoordinator,
             personalDataExporter = personalDataExporter,
             pushNotificationRegistrar = pushNotificationRegistrar,
+            logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
 
@@ -230,6 +239,7 @@ class HomeScreenModelTest {
             ),
             personalDataExporter = FakePersonalDataExporter(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
+            logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
 
@@ -255,6 +265,7 @@ class HomeScreenModelTest {
             ),
             personalDataExporter = FakePersonalDataExporter(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
+            logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
         advanceUntilIdle()
@@ -291,12 +302,13 @@ class HomeScreenModelTest {
             ),
             personalDataExporter = FakePersonalDataExporter(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
+            logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
 
         advanceUntilIdle()
 
-        assertEquals(1, collaborationRepository.refreshPendingInvitesCalls)
+        assertEquals(2, collaborationRepository.refreshPendingInvitesCalls)
     }
 
     @Test
@@ -318,6 +330,7 @@ class HomeScreenModelTest {
             ),
             personalDataExporter = FakePersonalDataExporter(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
+            logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
         advanceUntilIdle()
@@ -481,6 +494,110 @@ class HomeScreenModelTest {
         assertNull(screenModel.deleteAccountMessage.value)
         assertEquals(0, authRepository.deleteAccountCalls)
     }
+
+    @Test
+    fun homePhase_isWelcomeWhenHouseholdActive() = runTest(testDispatcher) {
+        val screenModel = model(FakeGreetingRepository(Greeting("Welcome home")))
+        advanceUntilIdle()
+        assertEquals(HomePhase.Welcome, screenModel.homePhase.value)
+    }
+
+    @Test
+    fun homePhase_isOnboardingWhenNoHousehold() = runTest(testDispatcher) {
+        val householdRepository = FakeHouseholdRepository(
+            initialMembershipStatus = HouseholdMembershipStatus.None,
+        )
+        householdRepository.setMembershipStatus(HouseholdMembershipStatus.None)
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            householdRepository = householdRepository,
+        )
+        advanceUntilIdle()
+        assertEquals(HomePhase.Onboarding, screenModel.homePhase.value)
+    }
+
+    @Test
+    fun createHousehold_promotesToWelcome() = runTest(testDispatcher) {
+        val householdRepository = FakeHouseholdRepository(
+            initialMembershipStatus = HouseholdMembershipStatus.None,
+        )
+        householdRepository.setMembershipStatus(HouseholdMembershipStatus.None)
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            householdRepository = householdRepository,
+        )
+        advanceUntilIdle()
+        screenModel.onHouseholdNameChange("Rossi home")
+        advanceTimeBy(400)
+        advanceUntilIdle()
+        screenModel.createHousehold()
+        advanceUntilIdle()
+        assertEquals(HomePhase.Welcome, screenModel.homePhase.value)
+        assertEquals("Rossi home", householdRepository.lastCreatedName)
+    }
+
+    @Test
+    fun createHousehold_ignoredWhenNameBlank() = runTest(testDispatcher) {
+        val householdRepository = FakeHouseholdRepository(
+            initialMembershipStatus = HouseholdMembershipStatus.None,
+        )
+        householdRepository.setMembershipStatus(HouseholdMembershipStatus.None)
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            householdRepository = householdRepository,
+        )
+        advanceUntilIdle()
+        screenModel.createHousehold()
+        advanceUntilIdle()
+        assertEquals(0, householdRepository.createCalls)
+    }
+
+    @Test
+    fun pendingInvites_visibleDuringOnboarding() = runTest(testDispatcher) {
+        val collaboration = FakeHouseholdCollaborationRepository()
+        collaboration.inboundProfileEmail = "invitee@example.com"
+        collaboration.addMemberByEmail(
+            householdId = "household-1",
+            email = "invitee@example.com",
+            role = HouseholdMemberRole.Editor,
+        )
+        val householdRepository = FakeHouseholdRepository(
+            initialMembershipStatus = HouseholdMembershipStatus.None,
+        )
+        householdRepository.setMembershipStatus(HouseholdMembershipStatus.None)
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            householdRepository = householdRepository,
+            collaborationRepository = collaboration,
+        )
+        advanceUntilIdle()
+        assertEquals(HomePhase.Onboarding, screenModel.homePhase.value)
+        assertEquals(1, screenModel.pendingInvites.value.size)
+        assertEquals("invitee@example.com", screenModel.pendingInvites.value.single().email)
+    }
+
+    @Test
+    fun createHousehold_activatesNutritionSession() = runTest(testDispatcher) {
+        val householdRepository = FakeHouseholdRepository(
+            initialMembershipStatus = HouseholdMembershipStatus.None,
+        )
+        householdRepository.setMembershipStatus(HouseholdMembershipStatus.None)
+        val sessionCoordinator = FakeNutritionSessionCoordinator(
+            initialRepository = NutritionRepositoryImpl(MapSettings()),
+        )
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+        )
+        advanceUntilIdle()
+        screenModel.onHouseholdNameChange("Rossi home")
+        advanceTimeBy(400)
+        advanceUntilIdle()
+        screenModel.createHousehold()
+        advanceUntilIdle()
+        assertEquals("household-1", sessionCoordinator.activatedHouseholdId)
+    }
 }
 
 private class HangingHouseholdCollaborationRepository : HouseholdCollaborationRepository {
@@ -525,6 +642,11 @@ private class HangingHouseholdCollaborationRepository : HouseholdCollaborationRe
 
     override suspend fun removeDependant(dependantId: String): Result<Unit> =
         Result.failure(UnsupportedOperationException())
+
+    override suspend fun updateMemberRole(
+        memberId: String,
+        role: HouseholdMemberRole,
+    ): Result<Unit> = Result.failure(UnsupportedOperationException())
 }
 
 private class FakeGreetingRepository(

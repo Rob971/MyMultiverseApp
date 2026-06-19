@@ -20,6 +20,10 @@ object CollaborationErrorCodes {
     const val INVALID_TRANSFER_TARGET = "invalid_transfer_target"
     const val TRANSFER_TARGET_NOT_MEMBER = "transfer_target_not_member"
     const val SUPABASE_NOT_CONFIGURED = "supabase_not_configured"
+    const val HOUSEHOLD_NAME_TAKEN = "household_name_taken"
+    const val HOUSEHOLD_NAME_REQUIRED = "household_name_required"
+    const val CANNOT_ASSIGN_OWNER_ROLE = "cannot_assign_owner_role"
+    const val MEMBER_NOT_FOUND = "member_not_found"
 
     fun messageContains(code: String, message: String?): Boolean =
         message?.contains(code, ignoreCase = true) == true

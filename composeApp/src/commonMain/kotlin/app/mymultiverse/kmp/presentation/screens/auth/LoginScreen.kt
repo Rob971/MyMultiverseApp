@@ -51,6 +51,8 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_provider_
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_sign_in_button
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_sign_up_button
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_subtitle
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_subtitle_sign_in
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_subtitle_sign_up
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_success_email_confirmation
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_switch_to_sign_in
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_switch_to_sign_up
@@ -111,7 +113,13 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = stringResource(Res.string.auth_subtitle),
+                text = stringResource(
+                    if (uiState.isSignUpMode) {
+                        Res.string.auth_subtitle_sign_up
+                    } else {
+                        Res.string.auth_subtitle_sign_in
+                    },
+                ),
                 style = MaterialTheme.typography.bodyLarge,
                 color = SharedJourneyColors.InkDeep.copy(alpha = 0.75f),
                 textAlign = TextAlign.Center,

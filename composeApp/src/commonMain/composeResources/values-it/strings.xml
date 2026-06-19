@@ -281,6 +281,9 @@
     <string name="category_long_term_plan_title">Piano traguardo</string>
     <string name="home_greeting">Il cuore pulsante della nostra famiglia.</string>
     <string name="home_greeting_personalized">Ciao, %1$s</string>
+    <string name="home_onboarding_wait_for_invite_title">In attesa di un invito?</string>
+    <string name="home_onboarding_wait_for_invite_body">Quando qualcuno invita %1$s, lo vedrai qui. Puoi anche aggiornare per controllare ora.</string>
+    <string name="home_onboarding_refresh_invites">Aggiorna inviti</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>
@@ -774,4 +777,18 @@
     <string name="invite_join_email_mismatch_title">Accedi con l'email invitata</string>
     <string name="invite_join_sign_out_retry">Esci e riprova</string>
         <string name="household_gate_create_divider">Oppure crea una nuova famiglia</string>
+    <string name="household_name_checking">Verifica del nome…</string>
+    <string name="household_name_available">Questo nome è disponibile</string>
+    <string name="household_name_taken">Questo nome è già in uso</string>
+    <string name="household_name_invalid">Inserisci 2–40 caratteri</string>
+    <string name="home_household_name_edit">Modifica</string>
+    <string name="home_rename_household_title">Rinomina famiglia</string>
+    <string name="home_rename_household_save">Salva nome</string>
+    <string name="auth_subtitle_sign_in">Accedi per unirti o gestire la tua famiglia.</string>
+    <string name="auth_subtitle_sign_up">Crea il tuo account, poi configura o unisciti a una famiglia.</string>
+    <string name="sharing_members_role_admin">Admin famiglia</string>
+    <string name="sharing_members_change_role">Cambia ruolo</string>
+    <string name="sharing_members_promote_admin_confirm_title">Rendere admin della famiglia?</string>
+    <string name="sharing_members_promote_admin_confirm_message">%1$s può invitare persone e gestire i membri, ma non può trasferire la proprietà o sciogliere la famiglia.</string>
+    <string name="sharing_members_role_updated">Ruolo aggiornato</string>
 </resources>

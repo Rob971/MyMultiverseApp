@@ -1,10 +1,12 @@
 package app.mymultiverse.kmp.presentation.screens.home
 
+import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.auth.resolvedDisplayName
 import app.mymultiverse.kmp.domain.model.sharing.Household
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
@@ -15,15 +17,20 @@ import app.mymultiverse.kmp.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.kmp.domain.platform.PersonalDataExporter
 import app.mymultiverse.kmp.domain.platform.PushNotificationRegistrar
 import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
+import app.mymultiverse.kmp.domain.sharing.HouseholdNameRules
+import app.mymultiverse.kmp.domain.sharing.canRenameHousehold
 import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
 import app.mymultiverse.kmp.presentation.screens.household.SwitchHouseholdPrompt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -36,6 +43,7 @@ class HomeScreenModel(
     private val sessionCoordinator: NutritionSessionCoordinator,
     private val personalDataExporter: PersonalDataExporter,
     private val pushNotificationRegistrar: PushNotificationRegistrar,
+    private val logger: AppLogger,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
     private val _greeting = MutableStateFlow<Greeting?>(null)
@@ -46,10 +54,37 @@ class HomeScreenModel(
 
     private var latestMembershipStatus: HouseholdMembershipStatus = HouseholdMembershipStatus.Loading
 
+    private val _membershipStatusOverride = MutableStateFlow<HouseholdMembershipStatus?>(null)
+
+    val homePhase: StateFlow<HomePhase> = combine(
+        householdRepository.observeMembershipStatus(),
+        _membershipStatusOverride,
+    ) { status, override ->
+        (override ?: status).toHomePhase()
+    }.stateIn(scope, SharingStarted.Eagerly, HomePhase.Loading)
+
     val hasActiveHousehold: StateFlow<Boolean> = householdRepository
         .observeMembershipStatus()
         .map { it is HouseholdMembershipStatus.Active }
         .stateIn(scope, SharingStarted.WhileSubscribed(5_000), false)
+
+    private val _onboardingUiState = MutableStateFlow(HomeOnboardingUiState())
+    val onboardingUiState: StateFlow<HomeOnboardingUiState> = _onboardingUiState.asStateFlow()
+
+    private val _renameUiState = MutableStateFlow(HomeRenameUiState())
+    val renameUiState: StateFlow<HomeRenameUiState> = _renameUiState.asStateFlow()
+
+    private var nameCheckJob: Job? = null
+    private var renameNameCheckJob: Job? = null
+
+    val activeMemberRole: StateFlow<HouseholdMemberRole?> = householdRepository
+        .observeMembershipStatus()
+        .map { status -> (status as? HouseholdMembershipStatus.Active)?.role }
+        .stateIn(scope, SharingStarted.Eagerly, null)
+
+    val canRenameHousehold: StateFlow<Boolean> = activeMemberRole
+        .map { role -> role?.canRenameHousehold() == true }
+        .stateIn(scope, SharingStarted.Eagerly, false)
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
@@ -62,7 +97,7 @@ class HomeScreenModel(
 
     val pendingInvites: StateFlow<List<HouseholdInvite>> = collaborationRepository
         .observePendingInvites()
-        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
     val userDisplayName: StateFlow<String?> = authRepository.authState
         .map(::displayNameForAuthState)
@@ -78,11 +113,13 @@ class HomeScreenModel(
                 latestMembershipStatus = status
                 if (status is HouseholdMembershipStatus.Active) {
                     _household.value = status.household
+                    _membershipStatusOverride.value = null
                 } else if (status == HouseholdMembershipStatus.None) {
                     _household.value = null
                 }
             }
         }
+        refreshMembership()
         refresh()
     }
 
@@ -98,8 +135,229 @@ class HomeScreenModel(
             }
         }
         refreshPendingInvitesInBackground()
-        refreshHouseholdInBackground()
         registerPushNotificationsIfAuthenticated()
+    }
+
+    fun refreshMembership(forceLoadingState: Boolean = false) {
+        scope.launch {
+            if (forceLoadingState) {
+                _membershipStatusOverride.value = HouseholdMembershipStatus.Loading
+            }
+            _onboardingUiState.value = _onboardingUiState.value.copy(isCreating = false)
+            householdRepository.refreshMembership()
+                .onSuccess { status ->
+                    _membershipStatusOverride.value = null
+                    latestMembershipStatus = status
+                    if (status is HouseholdMembershipStatus.Active) {
+                        _household.value = status.household
+                        activateNutritionSession(status.household.id)
+                    } else if (status == HouseholdMembershipStatus.None) {
+                        _household.value = null
+                    }
+                    runCatching { collaborationRepository.refreshPendingInvites() }
+                }
+                .onFailure { throwable ->
+                    logger.recordError(
+                        tag = "HomeScreen",
+                        message = "refresh_membership_failed: ${throwable.message}",
+                        throwable = throwable,
+                    )
+                    _membershipStatusOverride.value = HouseholdMembershipStatus.Error(
+                        mapFailure(throwable),
+                    )
+                }
+        }
+    }
+
+    fun onHouseholdNameChange(name: String) {
+        nameCheckJob?.cancel()
+        _onboardingUiState.value = _onboardingUiState.value.copy(
+            householdNameInput = name,
+            nameAvailability = localNameAvailability(name),
+        )
+        scheduleNameAvailabilityCheck(
+            name = name,
+            excludeHouseholdId = null,
+            onChecking = { availability ->
+                _onboardingUiState.value = _onboardingUiState.value.copy(nameAvailability = availability)
+            },
+            onResult = { availability ->
+                _onboardingUiState.value = _onboardingUiState.value.copy(nameAvailability = availability)
+            },
+        ) { job -> nameCheckJob = job }
+    }
+
+    fun openRenameHouseholdDialog() {
+        val currentName = _household.value?.name.orEmpty()
+        _renameUiState.value = HomeRenameUiState(
+            isVisible = true,
+            nameInput = currentName,
+            nameAvailability = if (currentName.isBlank()) {
+                HouseholdNameAvailability.Invalid
+            } else {
+                HouseholdNameAvailability.Available
+            },
+        )
+    }
+
+    fun dismissRenameHouseholdDialog() {
+        renameNameCheckJob?.cancel()
+        _renameUiState.value = HomeRenameUiState()
+    }
+
+    fun onRenameHouseholdNameChange(name: String) {
+        renameNameCheckJob?.cancel()
+        val householdId = _household.value?.id
+        _renameUiState.value = _renameUiState.value.copy(
+            nameInput = name,
+            nameAvailability = localNameAvailability(name),
+        )
+        scheduleNameAvailabilityCheck(
+            name = name,
+            excludeHouseholdId = householdId,
+            onChecking = { availability ->
+                _renameUiState.value = _renameUiState.value.copy(nameAvailability = availability)
+            },
+            onResult = { availability ->
+                _renameUiState.value = _renameUiState.value.copy(nameAvailability = availability)
+            },
+        ) { job -> renameNameCheckJob = job }
+    }
+
+    fun confirmRenameHousehold() {
+        val name = _renameUiState.value.nameInput.trim()
+        if (name.isEmpty() ||
+            _renameUiState.value.isSaving ||
+            _renameUiState.value.nameAvailability != HouseholdNameAvailability.Available
+        ) {
+            return
+        }
+
+        scope.launch {
+            _renameUiState.value = _renameUiState.value.copy(isSaving = true)
+            householdRepository.renameHousehold(name)
+                .onSuccess { updated ->
+                    _household.value = updated
+                    dismissRenameHouseholdDialog()
+                }
+                .onFailure { throwable ->
+                    logger.recordError(
+                        tag = "HomeScreen",
+                        message = "rename_household_failed: ${throwable.message}",
+                        throwable = throwable,
+                    )
+                    if (CollaborationErrorCodes.messageContains(
+                            CollaborationErrorCodes.HOUSEHOLD_NAME_TAKEN,
+                            throwable.message,
+                        )
+                    ) {
+                        _renameUiState.value = _renameUiState.value.copy(
+                            isSaving = false,
+                            nameAvailability = HouseholdNameAvailability.Taken,
+                        )
+                    } else {
+                        _renameUiState.value = _renameUiState.value.copy(isSaving = false)
+                    }
+                }
+        }
+    }
+
+    fun createHousehold() {
+        val name = _onboardingUiState.value.householdNameInput.trim()
+        if (name.isEmpty() ||
+            _onboardingUiState.value.isCreating ||
+            _onboardingUiState.value.nameAvailability != HouseholdNameAvailability.Available
+        ) {
+            return
+        }
+
+        scope.launch {
+            _onboardingUiState.value = _onboardingUiState.value.copy(isCreating = true)
+            householdRepository.createHousehold(name)
+                .onSuccess { created ->
+                    householdRepository.refreshMembership()
+                        .onSuccess { status ->
+                            _membershipStatusOverride.value = null
+                            latestMembershipStatus = status
+                            _onboardingUiState.value = _onboardingUiState.value.copy(isCreating = false)
+                            if (status is HouseholdMembershipStatus.Active) {
+                                _household.value = status.household
+                            }
+                            activateNutritionSession(
+                                householdId = (status as? HouseholdMembershipStatus.Active)?.household?.id
+                                    ?: created.id,
+                            )
+                            runCatching { collaborationRepository.refreshPendingInvites() }
+                        }
+                        .onFailure { throwable ->
+                            _membershipStatusOverride.value = HouseholdMembershipStatus.Error(
+                                mapFailure(throwable),
+                            )
+                            _onboardingUiState.value = _onboardingUiState.value.copy(isCreating = false)
+                        }
+                }
+                .onFailure { throwable ->
+                    logger.recordError(
+                        tag = "HomeScreen",
+                        message = "create_household_failed: ${throwable.message}",
+                        throwable = throwable,
+                    )
+                    if (CollaborationErrorCodes.messageContains(
+                            CollaborationErrorCodes.HOUSEHOLD_NAME_TAKEN,
+                            throwable.message,
+                        )
+                    ) {
+                        _onboardingUiState.value = _onboardingUiState.value.copy(
+                            isCreating = false,
+                            nameAvailability = HouseholdNameAvailability.Taken,
+                        )
+                    } else {
+                        _membershipStatusOverride.value = HouseholdMembershipStatus.Error(
+                            mapFailure(throwable),
+                        )
+                        _onboardingUiState.value = _onboardingUiState.value.copy(isCreating = false)
+                    }
+                }
+        }
+    }
+
+    private fun localNameAvailability(name: String): HouseholdNameAvailability =
+        if (HouseholdNameRules.validationError(name) != null) {
+            HouseholdNameAvailability.Invalid
+        } else {
+            HouseholdNameAvailability.Unknown
+        }
+
+    private fun scheduleNameAvailabilityCheck(
+        name: String,
+        excludeHouseholdId: String?,
+        onChecking: (HouseholdNameAvailability) -> Unit,
+        onResult: (HouseholdNameAvailability) -> Unit,
+        assignJob: (Job) -> Unit,
+    ) {
+        if (HouseholdNameRules.validationError(name) != null) {
+            onResult(HouseholdNameAvailability.Invalid)
+            return
+        }
+
+        val job = scope.launch {
+            delay(NAME_CHECK_DEBOUNCE_MS)
+            onChecking(HouseholdNameAvailability.Checking)
+            householdRepository.checkHouseholdNameAvailable(name, excludeHouseholdId)
+                .onSuccess { available ->
+                    onResult(
+                        if (available) HouseholdNameAvailability.Available else HouseholdNameAvailability.Taken,
+                    )
+                }
+                .onFailure {
+                    onResult(HouseholdNameAvailability.Unknown)
+                }
+        }
+        assignJob(job)
+    }
+
+    private companion object {
+        const val NAME_CHECK_DEBOUNCE_MS = 400L
     }
 
     private fun registerPushNotificationsIfAuthenticated() {
@@ -107,20 +365,6 @@ class HomeScreenModel(
             if (authRepository.authState.value is AuthState.Authenticated) {
                 runCatching { pushNotificationRegistrar.registerCurrentDeviceToken() }
             }
-        }
-    }
-
-    private fun refreshHouseholdInBackground() {
-        scope.launch {
-            householdRepository.refreshMembership()
-                .onSuccess { status ->
-                    if (status is HouseholdMembershipStatus.Active) {
-                        _household.value = status.household
-                        activateNutritionSession(status.household.id)
-                    } else {
-                        _household.value = null
-                    }
-                }
         }
     }
 
@@ -229,6 +473,8 @@ class HomeScreenModel(
                 .onSuccess {
                     householdRepository.refreshMembership()
                         .onSuccess { status ->
+                            _membershipStatusOverride.value = null
+                            latestMembershipStatus = status
                             if (status is HouseholdMembershipStatus.Active) {
                                 _household.value = status.household
                                 activateNutritionSession(status.household.id)
@@ -258,15 +504,24 @@ class HomeScreenModel(
         val status = householdRepository.refreshMembership().getOrNull()
         if (status !is HouseholdMembershipStatus.Active) return Result.success(Unit)
         sessionCoordinator.deactivate()
-        return when (status.role) {
-            HouseholdMemberRole.Owner -> householdRepository.dissolveHousehold()
-            else -> householdRepository.leaveHousehold()
+        return if (status.role == HouseholdMemberRole.Owner) {
+            householdRepository.dissolveHousehold()
+        } else {
+            householdRepository.leaveHousehold()
         }
     }
 
     private suspend fun activateNutritionSession(householdId: String) {
         runCatching { sessionCoordinator.activateHousehold(householdId) }
     }
+
+    private fun mapFailure(throwable: Throwable): HouseholdGateError =
+        when (throwable.message) {
+            "supabase_not_configured" -> HouseholdGateError.NotConfigured
+            "household_already_active" -> HouseholdGateError.AlreadyActive
+            "household_required" -> HouseholdGateError.HouseholdRequired
+            else -> HouseholdGateError.Generic
+        }
 
     private fun displayNameForAuthState(state: AuthState): String? =
         when (state) {

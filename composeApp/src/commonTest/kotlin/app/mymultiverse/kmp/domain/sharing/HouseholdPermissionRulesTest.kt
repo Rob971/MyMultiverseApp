@@ -8,20 +8,26 @@ import kotlin.test.assertTrue
 class HouseholdPermissionRulesTest {
 
     @Test
-    fun ownerAndEditorCanWrite() {
+    fun writeAccess_includesAdminAndEditor() {
         assertTrue(HouseholdMemberRole.Owner.canWriteHouseholdData())
+        assertTrue(HouseholdMemberRole.Admin.canWriteHouseholdData())
         assertTrue(HouseholdMemberRole.Editor.canWriteHouseholdData())
-    }
-
-    @Test
-    fun viewerCannotWrite() {
         assertFalse(HouseholdMemberRole.Viewer.canWriteHouseholdData())
     }
 
     @Test
-    fun onlyOwnerCanManageMembers() {
+    fun manageMembers_includesOwnerAndAdmin() {
         assertTrue(HouseholdMemberRole.Owner.canManageHouseholdMembers())
+        assertTrue(HouseholdMemberRole.Admin.canManageHouseholdMembers())
         assertFalse(HouseholdMemberRole.Editor.canManageHouseholdMembers())
-        assertFalse(HouseholdMemberRole.Viewer.canManageHouseholdMembers())
+    }
+
+    @Test
+    fun adminCannotAssignAdminOrChangeOwner() {
+        assertTrue(HouseholdMemberRole.Owner.canChangeRoleOf(HouseholdMemberRole.Editor))
+        assertTrue(HouseholdMemberRole.Owner.canAssignAdminRole())
+        assertFalse(HouseholdMemberRole.Admin.canChangeRoleOf(HouseholdMemberRole.Admin))
+        assertFalse(HouseholdMemberRole.Admin.canAssignAdminRole())
+        assertTrue(HouseholdMemberRole.Admin.canChangeRoleOf(HouseholdMemberRole.Viewer))
     }
 }

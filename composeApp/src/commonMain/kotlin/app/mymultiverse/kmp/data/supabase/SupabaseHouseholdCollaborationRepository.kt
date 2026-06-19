@@ -222,6 +222,26 @@ class SupabaseHouseholdCollaborationRepository(
         }
     }
 
+    override suspend fun updateMemberRole(
+        memberId: String,
+        role: HouseholdMemberRole,
+    ): Result<Unit> = runCatching {
+        client.postgrest.rpc(
+            "update_household_member_role",
+            buildJsonObject {
+                put("p_member_id", memberId)
+                put("p_role", role.wireName())
+            },
+        )
+        membersByHousehold.values.forEach { flow ->
+            flow.update { members ->
+                members.map { member ->
+                    if (member.id == memberId) member.copy(role = role) else member
+                }
+            }
+        }
+    }
+
     override suspend fun acceptInvite(inviteId: String): Result<Unit> = runCatching {
         val currentUserId = requireUserId()
         ensureProfile(currentUserId)
@@ -402,6 +422,7 @@ class SupabaseHouseholdCollaborationRepository(
     private fun HouseholdMemberRole.wireName(): String =
         when (this) {
             HouseholdMemberRole.Owner -> "owner"
+            HouseholdMemberRole.Admin -> "admin"
             HouseholdMemberRole.Viewer -> "viewer"
             HouseholdMemberRole.Editor -> "editor"
         }
@@ -409,6 +430,7 @@ class SupabaseHouseholdCollaborationRepository(
     private fun String.toHouseholdMemberRole(): HouseholdMemberRole =
         when (this) {
             "owner" -> HouseholdMemberRole.Owner
+            "admin" -> HouseholdMemberRole.Admin
             "viewer" -> HouseholdMemberRole.Viewer
             else -> HouseholdMemberRole.Editor
         }

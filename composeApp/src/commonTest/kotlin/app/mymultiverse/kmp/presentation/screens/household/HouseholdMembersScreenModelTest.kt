@@ -130,10 +130,66 @@ class HouseholdMembersScreenModelTest {
 
     @Test
     fun nonOwner_cannotManageMembers() = runTest(testDispatcher) {
+        householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Editor)
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
         model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "editor-1")
         advanceUntilIdle()
 
         assertFalse(model.uiState.value.canManageMembers)
+        assertEquals(HouseholdMemberRole.Editor, model.uiState.value.currentUserRole)
+    }
+
+    @Test
+    fun owner_canPromoteMemberToAdmin() = runTest(testDispatcher) {
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Partner",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "partner-id",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        advanceUntilIdle()
+
+        val member = model.uiState.value.members.single { it.role == HouseholdMemberRole.Editor }
+        model.openRoleChangeDialog(member)
+        model.onMemberRoleChange(HouseholdMemberRole.Admin)
+        model.confirmRoleChange("household-1")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersSuccess.RoleUpdated, model.uiState.value.successMessageKey)
+        assertEquals(
+            HouseholdMemberRole.Admin,
+            model.uiState.value.members.single { it.id == "member-1" }.role,
+        )
+    }
+
+    @Test
+    fun admin_cannotInviteAsAdmin() = runTest(testDispatcher) {
+        householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Admin)
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "admin-1")
+        advanceUntilIdle()
+
+        model.openAddPersonDialog()
+        model.onRoleChange(HouseholdMemberRole.Admin)
+        assertEquals(HouseholdMemberRole.Editor, model.uiState.value.selectedRole)
     }
 
     @Test

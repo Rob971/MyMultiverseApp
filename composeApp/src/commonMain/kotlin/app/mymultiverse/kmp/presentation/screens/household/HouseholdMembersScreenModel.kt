@@ -13,6 +13,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
+import app.mymultiverse.kmp.domain.sharing.canManageHouseholdMembers
+import app.mymultiverse.kmp.domain.sharing.canAssignAdminRole
+import app.mymultiverse.kmp.domain.sharing.canChangeRoleOf
+import app.mymultiverse.kmp.domain.sharing.canInviteWithRole
+import app.mymultiverse.kmp.domain.sharing.canRemoveMember
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -65,6 +70,11 @@ data class HouseholdMembersUiState(
     val isTransferring: Boolean = false,
     val pendingLeaveAction: HouseholdMembersLeaveAction? = null,
     val isLeaving: Boolean = false,
+    val showRoleChangeDialog: Boolean = false,
+    val roleChangeTarget: HouseholdMember? = null,
+    val selectedMemberRole: HouseholdMemberRole = HouseholdMemberRole.Editor,
+    val isUpdatingRole: Boolean = false,
+    val currentUserRole: HouseholdMemberRole? = null,
 )
 
 enum class HouseholdMembersSuccess {
@@ -72,6 +82,7 @@ enum class HouseholdMembersSuccess {
     MemberAdded,
     OwnershipTransferred,
     DependantAdded,
+    RoleUpdated,
 }
 
 class HouseholdMembersScreenModel(
@@ -87,6 +98,7 @@ class HouseholdMembersScreenModel(
     private var activeOwnerId: String = ""
     private var activeOwnerDisplayName: String = ""
     private var activeUserIsOwner: Boolean = false
+    private var activeUserRole: HouseholdMemberRole? = null
     private var observeJob: Job? = null
 
     fun bindHousehold(
@@ -95,24 +107,15 @@ class HouseholdMembersScreenModel(
         ownerDisplayName: String,
         currentUserId: String?,
     ) {
-        val canManage = currentUserId != null && currentUserId == ownerId
-        activeUserIsOwner = canManage
         if (activeHouseholdId == householdId &&
             activeOwnerId == ownerId &&
-            activeOwnerDisplayName == ownerDisplayName &&
-            _uiState.value.canManageMembers == canManage
+            activeOwnerDisplayName == ownerDisplayName
         ) {
             return
         }
         activeHouseholdId = householdId
         activeOwnerId = ownerId
         activeOwnerDisplayName = ownerDisplayName
-        _uiState.update {
-            it.copy(
-                canManageMembers = canManage,
-                canLeave = currentUserId != null && !canManage,
-            )
-        }
 
         observeJob?.cancel()
         observeJob = scope.launch {
@@ -123,13 +126,14 @@ class HouseholdMembersScreenModel(
                         val transferCandidates = members.filter {
                             it.role != HouseholdMemberRole.Owner && it.kind == HouseholdMemberKind.Person
                         }
+                        val isOwner = activeUserRole == HouseholdMemberRole.Owner
                         state.copy(
                             members = members,
-                            canDissolve = activeUserIsOwner && otherMembers == 0,
-                            showOwnerTransferHint = activeUserIsOwner && otherMembers > 0,
-                            canTransferOwnership = activeUserIsOwner && transferCandidates.isNotEmpty(),
+                            canDissolve = isOwner && otherMembers == 0,
+                            showOwnerTransferHint = isOwner && otherMembers > 0,
+                            canTransferOwnership = isOwner && transferCandidates.isNotEmpty(),
                             transferCandidates = transferCandidates,
-                            canLeave = !activeUserIsOwner,
+                            canLeave = activeUserRole != null && activeUserRole != HouseholdMemberRole.Owner,
                         )
                     }
                 }
@@ -143,9 +147,28 @@ class HouseholdMembersScreenModel(
         refresh(householdId)
     }
 
+    private fun applyMembershipRole(role: HouseholdMemberRole?) {
+        activeUserRole = role
+        activeUserIsOwner = role == HouseholdMemberRole.Owner
+        val canManage = role?.canManageHouseholdMembers() == true
+        _uiState.update {
+            it.copy(
+                currentUserRole = role,
+                canManageMembers = canManage,
+                canLeave = role != null && role != HouseholdMemberRole.Owner,
+            )
+        }
+    }
+
     fun refresh(householdId: String) {
         scope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
+            householdRepository.refreshMembership()
+                .onSuccess { status ->
+                    if (status is HouseholdMembershipStatus.Active) {
+                        applyMembershipRole(status.role)
+                    }
+                }
             runCatching {
                 collaborationRepository.refreshMembers(householdId, activeOwnerId, activeOwnerDisplayName)
                 collaborationRepository.refreshOutboundInvites(householdId)
@@ -186,7 +209,69 @@ class HouseholdMembersScreenModel(
     }
 
     fun onRoleChange(role: HouseholdMemberRole) {
+        val actorRole = _uiState.value.currentUserRole
+        if (actorRole != null && !actorRole.canInviteWithRole(role)) return
         _uiState.update { it.copy(selectedRole = role, dialogError = null) }
+    }
+
+    fun openRoleChangeDialog(member: HouseholdMember) {
+        val actorRole = _uiState.value.currentUserRole ?: return
+        if (!actorRole.canChangeRoleOf(member.role)) return
+        _uiState.update {
+            it.copy(
+                showRoleChangeDialog = true,
+                roleChangeTarget = member,
+                selectedMemberRole = member.role,
+                dialogError = null,
+            )
+        }
+    }
+
+    fun dismissRoleChangeDialog() {
+        _uiState.update {
+            it.copy(
+                showRoleChangeDialog = false,
+                roleChangeTarget = null,
+                isUpdatingRole = false,
+                dialogError = null,
+            )
+        }
+    }
+
+    fun onMemberRoleChange(role: HouseholdMemberRole) {
+        val actorRole = _uiState.value.currentUserRole
+        val target = _uiState.value.roleChangeTarget ?: return
+        if (actorRole != null && !actorRole.canChangeRoleOf(target.role)) return
+        if (actorRole != null && !actorRole.canInviteWithRole(role)) return
+        _uiState.update { it.copy(selectedMemberRole = role, dialogError = null) }
+    }
+
+    fun confirmRoleChange(householdId: String) {
+        val member = _uiState.value.roleChangeTarget ?: return
+        val role = _uiState.value.selectedMemberRole
+        scope.launch {
+            _uiState.update { it.copy(isUpdatingRole = true, dialogError = null, error = null) }
+            collaborationRepository.updateMemberRole(member.id, role)
+                .onSuccess {
+                    collaborationRepository.refreshMembers(householdId, activeOwnerId, activeOwnerDisplayName)
+                    _uiState.update {
+                        it.copy(
+                            isUpdatingRole = false,
+                            showRoleChangeDialog = false,
+                            roleChangeTarget = null,
+                            successMessageKey = HouseholdMembersSuccess.RoleUpdated,
+                        )
+                    }
+                }
+                .onFailure { throwable ->
+                    _uiState.update {
+                        it.copy(
+                            isUpdatingRole = false,
+                            dialogError = mapFailure(throwable),
+                        )
+                    }
+                }
+        }
     }
 
     fun submitAddPerson(householdId: String) {
@@ -237,6 +322,8 @@ class HouseholdMembersScreenModel(
 
     fun removeMember(member: HouseholdMember, householdId: String) {
         if (member.role == HouseholdMemberRole.Owner) return
+        val actorRole = _uiState.value.currentUserRole ?: return
+        if (!actorRole.canRemoveMember(member.role)) return
         scope.launch {
             _uiState.update { it.copy(isSaving = true, error = null) }
             val result = when (member.kind) {

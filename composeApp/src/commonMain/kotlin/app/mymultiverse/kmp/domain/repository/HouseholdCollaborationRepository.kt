@@ -30,6 +30,11 @@ interface HouseholdCollaborationRepository {
 
     suspend fun removeMember(memberId: String): Result<Unit>
 
+    suspend fun updateMemberRole(
+        memberId: String,
+        role: HouseholdMemberRole,
+    ): Result<Unit>
+
     suspend fun acceptInvite(inviteId: String): Result<Unit>
 
     suspend fun declineInvite(inviteId: String): Result<Unit>

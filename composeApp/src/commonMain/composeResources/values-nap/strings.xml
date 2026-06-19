@@ -281,6 +281,9 @@
     <string name="category_long_term_plan_title">Piano traguardo</string>
     <string name="home_greeting">'O core ca batte d' 'a famiglia.</string>
     <string name="home_greeting_personalized">Ciao, %1$s</string>
+    <string name="home_onboarding_wait_for_invite_title">Aspettanno 'n invito?</string>
+    <string name="home_onboarding_wait_for_invite_body">Quanno quacuno invita %1$s, 'o vede ccà. Può aggiornà pe' verificà mo'.</string>
+    <string name="home_onboarding_refresh_invites">Aggiorna 'e inviti</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>
@@ -774,4 +777,18 @@
     <string name="invite_join_email_mismatch_title">Trà cu l'email invitata</string>
     <string name="invite_join_sign_out_retry">Sciò e pruova arreto</string>
         <string name="household_gate_create_divider">O crea 'na famiglia nova</string>
+    <string name="household_name_checking">Sto verificanno 'o nomme…</string>
+    <string name="household_name_available">Sto nomme è libbero</string>
+    <string name="household_name_taken">Sto nomme è già pigliato</string>
+    <string name="household_name_invalid">Miett 2–40 carattere</string>
+    <string name="home_household_name_edit">Cagna</string>
+    <string name="home_rename_household_title">Rinomina 'a famiglia</string>
+    <string name="home_rename_household_save">Salva 'o nomme</string>
+    <string name="auth_subtitle_sign_in">Accetta pe' entrà o gestì 'a famiglia toja.</string>
+    <string name="auth_subtitle_sign_up">Crea 'o conto, po' configura o uniscite a 'na famiglia.</string>
+    <string name="sharing_members_role_admin">Admin d' 'a famiglia</string>
+    <string name="sharing_members_change_role">Cagna 'o ruolo</string>
+    <string name="sharing_members_promote_admin_confirm_title">Fà admin d' 'a famiglia?</string>
+    <string name="sharing_members_promote_admin_confirm_message">%1$s può invità gent e gestì 'e membri, ma nun po' trasferì 'a proprietà o scioglier' 'a famiglia.</string>
+    <string name="sharing_members_role_updated">Ruolo aggiornato</string>
 </resources>

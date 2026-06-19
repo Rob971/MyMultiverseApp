@@ -13,6 +13,13 @@ interface HouseholdRepository {
 
     suspend fun createHousehold(name: String): Result<Household>
 
+    suspend fun checkHouseholdNameAvailable(
+        name: String,
+        excludeHouseholdId: String? = null,
+    ): Result<Boolean>
+
+    suspend fun renameHousehold(newName: String): Result<Household>
+
     /** Resolves the active household; fails with [household_required] when none exists. */
     suspend fun ensureHousehold(): Result<Household>
 

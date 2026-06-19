@@ -14,7 +14,6 @@ import androidx.compose.ui.backhandler.BackHandler
 import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.repository.AuthRepository
-import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
 import app.mymultiverse.kmp.presentation.navigation.AppRoute
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
@@ -22,9 +21,6 @@ import app.mymultiverse.kmp.presentation.navigation.rememberAppNavigator
 import app.mymultiverse.kmp.presentation.PlatformPushSetup
 import app.mymultiverse.kmp.presentation.screens.auth.LoginScreen
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreen
-import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
-import app.mymultiverse.kmp.presentation.screens.household.HouseholdGateScreen
-import app.mymultiverse.kmp.presentation.screens.household.HouseholdGateScreenModel
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersFlow
 import app.mymultiverse.kmp.presentation.invite.InviteJoinAcceptError
 import app.mymultiverse.kmp.presentation.invite.InviteJoinAcceptState
@@ -99,24 +95,15 @@ fun App() {
 @Composable
 private fun AuthenticatedApp() {
     val authRepository = koinInject<AuthRepository>()
-    val householdRepository = koinInject<HouseholdRepository>()
-    val gateScreenModel = koinInject<HouseholdGateScreenModel>()
     val inviteFlow = koinInject<InviteJoinFlowCoordinator>()
     val pendingInviteToken by inviteFlow.pendingInviteToken.collectAsState()
     val acceptState by inviteFlow.acceptState.collectAsState()
     val authState by authRepository.authState.collectAsState()
-    val membershipStatus by householdRepository.observeMembershipStatus().collectAsState(
-        initial = HouseholdMembershipStatus.Loading,
-    )
 
     LaunchedEffect(pendingInviteToken) {
         if (!pendingInviteToken.isNullOrBlank()) {
             inviteFlow.acceptPendingInviteIfNeeded()
         }
-    }
-
-    LaunchedEffect(Unit) {
-        gateScreenModel.refreshMembership()
     }
 
     val emailMismatch = acceptState as? InviteJoinAcceptState.Failed
@@ -144,10 +131,7 @@ private fun AuthenticatedApp() {
         return
     }
 
-    when (membershipStatus) {
-        is HouseholdMembershipStatus.Active -> AuthenticatedMainApp()
-        else -> HouseholdGateScreen(screenModel = gateScreenModel)
-    }
+    AuthenticatedMainApp()
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

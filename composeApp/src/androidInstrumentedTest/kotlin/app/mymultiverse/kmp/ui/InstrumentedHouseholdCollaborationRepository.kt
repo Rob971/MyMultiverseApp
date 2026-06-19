@@ -58,6 +58,11 @@ class InstrumentedHouseholdCollaborationRepository : HouseholdCollaborationRepos
 
     override suspend fun removeMember(memberId: String): Result<Unit> = Result.success(Unit)
 
+    override suspend fun updateMemberRole(
+        memberId: String,
+        role: HouseholdMemberRole,
+    ): Result<Unit> = Result.success(Unit)
+
     override suspend fun acceptInvite(inviteId: String): Result<Unit> = Result.success(Unit)
 
     override suspend fun declineInvite(inviteId: String): Result<Unit> = Result.success(Unit)
