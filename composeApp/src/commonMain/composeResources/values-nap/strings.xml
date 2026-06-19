@@ -771,5 +771,7 @@
     <string name="invite_join_error_otp_expired">'O codice è sciuso. Mannane n'atu.</string>
     <string name="invite_join_error_otp_rate_limited">Tropp'attempt. Aspetta un poco e próva arreto.</string>
     <string name="invite_join_apple_email_hint">Miette ll'email ca ha ricevuto ll'invito (nun Hide My Email).</string>
+    <string name="invite_join_email_mismatch_title">Trà cu l'email invitata</string>
+    <string name="invite_join_sign_out_retry">Sciò e pruova arreto</string>
         <string name="household_gate_create_divider">O crea 'na famiglia nova</string>
 </resources>

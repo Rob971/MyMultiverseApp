@@ -162,6 +162,7 @@ jobs:
       - name: Deploy P2 edge functions
         run: |
           supabase functions deploy notify-household-invite --project-ref "$SUPABASE_PROJECT_REF"
+          supabase functions deploy invite-open --no-verify-jwt --project-ref "$SUPABASE_PROJECT_REF"
           supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Smoke probe edge functions

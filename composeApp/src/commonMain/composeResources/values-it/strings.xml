@@ -771,5 +771,7 @@
     <string name="invite_join_error_otp_expired">Codice scaduto. Inviane uno nuovo.</string>
     <string name="invite_join_error_otp_rate_limited">Troppi tentativi. Attendi e riprova.</string>
     <string name="invite_join_apple_email_hint">Usa l'email che ha ricevuto l'invito (non Nascondi la mia email).</string>
+    <string name="invite_join_email_mismatch_title">Accedi con l'email invitata</string>
+    <string name="invite_join_sign_out_retry">Esci e riprova</string>
         <string name="household_gate_create_divider">Oppure crea una nuova famiglia</string>
 </resources>

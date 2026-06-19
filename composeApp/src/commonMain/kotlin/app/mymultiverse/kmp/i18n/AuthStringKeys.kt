@@ -58,6 +58,8 @@ object AuthStringKeys {
         "invite_join_error_otp_expired",
         "invite_join_error_otp_rate_limited",
         "invite_join_apple_email_hint",
+        "invite_join_email_mismatch_title",
+        "invite_join_sign_out_retry",
     )
 
     val localeDirectories: List<String> = NutritionStringKeys.localeDirectories

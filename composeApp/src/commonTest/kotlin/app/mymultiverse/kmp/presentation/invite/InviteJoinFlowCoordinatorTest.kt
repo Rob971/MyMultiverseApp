@@ -26,6 +26,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class InviteJoinFlowCoordinatorTest {
@@ -94,7 +95,8 @@ class InviteJoinFlowCoordinatorTest {
         assertEquals(1, householdRepository.refreshCalls)
         assertNull(store.getPendingInviteToken())
         assertNull(coordinator.pendingInviteToken.value)
-        assertIs<InviteJoinAcceptState.Idle>(coordinator.acceptState.value)
+        assertIs<InviteJoinAcceptState.Succeeded>(coordinator.acceptState.value)
+        assertEquals("Rossi family", (coordinator.acceptState.value as InviteJoinAcceptState.Succeeded).householdName)
     }
 
     @Test
@@ -130,6 +132,30 @@ class InviteJoinFlowCoordinatorTest {
         val failed = coordinator.acceptState.value
         assertIs<InviteJoinAcceptState.Failed>(failed)
         assertEquals(InviteJoinAcceptError.EmailMismatch, failed.error)
+        assertEquals("invitee@example.com", failed.mismatchContext?.invitedEmail)
+        assertEquals("Rossi family", failed.mismatchContext?.householdName)
+    }
+
+    @Test
+    fun retryAfterEmailMismatch_clearsFailureState() = runTest(testDispatcher) {
+        val store = InviteSessionStore(MapSettings())
+        store.setPendingInviteToken("token-abc")
+        val collaboration = FakeHouseholdCollaborationRepository()
+        collaboration.previewInviteResult = Result.success(samplePreview())
+        collaboration.acceptInviteResult = Result.failure(IllegalStateException("invite_email_mismatch"))
+        var signedOut = false
+        val coordinator = createCoordinator(this, store = store, collaboration = collaboration)
+
+        coordinator.acceptPendingInviteIfNeeded()
+        advanceUntilIdle()
+        assertIs<InviteJoinAcceptState.Failed>(coordinator.acceptState.value)
+
+        coordinator.retryAfterEmailMismatch { signedOut = true }
+        advanceUntilIdle()
+
+        assertTrue(signedOut)
+        assertIs<InviteJoinAcceptState.Idle>(coordinator.acceptState.value)
+        assertEquals("token-abc", store.getPendingInviteToken())
     }
 
     private fun createCoordinator(

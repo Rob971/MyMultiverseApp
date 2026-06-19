@@ -772,5 +772,7 @@
     <string name="invite_join_error_otp_expired">This code expired. Resend a new one.</string>
     <string name="invite_join_error_otp_rate_limited">Too many attempts. Wait a moment and try again.</string>
     <string name="invite_join_apple_email_hint">Use the email address that received this invitation (not Hide My Email).</string>
+    <string name="invite_join_email_mismatch_title">Sign in with the invited email</string>
+    <string name="invite_join_sign_out_retry">Sign out and try again</string>
         <string name="household_gate_create_divider">Or start a new household</string>
 </resources>

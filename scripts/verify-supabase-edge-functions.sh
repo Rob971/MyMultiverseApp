@@ -48,6 +48,27 @@ fi
 rm -f "${NOTIFY_BODY}"
 echo "OK: notify-household-invite reachable"
 
+echo "==> Probing invite-open landing page (expect 200 HTML with Open MyMultiverse)"
+OPEN_BODY="$(mktemp)"
+OPEN_STATUS="$(curl -s -o "${OPEN_BODY}" -w '%{http_code}' \
+  "${FUNCTIONS_URL}/invite-open?token=ci-smoke-test-token")"
+
+if [[ "${OPEN_STATUS}" != "200" ]]; then
+  echo "ERROR: invite-open returned ${OPEN_STATUS}" >&2
+  cat "${OPEN_BODY}" >&2
+  rm -f "${OPEN_BODY}"
+  exit 1
+fi
+
+if ! grep -q "Open MyMultiverse" "${OPEN_BODY}"; then
+  echo "ERROR: invite-open response missing landing page copy" >&2
+  cat "${OPEN_BODY}" >&2
+  rm -f "${OPEN_BODY}"
+  exit 1
+fi
+rm -f "${OPEN_BODY}"
+echo "OK: invite-open reachable"
+
 echo "==> Probing delete-account without user session (expect 401 auth_required)"
 DELETE_BODY="$(mktemp)"
 DELETE_STATUS="$(curl -s -o "${DELETE_BODY}" -w '%{http_code}' -X POST "${FUNCTIONS_URL}/delete-account" \

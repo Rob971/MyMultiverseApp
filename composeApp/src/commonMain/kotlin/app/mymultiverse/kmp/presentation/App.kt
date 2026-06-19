@@ -26,9 +26,11 @@ import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdGateScreen
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdGateScreenModel
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersFlow
-import app.mymultiverse.kmp.presentation.screens.invite.JoinHouseholdScreen
+import app.mymultiverse.kmp.presentation.invite.InviteJoinAcceptError
 import app.mymultiverse.kmp.presentation.invite.InviteJoinAcceptState
 import app.mymultiverse.kmp.presentation.invite.InviteJoinFlowCoordinator
+import app.mymultiverse.kmp.presentation.screens.invite.InviteEmailMismatchScreen
+import app.mymultiverse.kmp.presentation.screens.invite.JoinHouseholdScreen
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionFlow
 import app.mymultiverse.kmp.presentation.theme.AppTheme
 import org.koin.compose.koinInject
@@ -96,11 +98,13 @@ fun App() {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun AuthenticatedApp() {
+    val authRepository = koinInject<AuthRepository>()
     val householdRepository = koinInject<HouseholdRepository>()
     val gateScreenModel = koinInject<HouseholdGateScreenModel>()
     val inviteFlow = koinInject<InviteJoinFlowCoordinator>()
     val pendingInviteToken by inviteFlow.pendingInviteToken.collectAsState()
     val acceptState by inviteFlow.acceptState.collectAsState()
+    val authState by authRepository.authState.collectAsState()
     val membershipStatus by householdRepository.observeMembershipStatus().collectAsState(
         initial = HouseholdMembershipStatus.Loading,
     )
@@ -113,6 +117,21 @@ private fun AuthenticatedApp() {
 
     LaunchedEffect(Unit) {
         gateScreenModel.refreshMembership()
+    }
+
+    val emailMismatch = acceptState as? InviteJoinAcceptState.Failed
+    if (emailMismatch?.error == InviteJoinAcceptError.EmailMismatch) {
+        val mismatchContext = emailMismatch.mismatchContext
+        if (mismatchContext != null) {
+            InviteEmailMismatchScreen(
+                invitedEmail = mismatchContext.invitedEmail,
+                sessionEmail = (authState as? AuthState.Authenticated)?.user?.email.orEmpty(),
+                onSignOutRetry = {
+                    inviteFlow.retryAfterEmailMismatch { authRepository.signOut() }
+                },
+            )
+            return
+        }
     }
 
     if (!pendingInviteToken.isNullOrBlank() && acceptState is InviteJoinAcceptState.Accepting) {

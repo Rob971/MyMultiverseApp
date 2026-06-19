@@ -771,5 +771,7 @@
     <string name="invite_join_error_otp_expired">Ce code a expiré. Renvoyez-en un nouveau.</string>
     <string name="invite_join_error_otp_rate_limited">Trop de tentatives. Patientez puis réessayez.</string>
     <string name="invite_join_apple_email_hint">Utilisez l'adresse e-mail qui a reçu l'invitation (pas Masquer mon e-mail).</string>
+    <string name="invite_join_email_mismatch_title">Connectez-vous avec l'e-mail invité</string>
+    <string name="invite_join_sign_out_retry">Se déconnecter et réessayer</string>
         <string name="household_gate_create_divider">Ou créer un nouveau foyer</string>
 </resources>

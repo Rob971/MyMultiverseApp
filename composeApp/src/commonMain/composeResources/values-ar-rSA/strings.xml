@@ -771,5 +771,7 @@
     <string name="invite_join_error_otp_expired">انتهت صلاحية الرمز. أعد الإرسال.</string>
     <string name="invite_join_error_otp_rate_limited">محاولات كثيرة. انتظر قليلًا ثم حاول مرة أخرى.</string>
     <string name="invite_join_apple_email_hint">استخدم البريد الذي استلم الدعوة (وليس إخفاء بريدي).</string>
+    <string name="invite_join_email_mismatch_title">سجّل الدخول بالبريد المدعو</string>
+    <string name="invite_join_sign_out_retry">تسجيل الخروج والمحاولة مرة أخرى</string>
         <string name="household_gate_create_divider">أو إنشاء أسرة جديدة</string>
 </resources>

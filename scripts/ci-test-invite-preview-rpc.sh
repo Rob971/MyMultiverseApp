@@ -15,20 +15,93 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-eval "$(supabase status -o env 2>/dev/null | grep -E '^(API_URL|ANON_KEY)=')"
+load_local_supabase_credentials() {
+  local status_json line key value
+  status_json="$(supabase status -o json 2>/dev/null || true)"
+
+  if [[ -n "$status_json" && "$status_json" != "null" ]]; then
+    API_URL="$(echo "$status_json" | jq -r '.API_URL // empty')"
+    ANON_KEY="$(echo "$status_json" | jq -r '
+      .ANON_KEY //
+      .PUBLISHABLE_KEY //
+      .SUPABASE_PUBLISHABLE_KEY //
+      .publishable_key //
+      empty
+    ')"
+    if [[ -z "${ANON_KEY:-}" ]]; then
+      ANON_KEY="$(echo "$status_json" | jq -r '[.. | strings | select(startswith("sb_publishable_"))] | first // empty')"
+    fi
+  fi
+
+  while IFS='=' read -r key value; do
+    value="${value%\"}"
+    value="${value#\"}"
+    case "$key" in
+      API_URL)
+        [[ -z "${API_URL:-}" ]] && API_URL="$value"
+        ;;
+      ANON_KEY|PUBLISHABLE_KEY|SUPABASE_PUBLISHABLE_KEY)
+        [[ -z "${ANON_KEY:-}" ]] && ANON_KEY="$value"
+        ;;
+    esac
+    if [[ -z "${ANON_KEY:-}" && "$value" == sb_publishable_* ]]; then
+      ANON_KEY="$value"
+    fi
+  done < <(supabase status -o env 2>/dev/null || true)
+
+  if [[ -z "${ANON_KEY:-}" ]]; then
+    ANON_KEY="$(supabase status 2>/dev/null | sed -n 's/.*Publishable[[:space:]]*│[[:space:]]*\(sb_publishable_[^[:space:]│]*\).*/\1/p' | head -1)"
+  fi
+}
+
+load_local_supabase_credentials
+
+# Newer Supabase CLI omits API_URL when [api] is disabled; default local Kong port.
+if [[ -z "${API_URL:-}" && -n "${ANON_KEY:-}" ]]; then
+  API_URL="http://127.0.0.1:54321"
+fi
 
 if [[ -z "${API_URL:-}" || -z "${ANON_KEY:-}" ]]; then
   echo "ERROR: local Supabase is not running. Run supabase start first." >&2
+  echo "DEBUG: supabase status -o json (first 500 chars):" >&2
+  supabase status -o json 2>&1 | head -c 500 >&2 || true
+  echo >&2
+  echo "DEBUG: supabase status -o env:" >&2
+  supabase status -o env 2>&1 | head -20 >&2 || true
   exit 1
 fi
 
 REST_URL="${API_URL%/}/rest/v1"
 
+wait_for_rest() {
+  local deadline=$((SECONDS + 90))
+  mapfile -t AUTH_HEADERS < <(rpc_auth_headers)
+  while (( SECONDS < deadline )); do
+    if curl -sf -o /dev/null "${AUTH_HEADERS[@]}" "${REST_URL}/"; then
+      return 0
+    fi
+    sleep 2
+  done
+  echo "ERROR: PostgREST not reachable at ${REST_URL} (is [api] enabled in supabase/config.toml?)" >&2
+  supabase status 2>&1 | head -30 >&2 || true
+  exit 1
+}
+
+rpc_auth_headers() {
+  printf '%s\n' "-H" "apikey: ${ANON_KEY}"
+  if [[ "$ANON_KEY" == eyJ* ]]; then
+    printf '%s\n' "-H" "Authorization: Bearer ${ANON_KEY}"
+  fi
+}
+
+echo "==> Waiting for PostgREST at ${REST_URL}"
+wait_for_rest
+
 echo "==> preview_household_invite rejects blank token"
 PREVIEW_BODY="$(mktemp)"
+mapfile -t AUTH_HEADERS < <(rpc_auth_headers)
 PREVIEW_STATUS="$(curl -s -o "${PREVIEW_BODY}" -w '%{http_code}' -X POST "${REST_URL}/rpc/preview_household_invite" \
-  -H "apikey: ${ANON_KEY}" \
-  -H "Authorization: Bearer ${ANON_KEY}" \
+  "${AUTH_HEADERS[@]}" \
   -H "Content-Type: application/json" \
   -d '{"p_token":""}')"
 
@@ -51,8 +124,7 @@ echo "OK: preview_household_invite invite_token_required"
 echo "==> preview_household_invite rejects unknown token"
 UNKNOWN_BODY="$(mktemp)"
 UNKNOWN_STATUS="$(curl -s -o "${UNKNOWN_BODY}" -w '%{http_code}' -X POST "${REST_URL}/rpc/preview_household_invite" \
-  -H "apikey: ${ANON_KEY}" \
-  -H "Authorization: Bearer ${ANON_KEY}" \
+  "${AUTH_HEADERS[@]}" \
   -H "Content-Type: application/json" \
   -d '{"p_token":"nonexistent-token-for-ci-smoke"}')"
 

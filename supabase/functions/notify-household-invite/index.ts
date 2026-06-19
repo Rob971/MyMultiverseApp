@@ -6,6 +6,8 @@ import {
   buildInviteEmailHtml,
   buildInviteEmailSubject,
   buildInviteEmailText,
+  buildInviteWebLink,
+  resolveInviteOpenLinkBase,
 } from "./invite-content.ts";
 import { buildInvitePushData, inviteTokenFromPayload } from "./invite-token.ts";
 
@@ -61,6 +63,10 @@ Deno.serve(async (req) => {
     const apnsPrivateKey = Deno.env.get("APNS_PRIVATE_KEY") ?? "";
     const apnsBundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "app.mymultiverse.kmp";
     const apnsUseSandbox = (Deno.env.get("APNS_USE_SANDBOX") ?? "true").toLowerCase() !== "false";
+    const inviteOpenLinkBase = resolveInviteOpenLinkBase(
+      Deno.env.get("INVITE_OPEN_LINK_BASE"),
+      supabaseUrl,
+    );
 
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
@@ -106,6 +112,7 @@ Deno.serve(async (req) => {
             inviterName,
             householdName,
             inviteeEmail,
+            inviteWebLink: buildInviteWebLink(inviteToken, inviteOpenLinkBase),
             inviteDeepLink: buildInviteDeepLink(inviteToken),
           }
           : null;

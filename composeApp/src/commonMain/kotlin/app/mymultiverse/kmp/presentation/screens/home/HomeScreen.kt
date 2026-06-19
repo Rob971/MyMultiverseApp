@@ -43,6 +43,8 @@ import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.model.auth.AuthState
+import app.mymultiverse.kmp.presentation.invite.InviteJoinAcceptState
+import app.mymultiverse.kmp.presentation.invite.InviteJoinFlowCoordinator
 import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
 import org.koin.compose.koinInject
 
@@ -65,6 +67,8 @@ fun HomeScreen(
 ) {
     val screenModel = koinInject<HomeScreenModel>()
     val authRepository = koinInject<AuthRepository>()
+    val inviteFlow = koinInject<InviteJoinFlowCoordinator>()
+    val inviteAcceptState by inviteFlow.acceptState.collectAsState()
     val greeting by screenModel.greeting.collectAsState()
     val userDisplayName by screenModel.userDisplayName.collectAsState()
     val household by screenModel.household.collectAsState()
@@ -93,11 +97,20 @@ fun HomeScreen(
     val deleteAccountErrorMessage = stringResource(Res.string.home_delete_account_error_generic)
     val joinedInviteMessage = (inviteActionMessage as? InviteActionMessage.Joined)?.householdName
         ?.let { name -> stringResource(Res.string.auth_household_joined_success, name) }
+    val inviteFlowJoinedMessage = (inviteAcceptState as? InviteJoinAcceptState.Succeeded)?.householdName
+        ?.let { name -> stringResource(Res.string.auth_household_joined_success, name) }
 
     LaunchedEffect(joinedInviteMessage) {
         joinedInviteMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
             screenModel.clearInviteActionMessage()
+        }
+    }
+
+    LaunchedEffect(inviteFlowJoinedMessage) {
+        inviteFlowJoinedMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            inviteFlow.clearAcceptSuccess()
         }
     }
 

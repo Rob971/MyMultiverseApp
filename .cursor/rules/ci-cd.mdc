@@ -10,14 +10,14 @@ alwaysApply: false
 
 | Workflow | When | Purpose |
 |----------|------|---------|
-| [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml) | Push, PR, manual | Android unit+APK, merge-gate instrumented/iOS, Supabase migration validation |
+| [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml) | Push, PR, manual | Android unit+APK, merge-gate instrumented, Supabase migration validation |
 | [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml) | `main` supabase push, manual | `db push` + deploy `notify-household-invite` / `delete-account` + smoke probe |
 
 ### KMP CI jobs (tiered)
 
 - **Push `feature/**`:** `Android CI` → `Release` (Linux only, ~4 min). iOS does **not** run.
 - **PR / `main` push:** `Android CI`, `Supabase Migrations`, and `Android Instrumented UI Tests` in parallel; then `Release`.
-- **Manual dispatch:** `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, **`ios-compatibility`** (macOS 10× billing — quarantined here), `release`.
+- **Manual dispatch:** `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `release`. **iOS compile is disabled** (`ios-compatibility` job `if: false`; verify locally with `./gradlew :composeApp:compileKotlinIosSimulatorArm64`).
 
 ### Supabase
 
