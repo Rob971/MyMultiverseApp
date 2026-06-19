@@ -28,6 +28,9 @@ load_local_supabase_credentials() {
       .publishable_key //
       empty
     ')"
+    if [[ -z "${ANON_KEY:-}" ]]; then
+      ANON_KEY="$(echo "$status_json" | jq -r '[.. | strings | select(startswith("sb_publishable_"))] | first // empty')"
+    fi
   fi
 
   while IFS='=' read -r key value; do
@@ -41,13 +44,25 @@ load_local_supabase_credentials() {
         [[ -z "${ANON_KEY:-}" ]] && ANON_KEY="$value"
         ;;
     esac
+    if [[ -z "${ANON_KEY:-}" && "$value" == sb_publishable_* ]]; then
+      ANON_KEY="$value"
+    fi
   done < <(supabase status -o env 2>/dev/null || true)
+
+  if [[ -z "${ANON_KEY:-}" ]]; then
+    ANON_KEY="$(supabase status 2>/dev/null | sed -n 's/.*Publishable[[:space:]]*│[[:space:]]*\(sb_publishable_[^[:space:]│]*\).*/\1/p' | head -1)"
+  fi
 }
 
 load_local_supabase_credentials
 
 if [[ -z "${API_URL:-}" || -z "${ANON_KEY:-}" ]]; then
   echo "ERROR: local Supabase is not running. Run supabase start first." >&2
+  echo "DEBUG: supabase status -o json (first 500 chars):" >&2
+  supabase status -o json 2>&1 | head -c 500 >&2 || true
+  echo >&2
+  echo "DEBUG: supabase status -o env:" >&2
+  supabase status -o env 2>&1 | head -20 >&2 || true
   exit 1
 fi
 
