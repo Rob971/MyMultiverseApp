@@ -112,6 +112,20 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
         return Result.success(Unit)
     }
 
+    override suspend fun updateMemberRole(
+        memberId: String,
+        role: HouseholdMemberRole,
+    ): Result<Unit> {
+        membersByHousehold.values.forEach { flow ->
+            flow.update { members ->
+                members.map { member ->
+                    if (member.id == memberId) member.copy(role = role) else member
+                }
+            }
+        }
+        return Result.success(Unit)
+    }
+
     override suspend fun acceptInvite(inviteId: String): Result<Unit> {
         acceptInviteCalls++
         acceptInviteResult?.let { return it }

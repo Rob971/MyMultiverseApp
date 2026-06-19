@@ -281,6 +281,9 @@
     <string name="category_long_term_plan_title">Plan de jalon</string>
     <string name="home_greeting">Le cœur battant de notre famille.</string>
     <string name="home_greeting_personalized">Bonjour, %1$s</string>
+    <string name="home_onboarding_wait_for_invite_title">En attente d'une invitation ?</string>
+    <string name="home_onboarding_wait_for_invite_body">Quand quelqu'un invite %1$s, l'invitation apparaîtra ici. Vous pouvez aussi actualiser pour vérifier.</string>
+    <string name="home_onboarding_refresh_invites">Actualiser les invitations</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>
@@ -774,4 +777,18 @@
     <string name="invite_join_email_mismatch_title">Connectez-vous avec l'e-mail invité</string>
     <string name="invite_join_sign_out_retry">Se déconnecter et réessayer</string>
         <string name="household_gate_create_divider">Ou créer un nouveau foyer</string>
+    <string name="household_name_checking">Vérification du nom…</string>
+    <string name="household_name_available">Ce nom est disponible</string>
+    <string name="household_name_taken">Ce nom est déjà pris</string>
+    <string name="household_name_invalid">Saisissez 2 à 40 caractères</string>
+    <string name="home_household_name_edit">Modifier</string>
+    <string name="home_rename_household_title">Renommer le foyer</string>
+    <string name="home_rename_household_save">Enregistrer</string>
+    <string name="auth_subtitle_sign_in">Connectez-vous pour rejoindre ou gérer votre foyer.</string>
+    <string name="auth_subtitle_sign_up">Créez votre compte, puis configurez ou rejoignez un foyer.</string>
+    <string name="sharing_members_role_admin">Admin du foyer</string>
+    <string name="sharing_members_change_role">Changer le rôle</string>
+    <string name="sharing_members_promote_admin_confirm_title">Nommer admin du foyer ?</string>
+    <string name="sharing_members_promote_admin_confirm_message">%1$s peut inviter des personnes et gérer les membres, mais ne peut pas transférer la propriété ni dissoudre le foyer.</string>
+    <string name="sharing_members_role_updated">Rôle mis à jour</string>
 </resources>

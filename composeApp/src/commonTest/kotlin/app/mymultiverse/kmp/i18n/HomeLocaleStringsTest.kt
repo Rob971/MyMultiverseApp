@@ -42,4 +42,16 @@ class HomeLocaleStringsTest {
             )
         }
     }
+
+    @Test
+    fun waitForInviteBody_containsEmailPlaceholderInEveryLocale() {
+        HomeStringKeys.localeDirectories.forEach { localeDir ->
+            val contents = LocaleTestFiles.stringsFile(localeDir).readText()
+            val value = LocaleTestFiles.readStringValue(contents, "home_onboarding_wait_for_invite_body")
+            assertTrue(
+                value.contains("%1\$s"),
+                "Locale '$localeDir' must use %1\$s placeholder in home_onboarding_wait_for_invite_body",
+            )
+        }
+    }
 }

@@ -31,7 +31,6 @@ import app.mymultiverse.kmp.presentation.screens.auth.LoginScreenModel
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionEntryScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionScreenModel
-import app.mymultiverse.kmp.presentation.screens.household.HouseholdGateScreenModel
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersEntryScreenModel
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersScreenModel
 import app.mymultiverse.kmp.presentation.screens.invite.JoinHouseholdScreenModel
@@ -105,7 +104,6 @@ private val presentationModule = module {
     singleOf(::JoinHouseholdScreenModel)
     singleOf(::InviteJoinFlowCoordinator)
     singleOf(::NutritionEntryScreenModel)
-    singleOf(::HouseholdGateScreenModel)
     singleOf(::HouseholdMembersEntryScreenModel)
     singleOf(::HouseholdMembersScreenModel)
     single {

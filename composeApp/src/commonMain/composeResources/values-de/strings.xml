@@ -281,6 +281,9 @@
     <string name="category_long_term_plan_title">Meilensteinplan</string>
     <string name="home_greeting">Das schlagende Herz unserer Familie.</string>
     <string name="home_greeting_personalized">Hallo, %1$s</string>
+    <string name="home_onboarding_wait_for_invite_title">Auf eine Einladung warten?</string>
+    <string name="home_onboarding_wait_for_invite_body">Wenn jemand %1$s einlädt, erscheint die Einladung hier. Sie können auch aktualisieren, um jetzt zu prüfen.</string>
+    <string name="home_onboarding_refresh_invites">Einladungen aktualisieren</string>
     <string name="calendar_weekday_mon">Mo</string>
     <string name="calendar_weekday_tue">Di</string>
     <string name="calendar_weekday_wed">Mi</string>
@@ -774,4 +777,18 @@
     <string name="invite_join_email_mismatch_title">Mit der eingeladenen E-Mail anmelden</string>
     <string name="invite_join_sign_out_retry">Abmelden und erneut versuchen</string>
         <string name="household_gate_create_divider">Oder neuen Haushalt erstellen</string>
+    <string name="household_name_checking">Name wird geprüft…</string>
+    <string name="household_name_available">Dieser Name ist verfügbar</string>
+    <string name="household_name_taken">Dieser Name ist bereits vergeben</string>
+    <string name="household_name_invalid">2–40 Zeichen eingeben</string>
+    <string name="home_household_name_edit">Bearbeiten</string>
+    <string name="home_rename_household_title">Haushalt umbenennen</string>
+    <string name="home_rename_household_save">Name speichern</string>
+    <string name="auth_subtitle_sign_in">Melde dich an, um deinem Haushalt beizutreten oder ihn zu verwalten.</string>
+    <string name="auth_subtitle_sign_up">Erstelle dein Konto und richte dann einen Haushalt ein oder tritt einem bei.</string>
+    <string name="sharing_members_role_admin">Haushalts-Admin</string>
+    <string name="sharing_members_change_role">Rolle ändern</string>
+    <string name="sharing_members_promote_admin_confirm_title">Zum Haushalts-Admin machen?</string>
+    <string name="sharing_members_promote_admin_confirm_message">%1$s kann Personen einladen und Mitglieder verwalten, aber nicht Eigentum übertragen oder den Haushalt auflösen.</string>
+    <string name="sharing_members_role_updated">Rolle aktualisiert</string>
 </resources>

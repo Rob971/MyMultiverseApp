@@ -173,12 +173,6 @@ class AppModuleKoinTest : KoinTest {
     }
 
     @Test
-    fun householdGateScreenModel_resolvesFromKoinGraph() {
-        val model = get<app.mymultiverse.kmp.presentation.screens.household.HouseholdGateScreenModel>()
-        assertNotNull(model)
-    }
-
-    @Test
     fun mapSettings_isSharedAcrossNutritionRepository() {
         val settings = get<Settings>()
         val repository = get<NutritionRepository>()

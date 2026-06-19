@@ -36,6 +36,11 @@ class UnconfiguredHouseholdCollaborationRepository : HouseholdCollaborationRepos
     override suspend fun removeMember(memberId: String): Result<Unit> =
         Result.failure(IllegalStateException("supabase_not_configured"))
 
+    override suspend fun updateMemberRole(
+        memberId: String,
+        role: app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole,
+    ): Result<Unit> = Result.failure(IllegalStateException("supabase_not_configured"))
+
     override suspend fun acceptInvite(inviteId: String): Result<Unit> =
         Result.failure(IllegalStateException("supabase_not_configured"))
 

@@ -8,6 +8,7 @@ enum class NutritionSharingFeature {
 
 enum class HouseholdMemberRole {
     Owner,
+    Admin,
     Editor,
     Viewer,
 }

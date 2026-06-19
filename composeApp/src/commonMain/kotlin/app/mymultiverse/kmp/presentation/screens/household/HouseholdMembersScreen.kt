@@ -23,7 +23,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -33,6 +35,7 @@ import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
+import app.mymultiverse.kmp.domain.sharing.canAssignAdminRole
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
@@ -86,7 +89,12 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_member
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_pending_invites_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_read_only_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_remove
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_change_role
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_promote_admin_confirm_message
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_promote_admin_confirm_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_role_admin
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_role_editor
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_role_updated
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_role_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_role_owner
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_role_viewer
@@ -118,6 +126,7 @@ fun HouseholdMembersScreen(
     val authState by authRepository.authState.collectAsState()
     val ownerFallback = stringResource(Res.string.sharing_members_owner_fallback)
     val snackbarHostState = remember { SnackbarHostState() }
+    var pendingPromoteAdminConfirm by remember { mutableStateOf(false) }
     val errorMessage = uiState.error?.let { error -> mapErrorMessage(error) }
     val dialogErrorMessage = uiState.dialogError?.let { error -> mapErrorMessage(error) }
     val successMessage = uiState.successMessageKey?.let { success ->
@@ -133,6 +142,8 @@ fun HouseholdMembersScreen(
                     Res.string.sharing_members_transfer_success,
                     uiState.transferredToDisplayName.orEmpty(),
                 )
+            HouseholdMembersSuccess.RoleUpdated ->
+                stringResource(Res.string.sharing_members_role_updated)
         }
     }
     val currentUserId = (authState as? AuthState.Authenticated)?.user?.id
@@ -237,8 +248,10 @@ fun HouseholdMembersScreen(
                     items(uiState.members, key = { it.id }) { member ->
                         MemberRow(
                             member = member,
+                            actorRole = uiState.currentUserRole,
                             canManage = uiState.canManageMembers,
                             onRemove = { screenModel.removeMember(member, household.id) },
+                            onChangeRole = { screenModel.openRoleChangeDialog(member) },
                         )
                     }
                 }
@@ -332,6 +345,13 @@ fun HouseholdMembersScreen(
                             onClick = { screenModel.onRoleChange(HouseholdMemberRole.Viewer) },
                             label = { Text(stringResource(Res.string.sharing_members_role_viewer)) },
                         )
+                        if (uiState.currentUserRole?.canAssignAdminRole() == true) {
+                            FilterChip(
+                                selected = uiState.selectedRole == HouseholdMemberRole.Admin,
+                                onClick = { screenModel.onRoleChange(HouseholdMemberRole.Admin) },
+                                label = { Text(stringResource(Res.string.sharing_members_role_admin)) },
+                            )
+                        }
                     }
                 }
             },
@@ -445,6 +465,109 @@ fun HouseholdMembersScreen(
         )
     }
 
+    if (uiState.showRoleChangeDialog) {
+        val target = uiState.roleChangeTarget
+        AlertDialog(
+            onDismissRequest = screenModel::dismissRoleChangeDialog,
+            title = { Text(stringResource(Res.string.sharing_members_change_role)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (target != null) {
+                        Text(target.displayName)
+                    }
+                    Text(stringResource(Res.string.sharing_members_select_role))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(
+                            selected = uiState.selectedMemberRole == HouseholdMemberRole.Editor,
+                            onClick = { screenModel.onMemberRoleChange(HouseholdMemberRole.Editor) },
+                            label = { Text(stringResource(Res.string.sharing_members_role_editor)) },
+                        )
+                        FilterChip(
+                            selected = uiState.selectedMemberRole == HouseholdMemberRole.Viewer,
+                            onClick = { screenModel.onMemberRoleChange(HouseholdMemberRole.Viewer) },
+                            label = { Text(stringResource(Res.string.sharing_members_role_viewer)) },
+                        )
+                        if (uiState.currentUserRole?.canAssignAdminRole() == true) {
+                            FilterChip(
+                                selected = uiState.selectedMemberRole == HouseholdMemberRole.Admin,
+                                onClick = { screenModel.onMemberRoleChange(HouseholdMemberRole.Admin) },
+                                label = { Text(stringResource(Res.string.sharing_members_role_admin)) },
+                            )
+                        }
+                    }
+                    if (dialogErrorMessage != null) {
+                        Text(
+                            text = dialogErrorMessage,
+                            color = SharedJourneyColors.TerracottaOrange,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val needsPromoteConfirm = uiState.selectedMemberRole == HouseholdMemberRole.Admin &&
+                            target?.role != HouseholdMemberRole.Admin
+                        if (needsPromoteConfirm) {
+                            pendingPromoteAdminConfirm = true
+                        } else {
+                            screenModel.confirmRoleChange(household.id)
+                        }
+                    },
+                    enabled = !uiState.isUpdatingRole && target != null,
+                ) {
+                    if (uiState.isUpdatingRole) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(end = 8.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    }
+                    Text(stringResource(Res.string.sharing_members_confirm_add))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = screenModel::dismissRoleChangeDialog,
+                    enabled = !uiState.isUpdatingRole,
+                ) {
+                    Text(stringResource(Res.string.sharing_members_cancel))
+                }
+            },
+        )
+    }
+
+    if (pendingPromoteAdminConfirm && uiState.roleChangeTarget != null) {
+        val targetName = uiState.roleChangeTarget!!.displayName
+        AlertDialog(
+            onDismissRequest = { pendingPromoteAdminConfirm = false },
+            title = { Text(stringResource(Res.string.sharing_members_promote_admin_confirm_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        Res.string.sharing_members_promote_admin_confirm_message,
+                        targetName,
+                    ),
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        pendingPromoteAdminConfirm = false
+                        screenModel.confirmRoleChange(household.id)
+                    },
+                    enabled = !uiState.isUpdatingRole,
+                ) {
+                    Text(stringResource(Res.string.sharing_members_confirm_add))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingPromoteAdminConfirm = false }) {
+                    Text(stringResource(Res.string.sharing_members_cancel))
+                }
+            },
+        )
+    }
+
     if (uiState.showTransferDialog) {
         val selectedId = uiState.selectedTransferMemberId
         val selectedMember = uiState.transferCandidates.find { it.referenceId == selectedId }
@@ -524,13 +647,16 @@ private fun mapErrorMessage(error: HouseholdMembersError): String =
 @Composable
 private fun MemberRow(
     member: HouseholdMember,
+    actorRole: HouseholdMemberRole?,
     canManage: Boolean,
     onRemove: () -> Unit,
+    onChangeRole: () -> Unit,
 ) {
     val roleLabel = when (member.kind) {
         HouseholdMemberKind.Dependant -> stringResource(Res.string.sharing_members_kind_dependent)
         else -> when (member.role) {
             HouseholdMemberRole.Owner -> stringResource(Res.string.sharing_members_role_owner)
+            HouseholdMemberRole.Admin -> stringResource(Res.string.sharing_members_role_admin)
             HouseholdMemberRole.Editor -> stringResource(Res.string.sharing_members_role_editor)
             HouseholdMemberRole.Viewer -> stringResource(Res.string.sharing_members_role_viewer)
         }
@@ -551,8 +677,16 @@ private fun MemberRow(
             )
         }
         if (canManage && member.role != HouseholdMemberRole.Owner) {
-            TextButton(onClick = onRemove) {
-                Text(stringResource(Res.string.sharing_members_remove))
+            val canActOnMember = actorRole?.canChangeRoleOf(member.role) == true
+            if (canActOnMember) {
+                TextButton(onClick = onChangeRole) {
+                    Text(stringResource(Res.string.sharing_members_change_role))
+                }
+            }
+            if (actorRole?.canRemoveMember(member.role) == true) {
+                TextButton(onClick = onRemove) {
+                    Text(stringResource(Res.string.sharing_members_remove))
+                }
             }
         }
     }
@@ -562,6 +696,7 @@ private fun MemberRow(
 private fun PendingInviteRow(invite: HouseholdInvite) {
     val roleLabel = when (invite.role) {
         HouseholdMemberRole.Owner -> stringResource(Res.string.sharing_members_role_owner)
+        HouseholdMemberRole.Admin -> stringResource(Res.string.sharing_members_role_admin)
         HouseholdMemberRole.Editor -> stringResource(Res.string.sharing_members_role_editor)
         HouseholdMemberRole.Viewer -> stringResource(Res.string.sharing_members_role_viewer)
     }

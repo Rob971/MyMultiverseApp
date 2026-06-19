@@ -6,6 +6,8 @@ import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
+import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
+import app.mymultiverse.kmp.domain.sharing.HouseholdNameRules
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,6 +51,10 @@ class FakeHouseholdRepository(
     var lastCreatedName: String? = null
     var leaveFailure: Throwable? = null
     var dissolveFailure: Throwable? = null
+    var nameAvailabilityResult: Boolean = true
+    private val takenNormalizedNames = mutableSetOf<String>().apply {
+        add(HouseholdNameRules.normalizeForUniqueness(household.name))
+    }
 
     override fun observeHousehold(): Flow<Household?> = state.asStateFlow()
 
@@ -68,13 +74,54 @@ class FakeHouseholdRepository(
         createCalls++
         lastCreatedName = name
         createFailure?.let { return Result.failure(it) }
+        val normalized = HouseholdNameRules.normalizeForUniqueness(name)
+        if (normalized in takenNormalizedNames) {
+            return Result.failure(IllegalStateException(CollaborationErrorCodes.HOUSEHOLD_NAME_TAKEN))
+        }
         val created = household.copy(name = name)
+        takenNormalizedNames += normalized
         val active = HouseholdMembershipStatus.Active(
             HouseholdMembership(household = created, role = HouseholdMemberRole.Owner),
         )
         state.update { created }
         membership.update { active }
         return Result.success(created)
+    }
+
+    override suspend fun checkHouseholdNameAvailable(
+        name: String,
+        excludeHouseholdId: String?,
+    ): Result<Boolean> {
+        if (!nameAvailabilityResult) return Result.success(false)
+        val normalized = HouseholdNameRules.normalizeForUniqueness(name)
+        val currentId = (membership.value as? HouseholdMembershipStatus.Active)?.household?.id
+        val excluded = excludeHouseholdId ?: currentId
+        val taken = takenNormalizedNames.contains(normalized) &&
+            (excluded == null || state.value?.let { 
+                HouseholdNameRules.normalizeForUniqueness(it.name) != normalized 
+            } != false)
+        return Result.success(!taken && normalized.isNotBlank())
+    }
+
+    override suspend fun renameHousehold(newName: String): Result<Household> {
+        val current = membership.value as? HouseholdMembershipStatus.Active
+            ?: return Result.failure(IllegalStateException("household_required"))
+        val oldNormalized = HouseholdNameRules.normalizeForUniqueness(current.household.name)
+        val newNormalized = HouseholdNameRules.normalizeForUniqueness(newName)
+        if (newNormalized in takenNormalizedNames && newNormalized != oldNormalized) {
+            return Result.failure(IllegalStateException(CollaborationErrorCodes.HOUSEHOLD_NAME_TAKEN))
+        }
+        takenNormalizedNames.remove(oldNormalized)
+        takenNormalizedNames += newNormalized
+        val updated = current.household.copy(name = newName)
+        membership.update {
+            HouseholdMembershipStatus.Active(
+                HouseholdMembership(household = updated, role = current.role),
+            )
+        }
+        state.update { updated }
+        lastCreatedName = newName
+        return Result.success(updated)
     }
 
     override suspend fun ensureHousehold(): Result<Household> {

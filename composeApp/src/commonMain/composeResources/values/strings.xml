@@ -281,6 +281,9 @@
     <string name="category_long_term_plan_title">Milestone Blueprint</string>
     <string name="home_greeting">The beating heart of our family.</string>
     <string name="home_greeting_personalized">Hello, %1$s</string>
+    <string name="home_onboarding_wait_for_invite_title">Waiting for an invite?</string>
+    <string name="home_onboarding_wait_for_invite_body">When someone invites %1$s, you will see it here. You can also refresh to check now.</string>
+    <string name="home_onboarding_refresh_invites">Refresh invites</string>
     <string name="calendar_weekday_mon">Mon</string>
     <string name="calendar_weekday_tue">Tue</string>
     <string name="calendar_weekday_wed">Wed</string>
@@ -775,4 +778,18 @@
     <string name="invite_join_email_mismatch_title">Sign in with the invited email</string>
     <string name="invite_join_sign_out_retry">Sign out and try again</string>
         <string name="household_gate_create_divider">Or start a new household</string>
+    <string name="household_name_checking">Checking name availability…</string>
+    <string name="household_name_available">This name is available</string>
+    <string name="household_name_taken">This name is already taken</string>
+    <string name="household_name_invalid">Enter 2–40 characters</string>
+    <string name="home_household_name_edit">Edit</string>
+    <string name="home_rename_household_title">Rename household</string>
+    <string name="home_rename_household_save">Save name</string>
+    <string name="auth_subtitle_sign_in">Sign in to join or manage your household.</string>
+    <string name="auth_subtitle_sign_up">Create your account, then set up or join a household.</string>
+    <string name="sharing_members_role_admin">Household admin</string>
+    <string name="sharing_members_change_role">Change role</string>
+    <string name="sharing_members_promote_admin_confirm_title">Make household admin?</string>
+    <string name="sharing_members_promote_admin_confirm_message">%1$s can invite people and manage members, but cannot transfer ownership or dissolve the household.</string>
+    <string name="sharing_members_role_updated">Role updated</string>
 </resources>

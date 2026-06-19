@@ -72,6 +72,57 @@ class SupabaseHouseholdRepository(
         }
     }
 
+    override suspend fun checkHouseholdNameAvailable(
+        name: String,
+        excludeHouseholdId: String?,
+    ): Result<Boolean> = runCatching {
+        client.auth.awaitInitialization()
+        requireUserId()
+
+        val row = HouseholdRpcDecoder.decodeNameAvailability(
+            client.postgrest.rpc(
+                "check_household_name_available",
+                buildJsonObject {
+                    put("p_name", name.trim())
+                    excludeHouseholdId?.let { put("p_exclude_household_id", it) }
+                },
+            ),
+        )
+        row.available
+    }
+
+    override suspend fun renameHousehold(newName: String): Result<Household> = runCatching {
+        client.auth.awaitInitialization()
+        requireUserId()
+        val current = membershipStatus.value
+        val householdId = when (current) {
+            is HouseholdMembershipStatus.Active -> current.household.id
+            else -> throw IllegalStateException("household_required")
+        }
+
+        val row = HouseholdRpcDecoder.decodeRenameHousehold(
+            client.postgrest.rpc(
+                "rename_household",
+                buildJsonObject {
+                    put("p_household_id", householdId)
+                    put("p_name", newName.trim())
+                },
+            ),
+        )
+
+        val existing = when (current) {
+            is HouseholdMembershipStatus.Active -> current
+            else -> throw IllegalStateException("household_required")
+        }
+        val updatedHousehold = existing.household.copy(name = row.householdName)
+        val updatedStatus = HouseholdMembershipStatus.Active(
+            membership = existing.membership.copy(household = updatedHousehold),
+        )
+        membershipStatus.update { updatedStatus }
+        household.update { updatedHousehold }
+        updatedHousehold
+    }
+
     override suspend fun ensureHousehold(): Result<Household> = runCatching {
         client.auth.awaitInitialization()
         requireUserId()
@@ -165,6 +216,7 @@ class SupabaseHouseholdRepository(
     private fun String?.toHouseholdMemberRole(): HouseholdMemberRole =
         when (this) {
             "owner" -> HouseholdMemberRole.Owner
+            "admin" -> HouseholdMemberRole.Admin
             "viewer" -> HouseholdMemberRole.Viewer
             else -> HouseholdMemberRole.Editor
         }
