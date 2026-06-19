@@ -15,8 +15,9 @@ alwaysApply: false
 
 ### KMP CI jobs (tiered)
 
-- **Push `feature/**`:** `Android CI` → `Release` (Linux only, ~4 min). iOS does **not** run.
-- **PR / `main` push:** `Android CI`, `Supabase Migrations`, and `Android Instrumented UI Tests` in parallel; then `Release`.
+- **Feature branch:** open a PR to `main` — one workflow run per push (`pull_request` synchronize only; no duplicate `push` trigger).
+- **PR:** `Android CI`, `Supabase Migrations`, and `Android Instrumented UI Tests` in parallel; **no Firebase Release** (merge gate only).
+- **Push `main`/`master`:** same jobs as PR, then **Release** (Firebase + version bump). Version bump commits use `[skip ci]` and the **CI gate** skips heavy jobs.
 - **Manual dispatch:** `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `release`. **iOS compile is disabled** (`ios-compatibility` job `if: false`; verify locally with `./gradlew :composeApp:compileKotlinIosSimulatorArm64`).
 
 ### Supabase
@@ -28,7 +29,8 @@ alwaysApply: false
 
 ### Release job
 
-- Downloads `composeApp-debug-apk`, distributes to Firebase App Distribution, bumps version on **push** (`chore(version): … [skip ci]`).
+- Runs on **`main`/`master` push** and manual `release`/`all` dispatch only — not on PRs.
+- Downloads `composeApp-debug-apk`, distributes to Firebase App Distribution, bumps version on **main push** (`chore(version): … [skip ci]`).
 - **`release` only dispatch:** reuses APK from latest successful `Android CI` on the branch (or `source_run_id`).
 
 ## Change guidelines

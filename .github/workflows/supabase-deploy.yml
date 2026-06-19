@@ -23,12 +23,33 @@ permissions:
   contents: read
 
 jobs:
+  deploy-gate:
+    name: Deploy gate
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.evaluate.outputs.run }}
+    steps:
+      - name: Evaluate skip rules
+        id: evaluate
+        run: |
+          if [[ "${{ github.event_name }}" != "push" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          msg="${{ github.event.head_commit.message }}"
+          if [[ "$msg" == *"[skip ci]"* ]] || [[ "$msg" == *"[ci skip]"* ]] || [[ "$msg" == chore\(version\):* ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping Supabase deploy for automated/version-only push."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy-migrations:
     name: Deploy migrations
     runs-on: ubuntu-latest
+    needs: deploy-gate
     timeout-minutes: 8
-    if: >-
-      ${{ !startsWith(github.event.head_commit.message, 'chore(version):') }}
+    if: ${{ needs.deploy-gate.outputs.run == 'true' }}
 
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -80,10 +101,11 @@ jobs:
   deploy-edge-functions:
     name: Deploy edge functions
     runs-on: ubuntu-latest
+    needs:
+      - deploy-gate
+      - deploy-migrations
     timeout-minutes: 10
-    needs: deploy-migrations
-    if: >-
-      ${{ !startsWith(github.event.head_commit.message, 'chore(version):') }}
+    if: ${{ needs.deploy-gate.outputs.run == 'true' }}
 
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

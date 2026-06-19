@@ -420,13 +420,15 @@ GitHub Actions: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml)
 
 | Trigger | Jobs |
 |---------|------|
-| **Push** to `feature/**` | Android CI → Release (Linux only; iOS skipped) |
-| **Push** to `main` / **PR** | Android CI + Supabase Migrations + instrumented → Release |
-| **Manual dispatch** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, **`ios-compatibility`** (macOS — manual only), `release` |
+| **PR** to `main` | Android CI + Supabase Migrations + instrumented (merge gate; no Firebase Release) |
+| **Push** to `main` | Same as PR, then Release (Firebase + version bump) |
+| **Manual dispatch** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `release` (iOS disabled) |
+
+`chore(version): … [skip ci]` pushes skip heavy jobs via the CI gate. Feature branches validate through a PR only (one run per push).
 
 **Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push` and P2 edge functions deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change; also `workflow_dispatch`.
 
-Firebase App Distribution runs on push, PR, and manual release.
+Firebase App Distribution runs on **main push** and manual release only.
 
 ---
 
@@ -436,8 +438,7 @@ Canonical version: [`gradle/app-version.properties`](gradle/app-version.properti
 
 | Event | Bump |
 |-------|------|
-| Push to `feature/**` | Candidate +1 |
-| Push to `main` (merge) | LTS patch +1, candidate reset |
+| Push to `main` (after Release job) | LTS patch +1, candidate reset |
 
 ---
 
