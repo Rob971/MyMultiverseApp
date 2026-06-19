@@ -1,7 +1,5 @@
 -- Unique household names (Unicode-aware lower + collapsed whitespace), rename RPC, admin role.
 
-alter type public.household_member_role add value if not exists 'admin';
-
 create or replace function public.normalize_household_name(p_name text)
 returns text
 language sql

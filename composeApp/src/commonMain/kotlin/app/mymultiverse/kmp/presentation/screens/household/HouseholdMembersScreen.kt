@@ -36,6 +36,8 @@ import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.domain.sharing.canAssignAdminRole
+import app.mymultiverse.kmp.domain.sharing.canChangeRoleOf
+import app.mymultiverse.kmp.domain.sharing.canRemoveMember
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
