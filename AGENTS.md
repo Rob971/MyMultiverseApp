@@ -24,4 +24,4 @@ Cursor rules in `.cursor/rules/` define how to plan, implement, test, and ship c
 ./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid
 ```
 
-Instrumented UI tests: run on **push** to `main`/`master`, **pull request** (opened / reopened), or GitHub Actions → **KMP CI** → `workflow_dispatch` → `all` or `android-instrumented-tests`. Skipped on `feature/**` push for fast feedback (~4 min).
+Instrumented UI tests: run on **push** to `main`/`master`, **pull request**, or GitHub Actions → **KMP CI** → `workflow_dispatch` → `all` or `android-instrumented-tests`. **iOS compile** (`ios-compatibility`) is **manual dispatch only** (macOS bills at 10×). Feature-branch pushes do not auto-run CI — use workflow dispatch when you need a Firebase build.

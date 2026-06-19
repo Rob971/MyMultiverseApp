@@ -15,13 +15,13 @@ alwaysApply: false
 
 ### KMP CI jobs (tiered)
 
-- **Push `feature/**`:** `Android CI` → `Release` (Firebase + version bump). Target **&lt;4 min** wall clock.
-- **PR / `main` push:** `Android CI`, `Supabase Migrations`, `Android Instrumented UI Tests`, and `iOS Compatibility Signal` run **in parallel**; then `Release`. Target **&lt;7 min** wall clock (emulator + iOS bound).
-- **Manual dispatch:** `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `ios-compatibility`, `release` (reuse APK via optional `source_run_id`).
+- **Push `feature/**`:** disabled (use **Actions → KMP CI → Run workflow** to avoid burning minutes on every commit).
+- **PR / `main` push:** `Android CI`, `Supabase Migrations`, and `Android Instrumented UI Tests` in parallel; then `Release` on success. Target **&lt;7 min** wall clock.
+- **Manual dispatch:** `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, **`ios-compatibility`** (macOS 10× billing — not auto on PR/push), `release` (reuse APK via optional `source_run_id`).
 
 ### Supabase
 
-- **CI validation (no remote writes):** `supabase db start` applies all migrations on ephemeral Postgres; remote smoke via `scripts/verify-supabase-household.sh` on PR/`main` only. Set `SUPABASE_TEST_EMAIL` + `SUPABASE_TEST_PASSWORD` for authenticated round-trip (export RPC, device token, nutrition persistence).
+- **CI validation (no remote writes):** `supabase start` applies migrations and exposes REST for invite preview RPC smoke tests; remote smoke via `scripts/verify-supabase-household.sh` on PR/`main` only. Set `SUPABASE_TEST_EMAIL` + `SUPABASE_TEST_PASSWORD` for authenticated round-trip (export RPC, device token, nutrition persistence).
 - **Deploy:** `supabase-deploy.yml` runs `db push`, configures outbox `pg_net` delivery, and edge function deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change. Migrations: `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`; optional `SUPABASE_URL` + `SUPABASE_ANON_KEY` for outbox auto-dispatch config. Functions: also `SUPABASE_SERVICE_ROLE_KEY`; optional `RESEND_API_KEY`, `INVITE_FROM_EMAIL`. Smoke: `scripts/verify-supabase-edge-functions.sh`, `scripts/verify-household-notification-delivery.sh`.
 - **Android builds:** `SUPABASE_URL` + `SUPABASE_ANON_KEY` → `local.properties` via composite setup action.
 - **`GOOGLE_SERVICES_JSON`:** enables Crashlytics in CI debug APKs.
@@ -33,7 +33,7 @@ alwaysApply: false
 
 ## Change guidelines
 
-- Keep the tiered model: fast feedback on `feature/**` push; merge gate on PR/`main`.
+- Keep the tiered model: manual/feature work via **workflow_dispatch**; merge gate on PR/`main`.
 - Do not run `db push` inside KMP CI — deploy workflow only.
 - Never commit secrets; use GitHub Secrets.
 - **CI speed:** merged unit+APK; parallel merge-gate jobs; AVD snapshot cache; shallow checkout; Gradle `setup-gradle` cache; pinned `firebase-tools` with npm cache; Supabase validation parallel on PR/`main` only.
