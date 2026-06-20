@@ -37,6 +37,7 @@ import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object MealPlanTestTags {
+    const val SCROLL_LIST = "meal_plan_scroll_list"
     const val GENERATE_ALL_GROCERY = "meal_plan_generate_all_grocery"
     const val CLEAR_WEEK = "meal_plan_clear_week"
     const val PLAN_WITH_AI = "meal_plan_plan_with_ai"

@@ -196,18 +196,22 @@ class NutritionUxInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag(MealPlanTestTags.SCROLL_LIST)
+            .performScrollToNode(hasTestTag(MealPlanTestTags.lunchField(dayIndex)))
         val lunchField = composeRule.onNodeWithTag(MealPlanTestTags.lunchField(dayIndex))
-        lunchField.performScrollTo()
+        lunchField.performClick()
         lunchField.performTextInput("Pasta primavera")
         composeRule.waitForState(screenModel.mealPlan) { it.days[dayIndex].lunch == "Pasta primavera" }
 
+        composeRule.onNodeWithTag(MealPlanTestTags.SCROLL_LIST)
+            .performScrollToNode(hasTestTag(MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch)))
         composeRule.onNodeWithTag(MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch))
-            .performScrollTo()
             .performClick()
         composeRule.waitForState(screenModel.aiGroceryItems) { it.size == 3 }
 
+        composeRule.onNodeWithTag(MealPlanTestTags.SCROLL_LIST)
+            .performScrollToNode(hasTestTag(AiGrocerySuggestionChipsTestTags.ROW))
         composeRule.onNodeWithTag(AiGrocerySuggestionChipsTestTags.ROW)
-            .performScrollTo()
             .assertIsDisplayed()
         composeRule.onNodeWithText("Tomatoes").assertIsDisplayed()
         composeRule.onNodeWithText("Basil").assertIsDisplayed()
@@ -231,8 +235,9 @@ class NutritionUxInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag(MealPlanTestTags.SCROLL_LIST)
+            .performScrollToNode(hasTestTag(AiGrocerySuggestionChipsTestTags.chip("ai-basil")))
         composeRule.onNodeWithTag(AiGrocerySuggestionChipsTestTags.chip("ai-basil"))
-            .performScrollTo()
             .performClick()
         composeRule.waitForState(screenModel.groceryItems) { it.any { item -> item.label == "Basil" } }
         composeRule.waitForState(screenModel.aiGroceryItems) { it.isEmpty() }

@@ -316,7 +316,9 @@ fun WeeklyMealPlanScreen(
         },
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.screenContentArea(padding),
+            modifier = Modifier
+                .screenContentArea(padding)
+                .testTag(MealPlanTestTags.SCROLL_LIST),
             state = listState,
             contentPadding = screenListPadding(),
             verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
