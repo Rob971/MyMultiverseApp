@@ -1,12 +1,12 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: Nutrition, Adventures, and Budget share one household (2+ members).
 
-version: 16
+version: 17
 updated: 2026-06-20
 
 summary: |
   Verify auth, household members on Home (shared across nutrition, adventures, budget),
-  nutrition hub (grocery / meal plan / AI adviser), CRUD on shared week data, sync status,
+  nutrition hub (grocery shopping list and weekly meal plan), CRUD on shared week data, sync status,
   Crashlytics on tester builds, and sign-out.
   Welcome Home: time-based greeting, localized inspiration, household name button
   (manage or view members), then Nutrition / Adventures / Budget cards.
@@ -296,16 +296,16 @@ testcases:
       - Launch the app and go to Welcome Home with an active household.
       - Tap the Nutrition card below the household name button.
     expected:
-      - Nutrition hub opens with Grocery, Meal plan, and AI adviser cards.
+      - Nutrition hub opens with Grocery shopping and Weekly meal plan cards.
 
   - id: hub-layout-order
     title: Nutrition hub section order
     steps:
-      - Open the nutrition hub on a household with all features enabled.
+      - Open the nutrition hub on a household with grocery and meal plan enabled.
       - Scroll through the hub cards top to bottom.
     expected:
-      - Grocery, Weekly meal plan, and AI adviser cards are shown.
-      - Each category card shows a progress or status line when data exists.
+      - Grocery shopping and Weekly meal plan cards are shown (no separate AI adviser card).
+      - Each card shows a progress or status line when data exists.
 
   - id: hub-meal-plan-navigation
     title: Open weekly meal plan from hub
@@ -314,13 +314,6 @@ testcases:
     expected:
       - Meal plan screen shows the current week label and today highlighted.
       - Days can expand to edit lunch and dinner.
-
-  - id: hub-ai-navigation
-    title: Open AI adviser from hub
-    steps:
-      - From Nutrition hub, tap the AI adviser card.
-    expected:
-      - AI screen shows mode chips (Advice, Grocery, Meal plan) and a criteria field.
 
   - id: hub-members-navigation
     title: Open household members from Home
@@ -370,14 +363,27 @@ testcases:
       - Changes persist after leaving and returning to the screen.
       - Second household member sees the same grocery list after sync.
 
-  - id: grocery-ai-readonly
-    title: AI grocery on grocery screen (read-only)
+  - id: grocery-ai-suggestion-chips
+    title: AI grocery suggestion chips on grocery screen
     steps:
-      - Generate an AI grocery list via AI adviser (Grocery mode) or from a meal plan meal (see meal-plan-meal-grocery).
-      - Return to the editable Grocery screen.
+      - Generate AI grocery items from a meal on Weekly meal plan (see meal-plan-meal-grocery).
+      - Open the Grocery shopping screen.
+      - Tap one or more suggestion chips (e.g. + Salt, + Olive oil).
     expected:
-      - AI suggested groceries section appears above the editable list.
-      - AI items cannot be checked, edited, or swiped; editable list below is unchanged.
+      - Horizontal AI suggestion chips appear below the dashboard header.
+      - Tapping a chip adds the item to "To buy" and removes the chip without a snackbar.
+      - Rapid taps on multiple chips all apply smoothly.
+
+  - id: grocery-completed-collapse
+    title: Collapse checked-off grocery items
+    steps:
+      - Add and check off more than three items on the Grocery screen.
+      - Observe the "Checked off" section header.
+      - Tap the header to expand, then tap again to collapse.
+    expected:
+      - More than three checked items start collapsed by default.
+      - Header shows count (e.g. Checked off (4)).
+      - Tap toggles visibility; Clear checked still works from the header.
 
   - id: meal-plan-edit
     title: Edit weekly meal plan
@@ -387,6 +393,56 @@ testcases:
     expected:
       - Today is highlighted; other days can expand/collapse.
       - Lunch and dinner fields save while on screen.
+      - Progress shows meals planned (e.g. 2 of 14).
+
+  - id: meal-plan-next-week
+    title: Plan meals for next week
+    steps:
+      - Open Weekly meal plan.
+      - Tap next week in the week banner and enter a meal.
+      - Open Grocery shopping.
+    expected:
+      - Both screens show the same next-week date range.
+
+  - id: meal-plan-empty-state
+    title: Empty meal plan guidance
+    steps:
+      - Open Weekly meal plan with no meals entered.
+      - Tap Plan with AI.
+    expected:
+      - AI adviser opens in meal plan mode.
+
+  - id: meal-plan-bulk-grocery
+    title: Generate groceries for all planned meals
+    steps:
+      - Enter meals on at least two days.
+      - Tap Generate groceries for planned meals.
+    expected:
+      - AI chips appear with a summary snackbar.
+
+  - id: meal-plan-adopt-all-chips
+    title: Adopt all AI grocery suggestions
+    steps:
+      - Generate AI grocery suggestions.
+      - Tap Add all to list.
+    expected:
+      - Items move to the editable grocery list.
+
+  - id: meal-plan-copy-leftovers
+    title: Copy dinner to tomorrow lunch
+    steps:
+      - Enter dinner on a weekday before Sunday.
+      - Tap Copy to tomorrow's lunch.
+    expected:
+      - Tomorrow lunch is filled with the dinner text.
+
+  - id: meal-plan-clear-week
+    title: Clear week meals
+    steps:
+      - Enter meals on several days.
+      - Overflow menu → Clear week → confirm.
+    expected:
+      - All meal fields reset for the selected week.
 
   - id: meal-plan-meal-grocery
     title: Generate AI grocery for a single meal (lunch or dinner)
@@ -396,35 +452,31 @@ testcases:
       - Repeat for dinner on another day if desired.
     expected:
       - Snackbar confirms items added (or none new if duplicates).
-      - AI suggested groceries section appears on the meal plan screen.
-      - Same items appear on Grocery screen as read-only AI list; editable list is not modified.
+      - Horizontal AI suggestion chips appear below the meal plan header.
+      - Same chips appear on the Grocery screen; tap to add to the shopping list.
 
   - id: ai-advice
-    title: AI nutrition advice
+    title: AI nutrition advice (deferred hub entry)
     steps:
-      - Open AI adviser from hub.
-      - Ensure Advice mode is selected.
-      - Enter criteria and tap generate.
+      - Note: the standalone AI adviser is no longer on the nutrition hub.
+      - AI grocery suggestions from meal plan still flow to the Grocery screen chips.
     expected:
-      - Loading state, then advice card with text.
+      - Hub shows only Grocery and Weekly meal plan. Meal-plan generate-grocery remains available.
 
   - id: ai-grocery-mode
-    title: AI full grocery list from criteria
+    title: AI full grocery list from criteria (deferred hub entry)
     steps:
-      - On AI adviser, switch to Grocery mode.
-      - Enter criteria (e.g. high protein) and generate.
+      - Standalone AI Grocery mode is not reachable from the nutrition hub in this release.
+      - Use Weekly meal plan → Generate AI grocery list per meal instead.
     expected:
-      - Read-only AI grocery list shown; items persist for the week.
-      - Clear AI grocery list removes the read-only list and offers Undo.
+      - Meal-generated suggestions appear as chips on the Grocery screen; tap to add to the list.
 
   - id: ai-meal-plan-mode
-    title: AI meal plan preview and apply
+    title: AI meal plan preview and apply (deferred hub entry)
     steps:
-      - On AI adviser, switch to Meal plan mode.
-      - Enter criteria; choose full week or today; generate.
-      - Review preview and tap Apply to meal plan.
+      - Standalone AI Meal plan mode is not reachable from the nutrition hub in this release.
     expected:
-      - Preview shows proposed meals; after apply, Weekly meal plan reflects changes.
+      - Weekly meal plan remains editable manually from the hub meal plan card.
 
   - id: language-picker
     title: App language from Home settings

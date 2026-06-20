@@ -15,5 +15,7 @@ interface NutritionSessionCoordinator {
 
     suspend fun activateHousehold(householdId: String)
 
+    suspend fun selectWeek(weekKey: String)
+
     fun deactivate()
 }

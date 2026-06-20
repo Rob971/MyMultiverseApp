@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -18,9 +19,83 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+
+object WeekSelectorTestTags {
+    const val PREVIOUS = "nutrition_week_previous"
+    const val NEXT = "nutrition_week_next"
+}
+
+@Composable
+fun WeekSelectorBanner(
+    weekLabel: String,
+    canGoToPreviousWeek: Boolean,
+    canGoToNextWeek: Boolean,
+    previousWeekLabel: String,
+    nextWeekLabel: String,
+    onPreviousWeek: () -> Unit,
+    onNextWeek: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.08f),
+        border = BorderStroke(1.dp, SharedJourneyColors.InkMuted.copy(alpha = 0.12f)),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            IconButton(
+                onClick = onPreviousWeek,
+                enabled = canGoToPreviousWeek,
+                modifier = Modifier.testTag(WeekSelectorTestTags.PREVIOUS),
+            ) {
+                Icon(
+                    imageVector = AppIcons.ChevronLeft,
+                    contentDescription = previousWeekLabel,
+                    tint = if (canGoToPreviousWeek) {
+                        SharedJourneyColors.MediterraneanTeal
+                    } else {
+                        SharedJourneyColors.InkMuted.copy(alpha = 0.4f)
+                    },
+                )
+            }
+            Text(
+                text = weekLabel,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp),
+                style = MaterialTheme.typography.labelLarge,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.SemiBold,
+            )
+            IconButton(
+                onClick = onNextWeek,
+                enabled = canGoToNextWeek,
+                modifier = Modifier.testTag(WeekSelectorTestTags.NEXT),
+            ) {
+                Icon(
+                    imageVector = AppIcons.ChevronRight,
+                    contentDescription = nextWeekLabel,
+                    tint = if (canGoToNextWeek) {
+                        SharedJourneyColors.MediterraneanTeal
+                    } else {
+                        SharedJourneyColors.InkMuted.copy(alpha = 0.4f)
+                    },
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun WeekContextBanner(
@@ -30,16 +105,70 @@ fun WeekContextBanner(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = SharedJourneyColors.GlassTerracotta,
-        border = BorderStroke(1.dp, SharedJourneyColors.TerracottaOrange.copy(alpha = 0.25f)),
+        color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.08f),
+        border = BorderStroke(1.dp, SharedJourneyColors.InkMuted.copy(alpha = 0.12f)),
     ) {
         Text(
             text = weekLabel,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
             style = MaterialTheme.typography.labelLarge,
-            color = SharedJourneyColors.MediterraneanTeal,
+            color = SharedJourneyColors.InkDeep,
             fontWeight = FontWeight.SemiBold,
         )
+    }
+}
+
+@Composable
+fun GroceryDashboardCard(
+    description: String,
+    progressLabel: String,
+    progress: Float,
+    accentColor: Color,
+    modifier: Modifier = Modifier,
+    weekLabel: String? = null,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = FamilyLogisticsDesign.cardShape,
+        color = SharedJourneyColors.SunDrenchedWhite,
+        shadowElevation = 2.dp,
+        tonalElevation = 1.dp,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (weekLabel != null) {
+                Text(
+                    text = weekLabel,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = SharedJourneyColors.InkDeep,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted,
+            )
+            LinearProgressIndicator(
+                progress = { progress.coerceIn(0f, 1f) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 2.dp),
+                color = accentColor,
+                trackColor = accentColor.copy(alpha = 0.2f),
+                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
+            )
+            Text(
+                text = progressLabel,
+                style = MaterialTheme.typography.labelMedium,
+                color = SharedJourneyColors.InkMuted,
+                fontWeight = FontWeight.Medium,
+            )
+        }
     }
 }
 

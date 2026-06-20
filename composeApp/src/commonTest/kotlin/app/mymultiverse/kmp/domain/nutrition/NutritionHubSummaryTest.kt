@@ -36,4 +36,18 @@ class NutritionHubSummaryTest {
 
         assertEquals(2, NutritionHubSummary.plannedDaysCount(days))
     }
+
+    @Test
+    fun plannedSlotsCount_countsIndividualMeals() {
+        val days = listOf(
+            DayMeals(lunch = "Soup", dinner = "Fish"),
+            DayMeals(lunch = "Salad"),
+        ) + List(5) { DayMeals() }
+
+        assertEquals(3, NutritionHubSummary.plannedSlotsCount(days))
+        assertEquals(
+            NutritionHubSummary.MealPlanProgress(plannedSlots = 3),
+            NutritionHubSummary.mealPlanProgress(days),
+        )
+    }
 }

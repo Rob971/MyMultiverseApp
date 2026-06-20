@@ -26,6 +26,10 @@ class FakeNutritionSessionCoordinator(
         activatedHouseholdId = householdId
     }
 
+    override suspend fun selectWeek(weekKey: String) {
+        // Tests use setRepository directly; production uses NutritionSessionCoordinatorImpl.
+    }
+
     override fun deactivate() {
         deactivateCount++
     }

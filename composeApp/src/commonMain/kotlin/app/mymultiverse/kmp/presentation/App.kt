@@ -165,12 +165,14 @@ private fun AuthenticatedMainApp() {
         is AppRoute.Nutrition -> NutritionFlow(
             household = route.household,
             section = route.section,
+            initialAiMode = route.initialAiMode,
             onBack = navigator::navigateBack,
-            onOpenSection = { section ->
+            onOpenSection = { section, initialAiMode ->
                 navigator.navigateTo(
                     AppRoute.Nutrition(
                         household = route.household,
                         section = section,
+                        initialAiMode = initialAiMode,
                     ),
                 )
             },

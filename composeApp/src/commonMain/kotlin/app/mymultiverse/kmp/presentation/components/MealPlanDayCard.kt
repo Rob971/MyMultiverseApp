@@ -37,6 +37,10 @@ import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object MealPlanTestTags {
+    const val SCROLL_LIST = "meal_plan_scroll_list"
+    const val GENERATE_ALL_GROCERY = "meal_plan_generate_all_grocery"
+    const val CLEAR_WEEK = "meal_plan_clear_week"
+    const val PLAN_WITH_AI = "meal_plan_plan_with_ai"
     fun lunchField(dayIndex: Int) = "meal_plan_lunch_$dayIndex"
     fun dinnerField(dayIndex: Int) = "meal_plan_dinner_$dayIndex"
     fun dayHeader(dayIndex: Int) = "meal_plan_day_header_$dayIndex"
@@ -54,12 +58,18 @@ fun MealPlanDayCard(
     lunchLabel: String,
     dinnerLabel: String,
     notPlannedLabel: String,
+    unplannedSlotLabel: String,
     expandDayLabel: String,
     collapseDayLabel: String,
     generateGroceryLabel: String,
+    copyToTomorrowLabel: String,
+    clearFieldLabel: String,
     onLunchChange: (String) -> Unit,
     onDinnerChange: (String) -> Unit,
     onGenerateGroceryForMeal: (MealSlot) -> Unit,
+    onCopyToTomorrowLunch: (() -> Unit)? = null,
+    onClearLunch: (() -> Unit)? = null,
+    onClearDinner: (() -> Unit)? = null,
     loadingMeal: MealSlot? = null,
     readOnly: Boolean = false,
     modifier: Modifier = Modifier,
@@ -112,7 +122,13 @@ fun MealPlanDayCard(
 
             if (!expanded && !isToday) {
                 Text(
-                    text = MealPlanPresentation.summaryText(day, notPlannedLabel),
+                    text = MealPlanPresentation.summaryText(
+                        day = day,
+                        notPlannedLabel = notPlannedLabel,
+                        unplannedSlotLabel = unplannedSlotLabel,
+                        lunchLabel = lunchLabel,
+                        dinnerLabel = dinnerLabel,
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (isPlanned) SharedJourneyColors.InkDeep else SharedJourneyColors.InkMuted,
                     fontWeight = if (isPlanned) FontWeight.Medium else FontWeight.Normal,
@@ -134,6 +150,8 @@ fun MealPlanDayCard(
                         onGenerateGrocery = { onGenerateGroceryForMeal(MealSlot.Lunch) },
                         isGeneratingGrocery = loadingMeal == MealSlot.Lunch,
                         readOnly = readOnly,
+                        clearFieldLabel = clearFieldLabel,
+                        onClear = onClearLunch,
                         modifier = Modifier.fillMaxWidth(),
                         fieldTestTag = MealPlanTestTags.lunchField(dayIndex),
                         generateGroceryTestTag = MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch),
@@ -147,6 +165,10 @@ fun MealPlanDayCard(
                         onGenerateGrocery = { onGenerateGroceryForMeal(MealSlot.Dinner) },
                         isGeneratingGrocery = loadingMeal == MealSlot.Dinner,
                         readOnly = readOnly,
+                        clearFieldLabel = clearFieldLabel,
+                        onClear = onClearDinner,
+                        copyToTomorrowLabel = copyToTomorrowLabel,
+                        onCopyToTomorrow = onCopyToTomorrowLunch,
                         modifier = Modifier.fillMaxWidth(),
                         fieldTestTag = MealPlanTestTags.dinnerField(dayIndex),
                         generateGroceryTestTag = MealPlanTestTags.groceryButton(dayIndex, MealSlot.Dinner),
@@ -167,6 +189,10 @@ private fun MealPlanMealField(
     onGenerateGrocery: () -> Unit,
     isGeneratingGrocery: Boolean,
     readOnly: Boolean = false,
+    clearFieldLabel: String,
+    onClear: (() -> Unit)? = null,
+    copyToTomorrowLabel: String? = null,
+    onCopyToTomorrow: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     fieldTestTag: String,
     generateGroceryTestTag: String,
@@ -185,6 +211,18 @@ private fun MealPlanMealField(
             readOnly = readOnly,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { /* focus moves naturally */ }),
+            trailingIcon = if (value.isNotBlank() && !readOnly && onClear != null) {
+                {
+                    androidx.compose.material3.IconButton(onClick = onClear) {
+                        androidx.compose.material3.Icon(
+                            imageVector = AppIcons.Delete,
+                            contentDescription = clearFieldLabel,
+                        )
+                    }
+                }
+            } else {
+                null
+            },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = accentColor,
                 focusedLabelColor = accentColor,
@@ -192,32 +230,47 @@ private fun MealPlanMealField(
             ),
         )
         if (value.isNotBlank() && !readOnly) {
-            TextButton(
-                onClick = onGenerateGrocery,
-                enabled = !isGeneratingGrocery,
-                modifier = Modifier.testTag(generateGroceryTestTag),
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (isGeneratingGrocery) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp,
+                TextButton(
+                    onClick = onGenerateGrocery,
+                    enabled = !isGeneratingGrocery,
+                    modifier = Modifier.testTag(generateGroceryTestTag),
+                ) {
+                    if (isGeneratingGrocery) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = SharedJourneyColors.MediterraneanTeal,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                    } else {
+                        androidx.compose.material3.Icon(
+                            imageVector = AppIcons.Sparkles,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = SharedJourneyColors.MediterraneanTeal,
+                        )
+                        Spacer(Modifier.width(6.dp))
+                    }
+                    Text(
+                        text = generateGroceryLabel,
+                        style = MaterialTheme.typography.labelLarge,
                         color = SharedJourneyColors.MediterraneanTeal,
                     )
-                    Spacer(Modifier.width(8.dp))
-                } else {
-                    androidx.compose.material3.Icon(
-                        imageVector = AppIcons.Sparkles,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = SharedJourneyColors.MediterraneanTeal,
-                    )
-                    Spacer(Modifier.width(6.dp))
                 }
-                Text(
-                    text = generateGroceryLabel,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = SharedJourneyColors.MediterraneanTeal,
-                )
+                if (onCopyToTomorrow != null && copyToTomorrowLabel != null) {
+                    TextButton(onClick = onCopyToTomorrow) {
+                        Text(
+                            text = copyToTomorrowLabel,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = SharedJourneyColors.InkMuted,
+                        )
+                    }
+                }
             }
         }
     }

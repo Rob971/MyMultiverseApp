@@ -1,9 +1,10 @@
 package app.mymultiverse.kmp.presentation.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
@@ -12,6 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +32,7 @@ import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 object GroceryInputBarTestTags {
     const val INPUT_FIELD = "grocery_add_input"
     const val ADD_BUTTON = "grocery_add_button"
+    const val STICKY_BAR = "grocery_sticky_input_bar"
 }
 
 @Composable
@@ -39,7 +42,7 @@ fun GroceryInputBar(
     placeholder: String,
     addContentDescription: String,
     onSubmit: () -> Unit,
-    accentColor: Color = SharedJourneyColors.SageSoft,
+    accentColor: Color = SharedJourneyColors.MediterraneanTeal,
     modifier: Modifier = Modifier,
     requestFocus: Boolean = false,
     onFocusRequested: () -> Unit = {},
@@ -53,13 +56,19 @@ fun GroceryInputBar(
         }
     }
 
-    FamilyLogisticsCardSurface(
-        modifier = modifier,
-        accentColor = accentColor,
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag(GroceryInputBarTestTags.STICKY_BAR),
+        color = SharedJourneyColors.SunDrenchedWhite,
+        shadowElevation = 8.dp,
+        tonalElevation = 2.dp,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .navigationBarsPadding()
+                .imePadding()
                 .padding(
                     horizontal = ScreenLayout.inputBarHorizontalPadding,
                     vertical = ScreenLayout.inputBarVerticalPadding,

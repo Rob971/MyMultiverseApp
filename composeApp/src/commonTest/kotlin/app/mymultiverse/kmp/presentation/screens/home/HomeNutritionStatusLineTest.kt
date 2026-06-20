@@ -27,7 +27,7 @@ class HomeNutritionStatusLineTest {
                 summary = HomeNutritionSummary(
                     weekKey = "2026-W25",
                     groceryProgress = null,
-                    plannedDays = 0,
+                    plannedMealSlots = 0,
                 ),
                 groceryProgressLabel = { c, t -> "Grocery $c/$t" },
                 mealPlanProgressLabel = { p, w -> "Meals $p/$w" },
@@ -39,12 +39,12 @@ class HomeNutritionStatusLineTest {
     @Test
     fun format_joinsGroceryAndMealPlanProgress() {
         assertEquals(
-            "Grocery 2/5 · Meals 3/7",
+            "Grocery 2/5 · Meals 3/14",
             HomeNutritionStatusLine.format(
                 summary = HomeNutritionSummary(
                     weekKey = "2026-W25",
                     groceryProgress = NutritionHubSummary.GroceryProgress(checked = 2, total = 5),
-                    plannedDays = 3,
+                    plannedMealSlots = 3,
                 ),
                 groceryProgressLabel = { c, t -> "Grocery $c/$t" },
                 mealPlanProgressLabel = { p, w -> "Meals $p/$w" },

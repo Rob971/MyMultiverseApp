@@ -110,13 +110,14 @@ object NutritionAiTestTags {
 @Composable
 fun NutritionAiAdviceScreen(
     onBack: () -> Unit,
+    initialMode: NutritionAiMode? = null,
     screenModel: NutritionScreenModel = koinInject(),
 ) {
     val aiState by screenModel.aiState.collectAsState()
     val aiGrocery by screenModel.aiGroceryItems.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     var criteria by rememberSaveable { mutableStateOf("") }
-    var mode by rememberSaveable { mutableStateOf(NutritionAiMode.Advice) }
+    var mode by rememberSaveable { mutableStateOf(initialMode ?: NutritionAiMode.Advice) }
     var fullWeekScope by rememberSaveable { mutableStateOf(true) }
     val isLoading = aiState is NutritionAiState.Loading
     val inputsEnabled = canWrite && !isLoading

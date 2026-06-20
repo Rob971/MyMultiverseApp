@@ -5,5 +5,5 @@ import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 data class HomeNutritionSummary(
     val weekKey: String,
     val groceryProgress: NutritionHubSummary.GroceryProgress?,
-    val plannedDays: Int,
+    val plannedMealSlots: Int,
 )

@@ -73,6 +73,20 @@ class InstrumentedNutritionSessionCoordinator(
         activatedHouseholdId = householdId
     }
 
+    override suspend fun selectWeek(weekKey: String) {
+        val current = _nutrition.value as? InstrumentedNutritionRepository
+        _nutrition.value = InstrumentedNutritionRepository(
+            weekKey = weekKey,
+            householdId = current?.householdId,
+        ).also { next ->
+            current?.let { previous ->
+                next.grocery.value = previous.grocery.value
+                next.aiGrocery.value = previous.aiGrocery.value
+                next.mealPlan.value = previous.mealPlan.value.copy(weekKey = weekKey)
+            }
+        }
+    }
+
     override fun deactivate() = Unit
 }
 

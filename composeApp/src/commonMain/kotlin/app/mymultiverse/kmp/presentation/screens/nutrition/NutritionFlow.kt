@@ -3,6 +3,7 @@ package app.mymultiverse.kmp.presentation.screens.nutrition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
+import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import org.koin.compose.koinInject
@@ -11,8 +12,9 @@ import org.koin.compose.koinInject
 fun NutritionFlow(
     household: HouseholdContext?,
     section: NutritionSection,
+    initialAiMode: NutritionAiMode? = null,
     onBack: () -> Unit,
-    onOpenSection: (NutritionSection) -> Unit,
+    onOpenSection: (NutritionSection, NutritionAiMode?) -> Unit,
     onHouseholdSelected: (HouseholdContext) -> Unit,
 ) {
     if (household == null) {
@@ -34,7 +36,7 @@ fun NutritionFlow(
                 householdName = household.name,
                 enabledFeatures = household.nutritionFeatures,
                 onBack = onBack,
-                onOpenSection = onOpenSection,
+                onOpenSection = { target -> onOpenSection(target, null) },
             )
         }
 
@@ -49,14 +51,20 @@ fun NutritionFlow(
             LaunchedEffect(household.id) {
                 nutritionScreenModel.activateHousehold(household.id)
             }
-            WeeklyMealPlanScreen(onBack = onBack)
+            WeeklyMealPlanScreen(
+                onBack = onBack,
+                onOpenSection = { target, mode -> onOpenSection(target, mode) },
+            )
         }
 
         NutritionSection.AiAdvice -> {
             LaunchedEffect(household.id) {
                 nutritionScreenModel.activateHousehold(household.id)
             }
-            NutritionAiAdviceScreen(onBack = onBack)
+            NutritionAiAdviceScreen(
+                onBack = onBack,
+                initialMode = initialAiMode,
+            )
         }
     }
 }

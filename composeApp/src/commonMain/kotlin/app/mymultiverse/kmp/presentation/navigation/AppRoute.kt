@@ -1,5 +1,7 @@
 package app.mymultiverse.kmp.presentation.navigation
 
+import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
+
 sealed class NutritionSection {
     data object Hub : NutritionSection()
     data object Grocery : NutritionSection()
@@ -17,5 +19,6 @@ sealed class AppRoute {
     data class Nutrition(
         val household: HouseholdContext? = null,
         val section: NutritionSection = NutritionSection.Hub,
+        val initialAiMode: NutritionAiMode? = null,
     ) : AppRoute()
 }

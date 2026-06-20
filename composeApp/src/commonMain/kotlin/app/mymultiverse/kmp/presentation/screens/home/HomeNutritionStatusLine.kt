@@ -1,6 +1,5 @@
 package app.mymultiverse.kmp.presentation.screens.home
 
-import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 
 internal object HomeNutritionStatusLine {
@@ -8,14 +7,14 @@ internal object HomeNutritionStatusLine {
     fun format(
         summary: HomeNutritionSummary?,
         groceryProgressLabel: (checked: Int, total: Int) -> String,
-        mealPlanProgressLabel: (plannedDays: Int, daysInWeek: Int) -> String,
+        mealPlanProgressLabel: (plannedSlots: Int, totalSlots: Int) -> String,
         emptyLabel: String,
     ): String? {
         if (summary == null) return null
 
         val groceryProgress = summary.groceryProgress
         val hasGrocery = groceryProgress != null
-        val hasMealPlan = summary.plannedDays > 0
+        val hasMealPlan = summary.plannedMealSlots > 0
 
         if (!hasGrocery && !hasMealPlan) {
             return emptyLabel
@@ -27,8 +26,8 @@ internal object HomeNutritionStatusLine {
             }
             add(
                 mealPlanProgressLabel(
-                    summary.plannedDays,
-                    WeeklyMealPlan.DAYS_IN_WEEK,
+                    summary.plannedMealSlots,
+                    NutritionHubSummary.MEAL_SLOTS_PER_WEEK,
                 ),
             )
         }.joinToString(" · ")
