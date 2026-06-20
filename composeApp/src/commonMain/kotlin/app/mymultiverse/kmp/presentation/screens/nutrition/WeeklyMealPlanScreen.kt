@@ -53,6 +53,7 @@ import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_none
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_summary
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_suggestions_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_cancel_edit
@@ -134,7 +135,11 @@ fun WeeklyMealPlanScreen(
     val groceryNoneNew = stringResource(Res.string.nutrition_meal_grocery_none_new)
     val groceryError = stringResource(Res.string.nutrition_meal_grocery_error)
     val adoptAllSummary = adoptAllResult?.let { count ->
-        stringResource(Res.string.nutrition_ai_adopt_all_grocery_summary, count)
+        if (count == 0) {
+            stringResource(Res.string.nutrition_ai_adopt_all_grocery_none)
+        } else {
+            stringResource(Res.string.nutrition_ai_adopt_all_grocery_summary, count)
+        }
     }
 
     val mealGrocerySnackbarMessage = mealGroceryResult?.let { result ->
@@ -223,6 +228,7 @@ fun WeeklyMealPlanScreen(
             dayIndex = entry.index,
             dayLabel = entryDayLabel,
             day = entry.day,
+            weekDays = mealPlan.days,
             isToday = isToday,
             todayLabel = stringResource(Res.string.nutrition_today),
             lunchLabel = lunchLabel,

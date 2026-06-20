@@ -79,6 +79,7 @@
     <string name="nutrition_meal_plan_plan_with_ai">Pianifica 'a settimana cu' ll'IA</string>
     <string name="nutrition_ai_adopt_all_grocery">Azzecca tutto 'a lista</string>
     <string name="nutrition_ai_adopt_all_grocery_summary">Azzeccati %1$d articuli 'a lista</string>
+    <string name="nutrition_ai_adopt_all_grocery_none">Nun ce stanno articuli nuvi (già 'n lista)</string>
     <string name="nutrition_meal_generate_all_grocery">Genera spesa pe' pasti pianificati</string>
     <string name="nutrition_meal_grocery_bulk_added">Azzeccati %1$d articuli pe' %2$d pasti</string>
     <string name="nutrition_meal_grocery_bulk_none">Nisciuno articulo nuovo pe' pasti pianificati</string>

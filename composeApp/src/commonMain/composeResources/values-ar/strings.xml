@@ -79,6 +79,7 @@
     <string name="nutrition_meal_plan_plan_with_ai">خطط الأسبوع بالذكاء الاصطناعي</string>
     <string name="nutrition_ai_adopt_all_grocery">أضف الكل إلى القائمة</string>
     <string name="nutrition_ai_adopt_all_grocery_summary">تمت إضافة %1$d عنصر إلى قائمتك</string>
+    <string name="nutrition_ai_adopt_all_grocery_none">لا توجد عناصر جديدة للإضافة (موجودة بالفعل في قائمتك)</string>
     <string name="nutrition_meal_generate_all_grocery">إنشاء مشتريات للوجبات المخططة</string>
     <string name="nutrition_meal_grocery_bulk_added">تمت إضافة %1$d عنصر من %2$d وجبة</string>
     <string name="nutrition_meal_grocery_bulk_none">لا توجد عناصر جديدة للوجبات المخططة</string>

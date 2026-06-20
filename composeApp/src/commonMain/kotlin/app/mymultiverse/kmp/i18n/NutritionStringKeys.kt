@@ -59,6 +59,7 @@ object NutritionStringKeys {
         "nutrition_meal_plan_plan_with_ai",
         "nutrition_ai_adopt_all_grocery",
         "nutrition_ai_adopt_all_grocery_summary",
+        "nutrition_ai_adopt_all_grocery_none",
         "nutrition_meal_generate_all_grocery",
         "nutrition_meal_grocery_bulk_added",
         "nutrition_meal_grocery_bulk_none",

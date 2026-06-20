@@ -41,4 +41,26 @@ object MealPlanPresentation {
 
     fun tomorrowIndex(dayIndex: Int): Int? =
         (dayIndex + 1).takeIf { it in 0 until WeeklyMealPlan.DAYS_IN_WEEK }
+
+    fun mealLabelSuggestions(
+        days: List<DayMeals>,
+        query: String,
+        minQueryLength: Int = 2,
+        maxResults: Int = 5,
+    ): List<String> {
+        val normalizedQuery = query.trim()
+        if (normalizedQuery.length < minQueryLength) return emptyList()
+        val queryLower = normalizedQuery.lowercase()
+        return days.asSequence()
+            .flatMap { day -> sequenceOf(day.lunch, day.dinner) }
+            .map { it.trim() }
+            .filter { label ->
+                label.isNotBlank() &&
+                    !label.equals(normalizedQuery, ignoreCase = true) &&
+                    label.lowercase().contains(queryLower)
+            }
+            .distinctBy { it.lowercase() }
+            .take(maxResults)
+            .toList()
+    }
 }

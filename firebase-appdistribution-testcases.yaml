@@ -427,6 +427,15 @@ testcases:
       - Tap Add all to list.
     expected:
       - Items move to the editable grocery list.
+      - If every item was already on the list, snackbar says no new items were added.
+
+  - id: meal-plan-meal-autocomplete
+    title: Meal name suggestions while typing
+    steps:
+      - Enter a lunch on Monday (e.g. Pasta carbonara).
+      - On Tuesday lunch, type at least two letters matching that meal (e.g. pas).
+    expected:
+      - Suggestion chips appear; tapping one fills the field.
 
   - id: meal-plan-copy-leftovers
     title: Copy dinner to tomorrow lunch
@@ -456,27 +465,29 @@ testcases:
       - Same chips appear on the Grocery screen; tap to add to the shopping list.
 
   - id: ai-advice
-    title: AI nutrition advice (deferred hub entry)
+    title: AI nutrition advice from meal plan
     steps:
-      - Note: the standalone AI adviser is no longer on the nutrition hub.
-      - AI grocery suggestions from meal plan still flow to the Grocery screen chips.
+      - Open Nutrition hub → Weekly meal plan.
+      - Tap Plan week with AI in the header (or Plan with AI on the empty state).
     expected:
-      - Hub shows only Grocery and Weekly meal plan. Meal-plan generate-grocery remains available.
+      - AI adviser opens in meal plan mode with scope and apply controls.
+      - Hub still shows only Grocery and Weekly meal plan cards.
 
   - id: ai-grocery-mode
-    title: AI full grocery list from criteria (deferred hub entry)
+    title: AI grocery list from meal plan
     steps:
-      - Standalone AI Grocery mode is not reachable from the nutrition hub in this release.
-      - Use Weekly meal plan → Generate AI grocery list per meal instead.
+      - Open Weekly meal plan, enter a meal, tap Generate AI grocery list.
+      - Or tap Generate groceries for planned meals after filling multiple days.
     expected:
-      - Meal-generated suggestions appear as chips on the Grocery screen; tap to add to the list.
+      - AI suggestion chips appear on meal plan and Grocery screens; tap Add all to list or individual chips.
 
   - id: ai-meal-plan-mode
-    title: AI meal plan preview and apply (deferred hub entry)
+    title: AI meal plan preview and apply
     steps:
-      - Standalone AI Meal plan mode is not reachable from the nutrition hub in this release.
+      - Weekly meal plan → Plan week with AI (header or empty state).
+      - Enter criteria, generate preview, tap Apply to meal plan.
     expected:
-      - Weekly meal plan remains editable manually from the hub meal plan card.
+      - Preview shows lunch/dinner lines; apply fills the selected week's meal fields.
 
   - id: language-picker
     title: App language from Home settings

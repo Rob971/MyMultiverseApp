@@ -418,6 +418,28 @@ class NutritionScreenModelTest {
     }
 
     @Test
+    fun adoptAllAiGrocerySuggestions_whenAllDuplicates_reportsZeroAdopted() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.grocery.value = listOf(
+            GroceryItem("g-1", "Milk"),
+            GroceryItem("g-2", "Eggs"),
+        )
+        repository.aiGrocery.value = listOf(
+            GroceryItem("ai-1", "Milk"),
+            GroceryItem("ai-2", "Eggs"),
+        )
+        val model = nutritionScreenModel(repository, scope = modelScope)
+        advanceUntilIdle()
+
+        model.adoptAllAiGrocerySuggestions()
+        advanceUntilIdle()
+
+        assertEquals(2, repository.grocery.value.size)
+        assertTrue(repository.aiGrocery.value.isEmpty())
+        assertEquals(0, model.adoptAllGroceryResult.value)
+    }
+
+    @Test
     fun copyDinnerToTomorrowLunch_copiesTextToNextDay() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val model = nutritionScreenModel(repository, scope = modelScope)

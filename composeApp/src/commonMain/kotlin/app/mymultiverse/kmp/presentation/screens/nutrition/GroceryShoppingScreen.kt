@@ -25,6 +25,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_none
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_summary
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_suggestions_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_next
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_previous
@@ -85,6 +87,7 @@ fun GroceryShoppingScreen(
 ) {
     val items by screenModel.groceryItems.collectAsState()
     val aiGroceryItems by screenModel.aiGroceryItems.collectAsState()
+    val adoptAllResult by screenModel.adoptAllGroceryResult.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val weekOffset by screenModel.weekOffset.collectAsState()
     var newItemText by rememberSaveable { mutableStateOf("") }
@@ -127,6 +130,20 @@ fun GroceryShoppingScreen(
     )
     val clearCheckedLabel = stringResource(Res.string.nutrition_grocery_clear_checked)
     val clearCheckedMessage = stringResource(Res.string.nutrition_grocery_clear_checked_undo)
+    val adoptAllNoneMessage = stringResource(Res.string.nutrition_ai_adopt_all_grocery_none)
+    val adoptAllSummaryMessage = adoptAllResult?.let { count ->
+        if (count == 0) {
+            adoptAllNoneMessage
+        } else {
+            stringResource(Res.string.nutrition_ai_adopt_all_grocery_summary, count)
+        }
+    }
+
+    LaunchedEffect(adoptAllSummaryMessage) {
+        val message = adoptAllSummaryMessage ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(message)
+        screenModel.consumeAdoptAllGroceryResult()
+    }
 
     fun showMessage(message: String) {
         scope.launch { snackbarHostState.showSnackbar(message) }

@@ -6,32 +6,46 @@ import androidx.compose.ui.unit.dp
 
 object AppIcons {
 
-    val Check: ImageVector
-        get() = CheckCircle
-
-    val DateRange: ImageVector
-        get() = Notifications
-
     val Favorite: ImageVector
         get() = CheckCircle
 
     val Info: ImageVector
         get() = Sparkles
 
-    val KeyboardArrowDown: ImageVector
-        get() = ChevronRight
-
-    val KeyboardArrowUp: ImageVector
-        get() = ChevronLeft
-
-    val MoreVert: ImageVector
-        get() = Sparkles
-
     val Person: ImageVector
         get() = CheckCircle
 
     val Refresh: ImageVector
-        get() = Sparkles
+        get() {
+            if (_refresh != null) return _refresh!!
+            _refresh = ImageVector.Builder(
+                name = "Filled.Refresh",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(17.65f, 6.35f)
+                    curveTo(16.2f, 4.9f, 14.21f, 4.0f, 12.0f, 4.0f)
+                    curveToRelative(-4.42f, 0.0f, -7.99f, 3.58f, -7.99f, 8.0f)
+                    reflectiveCurveToRelative(3.57f, 8.0f, 7.99f, 8.0f)
+                    curveToRelative(3.73f, 0.0f, 6.84f, -2.55f, 7.73f, -6.0f)
+                    horizontalLineToRelative(-2.08f)
+                    curveToRelative(-0.82f, 2.33f, -3.04f, 4.0f, -5.65f, 4.0f)
+                    curveToRelative(-3.31f, 0.0f, -6.0f, -2.69f, -6.0f, -6.0f)
+                    reflectiveCurveToRelative(2.69f, -6.0f, 6.0f, -6.0f)
+                    curveToRelative(1.66f, 0.0f, 3.14f, 0.69f, 4.22f, 1.78f)
+                    lineTo(13.0f, 11.0f)
+                    horizontalLineToRelative(7.0f)
+                    verticalLineTo(4.0f)
+                    lineToRelative(-2.35f, 2.35f)
+                    close()
+                }
+            }.build()
+            return _refresh!!
+        }
+    private var _refresh: ImageVector? = null
 
     val Star: ImageVector
         get() = Sparkles
@@ -514,4 +528,173 @@ object AppIcons {
             return _accountBalance!!
         }
     private var _accountBalance: ImageVector? = null
+
+    val Check: ImageVector
+        get() {
+            if (_check != null) return _check!!
+            _check = ImageVector.Builder(
+                name = "Filled.Check",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(9.0f, 16.17f)
+                    lineTo(4.83f, 12.0f)
+                    lineTo(3.41f, 13.41f)
+                    lineTo(9.0f, 19.0f)
+                    lineTo(21.0f, 7.0f)
+                    lineTo(19.59f, 5.59f)
+                    lineTo(9.0f, 16.17f)
+                    close()
+                }
+            }.build()
+            return _check!!
+        }
+    private var _check: ImageVector? = null
+
+    val MoreVert: ImageVector
+        get() {
+            if (_moreVert != null) return _moreVert!!
+            _moreVert = ImageVector.Builder(
+                name = "Filled.MoreVert",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(12.0f, 8.0f)
+                    curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
+                    reflectiveCurveToRelative(-0.9f, -2.0f, -2.0f, -2.0f)
+                    reflectiveCurveToRelative(-2.0f, 0.9f, -2.0f, 2.0f)
+                    reflectiveCurveToRelative(0.9f, 2.0f, 2.0f, 2.0f)
+                    close()
+                    moveTo(12.0f, 10.0f)
+                    curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
+                    reflectiveCurveToRelative(0.9f, 2.0f, 2.0f, 2.0f)
+                    reflectiveCurveToRelative(2.0f, -0.9f, 2.0f, -2.0f)
+                    reflectiveCurveToRelative(-0.9f, -2.0f, -2.0f, -2.0f)
+                    close()
+                    moveTo(12.0f, 16.0f)
+                    curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
+                    reflectiveCurveToRelative(0.9f, 2.0f, 2.0f, 2.0f)
+                    reflectiveCurveToRelative(2.0f, -0.9f, 2.0f, -2.0f)
+                    reflectiveCurveToRelative(-0.9f, -2.0f, -2.0f, -2.0f)
+                    close()
+                }
+            }.build()
+            return _moreVert!!
+        }
+    private var _moreVert: ImageVector? = null
+
+    val DateRange: ImageVector
+        get() {
+            if (_dateRange != null) return _dateRange!!
+            _dateRange = ImageVector.Builder(
+                name = "Filled.DateRange",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(9.0f, 11.0f)
+                    horizontalLineTo(7.0f)
+                    verticalLineTo(9.0f)
+                    horizontalLineTo(9.0f)
+                    verticalLineTo(11.0f)
+                    close()
+                    moveTo(13.0f, 11.0f)
+                    horizontalLineTo(11.0f)
+                    verticalLineTo(9.0f)
+                    horizontalLineTo(13.0f)
+                    verticalLineTo(11.0f)
+                    close()
+                    moveTo(17.0f, 11.0f)
+                    horizontalLineTo(15.0f)
+                    verticalLineTo(9.0f)
+                    horizontalLineTo(17.0f)
+                    verticalLineTo(11.0f)
+                    close()
+                    moveTo(19.0f, 4.0f)
+                    horizontalLineTo(18.0f)
+                    verticalLineTo(2.0f)
+                    horizontalLineTo(16.0f)
+                    verticalLineTo(4.0f)
+                    horizontalLineTo(8.0f)
+                    verticalLineTo(2.0f)
+                    horizontalLineTo(6.0f)
+                    verticalLineTo(4.0f)
+                    horizontalLineTo(5.0f)
+                    curveToRelative(-1.11f, 0.0f, -1.99f, 0.9f, -1.99f, 2.0f)
+                    lineTo(3.0f, 20.0f)
+                    curveToRelative(0.0f, 1.1f, 0.89f, 2.0f, 2.0f, 2.0f)
+                    horizontalLineTo(19.0f)
+                    curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
+                    verticalLineTo(6.0f)
+                    curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
+                    close()
+                    moveTo(19.0f, 20.0f)
+                    horizontalLineTo(5.0f)
+                    verticalLineTo(9.0f)
+                    horizontalLineTo(19.0f)
+                    verticalLineTo(20.0f)
+                    close()
+                }
+            }.build()
+            return _dateRange!!
+        }
+    private var _dateRange: ImageVector? = null
+
+    val KeyboardArrowDown: ImageVector
+        get() {
+            if (_keyboardArrowDown != null) return _keyboardArrowDown!!
+            _keyboardArrowDown = ImageVector.Builder(
+                name = "Filled.KeyboardArrowDown",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(7.41f, 8.59f)
+                    lineTo(12.0f, 13.17f)
+                    lineTo(16.59f, 8.59f)
+                    lineTo(18.0f, 10.0f)
+                    lineTo(12.0f, 16.0f)
+                    lineTo(6.0f, 10.0f)
+                    lineTo(7.41f, 8.59f)
+                    close()
+                }
+            }.build()
+            return _keyboardArrowDown!!
+        }
+    private var _keyboardArrowDown: ImageVector? = null
+
+    val KeyboardArrowUp: ImageVector
+        get() {
+            if (_keyboardArrowUp != null) return _keyboardArrowUp!!
+            _keyboardArrowUp = ImageVector.Builder(
+                name = "Filled.KeyboardArrowUp",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(7.41f, 15.41f)
+                    lineTo(12.0f, 10.83f)
+                    lineTo(16.59f, 15.41f)
+                    lineTo(18.0f, 14.0f)
+                    lineTo(12.0f, 8.0f)
+                    lineTo(6.0f, 14.0f)
+                    lineTo(7.41f, 15.41f)
+                    close()
+                }
+            }.build()
+            return _keyboardArrowUp!!
+        }
+    private var _keyboardArrowUp: ImageVector? = null
 }

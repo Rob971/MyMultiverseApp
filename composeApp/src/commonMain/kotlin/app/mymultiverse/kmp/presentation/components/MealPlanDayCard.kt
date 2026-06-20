@@ -5,18 +5,23 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -46,6 +51,8 @@ object MealPlanTestTags {
     fun dayHeader(dayIndex: Int) = "meal_plan_day_header_$dayIndex"
     fun groceryButton(dayIndex: Int, slot: MealSlot) =
         "meal_plan_${slot.name.lowercase()}_grocery_$dayIndex"
+    fun mealSuggestion(dayIndex: Int, slot: MealSlot, suggestionIndex: Int) =
+        "meal_plan_${slot.name.lowercase()}_suggestion_${dayIndex}_$suggestionIndex"
 }
 
 @Composable
@@ -53,6 +60,7 @@ fun MealPlanDayCard(
     dayIndex: Int,
     dayLabel: String,
     day: DayMeals,
+    weekDays: List<DayMeals>,
     isToday: Boolean,
     todayLabel: String,
     lunchLabel: String,
@@ -145,6 +153,9 @@ fun MealPlanDayCard(
                         value = day.lunch,
                         onValueChange = onLunchChange,
                         label = lunchLabel,
+                        slot = MealSlot.Lunch,
+                        dayIndex = dayIndex,
+                        weekDays = weekDays,
                         accentColor = accentColor,
                         generateGroceryLabel = generateGroceryLabel,
                         onGenerateGrocery = { onGenerateGroceryForMeal(MealSlot.Lunch) },
@@ -160,6 +171,9 @@ fun MealPlanDayCard(
                         value = day.dinner,
                         onValueChange = onDinnerChange,
                         label = dinnerLabel,
+                        slot = MealSlot.Dinner,
+                        dayIndex = dayIndex,
+                        weekDays = weekDays,
                         accentColor = SharedJourneyColors.MediterraneanTeal,
                         generateGroceryLabel = generateGroceryLabel,
                         onGenerateGrocery = { onGenerateGroceryForMeal(MealSlot.Dinner) },
@@ -184,6 +198,9 @@ private fun MealPlanMealField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
+    slot: MealSlot,
+    dayIndex: Int,
+    weekDays: List<DayMeals>,
     accentColor: androidx.compose.ui.graphics.Color,
     generateGroceryLabel: String,
     onGenerateGrocery: () -> Unit,
@@ -197,6 +214,12 @@ private fun MealPlanMealField(
     fieldTestTag: String,
     generateGroceryTestTag: String,
 ) {
+    val suggestions = if (readOnly) {
+        emptyList()
+    } else {
+        MealPlanPresentation.mealLabelSuggestions(weekDays, value)
+    }
+
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         OutlinedTextField(
             value = value,
@@ -229,6 +252,31 @@ private fun MealPlanMealField(
                 cursorColor = accentColor,
             ),
         )
+        if (suggestions.isNotEmpty()) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 2.dp),
+            ) {
+                items(suggestions.withIndex().toList(), key = { it.value }) { (index, suggestion) ->
+                    SuggestionChip(
+                        onClick = { onValueChange(suggestion) },
+                        label = {
+                            Text(
+                                text = suggestion,
+                                style = MaterialTheme.typography.labelLarge,
+                            )
+                        },
+                        colors = SuggestionChipDefaults.suggestionChipColors(
+                            containerColor = accentColor.copy(alpha = 0.1f),
+                            labelColor = accentColor,
+                        ),
+                        modifier = Modifier.testTag(
+                            MealPlanTestTags.mealSuggestion(dayIndex, slot, index),
+                        ),
+                    )
+                }
+            }
+        }
         if (value.isNotBlank() && !readOnly) {
             Row(
                 modifier = Modifier.fillMaxWidth(),

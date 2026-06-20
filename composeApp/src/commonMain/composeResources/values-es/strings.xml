@@ -79,6 +79,7 @@
     <string name="nutrition_meal_plan_plan_with_ai">Planificar la semana con IA</string>
     <string name="nutrition_ai_adopt_all_grocery">Añadir todo a la lista</string>
     <string name="nutrition_ai_adopt_all_grocery_summary">Se añadieron %1$d artículos a tu lista</string>
+    <string name="nutrition_ai_adopt_all_grocery_none">No hay artículos nuevos que añadir (ya están en tu lista)</string>
     <string name="nutrition_meal_generate_all_grocery">Generar compra para comidas planificadas</string>
     <string name="nutrition_meal_grocery_bulk_added">Se añadieron %1$d artículos de %2$d comidas</string>
     <string name="nutrition_meal_grocery_bulk_none">No hay artículos nuevos para las comidas planificadas</string>

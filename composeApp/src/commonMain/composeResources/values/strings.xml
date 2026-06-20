@@ -79,6 +79,7 @@
     <string name="nutrition_meal_plan_plan_with_ai">Plan week with AI</string>
     <string name="nutrition_ai_adopt_all_grocery">Add all to list</string>
     <string name="nutrition_ai_adopt_all_grocery_summary">Added %1$d items to your list</string>
+    <string name="nutrition_ai_adopt_all_grocery_none">No new items to add (already on your list)</string>
     <string name="nutrition_meal_generate_all_grocery">Generate groceries for planned meals</string>
     <string name="nutrition_meal_grocery_bulk_added">Added %1$d items from %2$d meals</string>
     <string name="nutrition_meal_grocery_bulk_none">No new items to add for planned meals</string>

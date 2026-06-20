@@ -76,4 +76,31 @@ class MealPlanPresentationTest {
         assertEquals(1, MealPlanPresentation.tomorrowIndex(0))
         assertEquals(null, MealPlanPresentation.tomorrowIndex(6))
     }
+
+    @Test
+    fun mealLabelSuggestions_filtersByQueryAndExcludesExactMatch() {
+        val days = listOf(
+            DayMeals(lunch = "Pasta carbonara", dinner = "Caesar salad"),
+            DayMeals(lunch = "Pasta primavera", dinner = ""),
+        ) + List(5) { DayMeals() }
+
+        assertEquals(
+            listOf("Pasta carbonara", "Pasta primavera"),
+            MealPlanPresentation.mealLabelSuggestions(days, "pas"),
+        )
+        assertTrue(MealPlanPresentation.mealLabelSuggestions(days, "Pasta carbonara").isEmpty())
+        assertTrue(MealPlanPresentation.mealLabelSuggestions(days, "p").isEmpty())
+    }
+
+    @Test
+    fun mealLabelSuggestions_deduplicatesCaseInsensitive() {
+        val days = listOf(
+            DayMeals(lunch = "Soup", dinner = "SOUP"),
+        ) + List(6) { DayMeals() }
+
+        assertEquals(
+            listOf("Soup"),
+            MealPlanPresentation.mealLabelSuggestions(days, "so"),
+        )
+    }
 }
