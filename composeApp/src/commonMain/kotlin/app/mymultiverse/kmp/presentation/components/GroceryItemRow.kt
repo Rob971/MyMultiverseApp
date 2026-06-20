@@ -1,25 +1,25 @@
 package app.mymultiverse.kmp.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -62,29 +62,28 @@ fun GroceryItemRow(
     onToggle: () -> Unit,
     onDelete: () -> Unit,
     readOnly: Boolean = false,
+    showDivider: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     if (readOnly) {
-        Box(
+        GroceryFlatRowContent(
+            item = item,
+            isEditing = false,
+            editLabel = editLabel,
+            editContentDescription = editContentDescription,
+            saveContentDescription = saveContentDescription,
+            cancelEditLabel = cancelEditLabel,
+            toggleContentDescription = toggleContentDescription,
+            onStartEdit = {},
+            onCancelEdit = {},
+            onSaveEdit = { false },
+            onToggle = {},
+            readOnly = true,
+            showDivider = showDivider,
             modifier = modifier
                 .fillMaxWidth()
                 .testTag("${GroceryItemRowTestTags.ROW_PREFIX}${item.id}"),
-        ) {
-            GroceryItemCard(
-                item = item,
-                isEditing = false,
-                editLabel = editLabel,
-                editContentDescription = editContentDescription,
-                saveContentDescription = saveContentDescription,
-                cancelEditLabel = cancelEditLabel,
-                toggleContentDescription = toggleContentDescription,
-                onStartEdit = {},
-                onCancelEdit = {},
-                onSaveEdit = { false },
-                onToggle = {},
-                readOnly = true,
-            )
-        }
+        )
         return
     }
 
@@ -127,7 +126,7 @@ fun GroceryItemRow(
             .fillMaxWidth()
             .testTag("${GroceryItemRowTestTags.ROW_PREFIX}${item.id}"),
     ) {
-        GroceryItemCard(
+        GroceryFlatRowContent(
             item = item,
             isEditing = isEditing,
             editLabel = editLabel,
@@ -140,12 +139,13 @@ fun GroceryItemRow(
             onSaveEdit = onSaveEdit,
             onToggle = onToggle,
             readOnly = false,
+            showDivider = showDivider,
         )
     }
 }
 
 @Composable
-private fun GroceryItemCard(
+private fun GroceryFlatRowContent(
     item: GroceryItem,
     isEditing: Boolean,
     editLabel: String,
@@ -157,19 +157,25 @@ private fun GroceryItemCard(
     onCancelEdit: () -> Unit,
     onSaveEdit: (String) -> Boolean,
     onToggle: () -> Unit,
-    readOnly: Boolean = false,
+    readOnly: Boolean,
+    showDivider: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     var editText by remember(item.id, isEditing) {
         mutableStateOf(item.label)
     }
 
-    FamilyLogisticsCardSurface {
+    Box(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 4.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
+                .clickable(
+                    enabled = !isEditing && !readOnly,
+                    onClick = onToggle,
+                )
+                .padding(horizontal = 4.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             IconButton(
                 onClick = onToggle,
@@ -253,6 +259,13 @@ private fun GroceryItemCard(
                     }
                 }
             }
+        }
+
+        if (showDivider) {
+            HorizontalDivider(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                color = SharedJourneyColors.InkMuted.copy(alpha = 0.12f),
+            )
         }
     }
 }

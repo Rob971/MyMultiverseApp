@@ -276,6 +276,38 @@ class NutritionScreenModelTest {
     }
 
     @Test
+    fun adoptAiGrocerySuggestion_movesItemToEditableListAndRemovesChip() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.aiGrocery.value = listOf(
+            GroceryItem("ai-1", "Olive oil"),
+            GroceryItem("ai-2", "Salt"),
+        )
+        val model = nutritionScreenModel(repository, scope = modelScope) { "grocery-1" }
+        advanceUntilIdle()
+
+        assertTrue(model.adoptAiGrocerySuggestion("ai-1"))
+        advanceUntilIdle()
+
+        assertEquals(listOf(GroceryItem("grocery-1", "Olive oil", false)), repository.grocery.value)
+        assertEquals(listOf("Salt"), repository.aiGrocery.value.map { it.label })
+    }
+
+    @Test
+    fun adoptAiGrocerySuggestion_whenDuplicateOnlyRemovesChip() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.grocery.value = listOf(GroceryItem("g-1", "Milk", false))
+        repository.aiGrocery.value = listOf(GroceryItem("ai-1", "Milk"))
+        val model = nutritionScreenModel(repository, scope = modelScope)
+        advanceUntilIdle()
+
+        assertTrue(model.adoptAiGrocerySuggestion("ai-1"))
+        advanceUntilIdle()
+
+        assertEquals(1, repository.grocery.value.size)
+        assertTrue(repository.aiGrocery.value.isEmpty())
+    }
+
+    @Test
     fun clearAiGrocery_returnsSnapshotAndRestoreRebuildsReadOnlyList() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         repository.aiGrocery.value = listOf(

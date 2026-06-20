@@ -30,16 +30,68 @@ fun WeekContextBanner(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = SharedJourneyColors.GlassTerracotta,
-        border = BorderStroke(1.dp, SharedJourneyColors.TerracottaOrange.copy(alpha = 0.25f)),
+        color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.08f),
+        border = BorderStroke(1.dp, SharedJourneyColors.InkMuted.copy(alpha = 0.12f)),
     ) {
         Text(
             text = weekLabel,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
             style = MaterialTheme.typography.labelLarge,
-            color = SharedJourneyColors.MediterraneanTeal,
+            color = SharedJourneyColors.InkDeep,
             fontWeight = FontWeight.SemiBold,
         )
+    }
+}
+
+@Composable
+fun GroceryDashboardCard(
+    weekLabel: String,
+    description: String,
+    progressLabel: String,
+    progress: Float,
+    accentColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = FamilyLogisticsDesign.cardShape,
+        color = SharedJourneyColors.SunDrenchedWhite,
+        shadowElevation = 2.dp,
+        tonalElevation = 1.dp,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = weekLabel,
+                style = MaterialTheme.typography.titleSmall,
+                color = SharedJourneyColors.InkDeep,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = SharedJourneyColors.InkMuted,
+            )
+            LinearProgressIndicator(
+                progress = { progress.coerceIn(0f, 1f) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 2.dp),
+                color = accentColor,
+                trackColor = accentColor.copy(alpha = 0.2f),
+                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
+            )
+            Text(
+                text = progressLabel,
+                style = MaterialTheme.typography.labelMedium,
+                color = SharedJourneyColors.InkMuted,
+                fontWeight = FontWeight.Medium,
+            )
+        }
     }
 }
 

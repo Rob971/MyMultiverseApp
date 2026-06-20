@@ -70,10 +70,18 @@ fun FamilyLogisticsCardSurface(
 fun FamilyLogisticsSectionHeader(
     title: String,
     modifier: Modifier = Modifier,
+    titleModifier: Modifier = Modifier,
     actionLabel: String? = null,
     actionModifier: Modifier = Modifier,
+    onTitleClick: (() -> Unit)? = null,
     onAction: (() -> Unit)? = null,
 ) {
+    val clickableTitleModifier = if (onTitleClick != null) {
+        titleModifier.clickable(onClick = onTitleClick)
+    } else {
+        titleModifier
+    }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -83,6 +91,7 @@ fun FamilyLogisticsSectionHeader(
     ) {
         Text(
             text = title,
+            modifier = clickableTitleModifier,
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Black,
             color = SharedJourneyColors.InkDeep,

@@ -30,7 +30,7 @@
     <string name="nutrition_entry_error_generic">تعذر فتح التغذية. حاول مرة أخرى.</string>
     <string name="nutrition_entry_error_not_configured">لم يتم إعداد Supabase في هذا الإصدار.</string>
     <string name="nutrition_entry_retry">حاول مرة أخرى</string>
-    <string name="nutrition_hub_subtitle">مشتريات أسبوعية ووجبات ونصائح مخصصة للعائلة.</string>
+    <string name="nutrition_hub_subtitle">مشتريات ووجبات أسبوعية للعائلة.</string>
     <string name="nutrition_hub_sections_title">هذا الأسبوع</string>
     <string name="nutrition_meal_plan_section_today">اليوم</string>
     <string name="nutrition_meal_plan_section_week">الأيام القادمة</string>
@@ -74,6 +74,9 @@
     <string name="nutrition_delete_item">إزالة العنصر</string>
     <string name="nutrition_grocery_section_to_buy">للشراء</string>
     <string name="nutrition_grocery_section_completed">تم الشراء</string>
+    <string name="nutrition_grocery_section_completed_count">تم الشراء (%1$d)</string>
+    <string name="nutrition_grocery_expand_completed">إظهار المشتريات</string>
+    <string name="nutrition_grocery_collapse_completed">إخفاء المشتريات</string>
     <string name="nutrition_grocery_clear_checked">مسح المكتمل</string>
     <string name="nutrition_grocery_edit_item">تعديل العنصر</string>
     <string name="nutrition_grocery_edit_hint">اسم العنصر</string>
@@ -98,6 +101,7 @@
     <string name="nutrition_ai_scope_full_week">الأسبوع كامل</string>
     <string name="nutrition_ai_scope_today">اليوم فقط</string>
     <string name="nutrition_ai_grocery_result_title">مشتريات مقترحة من الذكاء الاصطناعي</string>
+    <string name="nutrition_ai_grocery_suggestions_title">اقتراحات الذكاء الاصطناعي:</string>
     <string name="nutrition_ai_grocery_summary">تم اقتراح %1$d عناصر وفق معاييرك.</string>
     <string name="nutrition_ai_meal_plan_summary_full_week">معاينة خطة الوجبات للأسبوع كاملًا. راجع أدناه ثم طبّق.</string>
     <string name="nutrition_ai_meal_plan_summary_single_day">معاينة خطة الوجبات ليوم %1$s. راجع أدناه ثم طبّق.</string>

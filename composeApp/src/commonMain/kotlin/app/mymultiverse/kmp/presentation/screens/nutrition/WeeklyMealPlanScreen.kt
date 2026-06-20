@@ -1,19 +1,22 @@
 package app.mymultiverse.kmp.presentation.screens.nutrition
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_saved_readonly_note
+import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_result_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_suggestions_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_dinner
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_generate_grocery
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_grocery_added
@@ -36,7 +39,7 @@ import app.mymultiverse.kmp.domain.nutrition.MealPlanDayOrdering
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
-import app.mymultiverse.kmp.presentation.components.AiReadOnlyGroceryList
+import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionChips
 import app.mymultiverse.kmp.presentation.components.nutritionDayLabel
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
@@ -144,11 +147,21 @@ fun WeeklyMealPlanScreen(
             }
 
             if (aiGrocery.isNotEmpty()) {
-                item {
-                    AiReadOnlyGroceryList(
+                item(key = "ai-suggestions-title") {
+                    Text(
+                        text = stringResource(Res.string.nutrition_ai_grocery_suggestions_title),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = SharedJourneyColors.InkMuted,
+                        modifier = Modifier.padding(top = 4.dp, start = 2.dp),
+                    )
+                }
+                item(key = "ai-suggestions-chips") {
+                    AiGrocerySuggestionChips(
                         items = aiGrocery,
-                        title = stringResource(Res.string.nutrition_ai_grocery_result_title),
-                        subtitle = stringResource(Res.string.nutrition_ai_grocery_saved_readonly_note),
+                        enabled = canWrite,
+                        onAdopt = { suggestion ->
+                            screenModel.adoptAiGrocerySuggestion(suggestion.id)
+                        },
                     )
                 }
             }

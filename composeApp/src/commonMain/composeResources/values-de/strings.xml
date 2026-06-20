@@ -30,7 +30,7 @@
     <string name="nutrition_entry_error_generic">Ernährung konnte nicht geöffnet werden. Bitte erneut versuchen.</string>
     <string name="nutrition_entry_error_not_configured">Supabase ist in diesem Build nicht konfiguriert.</string>
     <string name="nutrition_entry_retry">Erneut versuchen</string>
-    <string name="nutrition_hub_subtitle">Wöchentliche Einkäufe, Mahlzeiten und passende Tipps für die Familie.</string>
+    <string name="nutrition_hub_subtitle">Wöchentliche Einkäufe und Mahlzeiten für die Familie.</string>
     <string name="nutrition_hub_sections_title">Diese Woche</string>
     <string name="nutrition_meal_plan_section_today">Heute</string>
     <string name="nutrition_meal_plan_section_week">Kommende Tage</string>
@@ -74,6 +74,9 @@
     <string name="nutrition_delete_item">Artikel entfernen</string>
     <string name="nutrition_grocery_section_to_buy">Zu kaufen</string>
     <string name="nutrition_grocery_section_completed">Erledigt</string>
+    <string name="nutrition_grocery_section_completed_count">Erledigt (%1$d)</string>
+    <string name="nutrition_grocery_expand_completed">Erledigte anzeigen</string>
+    <string name="nutrition_grocery_collapse_completed">Erledigte ausblenden</string>
     <string name="nutrition_grocery_clear_checked">Erledigte löschen</string>
     <string name="nutrition_grocery_edit_item">Artikel bearbeiten</string>
     <string name="nutrition_grocery_edit_hint">Artikelname</string>
@@ -98,6 +101,7 @@
     <string name="nutrition_ai_scope_full_week">Ganze Woche</string>
     <string name="nutrition_ai_scope_today">Nur heute</string>
     <string name="nutrition_ai_grocery_result_title">KI-Einkaufsvorschläge</string>
+    <string name="nutrition_ai_grocery_suggestions_title">KI schlägt vor:</string>
     <string name="nutrition_ai_grocery_summary">%1$d Artikel nach Ihren Kriterien vorgeschlagen.</string>
     <string name="nutrition_ai_meal_plan_summary_full_week">Speiseplan-Vorschau für die ganze Woche. Unten prüfen und übernehmen.</string>
     <string name="nutrition_ai_meal_plan_summary_single_day">Speiseplan-Vorschau für %1$s. Unten prüfen und übernehmen.</string>

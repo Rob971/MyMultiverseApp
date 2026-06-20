@@ -2,23 +2,15 @@ package app.mymultiverse.kmp.presentation.screens.nutrition
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_description
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_description
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_progress
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_title
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_hub_sections_title
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_hub_subtitle
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_hub_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_description
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_progress
@@ -29,7 +21,6 @@ import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
-import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.NutritionSyncStatusBanner
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
@@ -46,7 +37,6 @@ import org.koin.compose.koinInject
 object NutritionHubTestTags {
     const val GROCERY_CARD = "nutrition_hub_grocery"
     const val MEAL_PLAN_CARD = "nutrition_hub_meal_plan"
-    const val AI_CARD = "nutrition_hub_ai"
 }
 
 @Composable
@@ -101,21 +91,6 @@ fun NutritionHubScreen(
                 }
             }
 
-            item {
-                Text(
-                    text = stringResource(Res.string.nutrition_hub_subtitle),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = SharedJourneyColors.InkMuted,
-                    fontWeight = FontWeight.Medium,
-                )
-            }
-
-            item {
-                FamilyLogisticsSectionHeader(
-                    title = stringResource(Res.string.nutrition_hub_sections_title),
-                )
-            }
-
             if (NutritionSharingFeature.Grocery in enabledFeatures) {
                 item {
                     FamilyLogisticCard(
@@ -140,19 +115,6 @@ fun NutritionHubScreen(
                         statusLine = mealPlanStatus,
                         modifier = Modifier.testTag(NutritionHubTestTags.MEAL_PLAN_CARD),
                         onClick = { onOpenSection(NutritionSection.MealPlan) },
-                    )
-                }
-            }
-
-            if (NutritionSharingFeature.AiAdvice in enabledFeatures) {
-                item {
-                    FamilyLogisticCard(
-                        title = stringResource(Res.string.nutrition_ai_title),
-                        description = stringResource(Res.string.nutrition_ai_description),
-                        accentColor = SharedJourneyColors.MediterraneanTeal,
-                        icon = AppIcons.Sparkles,
-                        modifier = Modifier.testTag(NutritionHubTestTags.AI_CARD),
-                        onClick = { onOpenSection(NutritionSection.AiAdvice) },
                     )
                 }
             }

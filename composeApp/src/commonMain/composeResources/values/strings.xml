@@ -30,7 +30,7 @@
     <string name="nutrition_entry_error_generic">Could not open nutrition. Try again.</string>
     <string name="nutrition_entry_error_not_configured">Supabase is not configured on this build.</string>
     <string name="nutrition_entry_retry">Try again</string>
-    <string name="nutrition_hub_subtitle">Weekly groceries, meals, and tailored advice for the family.</string>
+    <string name="nutrition_hub_subtitle">Weekly groceries and meals for the family.</string>
     <string name="nutrition_hub_sections_title">This week</string>
     <string name="nutrition_meal_plan_section_today">Today</string>
     <string name="nutrition_meal_plan_section_week">Upcoming days</string>
@@ -74,6 +74,9 @@
     <string name="nutrition_delete_item">Remove item</string>
     <string name="nutrition_grocery_section_to_buy">To buy</string>
     <string name="nutrition_grocery_section_completed">Checked off</string>
+    <string name="nutrition_grocery_section_completed_count">Checked off (%1$d)</string>
+    <string name="nutrition_grocery_expand_completed">Show checked off items</string>
+    <string name="nutrition_grocery_collapse_completed">Hide checked off items</string>
     <string name="nutrition_grocery_clear_checked">Clear checked</string>
     <string name="nutrition_grocery_edit_item">Edit item</string>
     <string name="nutrition_grocery_edit_hint">Item name</string>
@@ -98,6 +101,7 @@
     <string name="nutrition_ai_scope_full_week">Full week</string>
     <string name="nutrition_ai_scope_today">Today only</string>
     <string name="nutrition_ai_grocery_result_title">AI suggested groceries</string>
+    <string name="nutrition_ai_grocery_suggestions_title">AI suggests:</string>
     <string name="nutrition_ai_grocery_summary">Suggested %1$d items from your criteria.</string>
     <string name="nutrition_ai_meal_plan_summary_full_week">Meal plan preview for the full week. Review below, then apply.</string>
     <string name="nutrition_ai_meal_plan_summary_single_day">Meal plan preview for %1$s. Review below, then apply.</string>

@@ -249,6 +249,26 @@ class NutritionScreenModel(
         }
     }
 
+    /**
+     * Moves one AI suggestion into the editable grocery list and removes it from AI suggestions.
+     * If the label is already on the list, only removes the AI chip (no snackbar).
+     */
+    fun adoptAiGrocerySuggestion(itemId: String): Boolean {
+        if (!canWriteHouseholdData.value) return false
+        val suggestion = aiGroceryItems.value.firstOrNull { it.id == itemId } ?: return false
+        val trimmed = suggestion.label.trim()
+        if (trimmed.isEmpty()) return false
+        scope.launch {
+            val remainingAi = aiGroceryItems.value.filterNot { it.id == itemId }
+            if (!GroceryListPresentation.isDuplicateLabel(groceryItems.value, trimmed)) {
+                val updated = listOf(GroceryItem(id = newId(), label = trimmed)) + groceryItems.value
+                repository.saveGroceryItems(updated)
+            }
+            repository.saveAiGroceryItems(remainingAi)
+        }
+        return true
+    }
+
     fun clearAiGrocery(): List<GroceryItem> {
         if (!canWriteHouseholdData.value) return emptyList()
         val snapshot = aiGroceryItems.value
