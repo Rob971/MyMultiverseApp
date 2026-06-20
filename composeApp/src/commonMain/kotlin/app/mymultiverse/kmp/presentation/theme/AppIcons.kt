@@ -6,14 +6,85 @@ import androidx.compose.ui.unit.dp
 
 object AppIcons {
 
-    val Favorite: ImageVector
-        get() = CheckCircle
-
-    val Info: ImageVector
-        get() = Sparkles
-
     val Person: ImageVector
-        get() = CheckCircle
+        get() {
+            if (_person != null) return _person!!
+            _person = ImageVector.Builder(
+                name = "Filled.Person",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(12.0f, 12.0f)
+                    curveTo(14.21f, 12.0f, 16.0f, 10.21f, 16.0f, 8.0f)
+                    reflectiveCurveTo(14.21f, 4.0f, 12.0f, 4.0f)
+                    reflectiveCurveTo(8.0f, 5.79f, 8.0f, 8.0f)
+                    reflectiveCurveTo(9.79f, 12.0f, 12.0f, 12.0f)
+                    close()
+                    moveTo(12.0f, 14.0f)
+                    curveTo(9.33f, 14.0f, 4.0f, 15.34f, 4.0f, 18.0f)
+                    verticalLineTo(20.0f)
+                    horizontalLineTo(20.0f)
+                    verticalLineTo(18.0f)
+                    curveTo(20.0f, 15.34f, 14.67f, 14.0f, 12.0f, 14.0f)
+                    close()
+                }
+            }.build()
+            return _person!!
+        }
+    private var _person: ImageVector? = null
+
+    val ShoppingCart: ImageVector
+        get() {
+            if (_shoppingCart != null) return _shoppingCart!!
+            _shoppingCart = ImageVector.Builder(
+                name = "Filled.ShoppingCart",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(7.0f, 18.0f)
+                    curveTo(5.9f, 18.0f, 5.01f, 18.9f, 5.01f, 20.0f)
+                    reflectiveCurveTo(5.9f, 22.0f, 7.0f, 22.0f)
+                    reflectiveCurveTo(9.0f, 21.1f, 9.0f, 20.0f)
+                    reflectiveCurveTo(8.1f, 18.0f, 7.0f, 18.0f)
+                    close()
+                    moveTo(1.0f, 1.0f)
+                    horizontalLineTo(3.0f)
+                    lineTo(3.2f, 3.0f)
+                    lineTo(19.0f, 3.0f)
+                    curveTo(20.1f, 3.0f, 20.8f, 3.78f, 20.95f, 4.8f)
+                    lineTo(22.3f, 14.8f)
+                    curveTo(22.45f, 15.92f, 21.65f, 17.0f, 20.53f, 17.0f)
+                    horizontalLineTo(5.5f)
+                    lineTo(5.0f, 7.0f)
+                    horizontalLineTo(21.0f)
+                    lineTo(19.7f, 15.0f)
+                    horizontalLineTo(7.0f)
+                    curveTo(5.9f, 15.0f, 5.01f, 15.9f, 5.01f, 17.0f)
+                    reflectiveCurveTo(5.9f, 19.0f, 7.0f, 19.0f)
+                    horizontalLineTo(20.0f)
+                    verticalLineTo(17.0f)
+                    horizontalLineTo(7.82f)
+                    lineTo(7.1f, 5.0f)
+                    horizontalLineTo(2.0f)
+                    lineTo(1.0f, 1.0f)
+                    close()
+                    moveTo(17.0f, 18.0f)
+                    curveTo(15.9f, 18.0f, 15.01f, 18.9f, 15.01f, 20.0f)
+                    reflectiveCurveTo(15.9f, 22.0f, 17.0f, 22.0f)
+                    reflectiveCurveTo(19.0f, 21.1f, 19.0f, 20.0f)
+                    reflectiveCurveTo(18.1f, 18.0f, 17.0f, 18.0f)
+                    close()
+                }
+            }.build()
+            return _shoppingCart!!
+        }
+    private var _shoppingCart: ImageVector? = null
 
     val Refresh: ImageVector
         get() {
@@ -46,9 +117,6 @@ object AppIcons {
             return _refresh!!
         }
     private var _refresh: ImageVector? = null
-
-    val Star: ImageVector
-        get() = Sparkles
 
     val ChevronLeft: ImageVector
         get() {

@@ -300,7 +300,7 @@ fun GroceryShoppingScreen(
                     JourneyEmptyState(
                         title = stringResource(Res.string.nutrition_grocery_empty_title),
                         body = stringResource(Res.string.nutrition_grocery_empty),
-                        icon = AppIcons.Restaurant,
+                        icon = AppIcons.ShoppingCart,
                         primaryActionLabel = if (canWrite) {
                             stringResource(Res.string.nutrition_grocery_empty_cta)
                         } else {

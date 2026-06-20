@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 22
+version: 23
 updated: 2026-06-20
 
 summary: |
@@ -14,6 +14,7 @@ summary: |
   Welcome content stays hidden until setup completes.
   Empty states: grocery list and solo-household members use guided CTAs (add item / invite someone).
   Post-create: snackbar on Welcome Home offers Invite action to open Household members.
+  UI polish: create household is always primary; grocery uses cart icon; destructive actions use terracotta styling.
 
 testcases:
   - id: auth-sign-in

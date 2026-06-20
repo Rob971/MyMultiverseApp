@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.AppBuildInfo
+import app.mymultiverse.kmp.presentation.components.JourneyDestructiveTextButton
 import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
@@ -94,7 +95,7 @@ fun HomeAccountSheet(
                 )
             }
 
-            TextButton(
+            JourneyDestructiveTextButton(
                 onClick = {
                     onDismiss()
                     onDeleteAccount()
@@ -102,13 +103,8 @@ fun HomeAccountSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag(HomeAccountSheetTestTags.DELETE),
-            ) {
-                Text(
-                    stringResource(Res.string.home_delete_account),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = SharedJourneyColors.TerracottaOrange,
-                )
-            }
+                label = stringResource(Res.string.home_delete_account),
+            )
 
             TextButton(
                 onClick = {

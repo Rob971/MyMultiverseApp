@@ -1,6 +1,7 @@
 package app.mymultiverse.kmp.presentation.screens.home
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -403,6 +404,7 @@ private fun HomeTopBar(
                 IconButton(
                     onClick = openSettings,
                     modifier = Modifier
+                        .size(48.dp)
                         .testTag(HomeTestTags.SETTINGS_BUTTON)
                         .semantics { contentDescription = settingsDescription },
                 ) {
@@ -608,26 +610,14 @@ fun HomeOnboardingContent(
             !onboardingUiState.isCreating &&
             onboardingUiState.nameAvailability == HouseholdNameAvailability.Available
 
-        if (hasPendingInvites) {
-            OutlinedButton(
-                onClick = onCreate,
-                enabled = canCreate,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag(HomeTestTags.ONBOARDING_CREATE_BUTTON),
-            ) {
-                HomeCreateButtonLabel(isCreating = onboardingUiState.isCreating)
-            }
-        } else {
-            Button(
-                onClick = onCreate,
-                enabled = canCreate,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag(HomeTestTags.ONBOARDING_CREATE_BUTTON),
-            ) {
-                HomeCreateButtonLabel(isCreating = onboardingUiState.isCreating)
-            }
+        Button(
+            onClick = onCreate,
+            enabled = canCreate,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(HomeTestTags.ONBOARDING_CREATE_BUTTON),
+        ) {
+            HomeCreateButtonLabel(isCreating = onboardingUiState.isCreating)
         }
 
         Text(

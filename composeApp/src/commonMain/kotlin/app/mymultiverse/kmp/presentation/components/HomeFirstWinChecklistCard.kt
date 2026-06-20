@@ -116,6 +116,14 @@ private fun HomeFirstWinChecklistStepRow(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
             color = if (complete) SharedJourneyColors.InkMuted else SharedJourneyColors.InkDeep,
+            modifier = Modifier.weight(1f),
         )
+        if (enabled) {
+            Icon(
+                imageVector = AppIcons.ChevronRight,
+                contentDescription = null,
+                tint = SharedJourneyColors.InkMuted,
+            )
+        }
     }
 }

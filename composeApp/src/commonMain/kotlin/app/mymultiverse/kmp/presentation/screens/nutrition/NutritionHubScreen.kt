@@ -96,7 +96,7 @@ fun NutritionHubScreen(
                         title = stringResource(Res.string.nutrition_grocery_title),
                         description = stringResource(Res.string.nutrition_grocery_description),
                         accentColor = SharedJourneyColors.SageSoft,
-                        icon = AppIcons.Restaurant,
+                        icon = AppIcons.ShoppingCart,
                         statusLine = groceryStatus,
                         modifier = Modifier.testTag(NutritionHubTestTags.GROCERY_CARD),
                         onClick = { onOpenSection(NutritionSection.Grocery) },
