@@ -65,12 +65,20 @@ class NutritionUxInstrumentedTest {
         val repository = InstrumentedNutritionRepository(weekKey)
         repository.aiGrocery.value = initialAiGrocery
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+        var nextItemId = 0
         return NutritionScreenModel(
             session = InstrumentedNutritionSessionCoordinator(repository),
             householdRepository = InstrumentedHouseholdRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(adviceAnswer),
             scope = scope,
-            newItemId = { itemId },
+            newItemId = {
+                if (nextItemId == 0) {
+                    nextItemId++
+                    itemId
+                } else {
+                    "$itemId-${nextItemId++}"
+                }
+            },
         )
     }
 
