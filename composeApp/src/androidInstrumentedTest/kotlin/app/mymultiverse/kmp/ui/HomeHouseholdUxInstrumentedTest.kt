@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.presentation.components.HouseholdNameChipTestTags
@@ -69,7 +70,9 @@ class HomeHouseholdUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(HomeTestTags.ONBOARDING_CREATE_BUTTON).assertIsNotEnabled()
+        composeRule.onNodeWithTag(HomeTestTags.ONBOARDING_CREATE_BUTTON)
+            .performScrollTo()
+            .assertIsNotEnabled()
     }
 
     @Test
@@ -94,7 +97,10 @@ class HomeHouseholdUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(HomeTestTags.ONBOARDING_CREATE_BUTTON).performClick()
+        composeRule.onNodeWithTag(HomeTestTags.ONBOARDING_CREATE_BUTTON)
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
         assertTrue(createClicked)
     }
 
@@ -118,7 +124,9 @@ class HomeHouseholdUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(HomeTestTags.ONBOARDING_CREATE_BUTTON).assertIsNotEnabled()
+        composeRule.onNodeWithTag(HomeTestTags.ONBOARDING_CREATE_BUTTON)
+            .performScrollTo()
+            .assertIsNotEnabled()
     }
 
     @Test
