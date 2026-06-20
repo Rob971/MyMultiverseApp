@@ -42,6 +42,7 @@ import app.mymultiverse.kmp.domain.AppBuildInfo
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
+import app.mymultiverse.kmp.presentation.components.HomeComingSoonRow
 import app.mymultiverse.kmp.presentation.components.HouseholdNameChip
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.LanguagePicker
@@ -64,6 +65,7 @@ object HomeTestTags {
     const val APP_VERSION_LABEL = "home_app_version_label"
     const val LOADING_INDICATOR = "home_loading_indicator"
     const val GREETING_LINE = "home_greeting_line"
+    const val INSPIRATION_LINE = "home_inspiration_line"
     const val ONBOARDING_LOADING = "home_onboarding_loading"
     const val ONBOARDING_ERROR = "home_onboarding_error"
     const val ONBOARDING_RETRY_BUTTON = "home_onboarding_retry"
@@ -586,18 +588,20 @@ fun HomeWelcomeContent(
     modifier: Modifier = Modifier,
 ) {
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
-    val greetingSelection = HomeGreetingSelection.select(
-        greetingReady = greeting != null,
-        userDisplayName = userDisplayName,
-    )
+    val comingSoonFeaturesLabel = stringResource(Res.string.home_coming_soon_features)
+    val greetingSelection = HomeGreetingSelection.select(userDisplayName = userDisplayName)
     val supportingLine = when (greetingSelection) {
-        HomeGreetingSelection.Loading -> stringResource(Res.string.home_banner_loading)
         is HomeGreetingSelection.Personalized -> stringResource(
             Res.string.home_greeting_personalized,
             greetingSelection.name,
         )
         HomeGreetingSelection.Generic -> stringResource(Res.string.home_greeting)
     }
+    val inspirationLine = when (val line = HomeInspirationLine.select(greeting)) {
+        HomeInspirationLine.Loading -> stringResource(Res.string.home_greeting_loading)
+        is HomeInspirationLine.Ready -> line.text
+    }
+    val showInspirationLoading = greeting == null
 
     LazyColumn(
         modifier = modifier
@@ -611,8 +615,13 @@ fun HomeWelcomeContent(
             JourneyBanner(
                 headline = stringResource(Res.string.home_banner_headline),
                 supportingLine = supportingLine,
-                description = stringResource(Res.string.home_banner_description),
+                description = inspirationLine,
                 supportingLineTestTag = HomeTestTags.GREETING_LINE,
+                descriptionTestTag = if (showInspirationLoading) {
+                    HomeTestTags.LOADING_INDICATOR
+                } else {
+                    HomeTestTags.INSPIRATION_LINE
+                },
             )
         }
 
@@ -653,23 +662,6 @@ fun HomeWelcomeContent(
         }
 
         item {
-            if (greeting == null) {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator(
-                        color = SharedJourneyColors.MediterraneanTeal,
-                        strokeWidth = 3.dp,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .testTag(HomeTestTags.LOADING_INDICATOR),
-                    )
-                }
-            }
-        }
-
-        item {
             Spacer(Modifier.height(12.dp))
             Text(
                 text = stringResource(Res.string.home_dreams_title),
@@ -693,31 +685,13 @@ fun HomeWelcomeContent(
         }
 
         item {
-            FamilyLogisticCard(
-                title = stringResource(Res.string.home_logistics_adventures_title),
-                description = stringResource(Res.string.home_logistics_adventures_description),
-                accentColor = SharedJourneyColors.TerracottaOrange,
-                icon = AppIcons.Explore,
-                enabled = false,
+            HomeComingSoonRow(
+                label = comingSoonFeaturesLabel,
                 badge = comingSoonLabel,
-                onClick = {},
             )
         }
 
         item {
-            FamilyLogisticCard(
-                title = stringResource(Res.string.home_logistics_budget_title),
-                description = stringResource(Res.string.home_logistics_budget_description),
-                accentColor = SharedJourneyColors.MediterraneanTeal,
-                icon = AppIcons.AccountBalance,
-                enabled = false,
-                badge = comingSoonLabel,
-                onClick = {},
-            )
-        }
-
-        item {
-            Spacer(Modifier.height(24.dp))
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center,
@@ -756,28 +730,8 @@ fun HomeWelcomeContent(
         }
 
         item {
-            Spacer(Modifier.height(8.dp))
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                TextButton(
-                    onClick = onRefreshClick,
-                    enabled = !isRefreshing,
-                ) {
-                    Text(
-                        stringResource(Res.string.home_refresh_inspirations),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = SharedJourneyColors.InkMuted,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-            }
-        }
-
-        item {
             val versionLabel =
-                if (AppBuildInfo.IS_RELEASE_CANDIDATE) {
+                if (AppBuildInfo.IS_PRERELEASE) {
                     stringResource(Res.string.home_app_version_rc, AppBuildInfo.VERSION_NAME)
                 } else {
                     stringResource(Res.string.home_app_version, AppBuildInfo.VERSION_NAME)

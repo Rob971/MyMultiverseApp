@@ -426,14 +426,14 @@ GitHub Actions: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml)
 | Trigger | Jobs |
 |---------|------|
 | **PR** to `main` | Android CI + Supabase Migrations + instrumented (merge gate; no Firebase Release) |
-| **Push** to `main` | Same as PR, then Release (Firebase + version bump) |
+| **Push** to `main` | Same as PR (tests only; no automatic Firebase or version bump) |
 | **Manual dispatch** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `release` (iOS disabled) |
 
 `chore(version): … [skip ci]` pushes skip heavy jobs via the CI gate. Feature branches validate through a PR only (one run per push).
 
 **Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push` and P2 edge functions deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change; also `workflow_dispatch`.
 
-Firebase App Distribution runs on **main push** and manual release only.
+Firebase App Distribution runs only via **manual dispatch** (`release` or `all`).
 
 ---
 
@@ -441,9 +441,18 @@ Firebase App Distribution runs on **main push** and manual release only.
 
 Canonical version: [`gradle/app-version.properties`](gradle/app-version.properties).
 
-| Event | Bump |
-|-------|------|
-| Push to `main` (after Release job) | LTS patch +1, candidate reset |
+| Field | Purpose |
+|-------|---------|
+| `version.name` | SemVer user-facing version (e.g. `1.0.11`) |
+| `version.code` | Monotonic build number (Android `versionCode`, iOS `CFBundleVersion`) |
+| `version.prerelease` | Optional suffix (e.g. `beta.1` → displays as `1.1.0-beta.1`) |
+
+**Release (workflow_dispatch → `release` or `all`):**
+
+1. Choose **version bump**: `patch`, `minor`, or `none` (`none` only increments `version.code`).
+2. CI bumps version, builds a fresh debug APK, distributes to Firebase, tags `vX.Y.Z`, and commits `chore(version): release … [skip ci]`.
+
+Merges to `main` do **not** change the version automatically.
 
 ---
 

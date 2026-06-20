@@ -17,7 +17,7 @@ alwaysApply: false
 
 - **Feature branch:** open a PR to `main` — one workflow run per push (`pull_request` synchronize only; no duplicate `push` trigger).
 - **PR:** `Android CI`, `Supabase Migrations`, and `Android Instrumented UI Tests` in parallel; **no Firebase Release** (merge gate only).
-- **Push `main`/`master`:** same jobs as PR, then **Release** (Firebase + version bump). Version bump commits use `[skip ci]` and the **CI gate** skips heavy jobs.
+- **Push `main`/`master`:** same jobs as PR — **no automatic Firebase or version bump**.
 - **Manual dispatch:** `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `release`. **iOS compile is disabled** (`ios-compatibility` job `if: false`; verify locally with `./gradlew :composeApp:compileKotlinIosSimulatorArm64`).
 
 ### Supabase
@@ -29,9 +29,10 @@ alwaysApply: false
 
 ### Release job
 
-- Runs on **`main`/`master` push** and manual `release`/`all` dispatch only — not on PRs.
-- Downloads `composeApp-debug-apk`, distributes to Firebase App Distribution, bumps version on **main push** (`chore(version): … [skip ci]`).
-- **`release` only dispatch:** reuses APK from latest successful `Android CI` on the branch (or `source_run_id`).
+- Runs on **manual `release` or `all` dispatch only** — not on PRs or `main` push.
+- Flow: **bump version** (`version_bump`: patch | minor | none) → **build debug APK** → Firebase App Distribution → **commit**, **git tag** `vX.Y.Z`, push (`chore(version): release … [skip ci]`).
+- **`release` only:** skips merge-gate jobs; builds and ships immediately after bump.
+- **`all`:** runs full CI first, then release with the selected bump.
 
 ## Change guidelines
 
@@ -42,7 +43,7 @@ alwaysApply: false
 
 ## Firebase App Distribution
 
-- Release notes: branch/SHA + QA checklist excerpt from `firebase-appdistribution-testcases.yaml`.
+- Release notes: semver from `gradle/app-version.properties` + branch/SHA + QA checklist excerpt from `firebase-appdistribution-testcases.yaml`.
 - Update YAML when shipping UX changes.
 
 ## Commits & PRs
@@ -52,4 +53,4 @@ alwaysApply: false
 
 ## Artifacts
 
-- Debug APK: `composeApp-debug-apk` (consumed by `Release` job).
+- Debug APK: `composeApp-debug-apk` from **Android CI** (validation only; Release rebuilds after bump).
