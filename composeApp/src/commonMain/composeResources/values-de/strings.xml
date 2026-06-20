@@ -283,6 +283,12 @@
     <string name="home_greeting_loading">Inspiration wird geladen…</string>
     <string name="home_greeting_personalized">Hallo, %1$s</string>
     <string name="home_coming_soon_features">Abenteuer &amp; Budget</string>
+    <string name="home_section_this_week">Diese Woche</string>
+    <string name="home_section_household">Haushalt</string>
+    <string name="home_section_more">Mehr</string>
+    <string name="home_settings_title">Konto &amp; Einstellungen</string>
+    <string name="home_settings_button">Konto und Einstellungen öffnen</string>
+    <string name="home_nutrition_get_started">Beginne mit der Planung von Mahlzeiten und Einkäufen</string>
     <string name="home_onboarding_wait_for_invite_title">Auf eine Einladung warten?</string>
     <string name="home_onboarding_wait_for_invite_body">Wenn jemand %1$s einlädt, erscheint die Einladung hier. Sie können auch aktualisieren, um jetzt zu prüfen.</string>
     <string name="home_onboarding_refresh_invites">Einladungen aktualisieren</string>

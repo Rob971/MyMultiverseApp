@@ -38,13 +38,20 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
-import app.mymultiverse.kmp.domain.AppBuildInfo
 import app.mymultiverse.kmp.domain.model.Greeting
+import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
+import app.mymultiverse.kmp.presentation.components.HomeComingSoonRow
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
 import app.mymultiverse.kmp.presentation.components.HouseholdNameChip
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
-import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
@@ -64,6 +71,8 @@ object HomeTestTags {
     const val APP_VERSION_LABEL = "home_app_version_label"
     const val LOADING_INDICATOR = "home_loading_indicator"
     const val GREETING_LINE = "home_greeting_line"
+    const val INSPIRATION_LINE = "home_inspiration_line"
+    const val SETTINGS_BUTTON = "home_settings_button"
     const val ONBOARDING_LOADING = "home_onboarding_loading"
     const val ONBOARDING_ERROR = "home_onboarding_error"
     const val ONBOARDING_RETRY_BUTTON = "home_onboarding_retry"
@@ -90,7 +99,7 @@ fun HomeScreen(
     val onboardingUiState by screenModel.onboardingUiState.collectAsState()
     val renameUiState by screenModel.renameUiState.collectAsState()
     val canRenameHousehold by screenModel.canRenameHousehold.collectAsState()
-    val isRefreshing by screenModel.isRefreshing.collectAsState()
+    val nutritionSummary by screenModel.nutritionSummary.collectAsState()
     val pendingInvites by screenModel.pendingInvites.collectAsState()
     val inviteActionMessage by screenModel.inviteActionMessage.collectAsState()
     val switchHouseholdPrompt by screenModel.switchHouseholdPrompt.collectAsState()
@@ -203,6 +212,7 @@ fun HomeScreen(
         }
 
         HomePhase.Welcome -> {
+            var showAccountSheet by remember { mutableStateOf(false) }
             if (renameUiState.isVisible) {
                 HomeRenameHouseholdDialog(
                     uiState = renameUiState,
@@ -211,11 +221,18 @@ fun HomeScreen(
                     onConfirm = screenModel::confirmRenameHousehold,
                 )
             }
+            HomeAccountSheet(
+                visible = showAccountSheet,
+                onDismiss = { showAccountSheet = false },
+                onSignOut = screenModel::signOut,
+                onExportPersonalData = screenModel::exportPersonalData,
+                onDeleteAccount = screenModel::requestDeleteAccount,
+            )
             Scaffold(
                 contentWindowInsets = WindowInsets.safeDrawing,
                 snackbarHost = { SnackbarHost(snackbarHostState) },
                 topBar = {
-                    HomeTopBar(onSignOut = screenModel::signOut)
+                    HomeTopBar(onOpenSettings = { showAccountSheet = true })
                 },
                 containerColor = Color.Transparent,
             ) { padding ->
@@ -225,9 +242,8 @@ fun HomeScreen(
                     householdName = household?.name,
                     canRenameHousehold = canRenameHousehold,
                     onRenameHousehold = screenModel::openRenameHouseholdDialog,
-                    isRefreshing = isRefreshing,
+                    nutritionSummary = nutritionSummary,
                     pendingInvites = pendingInvites,
-                    onRefreshClick = { screenModel.refresh() },
                     onOpenNutrition = onOpenNutrition,
                     onOpenHouseholdMembers = onOpenHouseholdMembers,
                     onAcceptInvite = { inviteId ->
@@ -236,8 +252,6 @@ fun HomeScreen(
                         }
                     },
                     onDeclineInvite = screenModel::declineInvite,
-                    onExportPersonalData = screenModel::exportPersonalData,
-                    onDeleteAccount = screenModel::requestDeleteAccount,
                     modifier = Modifier.padding(padding),
                 )
             }
@@ -344,18 +358,37 @@ private fun HomeInviteSnackbarEffects(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeTopBar(onSignOut: () -> Unit) {
+private fun HomeTopBar(
+    onSignOut: (() -> Unit)? = null,
+    onOpenSettings: (() -> Unit)? = null,
+) {
+    val settingsDescription = stringResource(Res.string.home_settings_button)
     TopAppBar(
         title = { },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         actions = {
-            TextButton(
-                onClick = onSignOut,
-                modifier = Modifier.testTag(HomeTestTags.SIGN_OUT_BUTTON),
-            ) {
-                Text(stringResource(Res.string.auth_sign_out))
+            onOpenSettings?.let { openSettings ->
+                IconButton(
+                    onClick = openSettings,
+                    modifier = Modifier
+                        .testTag(HomeTestTags.SETTINGS_BUTTON)
+                        .semantics { contentDescription = settingsDescription },
+                ) {
+                    Icon(
+                        imageVector = AppIcons.MoreVert,
+                        contentDescription = null,
+                        tint = SharedJourneyColors.InkDeep,
+                    )
+                }
             }
-            LanguagePicker()
+            onSignOut?.let { signOut ->
+                TextButton(
+                    onClick = signOut,
+                    modifier = Modifier.testTag(HomeTestTags.SIGN_OUT_BUTTON),
+                ) {
+                    Text(stringResource(Res.string.auth_sign_out))
+                }
+            }
         },
     )
 }
@@ -574,29 +607,51 @@ fun HomeWelcomeContent(
     householdName: String?,
     canRenameHousehold: Boolean,
     onRenameHousehold: () -> Unit,
-    isRefreshing: Boolean,
+    nutritionSummary: HomeNutritionSummary?,
     pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite>,
-    onRefreshClick: () -> Unit,
     onOpenNutrition: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
     onAcceptInvite: (String) -> Unit,
     onDeclineInvite: (String) -> Unit,
-    onExportPersonalData: () -> Unit,
-    onDeleteAccount: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
-    val greetingSelection = HomeGreetingSelection.select(
-        greetingReady = greeting != null,
-        userDisplayName = userDisplayName,
-    )
+    val comingSoonFeaturesLabel = stringResource(Res.string.home_coming_soon_features)
+    val greetingSelection = HomeGreetingSelection.select(userDisplayName = userDisplayName)
     val supportingLine = when (greetingSelection) {
-        HomeGreetingSelection.Loading -> stringResource(Res.string.home_banner_loading)
         is HomeGreetingSelection.Personalized -> stringResource(
             Res.string.home_greeting_personalized,
             greetingSelection.name,
         )
         HomeGreetingSelection.Generic -> stringResource(Res.string.home_greeting)
+    }
+    val inspirationLine = when (val line = HomeInspirationLine.select(greeting)) {
+        HomeInspirationLine.Loading -> stringResource(Res.string.home_greeting_loading)
+        is HomeInspirationLine.Ready -> line.text
+    }
+    val showInspirationLoading = greeting == null
+    val nutritionStatusLine = when {
+        nutritionSummary == null -> null
+        nutritionSummary.groceryProgress == null && nutritionSummary.plannedDays == 0 ->
+            stringResource(Res.string.home_nutrition_get_started)
+        else -> buildList {
+            nutritionSummary.groceryProgress?.let { progress ->
+                add(
+                    stringResource(
+                        Res.string.nutrition_grocery_progress,
+                        progress.checked,
+                        progress.total,
+                    ),
+                )
+            }
+            add(
+                stringResource(
+                    Res.string.nutrition_meal_plan_progress,
+                    nutritionSummary.plannedDays,
+                    WeeklyMealPlan.DAYS_IN_WEEK,
+                ),
+            )
+        }.joinToString(" · ")
     }
 
     LazyColumn(
@@ -611,8 +666,45 @@ fun HomeWelcomeContent(
             JourneyBanner(
                 headline = stringResource(Res.string.home_banner_headline),
                 supportingLine = supportingLine,
-                description = stringResource(Res.string.home_banner_description),
+                description = inspirationLine,
                 supportingLineTestTag = HomeTestTags.GREETING_LINE,
+                descriptionTestTag = if (showInspirationLoading) {
+                    HomeTestTags.LOADING_INDICATOR
+                } else {
+                    HomeTestTags.INSPIRATION_LINE
+                },
+            )
+        }
+
+        item {
+            PendingInvitesCard(
+                invites = pendingInvites,
+                onAccept = onAcceptInvite,
+                onDecline = onDeclineInvite,
+            )
+        }
+
+        item {
+            FamilyLogisticsSectionHeader(
+                title = stringResource(Res.string.home_section_this_week),
+            )
+        }
+
+        item {
+            FamilyLogisticCard(
+                title = stringResource(Res.string.home_logistics_nutrition_title),
+                description = stringResource(Res.string.home_logistics_nutrition_description),
+                accentColor = SharedJourneyColors.SageSoft,
+                icon = AppIcons.Restaurant,
+                statusLine = nutritionStatusLine,
+                modifier = Modifier.testTag(HomeTestTags.NUTRITION_CARD),
+                onClick = onOpenNutrition,
+            )
+        }
+
+        item {
+            FamilyLogisticsSectionHeader(
+                title = stringResource(Res.string.home_section_household),
             )
         }
 
@@ -632,14 +724,6 @@ fun HomeWelcomeContent(
         }
 
         item {
-            PendingInvitesCard(
-                invites = pendingInvites,
-                onAccept = onAcceptInvite,
-                onDecline = onDeclineInvite,
-            )
-        }
-
-        item {
             FamilyLogisticCard(
                 title = stringResource(Res.string.home_household_title),
                 description = householdName?.let {
@@ -653,144 +737,15 @@ fun HomeWelcomeContent(
         }
 
         item {
-            if (greeting == null) {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator(
-                        color = SharedJourneyColors.MediterraneanTeal,
-                        strokeWidth = 3.dp,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .testTag(HomeTestTags.LOADING_INDICATOR),
-                    )
-                }
-            }
-        }
-
-        item {
-            Spacer(Modifier.height(12.dp))
-            Text(
-                text = stringResource(Res.string.home_dreams_title),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Black,
-                color = SharedJourneyColors.InkDeep,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                textAlign = TextAlign.Center,
+            FamilyLogisticsSectionHeader(
+                title = stringResource(Res.string.home_section_more),
             )
         }
 
         item {
-            FamilyLogisticCard(
-                title = stringResource(Res.string.home_logistics_nutrition_title),
-                description = stringResource(Res.string.home_logistics_nutrition_description),
-                accentColor = SharedJourneyColors.SageSoft,
-                icon = AppIcons.Restaurant,
-                modifier = Modifier.testTag(HomeTestTags.NUTRITION_CARD),
-                onClick = onOpenNutrition,
-            )
-        }
-
-        item {
-            FamilyLogisticCard(
-                title = stringResource(Res.string.home_logistics_adventures_title),
-                description = stringResource(Res.string.home_logistics_adventures_description),
-                accentColor = SharedJourneyColors.TerracottaOrange,
-                icon = AppIcons.Explore,
-                enabled = false,
+            HomeComingSoonRow(
+                label = comingSoonFeaturesLabel,
                 badge = comingSoonLabel,
-                onClick = {},
-            )
-        }
-
-        item {
-            FamilyLogisticCard(
-                title = stringResource(Res.string.home_logistics_budget_title),
-                description = stringResource(Res.string.home_logistics_budget_description),
-                accentColor = SharedJourneyColors.MediterraneanTeal,
-                icon = AppIcons.AccountBalance,
-                enabled = false,
-                badge = comingSoonLabel,
-                onClick = {},
-            )
-        }
-
-        item {
-            Spacer(Modifier.height(24.dp))
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                TextButton(
-                    onClick = onExportPersonalData,
-                    modifier = Modifier.testTag(HomeTestTags.EXPORT_DATA_BUTTON),
-                ) {
-                    Text(
-                        stringResource(Res.string.home_export_personal_data),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = SharedJourneyColors.InkMuted,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-            }
-        }
-
-        item {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                TextButton(
-                    onClick = onDeleteAccount,
-                    modifier = Modifier.testTag(HomeTestTags.DELETE_ACCOUNT_BUTTON),
-                ) {
-                    Text(
-                        stringResource(Res.string.home_delete_account),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = SharedJourneyColors.TerracottaOrange,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-            }
-        }
-
-        item {
-            Spacer(Modifier.height(8.dp))
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                TextButton(
-                    onClick = onRefreshClick,
-                    enabled = !isRefreshing,
-                ) {
-                    Text(
-                        stringResource(Res.string.home_refresh_inspirations),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = SharedJourneyColors.InkMuted,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-            }
-        }
-
-        item {
-            val versionLabel =
-                if (AppBuildInfo.IS_PRERELEASE) {
-                    stringResource(Res.string.home_app_version_rc, AppBuildInfo.VERSION_NAME)
-                } else {
-                    stringResource(Res.string.home_app_version, AppBuildInfo.VERSION_NAME)
-                }
-            Text(
-                text = versionLabel,
-                style = MaterialTheme.typography.labelSmall,
-                color = SharedJourneyColors.InkMuted,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp)
-                    .testTag(HomeTestTags.APP_VERSION_LABEL),
-                textAlign = TextAlign.Center,
             )
         }
     }

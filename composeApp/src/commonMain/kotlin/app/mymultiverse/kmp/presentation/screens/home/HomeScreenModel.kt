@@ -2,6 +2,7 @@ package app.mymultiverse.kmp.presentation.screens.home
 
 import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.domain.model.Greeting
+import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.auth.resolvedDisplayName
@@ -31,6 +32,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -98,6 +101,21 @@ class HomeScreenModel(
     val pendingInvites: StateFlow<List<HouseholdInvite>> = collaborationRepository
         .observePendingInvites()
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
+
+    val nutritionSummary: StateFlow<HomeNutritionSummary?> = sessionCoordinator.nutrition
+        .flatMapLatest { repository ->
+            combine(
+                repository.observeGroceryItems(),
+                repository.observeMealPlan(),
+            ) { groceryItems, mealPlan ->
+                HomeNutritionSummary(
+                    weekKey = repository.weekKey,
+                    groceryProgress = NutritionHubSummary.groceryProgress(groceryItems),
+                    plannedDays = NutritionHubSummary.plannedDaysCount(mealPlan.days),
+                )
+            }
+        }
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), null)
 
     val userDisplayName: StateFlow<String?> = authRepository.authState
         .map(::displayNameForAuthState)
