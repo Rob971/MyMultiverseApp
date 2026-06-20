@@ -317,15 +317,12 @@ class NutritionUxInstrumentedTest {
                         householdName = "Our household",
                         canRenameHousehold = false,
                         onRenameHousehold = {},
-                        isRefreshing = false,
+                        nutritionSummary = null,
                         pendingInvites = emptyList(),
-                        onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = { openedHousehold = true },
                         onAcceptInvite = {},
                         onDeclineInvite = {},
-                        onExportPersonalData = {},
-                        onDeleteAccount = {},
                     )
                 }
             }
@@ -351,15 +348,12 @@ class NutritionUxInstrumentedTest {
                         householdName = null,
                         canRenameHousehold = false,
                         onRenameHousehold = {},
-                        isRefreshing = false,
+                        nutritionSummary = null,
                         pendingInvites = emptyList(),
-                        onRefreshClick = {},
                         onOpenNutrition = { openedNutrition = true },
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
-                        onExportPersonalData = {},
-                        onDeleteAccount = {},
                     )
                 }
             }
@@ -383,15 +377,12 @@ class NutritionUxInstrumentedTest {
                         householdName = null,
                         canRenameHousehold = false,
                         onRenameHousehold = {},
-                        isRefreshing = false,
+                        nutritionSummary = null,
                         pendingInvites = emptyList(),
-                        onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
-                        onExportPersonalData = {},
-                        onDeleteAccount = {},
                     )
                 }
             }
@@ -412,15 +403,12 @@ class NutritionUxInstrumentedTest {
                         householdName = null,
                         canRenameHousehold = false,
                         onRenameHousehold = {},
-                        isRefreshing = false,
+                        nutritionSummary = null,
                         pendingInvites = emptyList(),
-                        onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
-                        onExportPersonalData = {},
-                        onDeleteAccount = {},
                     )
                 }
             }
@@ -440,15 +428,12 @@ class NutritionUxInstrumentedTest {
                         householdName = null,
                         canRenameHousehold = false,
                         onRenameHousehold = {},
-                        isRefreshing = false,
+                        nutritionSummary = null,
                         pendingInvites = emptyList(),
-                        onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
-                        onExportPersonalData = {},
-                        onDeleteAccount = {},
                     )
                 }
             }
@@ -469,15 +454,12 @@ class NutritionUxInstrumentedTest {
                         householdName = null,
                         canRenameHousehold = false,
                         onRenameHousehold = {},
-                        isRefreshing = false,
+                        nutritionSummary = null,
                         pendingInvites = emptyList(),
-                        onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
-                        onExportPersonalData = {},
-                        onDeleteAccount = {},
                     )
                 }
             }
@@ -499,15 +481,12 @@ class NutritionUxInstrumentedTest {
                         householdName = null,
                         canRenameHousehold = false,
                         onRenameHousehold = {},
-                        isRefreshing = false,
+                        nutritionSummary = null,
                         pendingInvites = emptyList(),
-                        onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
-                        onExportPersonalData = {},
-                        onDeleteAccount = {},
                     )
                 }
             }
@@ -528,15 +507,12 @@ class NutritionUxInstrumentedTest {
                         householdName = null,
                         canRenameHousehold = false,
                         onRenameHousehold = {},
-                        isRefreshing = false,
+                        nutritionSummary = null,
                         pendingInvites = emptyList(),
-                        onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
-                        onExportPersonalData = {},
-                        onDeleteAccount = {},
                     )
                 }
             }
@@ -557,15 +533,12 @@ class NutritionUxInstrumentedTest {
                         householdName = null,
                         canRenameHousehold = false,
                         onRenameHousehold = {},
-                        isRefreshing = true,
+                        nutritionSummary = null,
                         pendingInvites = emptyList(),
-                        onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
-                        onExportPersonalData = {},
-                        onDeleteAccount = {},
                     )
                 }
             }

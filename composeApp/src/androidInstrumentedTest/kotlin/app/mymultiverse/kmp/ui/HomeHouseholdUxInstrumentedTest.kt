@@ -134,15 +134,12 @@ class HomeHouseholdUxInstrumentedTest {
                         householdName = "Our Household",
                         canRenameHousehold = true,
                         onRenameHousehold = { renameOpened = true },
-                        isRefreshing = false,
+                        nutritionSummary = null,
                         pendingInvites = emptyList(),
-                        onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
-                        onExportPersonalData = {},
-                        onDeleteAccount = {},
                     )
                 }
             }
@@ -164,15 +161,12 @@ class HomeHouseholdUxInstrumentedTest {
                         householdName = "Shared Home",
                         canRenameHousehold = false,
                         onRenameHousehold = {},
-                        isRefreshing = false,
+                        nutritionSummary = null,
                         pendingInvites = emptyList(),
-                        onRefreshClick = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
-                        onExportPersonalData = {},
-                        onDeleteAccount = {},
                     )
                 }
             }
