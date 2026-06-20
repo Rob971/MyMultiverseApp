@@ -18,6 +18,7 @@ import app.mymultiverse.kmp.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.kmp.domain.platform.PersonalDataExporter
 import app.mymultiverse.kmp.domain.platform.PushNotificationRegistrar
 import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
+import app.mymultiverse.kmp.domain.sharing.HouseholdDefaultName
 import app.mymultiverse.kmp.domain.sharing.HouseholdNameRules
 import app.mymultiverse.kmp.domain.sharing.canRenameHousehold
 import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
@@ -134,6 +135,7 @@ class HomeScreenModel(
                     _membershipStatusOverride.value = null
                 } else if (status == HouseholdMembershipStatus.None) {
                     _household.value = null
+                    maybePrefillDefaultHouseholdName()
                 }
             }
         }
@@ -172,6 +174,7 @@ class HomeScreenModel(
                         activateNutritionSession(status.household.id)
                     } else if (status == HouseholdMembershipStatus.None) {
                         _household.value = null
+                        maybePrefillDefaultHouseholdName()
                     }
                     runCatching { collaborationRepository.refreshPendingInvites() }
                 }
@@ -541,6 +544,18 @@ class HomeScreenModel(
             "household_required" -> HouseholdGateError.HouseholdRequired
             else -> HouseholdGateError.Generic
         }
+
+    private fun maybePrefillDefaultHouseholdName() {
+        if (_onboardingUiState.value.householdNameInput.isNotBlank()) return
+        val auth = authRepository.authState.value as? AuthState.Authenticated ?: return
+        val suggested = HouseholdDefaultName.suggest(
+            displayName = auth.user.resolvedDisplayName(),
+            email = auth.user.email,
+        )
+        if (suggested.isNotBlank()) {
+            onHouseholdNameChange(suggested)
+        }
+    }
 
     private fun displayNameForAuthState(state: AuthState): String? =
         when (state) {
