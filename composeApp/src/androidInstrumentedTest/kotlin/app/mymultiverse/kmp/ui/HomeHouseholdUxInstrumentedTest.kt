@@ -142,6 +142,7 @@ class HomeHouseholdUxInstrumentedTest {
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        greetingHour = 9,
                     )
                 }
             }
@@ -171,6 +172,7 @@ class HomeHouseholdUxInstrumentedTest {
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        greetingHour = 9,
                     )
                 }
             }

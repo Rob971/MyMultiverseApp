@@ -280,6 +280,13 @@
     <string name="category_long_term_ai_action">إنشاء مخطط معلم</string>
     <string name="category_long_term_plan_title">مخطط المعلم</string>
     <string name="home_greeting">قلب عائلتنا النابض.</string>
+    <string name="home_greeting_morning">صباح الخير</string>
+    <string name="home_greeting_afternoon">مساء الخير</string>
+    <string name="home_greeting_evening">مساء الخير</string>
+    <string name="home_greeting_morning_personalized">صباح الخير، %1$s</string>
+    <string name="home_greeting_afternoon_personalized">مساء الخير، %1$s</string>
+    <string name="home_greeting_evening_personalized">مساء الخير، %1$s</string>
+    <string name="home_coming_soon_hint">الرحلات والخروج والمال المشترك قادمة قريبًا.</string>
     <string name="home_greeting_loading">جاري تحميل الإلهام…</string>
     <string name="home_greeting_personalized">مرحباً، %1$s</string>
     <string name="home_coming_soon_features">المغامرات والميزانية</string>
