@@ -322,6 +322,10 @@
     <string name="home_settings_button">Open account and settings</string>
     <string name="home_nutrition_get_started">Start planning meals and groceries</string>
     <string name="home_nutrition_continue_planning">Continue planning</string>
+    <string name="home_first_win_title">Get started together</string>
+    <string name="home_first_win_invite">Invite someone to plan with you</string>
+    <string name="home_first_win_nutrition">Plan a meal or add groceries</string>
+    <string name="home_first_win_dismiss">Not now</string>
     <string name="home_onboarding_join_title">Were you invited?</string>
     <string name="home_onboarding_wait_for_invite_title">Waiting for an invite?</string>
     <string name="home_onboarding_wait_for_invite_body">When someone invites %1$s, you will see it here. You can also refresh to check now.</string>

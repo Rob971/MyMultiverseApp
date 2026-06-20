@@ -5,6 +5,7 @@ import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteApi
 import app.mymultiverse.kmp.data.repository.GreetingRepositoryImpl
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
+import app.mymultiverse.kmp.data.home.HomeFirstWinChecklistStore
 import app.mymultiverse.kmp.data.invite.InviteSessionStore
 import app.mymultiverse.kmp.data.repository.SettingsNutritionHouseholdSelectionStore
 import app.mymultiverse.kmp.data.service.LocalNutritionAiAssistantService
@@ -80,6 +81,7 @@ private val dataModule = module {
     }
     single<NutritionHouseholdSelectionStore> { SettingsNutritionHouseholdSelectionStore(get()) }
     single { InviteSessionStore(get()) }
+    single { HomeFirstWinChecklistStore(get()) }
     single<GreetingRepository> { GreetingRepositoryImpl(get()) }
     single<NutritionRepository> { NutritionRepositoryImpl(get()) }
     single { NutritionSyncOutbox(get()) }

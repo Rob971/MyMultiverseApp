@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
+import app.mymultiverse.kmp.data.home.HomeFirstWinChecklistStore
 import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
 import app.mymultiverse.kmp.domain.observability.DiagnosticsContext
@@ -75,6 +76,7 @@ class HomeScreenModelTest {
         sessionCoordinator: FakeNutritionSessionCoordinator = FakeNutritionSessionCoordinator(
             initialRepository = NutritionRepositoryImpl(MapSettings()),
         ),
+        firstWinChecklistStore: HomeFirstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
     ): HomeScreenModel =
         HomeScreenModel(
             getGreetingUseCase = GetGreetingUseCase(repository),
@@ -84,6 +86,7 @@ class HomeScreenModelTest {
             sessionCoordinator = sessionCoordinator,
             personalDataExporter = personalDataExporter,
             pushNotificationRegistrar = pushNotificationRegistrar,
+            firstWinChecklistStore = firstWinChecklistStore,
             logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
@@ -239,6 +242,7 @@ class HomeScreenModelTest {
             ),
             personalDataExporter = FakePersonalDataExporter(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
+            firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
             logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
@@ -265,6 +269,7 @@ class HomeScreenModelTest {
             ),
             personalDataExporter = FakePersonalDataExporter(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
+            firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
             logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
@@ -302,6 +307,7 @@ class HomeScreenModelTest {
             ),
             personalDataExporter = FakePersonalDataExporter(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
+            firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
             logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
@@ -330,6 +336,7 @@ class HomeScreenModelTest {
             ),
             personalDataExporter = FakePersonalDataExporter(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
+            firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
             logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
@@ -579,6 +586,27 @@ class HomeScreenModelTest {
         assertEquals(HomePhase.Onboarding, screenModel.homePhase.value)
         assertEquals(1, screenModel.pendingInvites.value.size)
         assertEquals("invitee@example.com", screenModel.pendingInvites.value.single().email)
+    }
+
+    @Test
+    fun createHousehold_showsFirstWinChecklist() = runTest(testDispatcher) {
+        val householdRepository = FakeHouseholdRepository(
+            initialMembershipStatus = HouseholdMembershipStatus.None,
+        )
+        householdRepository.setMembershipStatus(HouseholdMembershipStatus.None)
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            householdRepository = householdRepository,
+        )
+        advanceUntilIdle()
+        screenModel.onHouseholdNameChange("Rossi home")
+        advanceTimeBy(400)
+        advanceUntilIdle()
+        screenModel.createHousehold()
+        advanceUntilIdle()
+        assertTrue(screenModel.firstWinChecklist.value.visible)
+        assertFalse(screenModel.firstWinChecklist.value.inviteComplete)
+        assertFalse(screenModel.firstWinChecklist.value.nutritionComplete)
     }
 
     @Test

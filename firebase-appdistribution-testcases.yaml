@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 19
+version: 20
 updated: 2026-06-20
 
 summary: |
@@ -149,6 +149,16 @@ testcases:
       - Name availability shows Available before create is enabled; taken names show Taken inline.
       - Hint explains inviting members after creation via the household card on Home.
       - Welcome Home shows This week section and household button after setup.
+
+  - id: home-first-win-checklist
+    title: First-win checklist after household setup
+    steps:
+      - Sign in with a new account and create a household on Home onboarding.
+      - Land on Welcome Home with an empty nutrition week.
+    expected:
+      - Get started together checklist appears with invite and nutrition steps.
+      - Tapping invite opens Household members; tapping nutrition opens the Nutrition hub.
+      - Not now hides the checklist until both steps are completed.
 
   - id: home-rename-household
     title: Rename household from Welcome Home (owner or admin)

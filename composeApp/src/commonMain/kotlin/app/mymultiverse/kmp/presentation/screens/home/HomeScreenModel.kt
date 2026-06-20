@@ -1,6 +1,7 @@
 package app.mymultiverse.kmp.presentation.screens.home
 
-import app.mymultiverse.kmp.data.observability.AppLogger
+import app.mymultiverse.kmp.data.home.HomeFirstWinChecklistStore
+import app.mymultiverse.kmp.domain.home.HomeFirstWinChecklist
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
@@ -8,8 +9,10 @@ import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.auth.resolvedDisplayName
 import app.mymultiverse.kmp.domain.model.sharing.Household
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
-import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
+import app.mymultiverse.kmp.data.observability.AppLogger
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
@@ -35,6 +38,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -47,6 +51,7 @@ class HomeScreenModel(
     private val sessionCoordinator: NutritionSessionCoordinator,
     private val personalDataExporter: PersonalDataExporter,
     private val pushNotificationRegistrar: PushNotificationRegistrar,
+    private val firstWinChecklistStore: HomeFirstWinChecklistStore,
     private val logger: AppLogger,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
@@ -118,6 +123,58 @@ class HomeScreenModel(
         }
         .stateIn(scope, SharingStarted.WhileSubscribed(5_000), null)
 
+    private val _firstWinDismissed = MutableStateFlow(false)
+
+    private data class HomeCollaborationSnapshot(
+        val members: List<HouseholdMember> = emptyList(),
+        val outboundInviteCount: Int = 0,
+    )
+
+    private val collaborationSnapshot: StateFlow<HomeCollaborationSnapshot> = _household
+        .flatMapLatest { household ->
+            if (household == null) {
+                flowOf(HomeCollaborationSnapshot())
+            } else {
+                combine(
+                    collaborationRepository.observeMembers(household.id),
+                    collaborationRepository.observeOutboundInvites(household.id),
+                ) { members, outboundInvites ->
+                    HomeCollaborationSnapshot(
+                        members = members,
+                        outboundInviteCount = outboundInvites.size,
+                    )
+                }
+            }
+        }
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), HomeCollaborationSnapshot())
+
+    val firstWinChecklist: StateFlow<HomeFirstWinChecklistUiState> = combine(
+        hasActiveHousehold,
+        _firstWinDismissed,
+        collaborationSnapshot,
+        nutritionSummary,
+    ) { activeHousehold, dismissed, collaboration, nutrition ->
+        val inviteComplete = HomeFirstWinChecklist.inviteStepComplete(
+            members = collaboration.members,
+            outboundInviteCount = collaboration.outboundInviteCount,
+        )
+        val groceryCount = nutrition?.groceryProgress?.total ?: 0
+        val nutritionComplete = HomeFirstWinChecklist.nutritionStepComplete(
+            plannedMealSlots = nutrition?.plannedMealSlots ?: 0,
+            groceryItemCount = groceryCount,
+        )
+        HomeFirstWinChecklistUiState(
+            visible = HomeFirstWinChecklist.shouldShow(
+                hasActiveHousehold = activeHousehold,
+                dismissed = dismissed,
+                inviteComplete = inviteComplete,
+                nutritionComplete = nutritionComplete,
+            ),
+            inviteComplete = inviteComplete,
+            nutritionComplete = nutritionComplete,
+        )
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), HomeFirstWinChecklistUiState())
+
     val userDisplayName: StateFlow<String?> = authRepository.authState
         .map(::displayNameForAuthState)
         .stateIn(
@@ -133,14 +190,26 @@ class HomeScreenModel(
                 if (status is HouseholdMembershipStatus.Active) {
                     _household.value = status.household
                     _membershipStatusOverride.value = null
+                    syncFirstWinDismissed(status.household.id)
+                    refreshCollaborationSnapshot(status.household)
                 } else if (status == HouseholdMembershipStatus.None) {
                     _household.value = null
+                    _firstWinDismissed.value = false
                     maybePrefillDefaultHouseholdName()
                 }
             }
         }
         refreshMembership()
         refresh()
+        scope.launch {
+            firstWinChecklist.collect { checklist ->
+                val householdId = _household.value?.id ?: return@collect
+                if (checklist.inviteComplete && checklist.nutritionComplete) {
+                    firstWinChecklistStore.setDismissed(householdId)
+                    _firstWinDismissed.value = true
+                }
+            }
+        }
     }
 
     fun refresh() {
@@ -157,6 +226,13 @@ class HomeScreenModel(
         }
         refreshPendingInvitesInBackground()
         registerPushNotificationsIfAuthenticated()
+        _household.value?.let { refreshCollaborationSnapshot(it) }
+    }
+
+    fun dismissFirstWinChecklist() {
+        val householdId = _household.value?.id ?: return
+        firstWinChecklistStore.setDismissed(householdId)
+        _firstWinDismissed.value = true
     }
 
     fun refreshMembership(forceLoadingState: Boolean = false) {
@@ -297,6 +373,8 @@ class HomeScreenModel(
             _onboardingUiState.value = _onboardingUiState.value.copy(isCreating = true)
             householdRepository.createHousehold(name)
                 .onSuccess { created ->
+                    firstWinChecklistStore.clearDismissed(created.id)
+                    _firstWinDismissed.value = false
                     householdRepository.refreshMembership()
                         .onSuccess { status ->
                             _membershipStatusOverride.value = null
@@ -304,6 +382,7 @@ class HomeScreenModel(
                             _onboardingUiState.value = _onboardingUiState.value.copy(isCreating = false)
                             if (status is HouseholdMembershipStatus.Active) {
                                 _household.value = status.household
+                                refreshCollaborationSnapshot(status.household)
                             }
                             activateNutritionSession(
                                 householdId = (status as? HouseholdMembershipStatus.Active)?.household?.id
@@ -535,6 +614,24 @@ class HomeScreenModel(
 
     private suspend fun activateNutritionSession(householdId: String) {
         runCatching { sessionCoordinator.activateHousehold(householdId) }
+    }
+
+    private fun syncFirstWinDismissed(householdId: String) {
+        _firstWinDismissed.value = firstWinChecklistStore.isDismissed(householdId)
+    }
+
+    private fun refreshCollaborationSnapshot(household: Household) {
+        scope.launch {
+            val auth = authRepository.authState.value as? AuthState.Authenticated ?: return@launch
+            runCatching {
+                collaborationRepository.refreshMembers(
+                    householdId = household.id,
+                    ownerId = auth.user.id,
+                    ownerDisplayName = auth.user.resolvedDisplayName().orEmpty(),
+                )
+                collaborationRepository.refreshOutboundInvites(household.id)
+            }
+        }
     }
 
     private fun mapFailure(throwable: Throwable): HouseholdGateError =

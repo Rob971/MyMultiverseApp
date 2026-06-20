@@ -322,6 +322,10 @@
     <string name="home_settings_button">Arè account e mpustazione</string>
     <string name="home_nutrition_get_started">Accummincia a pianificà pasti e spesa</string>
     <string name="home_nutrition_continue_planning">Continua a planificà</string>
+    <string name="home_first_win_title">Accumminciate insieme</string>
+    <string name="home_first_win_invite">Invita ll'ata a planificà cu te</string>
+    <string name="home_first_win_nutrition">Planifica 'nu pasto o mitte 'a spesa</string>
+    <string name="home_first_win_dismiss">Mo' no</string>
     <string name="home_onboarding_join_title">T'ann' a invitato?</string>
     <string name="home_onboarding_wait_for_invite_title">Aspettanno 'n invito?</string>
     <string name="home_onboarding_wait_for_invite_body">Quanno quacuno invita %1$s, 'o vede ccà. Può aggiornà pe' verificà mo'.</string>

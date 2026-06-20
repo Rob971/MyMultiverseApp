@@ -52,6 +52,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsCardSurface
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
+import app.mymultiverse.kmp.presentation.components.HomeFirstWinChecklistCard
 import app.mymultiverse.kmp.presentation.components.HomeHouseholdButton
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
@@ -107,6 +108,7 @@ fun HomeScreen(
     val canRenameHousehold by screenModel.canRenameHousehold.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val nutritionSummary by screenModel.nutritionSummary.collectAsState()
+    val firstWinChecklist by screenModel.firstWinChecklist.collectAsState()
     val pendingInvites by screenModel.pendingInvites.collectAsState()
     val inviteActionMessage by screenModel.inviteActionMessage.collectAsState()
     val switchHouseholdPrompt by screenModel.switchHouseholdPrompt.collectAsState()
@@ -251,8 +253,10 @@ fun HomeScreen(
                     canRenameHousehold = canRenameHousehold,
                     onRenameHousehold = screenModel::openRenameHouseholdDialog,
                     nutritionSummary = nutritionSummary,
+                    firstWinChecklist = firstWinChecklist,
                     onOpenNutrition = onOpenNutrition,
                     onOpenHouseholdMembers = onOpenHouseholdMembers,
+                    onDismissFirstWinChecklist = screenModel::dismissFirstWinChecklist,
                     isRefreshing = isRefreshing,
                     onRefresh = screenModel::refresh,
                     modifier = Modifier.padding(padding),
@@ -635,10 +639,12 @@ fun HomeWelcomeContent(
     canRenameHousehold: Boolean,
     onRenameHousehold: () -> Unit,
     nutritionSummary: HomeNutritionSummary?,
+    firstWinChecklist: HomeFirstWinChecklistUiState = HomeFirstWinChecklistUiState(),
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onOpenNutrition: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
+    onDismissFirstWinChecklist: () -> Unit = {},
     greetingHour: Int? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -690,6 +696,22 @@ fun HomeWelcomeContent(
                         HomeTestTags.INSPIRATION_LINE
                     },
                 )
+            }
+
+            if (firstWinChecklist.visible) {
+                item {
+                    HomeFirstWinChecklistCard(
+                        title = stringResource(Res.string.home_first_win_title),
+                        inviteLabel = stringResource(Res.string.home_first_win_invite),
+                        nutritionLabel = stringResource(Res.string.home_first_win_nutrition),
+                        dismissLabel = stringResource(Res.string.home_first_win_dismiss),
+                        inviteComplete = firstWinChecklist.inviteComplete,
+                        nutritionComplete = firstWinChecklist.nutritionComplete,
+                        onInviteClick = onOpenHouseholdMembers,
+                        onNutritionClick = onOpenNutrition,
+                        onDismiss = onDismissFirstWinChecklist,
+                    )
+                }
             }
 
             item {

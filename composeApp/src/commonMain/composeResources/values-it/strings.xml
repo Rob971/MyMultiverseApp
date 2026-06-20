@@ -322,6 +322,10 @@
     <string name="home_settings_button">Apri account e impostazioni</string>
     <string name="home_nutrition_get_started">Inizia a pianificare pasti e spesa</string>
     <string name="home_nutrition_continue_planning">Continua a pianificare</string>
+    <string name="home_first_win_title">Iniziate insieme</string>
+    <string name="home_first_win_invite">Invita qualcuno a pianificare con te</string>
+    <string name="home_first_win_nutrition">Pianifica un pasto o aggiungi la spesa</string>
+    <string name="home_first_win_dismiss">Non ora</string>
     <string name="home_onboarding_join_title">Ti hanno invitato?</string>
     <string name="home_onboarding_wait_for_invite_title">In attesa di un invito?</string>
     <string name="home_onboarding_wait_for_invite_body">Quando qualcuno invita %1$s, lo vedrai qui. Puoi anche aggiornare per controllare ora.</string>
