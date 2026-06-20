@@ -4,7 +4,7 @@
     <string name="home_banner_headline">WILLKOMMEN ZU HAUSE</string>
     <string name="home_banner_loading">Haushalt wird geladen...</string>
     <string name="home_banner_description">Ein gemeinsamer Haushalt, um unsere Familienträume zu pflegen, S.M.A.R.T.-Ziele zu verfolgen und unsere täglichen Bindungen zu stärken.</string>
-    <string name="home_dreams_title">unsere Familienlogistik</string>
+    <string name="home_dreams_title">Familienlogistik</string>
     <string name="home_logistics_nutrition_title">Ernährung</string>
     <string name="home_household_title">Haushalt</string>
     <string name="home_household_description">Lade Personen ein, um gemeinsam Ernährung, Abenteuer und Budget zu planen.</string>
@@ -280,7 +280,9 @@
     <string name="category_long_term_ai_action">Meilensteinplan erstellen</string>
     <string name="category_long_term_plan_title">Meilensteinplan</string>
     <string name="home_greeting">Das schlagende Herz unserer Familie.</string>
+    <string name="home_greeting_loading">Inspiration wird geladen…</string>
     <string name="home_greeting_personalized">Hallo, %1$s</string>
+    <string name="home_coming_soon_features">Abenteuer &amp; Budget</string>
     <string name="home_onboarding_wait_for_invite_title">Auf eine Einladung warten?</string>
     <string name="home_onboarding_wait_for_invite_body">Wenn jemand %1$s einlädt, erscheint die Einladung hier. Sie können auch aktualisieren, um jetzt zu prüfen.</string>
     <string name="home_onboarding_refresh_invites">Einladungen aktualisieren</string>

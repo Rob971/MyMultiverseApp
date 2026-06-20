@@ -4,7 +4,7 @@
     <string name="home_banner_headline">BENVENUTI 'A CASA</string>
     <string name="home_banner_loading">Sto caricanno 'o fuosso tojo...</string>
     <string name="home_banner_description">Nu fuosso condiviso pe' cultivà 'e sogni d' 'a famiglia, seguì 'e goal S.M.A.R.T. e rafforzà 'e legami quotidiani.</string>
-    <string name="home_dreams_title">'a logistica 'e famiglia nuosta</string>
+    <string name="home_dreams_title">'A logistica 'e famiglia</string>
     <string name="home_logistics_nutrition_title">Nutrizione</string>
     <string name="home_household_title">Famiglia</string>
     <string name="home_household_description">Invita a gente pe' collaborà ncopp'a nutrizione, avventure e budget.</string>
@@ -280,7 +280,9 @@
     <string name="category_long_term_ai_action">Genera piano traguardo</string>
     <string name="category_long_term_plan_title">Piano traguardo</string>
     <string name="home_greeting">'O core ca batte d' 'a famiglia.</string>
+    <string name="home_greeting_loading">Sto caricanno 'a ispirazione…</string>
     <string name="home_greeting_personalized">Ciao, %1$s</string>
+    <string name="home_coming_soon_features">Avventure e budget</string>
     <string name="home_onboarding_wait_for_invite_title">Aspettanno 'n invito?</string>
     <string name="home_onboarding_wait_for_invite_body">Quanno quacuno invita %1$s, 'o vede ccà. Può aggiornà pe' verificà mo'.</string>
     <string name="home_onboarding_refresh_invites">Aggiorna 'e inviti</string>

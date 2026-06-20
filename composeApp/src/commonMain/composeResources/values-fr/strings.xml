@@ -4,7 +4,7 @@
     <string name="home_banner_headline">BIENVENUE À LA MAISON</string>
     <string name="home_banner_loading">Chargement de votre foyer...</string>
     <string name="home_banner_description">Un foyer partagé pour cultiver nos rêves de famille, suivre nos objectifs S.M.A.R.T. et renforcer nos liens quotidiens.</string>
-    <string name="home_dreams_title">notre logistique familiale</string>
+    <string name="home_dreams_title">Logistique familiale</string>
     <string name="home_logistics_nutrition_title">Nutrition</string>
     <string name="home_household_title">Foyer</string>
     <string name="home_household_description">Invitez des personnes à collaborer sur la nutrition, les aventures et le budget.</string>
@@ -280,7 +280,9 @@
     <string name="category_long_term_ai_action">Générer le plan de jalon</string>
     <string name="category_long_term_plan_title">Plan de jalon</string>
     <string name="home_greeting">Le cœur battant de notre famille.</string>
+    <string name="home_greeting_loading">Chargement de l'inspiration…</string>
     <string name="home_greeting_personalized">Bonjour, %1$s</string>
+    <string name="home_coming_soon_features">Aventures et budget</string>
     <string name="home_onboarding_wait_for_invite_title">En attente d'une invitation ?</string>
     <string name="home_onboarding_wait_for_invite_body">Quand quelqu'un invite %1$s, l'invitation apparaîtra ici. Vous pouvez aussi actualiser pour vérifier.</string>
     <string name="home_onboarding_refresh_invites">Actualiser les invitations</string>

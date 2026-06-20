@@ -21,6 +21,8 @@ object HomeStringKeys {
         "home_logistics_budget_title",
         "home_logistics_budget_description",
         "home_logistics_coming_soon",
+        "home_coming_soon_features",
+        "home_greeting_loading",
         "home_refresh_inspirations",
         "home_greeting",
         "home_greeting_personalized",
