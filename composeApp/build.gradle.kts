@@ -46,16 +46,14 @@ val appVersionProperties = Properties().apply {
     check(versionFile.exists()) { "Missing gradle/app-version.properties" }
     versionFile.inputStream().use { load(it) }
 }
-val appVersionLts = appVersionProperties.getProperty("version.lts")
-val appVersionCandidate = appVersionProperties.getProperty("version.candidate", "0").toInt()
+val appVersionNameBase = appVersionProperties.getProperty("version.name")
+    ?: appVersionProperties.getProperty("version.lts")
+val appVersionPrerelease = appVersionProperties.getProperty("version.prerelease", "").trim()
 val appVersionCode = appVersionProperties.getProperty("version.code", "1").toInt()
-val appVersionName = if (appVersionCandidate > 0) {
-    val ltsParts = appVersionLts.split(".")
-    val major = ltsParts.getOrElse(0) { "0" }
-    val minor = ltsParts.getOrElse(1) { "0" }
-    "$major.$minor.$appVersionCandidate"
+val appVersionName = if (appVersionPrerelease.isEmpty()) {
+    appVersionNameBase
 } else {
-    appVersionLts
+    "$appVersionNameBase-$appVersionPrerelease"
 }
 
 val generateAppBuildInfo = tasks.register("generateAppBuildInfo") {
@@ -75,7 +73,7 @@ val generateAppBuildInfo = tasks.register("generateAppBuildInfo") {
             internal object AppBuildInfo {
                 const val VERSION_NAME: String = ${appVersionName.quoteForKotlin()}
                 const val VERSION_CODE: Int = $appVersionCode
-                const val IS_RELEASE_CANDIDATE: Boolean = ${appVersionCandidate > 0}
+                const val IS_PRERELEASE: Boolean = ${appVersionPrerelease.isNotEmpty()}
             }
             """.trimIndent(),
         )

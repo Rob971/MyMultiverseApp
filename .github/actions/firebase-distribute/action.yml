@@ -76,11 +76,14 @@ runs:
         apk_path="${{ inputs.apk-path }}"
         app_version="unknown"
         if [ -f gradle/app-version.properties ]; then
-          lts="$(grep '^version.lts=' gradle/app-version.properties | cut -d= -f2-)"
-          candidate="$(grep '^version.candidate=' gradle/app-version.properties | cut -d= -f2-)"
+          name="$(grep '^version.name=' gradle/app-version.properties | cut -d= -f2-)"
+          if [ -z "$name" ]; then
+            name="$(grep '^version.lts=' gradle/app-version.properties | cut -d= -f2-)"
+          fi
+          prerelease="$(grep '^version.prerelease=' gradle/app-version.properties | cut -d= -f2- || true)"
           # shellcheck source=scripts/format-app-version.sh
           source ./scripts/format-app-version.sh
-          app_version="$(format_app_version "$lts" "${candidate:-0}")"
+          app_version="$(format_app_version "$name" "${prerelease:-}")"
         fi
         release_notes="v${app_version} — debug build from ${{ inputs.github-ref-name }} at ${{ inputs.github-sha }}."
         if [ -f firebase-appdistribution-testcases.yaml ]; then

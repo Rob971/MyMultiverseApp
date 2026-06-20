@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Bumps app version in gradle/app-version.properties and syncs iOS Info.plist.
-# Usage: ./scripts/bump-app-version.sh candidate|lts
+# Usage: ./scripts/bump-app-version.sh patch|minor|none
 set -euo pipefail
 
-MODE="${1:?usage: $0 candidate|lts}"
+MODE="${1:?usage: $0 patch|minor|none}"
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=format-app-version.sh
 source "$ROOT_DIR/scripts/format-app-version.sh"
@@ -15,9 +15,16 @@ if [[ ! -f "$PROPS_FILE" ]]; then
   exit 1
 fi
 
-version_lts="$(grep '^version.lts=' "$PROPS_FILE" | cut -d= -f2-)"
-version_candidate="$(grep '^version.candidate=' "$PROPS_FILE" | cut -d= -f2-)"
-version_code="$(grep '^version.code=' "$PROPS_FILE" | cut -d= -f2-)"
+read_prop() {
+  grep "^$1=" "$PROPS_FILE" | cut -d= -f2- || true
+}
+
+version_name="$(read_prop version.name)"
+if [[ -z "$version_name" ]]; then
+  version_name="$(read_prop version.lts)"
+fi
+version_prerelease="$(read_prop version.prerelease)"
+version_code="$(read_prop version.code)"
 
 bump_patch() {
   local version="$1"
@@ -26,35 +33,49 @@ bump_patch() {
   major="${major:-0}"
   minor="${minor:-0}"
   patch="${patch:-0}"
-  patch=$((patch + 1))
-  echo "${major}.${minor}.${patch}"
+  echo "${major}.${minor}.$((patch + 1))"
+}
+
+bump_minor() {
+  local version="$1"
+  local major minor patch
+  IFS='.' read -r major minor patch <<< "$version"
+  major="${major:-0}"
+  minor="${minor:-0}"
+  echo "${major}.$((minor + 1)).0"
 }
 
 case "$MODE" in
-  candidate)
-    version_candidate=$((version_candidate + 1))
+  patch)
+    version_name="$(bump_patch "$version_name")"
+    version_prerelease=""
     version_code=$((version_code + 1))
     ;;
-  lts)
-    version_lts="$(bump_patch "$version_lts")"
-    version_candidate=0
+  minor)
+    version_name="$(bump_minor "$version_name")"
+    version_prerelease=""
+    version_code=$((version_code + 1))
+    ;;
+  none)
     version_code=$((version_code + 1))
     ;;
   *)
-    echo "Unknown mode: $MODE (expected candidate or lts)"
+    echo "Unknown mode: $MODE (expected patch, minor, or none)"
     exit 1
     ;;
 esac
 
-display_name="$(format_app_version "$version_lts" "$version_candidate")"
+display_name="$(format_app_version "$version_name" "$version_prerelease")"
 
-cat > "$PROPS_FILE" <<EOF
-# Canonical app version (updated by CI on successful pipeline runs).
-# LTS: stable release on main. Candidate: RC third segment on feature branches (1.0.X).
-version.lts=${version_lts}
-version.candidate=${version_candidate}
-version.code=${version_code}
-EOF
+{
+  echo "# Canonical app version (bumped by the Release workflow via workflow_dispatch)."
+  echo "# Optional pre-release suffix (e.g. beta.1); omit the key for stable releases."
+  echo "version.name=${version_name}"
+  echo "version.code=${version_code}"
+  if [[ -n "$version_prerelease" ]]; then
+    echo "version.prerelease=${version_prerelease}"
+  fi
+} > "$PROPS_FILE"
 
 if [[ -f "$IOS_PLIST" ]]; then
   sed -i.bak "/<key>CFBundleShortVersionString<\\/key>/{n;s|<string>.*</string>|<string>${display_name}</string>|;}" "$IOS_PLIST"
@@ -63,6 +84,6 @@ if [[ -f "$IOS_PLIST" ]]; then
 fi
 
 echo "display_name=${display_name}"
+echo "version_name=${version_name}"
 echo "version_code=${version_code}"
-echo "version_lts=${version_lts}"
-echo "version_candidate=${version_candidate}"
+echo "tag_name=v${display_name}"

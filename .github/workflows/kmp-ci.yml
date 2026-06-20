@@ -26,10 +26,15 @@ on:
           - android-instrumented-tests
           - supabase-migrations
           - release
-      source_run_id:
-        description: "For release-only: workflow run ID with a successful Android CI artifact (defaults to latest on branch)."
+      version_bump:
+        description: "Semver bump when running release or all (patch/minor/none)."
         required: false
-        type: string
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - none
 
 concurrency:
   group: kmp-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -318,25 +323,23 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 15
     needs:
       - ci-gate
       - android-ci
       - android-instrumented-tests
     if: >-
       ${{ always() &&
-          needs.ci-gate.outputs.run == 'true' && (
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'release') ||
-          (needs.android-ci.result == 'success' &&
-            github.event_name == 'push' &&
-            (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') &&
-            (needs.android-instrumented-tests.result == 'success' ||
-              needs.android-instrumented-tests.result == 'skipped')) ||
-          (github.event_name == 'workflow_dispatch' &&
-            github.event.inputs.job == 'all' &&
-            needs.android-ci.result == 'success' &&
-            needs.android-instrumented-tests.result == 'success')
-        ) }}
+          needs.ci-gate.outputs.run == 'true' &&
+          github.event_name == 'workflow_dispatch' &&
+          (
+            github.event.inputs.job == 'release' ||
+            (
+              github.event.inputs.job == 'all' &&
+              needs.android-ci.result == 'success' &&
+              needs.android-instrumented-tests.result == 'success'
+            )
+          ) }}
     permissions:
       contents: write
 
@@ -346,68 +349,50 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Resolve prior successful pipeline run
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'release'
-        id: source-run
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Bump application version
+        id: bump
         run: |
-          set -euo pipefail
+          chmod +x ./scripts/bump-app-version.sh
+          BUMP="${{ github.event.inputs.version_bump }}"
+          BUMP="${BUMP:-patch}"
+          OUTPUT="$(./scripts/bump-app-version.sh "$BUMP")"
+          echo "$OUTPUT"
+          while IFS='=' read -r key value; do
+            echo "${key}=${value}" >> "$GITHUB_OUTPUT"
+          done <<< "$OUTPUT"
 
-          run_has_apk() {
-            gh run view "$1" --json jobs --jq '
-              ([.jobs[] | select(.name == "Android CI" and .conclusion == "success")] | length > 0)
-            '
-          }
-
-          RUN_ID="${{ github.event.inputs.source_run_id }}"
-          if [ -n "$RUN_ID" ]; then
-            if [ "$(run_has_apk "$RUN_ID")" != "true" ]; then
-              echo "Run $RUN_ID is missing a successful Android CI job with APK artifact."
-              exit 1
-            fi
-            echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          BRANCH="${GITHUB_REF#refs/heads/}"
-          RUN_ID=$(gh run list \
-            --workflow=kmp-ci.yml \
-            --branch="$BRANCH" \
-            --status=success \
-            --limit=30 \
-            --json databaseId,jobs \
-            --jq '[.[] | select(
-              ([.jobs[] | select(.name == "Android CI" and .conclusion == "success")] | length > 0)
-            )] | first | .databaseId // empty')
-
-          if [ -z "$RUN_ID" ]; then
-            echo "No successful Android CI run with APK artifact was found on branch $BRANCH."
-            exit 1
-          fi
-
-          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
-
-      - name: Download debug APK from current run
-        if: github.event_name != 'workflow_dispatch' || github.event.inputs.job != 'release'
-        uses: actions/download-artifact@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          name: composeApp-debug-apk
-          path: dist-apk
+          distribution: temurin
+          java-version: "17"
 
-      - name: Download debug APK from prior successful run
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'release'
-        uses: actions/download-artifact@v4
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
-          name: composeApp-debug-apk
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ steps.source-run.outputs.run_id }}
-          path: dist-apk
+          cache-read-only: false
+          gradle-home-cache-cleanup: true
+
+      - name: Android CI setup
+        uses: ./.github/actions/android-ci-setup
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
+
+      - name: Require Supabase secrets
+        uses: ./.github/actions/require-supabase-secrets
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Build debug APK for release
+        run: ./gradlew :composeApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
 
       - name: Distribute to Firebase App Distribution
         uses: ./.github/actions/firebase-distribute
         with:
-          apk-path: dist-apk/composeApp-debug.apk
+          apk-path: composeApp/build/outputs/apk/debug/composeApp-debug.apk
           firebase-app-id: ${{ env.FIREBASE_APP_ID }}
           firebase-project-id: ${{ env.FIREBASE_PROJECT_ID }}
           firebase-tools-version: ${{ env.FIREBASE_TOOLS_VERSION }}
@@ -417,31 +402,11 @@ jobs:
           github-ref-name: ${{ github.ref_name }}
           github-sha: ${{ github.sha }}
 
-      - name: Bump application version
-        if: >-
-          github.event_name == 'push' &&
-          (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-        id: bump
-        run: |
-          chmod +x ./scripts/bump-app-version.sh
-          if [[ "$GITHUB_REF" == refs/heads/main || "$GITHUB_REF" == refs/heads/master ]]; then
-            MODE=lts
-          else
-            MODE=candidate
-          fi
-          OUTPUT="$(./scripts/bump-app-version.sh "$MODE")"
-          echo "$OUTPUT"
-          DISPLAY_NAME="$(echo "$OUTPUT" | grep '^display_name=' | cut -d= -f2-)"
-          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
-          echo "display_name=$DISPLAY_NAME" >> "$GITHUB_OUTPUT"
-
-      - name: Commit and push version bump
-        if: >-
-          github.event_name == 'push' &&
-          (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      - name: Commit version bump, tag release, and push
         env:
           DISPLAY_NAME: ${{ steps.bump.outputs.display_name }}
-          MODE: ${{ steps.bump.outputs.mode }}
+          TAG_NAME: ${{ steps.bump.outputs.tag_name }}
+          VERSION_BUMP: ${{ github.event.inputs.version_bump }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -450,5 +415,7 @@ jobs:
             echo "No version changes to commit."
             exit 0
           fi
-          git commit -m "chore(version): bump ${MODE} to ${DISPLAY_NAME} [skip ci]"
+          git commit -m "chore(version): release ${DISPLAY_NAME} (${VERSION_BUMP:-patch}) [skip ci]"
+          git tag "$TAG_NAME"
           git push
+          git push origin "$TAG_NAME"
