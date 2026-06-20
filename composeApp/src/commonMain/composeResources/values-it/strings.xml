@@ -289,6 +289,7 @@
     <string name="home_settings_title">Account e impostazioni</string>
     <string name="home_settings_button">Apri account e impostazioni</string>
     <string name="home_nutrition_get_started">Inizia a pianificare pasti e spesa</string>
+    <string name="home_onboarding_join_title">Ti hanno invitato?</string>
     <string name="home_onboarding_wait_for_invite_title">In attesa di un invito?</string>
     <string name="home_onboarding_wait_for_invite_body">Quando qualcuno invita %1$s, lo vedrai qui. Puoi anche aggiornare per controllare ora.</string>
     <string name="home_onboarding_refresh_invites">Aggiorna inviti</string>

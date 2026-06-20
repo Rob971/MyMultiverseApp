@@ -8,6 +8,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -99,6 +101,7 @@ fun HomeScreen(
     val onboardingUiState by screenModel.onboardingUiState.collectAsState()
     val renameUiState by screenModel.renameUiState.collectAsState()
     val canRenameHousehold by screenModel.canRenameHousehold.collectAsState()
+    val isRefreshing by screenModel.isRefreshing.collectAsState()
     val nutritionSummary by screenModel.nutritionSummary.collectAsState()
     val pendingInvites by screenModel.pendingInvites.collectAsState()
     val inviteActionMessage by screenModel.inviteActionMessage.collectAsState()
@@ -206,6 +209,7 @@ fun HomeScreen(
                     },
                     onDeclineInvite = screenModel::declineInvite,
                     onRefreshInvites = screenModel::refresh,
+                    isRefreshing = isRefreshing,
                     modifier = Modifier.padding(padding),
                 )
             }
@@ -252,6 +256,8 @@ fun HomeScreen(
                         }
                     },
                     onDeclineInvite = screenModel::declineInvite,
+                    isRefreshing = isRefreshing,
+                    onRefresh = screenModel::refresh,
                     modifier = Modifier.padding(padding),
                 )
             }
@@ -462,6 +468,7 @@ private fun HomeErrorContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeOnboardingContent(
     onboardingUiState: HomeOnboardingUiState,
@@ -472,81 +479,86 @@ fun HomeOnboardingContent(
     onAcceptInvite: (String) -> Unit,
     onDeclineInvite: (String) -> Unit,
     onRefreshInvites: () -> Unit,
+    isRefreshing: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val hasPendingInvites = pendingInvites.isNotEmpty()
+    val pullRefreshState = rememberPullToRefreshState()
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .navigationBarsPadding()
-            .imePadding()
-            .verticalScroll(rememberScrollState())
-            .padding(screenListPadding()),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefreshInvites,
+        state = pullRefreshState,
+        modifier = modifier.fillMaxSize(),
     ) {
-        JourneyBanner(
-            headline = stringResource(Res.string.household_gate_title),
-            supportingLine = stringResource(Res.string.household_gate_subtitle),
-            description = "",
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(screenListPadding()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            JourneyBanner(
+                headline = stringResource(Res.string.household_gate_title),
+                supportingLine = stringResource(Res.string.household_gate_subtitle),
+                description = "",
+            )
 
-        PendingInvitesCard(
-            invites = pendingInvites,
-            onAccept = onAcceptInvite,
-            onDecline = onDeclineInvite,
-        )
+            FamilyLogisticsSectionHeader(
+                title = stringResource(Res.string.home_onboarding_join_title),
+            )
 
-        if (!hasPendingInvites) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag(HomeTestTags.ONBOARDING_WAIT_FOR_INVITE),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = stringResource(Res.string.home_onboarding_wait_for_invite_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = SharedJourneyColors.InkDeep,
-                )
-                Text(
-                    text = stringResource(Res.string.home_onboarding_wait_for_invite_body, sessionEmail),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = SharedJourneyColors.InkMuted,
-                )
-                TextButton(
-                    onClick = onRefreshInvites,
-                    modifier = Modifier.testTag(HomeTestTags.ONBOARDING_REFRESH_INVITES),
+            PendingInvitesCard(
+                invites = pendingInvites,
+                onAccept = onAcceptInvite,
+                onDecline = onDeclineInvite,
+            )
+
+            if (!hasPendingInvites) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(HomeTestTags.ONBOARDING_WAIT_FOR_INVITE),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(stringResource(Res.string.home_onboarding_refresh_invites))
+                    Text(
+                        text = stringResource(Res.string.home_onboarding_wait_for_invite_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = SharedJourneyColors.InkDeep,
+                    )
+                    Text(
+                        text = stringResource(Res.string.home_onboarding_wait_for_invite_body, sessionEmail),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = SharedJourneyColors.InkMuted,
+                    )
+                    TextButton(
+                        onClick = onRefreshInvites,
+                        modifier = Modifier.testTag(HomeTestTags.ONBOARDING_REFRESH_INVITES),
+                    ) {
+                        Text(stringResource(Res.string.home_onboarding_refresh_invites))
+                    }
                 }
             }
-        }
 
-        if (hasPendingInvites) {
-            HorizontalDivider(color = SharedJourneyColors.InkMuted.copy(alpha = 0.25f))
-            Text(
-                text = stringResource(Res.string.household_gate_create_divider),
-                style = MaterialTheme.typography.labelLarge,
-                color = SharedJourneyColors.InkMuted,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
+            if (hasPendingInvites) {
+                HorizontalDivider(color = SharedJourneyColors.InkMuted.copy(alpha = 0.25f))
+                Text(
+                    text = stringResource(Res.string.household_gate_create_divider),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = SharedJourneyColors.InkMuted,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                )
+            }
+
+            FamilyLogisticsSectionHeader(
+                title = stringResource(Res.string.household_gate_create_title),
             )
-        }
 
-        Text(
-            text = stringResource(Res.string.household_gate_create_title),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = if (hasPendingInvites) FontWeight.SemiBold else FontWeight.Bold,
-            color = if (hasPendingInvites) {
-                SharedJourneyColors.InkMuted
-            } else {
-                SharedJourneyColors.InkDeep
-            },
-        )
-
-        OutlinedTextField(
+            OutlinedTextField(
             value = onboardingUiState.householdNameInput,
             onValueChange = onNameChange,
             modifier = Modifier
@@ -586,6 +598,7 @@ fun HomeOnboardingContent(
         }
 
         Spacer(Modifier.height(8.dp))
+        }
     }
 }
 
@@ -600,6 +613,7 @@ private fun HomeCreateButtonLabel(isCreating: Boolean) {
     Text(stringResource(Res.string.household_gate_create_button))
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeWelcomeContent(
     greeting: Greeting?,
@@ -609,6 +623,8 @@ fun HomeWelcomeContent(
     onRenameHousehold: () -> Unit,
     nutritionSummary: HomeNutritionSummary?,
     pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite>,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
     onOpenNutrition: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
     onAcceptInvite: (String) -> Unit,
@@ -654,14 +670,22 @@ fun HomeWelcomeContent(
         }.joinToString(" · ")
     }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .navigationBarsPadding()
-            .imePadding(),
-        contentPadding = screenListPadding(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+    val pullRefreshState = rememberPullToRefreshState()
+
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        state = pullRefreshState,
+        modifier = modifier.fillMaxSize(),
     ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
+                .imePadding(),
+            contentPadding = screenListPadding(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
         item {
             JourneyBanner(
                 headline = stringResource(Res.string.home_banner_headline),
@@ -747,6 +771,7 @@ fun HomeWelcomeContent(
                 label = comingSoonFeaturesLabel,
                 badge = comingSoonLabel,
             )
+        }
         }
     }
 }

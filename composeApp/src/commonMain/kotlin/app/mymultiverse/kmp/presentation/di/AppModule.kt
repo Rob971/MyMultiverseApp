@@ -80,7 +80,7 @@ private val dataModule = module {
     }
     single<NutritionHouseholdSelectionStore> { SettingsNutritionHouseholdSelectionStore(get()) }
     single { InviteSessionStore(get()) }
-    single<GreetingRepository> { GreetingRepositoryImpl() }
+    single<GreetingRepository> { GreetingRepositoryImpl(get()) }
     single<NutritionRepository> { NutritionRepositoryImpl(get()) }
     single { NutritionSyncOutbox(get()) }
     single<NutritionSessionCoordinator> {

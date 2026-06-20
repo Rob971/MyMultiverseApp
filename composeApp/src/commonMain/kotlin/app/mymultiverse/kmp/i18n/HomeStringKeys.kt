@@ -32,6 +32,7 @@ object HomeStringKeys {
         "home_refresh_inspirations",
         "home_greeting",
         "home_greeting_personalized",
+        "home_onboarding_join_title",
         "home_onboarding_wait_for_invite_title",
         "home_onboarding_wait_for_invite_body",
         "home_onboarding_refresh_invites",
