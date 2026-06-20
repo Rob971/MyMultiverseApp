@@ -336,7 +336,9 @@
     <string name="home_onboarding_wait_for_invite_body">Quando qualcuno invita %1$s, lo vedrai qui. Puoi anche aggiornare per controllare ora.</string>
     <string name="home_onboarding_refresh_invites">Aggiorna inviti</string>
     <string name="home_onboarding_name_hint">Suggerito dal tuo cognome — modificalo quando vuoi.</string>
-    <string name="home_onboarding_create_invite_hint">Dopo la creazione, apri la scheda Famiglia in Home per invitare persone e pianificare insieme.</string>
+    <string name="home_onboarding_create_invite_hint">Dopo la creazione, puoi invitare persone dalla sezione famiglia in Home.</string>
+    <string name="home_household_created_invite_action">Invita</string>
+    <string name="home_household_created_snackbar">%1$s è pronto. Invita qualcuno a pianificare pasti e spesa con te.</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>

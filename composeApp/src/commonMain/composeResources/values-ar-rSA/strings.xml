@@ -336,7 +336,9 @@
     <string name="home_onboarding_wait_for_invite_body">عندما يدعو أحدهم %1$s، ستظهر الدعوة هنا. يمكنك أيضاً التحديث للتحقق الآن.</string>
     <string name="home_onboarding_refresh_invites">تحديث الدعوات</string>
     <string name="home_onboarding_name_hint">مقترح من اسم العائلة — يمكنك تغييره في أي وقت.</string>
-    <string name="home_onboarding_create_invite_hint">بعد الإنشاء، افتح بطاقة الأسرة في الصفحة الرئيسية لدعوة أشخاص والتخطيط معًا.</string>
+    <string name="home_onboarding_create_invite_hint">بعد الإنشاء، يمكنك دعوة أشخاص من قسم الأسرة في الصفحة الرئيسية.</string>
+    <string name="home_household_created_invite_action">دعوة</string>
+    <string name="home_household_created_snackbar">%1$s جاهز. ادعُ شخصًا للتخطيط للوجبات والبقالة معك.</string>
     <string name="calendar_weekday_mon">الإثنين</string>
     <string name="calendar_weekday_tue">الثلاثاء</string>
     <string name="calendar_weekday_wed">الأربعاء</string>

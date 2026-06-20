@@ -42,6 +42,8 @@ object HomeStringKeys {
         "home_onboarding_refresh_invites",
         "home_onboarding_name_hint",
         "home_onboarding_create_invite_hint",
+        "home_household_created_snackbar",
+        "home_household_created_invite_action",
         "home_household_name_edit",
         "home_household_open_manage",
         "home_household_open_view",

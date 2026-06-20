@@ -5,3 +5,5 @@ data class HomeOnboardingUiState(
     val isCreating: Boolean = false,
     val nameAvailability: HouseholdNameAvailability = HouseholdNameAvailability.Unknown,
 )
+
+data class PostCreateInvitePrompt(val householdName: String)

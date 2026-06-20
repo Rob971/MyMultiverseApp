@@ -17,6 +17,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -87,6 +88,7 @@ object HomeTestTags {
     const val ONBOARDING_WAIT_FOR_INVITE = "home_onboarding_wait_for_invite"
     const val ONBOARDING_CREATE_INVITE_HINT = "home_onboarding_create_invite_hint"
     const val ONBOARDING_NAME_HINT = "home_onboarding_name_hint"
+    const val POST_CREATE_INVITE_SNACKBAR = "home_post_create_invite_snackbar"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,6 +113,7 @@ fun HomeScreen(
     val firstWinChecklist by screenModel.firstWinChecklist.collectAsState()
     val pendingInvites by screenModel.pendingInvites.collectAsState()
     val inviteActionMessage by screenModel.inviteActionMessage.collectAsState()
+    val postCreateInvitePrompt by screenModel.postCreateInvitePrompt.collectAsState()
     val switchHouseholdPrompt by screenModel.switchHouseholdPrompt.collectAsState()
     val personalDataExportMessage by screenModel.personalDataExportMessage.collectAsState()
     val deleteAccountMessage by screenModel.deleteAccountMessage.collectAsState()
@@ -122,12 +125,15 @@ fun HomeScreen(
     HomeInviteSnackbarEffects(
         snackbarHostState = snackbarHostState,
         inviteActionMessage = inviteActionMessage,
+        postCreateInvitePrompt = postCreateInvitePrompt,
         inviteAcceptState = inviteAcceptState,
         pendingInvites = pendingInvites,
         sessionEmail = sessionEmail,
         personalDataExportMessage = personalDataExportMessage,
         deleteAccountMessage = deleteAccountMessage,
         onClearInviteActionMessage = screenModel::clearInviteActionMessage,
+        onClearPostCreateInvitePrompt = screenModel::clearPostCreateInvitePrompt,
+        onOpenHouseholdMembers = onOpenHouseholdMembers,
         onClearInviteFlowSuccess = inviteFlow::clearAcceptSuccess,
         onClearPersonalDataExportMessage = screenModel::clearPersonalDataExportMessage,
         onClearDeleteAccountMessage = screenModel::clearDeleteAccountMessage,
@@ -270,12 +276,15 @@ fun HomeScreen(
 private fun HomeInviteSnackbarEffects(
     snackbarHostState: SnackbarHostState,
     inviteActionMessage: InviteActionMessage?,
+    postCreateInvitePrompt: PostCreateInvitePrompt?,
     inviteAcceptState: InviteJoinAcceptState,
     pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite>,
     sessionEmail: String,
     personalDataExportMessage: PersonalDataExportMessage?,
     deleteAccountMessage: DeleteAccountMessage?,
     onClearInviteActionMessage: () -> Unit,
+    onClearPostCreateInvitePrompt: () -> Unit,
+    onOpenHouseholdMembers: () -> Unit,
     onClearInviteFlowSuccess: () -> Unit,
     onClearPersonalDataExportMessage: () -> Unit,
     onClearDeleteAccountMessage: () -> Unit,
@@ -296,6 +305,22 @@ private fun HomeInviteSnackbarEffects(
         ?.let { name -> stringResource(Res.string.auth_household_joined_success, name) }
     val inviteFlowJoinedMessage = (inviteAcceptState as? InviteJoinAcceptState.Succeeded)?.householdName
         ?.let { name -> stringResource(Res.string.auth_household_joined_success, name) }
+    val postCreateInviteMessage = postCreateInvitePrompt?.householdName
+        ?.let { name -> stringResource(Res.string.home_household_created_snackbar, name) }
+    val postCreateInviteAction = stringResource(Res.string.home_household_created_invite_action)
+
+    LaunchedEffect(postCreateInviteMessage) {
+        postCreateInviteMessage?.let { message ->
+            val result = snackbarHostState.showSnackbar(
+                message = message,
+                actionLabel = postCreateInviteAction,
+            )
+            onClearPostCreateInvitePrompt()
+            if (result == SnackbarResult.ActionPerformed) {
+                onOpenHouseholdMembers()
+            }
+        }
+    }
 
     LaunchedEffect(joinedInviteMessage) {
         joinedInviteMessage?.let { message ->

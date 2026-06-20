@@ -101,6 +101,9 @@ class HomeScreenModel(
     private val _inviteActionMessage = MutableStateFlow<InviteActionMessage?>(null)
     val inviteActionMessage: StateFlow<InviteActionMessage?> = _inviteActionMessage.asStateFlow()
 
+    private val _postCreateInvitePrompt = MutableStateFlow<PostCreateInvitePrompt?>(null)
+    val postCreateInvitePrompt: StateFlow<PostCreateInvitePrompt?> = _postCreateInvitePrompt.asStateFlow()
+
     private val _switchHouseholdPrompt = MutableStateFlow<SwitchHouseholdPrompt?>(null)
     val switchHouseholdPrompt: StateFlow<SwitchHouseholdPrompt?> = _switchHouseholdPrompt.asStateFlow()
 
@@ -388,6 +391,7 @@ class HomeScreenModel(
                                 householdId = (status as? HouseholdMembershipStatus.Active)?.household?.id
                                     ?: created.id,
                             )
+                            _postCreateInvitePrompt.value = PostCreateInvitePrompt(created.name)
                             runCatching { collaborationRepository.refreshPendingInvites() }
                         }
                         .onFailure { throwable ->
@@ -592,6 +596,10 @@ class HomeScreenModel(
 
     fun clearInviteActionMessage() {
         _inviteActionMessage.value = null
+    }
+
+    fun clearPostCreateInvitePrompt() {
+        _postCreateInvitePrompt.value = null
     }
 
     fun declineInvite(inviteId: String) {

@@ -544,6 +544,27 @@ class HomeScreenModelTest {
     }
 
     @Test
+    fun createHousehold_emitsPostCreateInvitePrompt() = runTest(testDispatcher) {
+        val householdRepository = FakeHouseholdRepository(
+            initialMembershipStatus = HouseholdMembershipStatus.None,
+        )
+        householdRepository.setMembershipStatus(HouseholdMembershipStatus.None)
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            householdRepository = householdRepository,
+        )
+        advanceUntilIdle()
+        screenModel.onHouseholdNameChange("Rossi home")
+        advanceTimeBy(400)
+        advanceUntilIdle()
+        screenModel.createHousehold()
+        advanceUntilIdle()
+        assertEquals("Rossi home", screenModel.postCreateInvitePrompt.value?.householdName)
+        screenModel.clearPostCreateInvitePrompt()
+        assertEquals(null, screenModel.postCreateInvitePrompt.value)
+    }
+
+    @Test
     fun createHousehold_ignoredWhenNameBlank() = runTest(testDispatcher) {
         val householdRepository = FakeHouseholdRepository(
             initialMembershipStatus = HouseholdMembershipStatus.None,

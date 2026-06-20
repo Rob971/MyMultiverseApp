@@ -336,7 +336,9 @@
     <string name="home_onboarding_wait_for_invite_body">Wenn jemand %1$s einlädt, erscheint die Einladung hier. Sie können auch aktualisieren, um jetzt zu prüfen.</string>
     <string name="home_onboarding_refresh_invites">Einladungen aktualisieren</string>
     <string name="home_onboarding_name_hint">Vorschlag aus deinem Nachnamen — jederzeit änderbar.</string>
-    <string name="home_onboarding_create_invite_hint">Nach dem Erstellen öffne die Haushaltskarte auf der Startseite, um Personen einzuladen und gemeinsam zu planen.</string>
+    <string name="home_onboarding_create_invite_hint">Nach der Erstellung kannst du Personen über den Haushaltsbereich auf der Startseite einladen.</string>
+    <string name="home_household_created_invite_action">Einladen</string>
+    <string name="home_household_created_snackbar">%1$s ist bereit. Lade jemanden ein, Mahlzeiten und Einkäufe mit dir zu planen.</string>
     <string name="calendar_weekday_mon">Mo</string>
     <string name="calendar_weekday_tue">Di</string>
     <string name="calendar_weekday_wed">Mi</string>
