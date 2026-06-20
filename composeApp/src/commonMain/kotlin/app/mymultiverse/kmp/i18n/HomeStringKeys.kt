@@ -44,6 +44,8 @@ object HomeStringKeys {
         "home_onboarding_wait_for_invite_body",
         "home_onboarding_refresh_invites",
         "home_household_name_edit",
+        "home_household_open_manage",
+        "home_household_open_view",
         "home_rename_household_title",
         "home_rename_household_save",
         "home_app_version",

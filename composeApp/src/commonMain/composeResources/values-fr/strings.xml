@@ -798,6 +798,8 @@
     <string name="household_name_taken">Ce nom est déjà pris</string>
     <string name="household_name_invalid">Saisissez 2 à 40 caractères</string>
     <string name="home_household_name_edit">Modifier</string>
+    <string name="home_household_open_manage">Gérer les membres</string>
+    <string name="home_household_open_view">Voir les membres</string>
     <string name="home_rename_household_title">Renommer le foyer</string>
     <string name="home_rename_household_save">Enregistrer</string>
     <string name="auth_subtitle_sign_in">Connectez-vous pour rejoindre ou gérer votre foyer.</string>

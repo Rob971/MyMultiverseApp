@@ -11,7 +11,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.kmp.domain.model.Greeting
-import app.mymultiverse.kmp.presentation.components.HouseholdNameChipTestTags
+import app.mymultiverse.kmp.presentation.components.HomeHouseholdButtonTestTags
 import app.mymultiverse.kmp.presentation.screens.home.HomeOnboardingContent
 import app.mymultiverse.kmp.presentation.screens.home.HomeOnboardingUiState
 import app.mymultiverse.kmp.presentation.screens.home.HomeTestTags
@@ -130,7 +130,8 @@ class HomeHouseholdUxInstrumentedTest {
     }
 
     @Test
-    fun welcome_owner_seesRenameChipAndEditAction() {
+    fun welcome_owner_tapHouseholdButtonOpensMembersAndEditRenames() {
+        var membersOpened = false
         var renameOpened = false
 
         composeRule.setContent {
@@ -143,21 +144,24 @@ class HomeHouseholdUxInstrumentedTest {
                         canRenameHousehold = true,
                         onRenameHousehold = { renameOpened = true },
                         nutritionSummary = null,
-                        pendingInvites = emptyList(),
                         isRefreshing = false,
                         onRefresh = {},
                         onOpenNutrition = {},
-                        onOpenHouseholdMembers = {},
-                        onAcceptInvite = {},
-                        onDeclineInvite = {},
+                        onOpenHouseholdMembers = { membersOpened = true },
                         greetingHour = 9,
                     )
                 }
             }
         }
 
-        composeRule.onNodeWithTag(HouseholdNameChipTestTags.CHIP).assertIsDisplayed()
-        composeRule.onNodeWithTag(HouseholdNameChipTestTags.CHIP).performClick()
+        composeRule.onNodeWithTag(HomeTestTags.HOUSEHOLD_CARD)
+            .performScrollTo()
+            .performClick()
+        assertTrue(membersOpened)
+
+        composeRule.onNodeWithTag(HomeHouseholdButtonTestTags.EDIT)
+            .performScrollTo()
+            .performClick()
         assertTrue(renameOpened)
     }
 
@@ -173,22 +177,19 @@ class HomeHouseholdUxInstrumentedTest {
                         canRenameHousehold = false,
                         onRenameHousehold = {},
                         nutritionSummary = null,
-                        pendingInvites = emptyList(),
                         isRefreshing = false,
                         onRefresh = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onAcceptInvite = {},
-                        onDeclineInvite = {},
                         greetingHour = 9,
                     )
                 }
             }
         }
 
-        composeRule.onNodeWithTag(HouseholdNameChipTestTags.CHIP).assertIsDisplayed()
+        composeRule.onNodeWithTag(HomeTestTags.HOUSEHOLD_CARD).assertIsDisplayed()
         assertTrue(
-            composeRule.onAllNodesWithTag(HouseholdNameChipTestTags.EDIT)
+            composeRule.onAllNodesWithTag(HomeHouseholdButtonTestTags.EDIT)
                 .fetchSemanticsNodes().isEmpty(),
         )
     }

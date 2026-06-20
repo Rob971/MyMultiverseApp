@@ -799,6 +799,8 @@
     <string name="household_name_taken">This name is already taken</string>
     <string name="household_name_invalid">Enter 2–40 characters</string>
     <string name="home_household_name_edit">Edit</string>
+    <string name="home_household_open_manage">Manage members</string>
+    <string name="home_household_open_view">View members</string>
     <string name="home_rename_household_title">Rename household</string>
     <string name="home_rename_household_save">Save name</string>
     <string name="auth_subtitle_sign_in">Sign in to join or manage your household.</string>

@@ -798,6 +798,8 @@
     <string name="household_name_taken">Sto nomme è già pigliato</string>
     <string name="household_name_invalid">Miett 2–40 carattere</string>
     <string name="home_household_name_edit">Cagna</string>
+    <string name="home_household_open_manage">Gestisce 'e membri</string>
+    <string name="home_household_open_view">Vide 'e membri</string>
     <string name="home_rename_household_title">Rinomina 'a famiglia</string>
     <string name="home_rename_household_save">Salva 'o nomme</string>
     <string name="auth_subtitle_sign_in">Accetta pe' entrà o gestì 'a famiglia toja.</string>

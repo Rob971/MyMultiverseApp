@@ -318,13 +318,10 @@ class NutritionUxInstrumentedTest {
                         canRenameHousehold = false,
                         onRenameHousehold = {},
                         nutritionSummary = null,
-                        pendingInvites = emptyList(),
                         isRefreshing = false,
                         onRefresh = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = { openedHousehold = true },
-                        onAcceptInvite = {},
-                        onDeclineInvite = {},
                         greetingHour = 9,
                     )
                 }
@@ -352,13 +349,10 @@ class NutritionUxInstrumentedTest {
                         canRenameHousehold = false,
                         onRenameHousehold = {},
                         nutritionSummary = null,
-                        pendingInvites = emptyList(),
                         isRefreshing = false,
                         onRefresh = {},
                         onOpenNutrition = { openedNutrition = true },
                         onOpenHouseholdMembers = {},
-                        onAcceptInvite = {},
-                        onDeclineInvite = {},
                         greetingHour = 9,
                     )
                 }
@@ -384,13 +378,10 @@ class NutritionUxInstrumentedTest {
                         canRenameHousehold = false,
                         onRenameHousehold = {},
                         nutritionSummary = null,
-                        pendingInvites = emptyList(),
                         isRefreshing = false,
                         onRefresh = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onAcceptInvite = {},
-                        onDeclineInvite = {},
                         greetingHour = 9,
                     )
                 }
@@ -413,13 +404,10 @@ class NutritionUxInstrumentedTest {
                         canRenameHousehold = false,
                         onRenameHousehold = {},
                         nutritionSummary = null,
-                        pendingInvites = emptyList(),
                         isRefreshing = false,
                         onRefresh = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onAcceptInvite = {},
-                        onDeclineInvite = {},
                         greetingHour = 14,
                     )
                 }
@@ -441,13 +429,10 @@ class NutritionUxInstrumentedTest {
                         canRenameHousehold = false,
                         onRenameHousehold = {},
                         nutritionSummary = null,
-                        pendingInvites = emptyList(),
                         isRefreshing = false,
                         onRefresh = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onAcceptInvite = {},
-                        onDeclineInvite = {},
                         greetingHour = 20,
                     )
                 }
@@ -470,13 +455,10 @@ class NutritionUxInstrumentedTest {
                         canRenameHousehold = false,
                         onRenameHousehold = {},
                         nutritionSummary = null,
-                        pendingInvites = emptyList(),
                         isRefreshing = false,
                         onRefresh = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onAcceptInvite = {},
-                        onDeclineInvite = {},
                         greetingHour = 9,
                     )
                 }
@@ -500,13 +482,10 @@ class NutritionUxInstrumentedTest {
                         canRenameHousehold = false,
                         onRenameHousehold = {},
                         nutritionSummary = null,
-                        pendingInvites = emptyList(),
                         isRefreshing = false,
                         onRefresh = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onAcceptInvite = {},
-                        onDeclineInvite = {},
                         greetingHour = 9,
                     )
                 }
@@ -529,13 +508,10 @@ class NutritionUxInstrumentedTest {
                         canRenameHousehold = false,
                         onRenameHousehold = {},
                         nutritionSummary = null,
-                        pendingInvites = emptyList(),
                         isRefreshing = false,
                         onRefresh = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onAcceptInvite = {},
-                        onDeclineInvite = {},
                         greetingHour = 9,
                     )
                 }
@@ -558,13 +534,10 @@ class NutritionUxInstrumentedTest {
                         canRenameHousehold = false,
                         onRenameHousehold = {},
                         nutritionSummary = null,
-                        pendingInvites = emptyList(),
                         isRefreshing = false,
                         onRefresh = {},
                         onOpenNutrition = {},
                         onOpenHouseholdMembers = {},
-                        onAcceptInvite = {},
-                        onDeclineInvite = {},
                         greetingHour = 9,
                     )
                 }

@@ -798,6 +798,8 @@
     <string name="household_name_taken">هذا الاسم مستخدم بالفعل</string>
     <string name="household_name_invalid">أدخل من 2 إلى 40 حرفًا</string>
     <string name="home_household_name_edit">تعديل</string>
+    <string name="home_household_open_manage">إدارة الأعضاء</string>
+    <string name="home_household_open_view">عرض الأعضاء</string>
     <string name="home_rename_household_title">إعادة تسمية الأسرة</string>
     <string name="home_rename_household_save">حفظ الاسم</string>
     <string name="auth_subtitle_sign_in">سجّل الدخول للانضمام إلى أسرتك أو إدارتها.</string>

@@ -22,6 +22,7 @@ fun JourneyBanner(
     headline: String,
     supportingLine: String?,
     description: String? = null,
+    headlineTestTag: String? = null,
     supportingLineTestTag: String? = null,
     descriptionTestTag: String? = null,
     modifier: Modifier = Modifier,
@@ -65,7 +66,8 @@ fun JourneyBanner(
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Black,
                             color = SharedJourneyColors.MediterraneanTeal,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            modifier = headlineTestTag?.let { Modifier.testTag(it) } ?: Modifier,
                         )
                         description?.let { text ->
                             Text(

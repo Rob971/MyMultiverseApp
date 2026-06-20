@@ -798,6 +798,8 @@
     <string name="household_name_taken">Dieser Name ist bereits vergeben</string>
     <string name="household_name_invalid">2–40 Zeichen eingeben</string>
     <string name="home_household_name_edit">Bearbeiten</string>
+    <string name="home_household_open_manage">Mitglieder verwalten</string>
+    <string name="home_household_open_view">Mitglieder ansehen</string>
     <string name="home_rename_household_title">Haushalt umbenennen</string>
     <string name="home_rename_household_save">Name speichern</string>
     <string name="auth_subtitle_sign_in">Melde dich an, um deinem Haushalt beizutreten oder ihn zu verwalten.</string>

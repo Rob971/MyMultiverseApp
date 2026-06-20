@@ -50,9 +50,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
-import app.mymultiverse.kmp.presentation.components.HomeComingSoonRow
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
-import app.mymultiverse.kmp.presentation.components.HouseholdNameChip
+import app.mymultiverse.kmp.presentation.components.HomeHouseholdButton
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.theme.AppIcons
@@ -247,15 +246,8 @@ fun HomeScreen(
                     canRenameHousehold = canRenameHousehold,
                     onRenameHousehold = screenModel::openRenameHouseholdDialog,
                     nutritionSummary = nutritionSummary,
-                    pendingInvites = pendingInvites,
                     onOpenNutrition = onOpenNutrition,
                     onOpenHouseholdMembers = onOpenHouseholdMembers,
-                    onAcceptInvite = { inviteId ->
-                        pendingInvites.find { it.id == inviteId }?.let { invite ->
-                            screenModel.onAcceptInviteClicked(invite)
-                        }
-                    },
-                    onDeclineInvite = screenModel::declineInvite,
                     isRefreshing = isRefreshing,
                     onRefresh = screenModel::refresh,
                     modifier = Modifier.padding(padding),
@@ -622,24 +614,19 @@ fun HomeWelcomeContent(
     canRenameHousehold: Boolean,
     onRenameHousehold: () -> Unit,
     nutritionSummary: HomeNutritionSummary?,
-    pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite>,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onOpenNutrition: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
-    onAcceptInvite: (String) -> Unit,
-    onDeclineInvite: (String) -> Unit,
     greetingHour: Int? = null,
     modifier: Modifier = Modifier,
 ) {
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
-    val comingSoonFeaturesLabel = stringResource(Res.string.home_coming_soon_features)
-    val comingSoonHint = stringResource(Res.string.home_coming_soon_hint)
     val greetingSelection = HomeGreetingSelection.select(
         userDisplayName = userDisplayName,
         hour = greetingHour ?: currentLocalHour(),
     )
-    val supportingLine = homeGreetingSupportingLine(greetingSelection)
+    val greetingLine = homeGreetingSupportingLine(greetingSelection)
     val inspirationLine = when (val line = HomeInspirationLine.select(greeting)) {
         HomeInspirationLine.Loading -> stringResource(Res.string.home_greeting_loading)
         is HomeInspirationLine.Ready -> line.text
@@ -687,10 +674,10 @@ fun HomeWelcomeContent(
         ) {
         item {
             JourneyBanner(
-                headline = stringResource(Res.string.home_banner_headline),
-                supportingLine = supportingLine,
+                headline = greetingLine,
+                supportingLine = null,
                 description = inspirationLine,
-                supportingLineTestTag = HomeTestTags.GREETING_LINE,
+                headlineTestTag = HomeTestTags.GREETING_LINE,
                 descriptionTestTag = if (showInspirationLoading) {
                     HomeTestTags.LOADING_INDICATOR
                 } else {
@@ -699,18 +686,16 @@ fun HomeWelcomeContent(
             )
         }
 
-        item {
-            PendingInvitesCard(
-                invites = pendingInvites,
-                onAccept = onAcceptInvite,
-                onDecline = onDeclineInvite,
-            )
-        }
-
-        item {
-            FamilyLogisticsSectionHeader(
-                title = stringResource(Res.string.home_section_this_week),
-            )
+        if (!householdName.isNullOrBlank()) {
+            item {
+                HomeHouseholdButton(
+                    householdName = householdName,
+                    canManage = canRenameHousehold,
+                    onOpenHousehold = onOpenHouseholdMembers,
+                    onRenameHousehold = onRenameHousehold,
+                    modifier = Modifier.testTag(HomeTestTags.HOUSEHOLD_CARD),
+                )
+            }
         }
 
         item {
@@ -726,50 +711,26 @@ fun HomeWelcomeContent(
         }
 
         item {
-            FamilyLogisticsSectionHeader(
-                title = stringResource(Res.string.home_section_household),
+            FamilyLogisticCard(
+                title = stringResource(Res.string.home_logistics_adventures_title),
+                description = stringResource(Res.string.home_logistics_adventures_description),
+                accentColor = SharedJourneyColors.TerracottaOrange,
+                icon = AppIcons.Explore,
+                badge = comingSoonLabel,
+                enabled = false,
+                onClick = {},
             )
-        }
-
-        if (!householdName.isNullOrBlank()) {
-            item {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    HouseholdNameChip(
-                        name = householdName,
-                        canEdit = canRenameHousehold,
-                        onEditClick = onRenameHousehold,
-                    )
-                }
-            }
         }
 
         item {
             FamilyLogisticCard(
-                title = stringResource(Res.string.home_household_title),
-                description = householdName?.let {
-                    stringResource(Res.string.home_household_description_named, it)
-                } ?: stringResource(Res.string.home_household_description),
+                title = stringResource(Res.string.home_logistics_budget_title),
+                description = stringResource(Res.string.home_logistics_budget_description),
                 accentColor = SharedJourneyColors.MediterraneanTeal,
-                icon = AppIcons.Person,
-                modifier = Modifier.testTag(HomeTestTags.HOUSEHOLD_CARD),
-                onClick = onOpenHouseholdMembers,
-            )
-        }
-
-        item {
-            FamilyLogisticsSectionHeader(
-                title = stringResource(Res.string.home_section_more),
-            )
-        }
-
-        item {
-            HomeComingSoonRow(
-                label = comingSoonFeaturesLabel,
+                icon = AppIcons.AccountBalance,
                 badge = comingSoonLabel,
-                hint = comingSoonHint,
+                enabled = false,
+                onClick = {},
             )
         }
         }
