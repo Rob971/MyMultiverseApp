@@ -146,6 +146,7 @@ class HomeScreenModel(
             _isRefreshing.value = true
             try {
                 _greeting.value = getGreetingUseCase()
+                runCatching { sessionCoordinator.nutrition.value.refreshFromRemote() }
             } catch (_: Throwable) {
                 // Keep the last greeting when refresh fails.
             } finally {

@@ -289,6 +289,7 @@
     <string name="home_settings_title">Konto &amp; Einstellungen</string>
     <string name="home_settings_button">Konto und Einstellungen öffnen</string>
     <string name="home_nutrition_get_started">Beginne mit der Planung von Mahlzeiten und Einkäufen</string>
+    <string name="home_onboarding_join_title">Wurdest du eingeladen?</string>
     <string name="home_onboarding_wait_for_invite_title">Auf eine Einladung warten?</string>
     <string name="home_onboarding_wait_for_invite_body">Wenn jemand %1$s einlädt, erscheint die Einladung hier. Sie können auch aktualisieren, um jetzt zu prüfen.</string>
     <string name="home_onboarding_refresh_invites">Einladungen aktualisieren</string>

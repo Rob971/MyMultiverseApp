@@ -289,6 +289,7 @@
     <string name="home_settings_title">الحساب والإعدادات</string>
     <string name="home_settings_button">فتح الحساب والإعدادات</string>
     <string name="home_nutrition_get_started">ابدأ بتخطيط الوجبات والبقالة</string>
+    <string name="home_onboarding_join_title">هل تمت دعوتك؟</string>
     <string name="home_onboarding_wait_for_invite_title">في انتظار دعوة؟</string>
     <string name="home_onboarding_wait_for_invite_body">عندما يدعو أحدهم %1$s، ستظهر الدعوة هنا. يمكنك أيضاً التحديث للتحقق الآن.</string>
     <string name="home_onboarding_refresh_invites">تحديث الدعوات</string>
