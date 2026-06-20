@@ -127,7 +127,7 @@ fun HomeAccountSheet(
             }
 
             val versionLabel =
-                if (AppBuildInfo.IS_RELEASE_CANDIDATE) {
+                if (AppBuildInfo.IS_PRERELEASE) {
                     stringResource(Res.string.home_app_version_rc, AppBuildInfo.VERSION_NAME)
                 } else {
                     stringResource(Res.string.home_app_version, AppBuildInfo.VERSION_NAME)
