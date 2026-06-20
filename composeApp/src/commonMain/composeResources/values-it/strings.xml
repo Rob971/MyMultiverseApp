@@ -47,7 +47,12 @@
     <string name="nutrition_week_label">Settimana dal %1$s</string>
     <string name="nutrition_grocery_add_hint">Aggiungi un articolo per questa settimana</string>
     <string name="nutrition_grocery_add_button">Aggiungi</string>
-    <string name="nutrition_grocery_empty">Nessun articolo. Aggiungi il primo prodotto.</string>
+    <string name="nutrition_grocery_empty">Aggiungi la spesa della settimana così tutti sanno cosa comprare.</string>
+    <string name="sharing_members_solo_cta">Invita qualcuno</string>
+    <string name="sharing_members_solo_body">Invita qualcuno a pianificare pasti e spesa con te.</string>
+    <string name="sharing_members_solo_title">Sei l'unica persona qui</string>
+    <string name="nutrition_grocery_empty_cta">Aggiungi un articolo</string>
+    <string name="nutrition_grocery_empty_title">La lista è vuota</string>
     <string name="nutrition_meal_lunch">Pranzo</string>
     <string name="nutrition_meal_dinner">Cena</string>
     <string name="nutrition_meal_generate_grocery">Genera lista spesa IA</string>
@@ -702,7 +707,7 @@
     <string name="auth_loading">Accesso in corso...</string>
     <string name="household_manage_members">Gestisci membri del nucleo familiare</string>
     <string name="sharing_members_title">Membri della famiglia</string>
-    <string name="sharing_members_subtitle">Invita persone via email. Gli editor possono modificare liste e piani condivisi; i visualizzatori possono leggerli. Questa famiglia vale per nutrizione, avventure e budget.</string>
+    <string name="sharing_members_subtitle">Invita persone via e-mail per pianificare pasti e spesa insieme. Gli editor possono modificare liste e piani condivisi; i visualizzatori possono leggerli.</string>
     <string name="sharing_members_empty">Nessun membro ancora. Aggiungi qualcuno per iniziare a condividere.</string>
     <string name="sharing_members_add_person">Aggiungi persona</string>
     <string name="sharing_members_add_group">Aggiungi gruppo</string>

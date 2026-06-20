@@ -29,6 +29,8 @@ object NutritionStringKeys {
         "nutrition_grocery_add_hint",
         "nutrition_grocery_add_button",
         "nutrition_grocery_empty",
+        "nutrition_grocery_empty_title",
+        "nutrition_grocery_empty_cta",
         "nutrition_meal_lunch",
         "nutrition_meal_dinner",
         "nutrition_meal_generate_grocery",

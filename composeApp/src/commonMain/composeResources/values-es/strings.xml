@@ -47,7 +47,12 @@
     <string name="nutrition_week_label">Semana desde %1$s</string>
     <string name="nutrition_grocery_add_hint">Añadir un artículo para esta semana</string>
     <string name="nutrition_grocery_add_button">Añadir</string>
-    <string name="nutrition_grocery_empty">Aún no hay artículos. Añade el primero.</string>
+    <string name="nutrition_grocery_empty">Añade la compra de la semana para que todos sepan qué comprar.</string>
+    <string name="sharing_members_solo_cta">Invitar a alguien</string>
+    <string name="sharing_members_solo_body">Invita a alguien a planificar comidas y compras contigo.</string>
+    <string name="sharing_members_solo_title">Estás solo aquí</string>
+    <string name="nutrition_grocery_empty_cta">Añadir un artículo</string>
+    <string name="nutrition_grocery_empty_title">La lista está vacía</string>
     <string name="nutrition_meal_lunch">Almuerzo</string>
     <string name="nutrition_meal_dinner">Cena</string>
     <string name="nutrition_meal_generate_grocery">Generar lista de compra con IA</string>
@@ -702,7 +707,7 @@
     <string name="auth_loading">Iniciando sesión...</string>
     <string name="household_manage_members">Gestionar miembros del hogar</string>
     <string name="sharing_members_title">Miembros del hogar</string>
-    <string name="sharing_members_subtitle">Invita personas por correo. Los editores pueden cambiar listas y planes compartidos; los lectores pueden verlos. Este hogar aplica a nutrición, aventuras y presupuesto.</string>
+    <string name="sharing_members_subtitle">Invita a personas por correo para planificar comidas y compras juntos. Los editores pueden cambiar listas y planes compartidos; los lectores solo pueden verlos.</string>
     <string name="sharing_members_empty">Aún no hay miembros. Añade a alguien para empezar a compartir.</string>
     <string name="sharing_members_add_person">Añadir persona</string>
     <string name="sharing_members_add_group">Añadir grupo</string>

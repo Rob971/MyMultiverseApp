@@ -47,7 +47,12 @@
     <string name="nutrition_week_label">Semaine du %1$s</string>
     <string name="nutrition_grocery_add_hint">Ajouter un article pour cette semaine</string>
     <string name="nutrition_grocery_add_button">Ajouter</string>
-    <string name="nutrition_grocery_empty">Aucun article. Ajoutez votre premier produit.</string>
+    <string name="nutrition_grocery_empty">Ajoutez des courses pour la semaine afin que tout le monde sache quoi acheter.</string>
+    <string name="sharing_members_solo_cta">Inviter quelqu'un</string>
+    <string name="sharing_members_solo_body">Invitez quelqu'un à planifier repas et courses avec vous.</string>
+    <string name="sharing_members_solo_title">Vous êtes seul ici</string>
+    <string name="nutrition_grocery_empty_cta">Ajouter un article</string>
+    <string name="nutrition_grocery_empty_title">La liste est vide</string>
     <string name="nutrition_meal_lunch">Déjeuner</string>
     <string name="nutrition_meal_dinner">Dîner</string>
     <string name="nutrition_meal_generate_grocery">Générer une liste de courses IA</string>
@@ -702,7 +707,7 @@
     <string name="auth_loading">Connexion en cours...</string>
     <string name="household_manage_members">Gérer les membres du foyer</string>
     <string name="sharing_members_title">Membres du foyer</string>
-    <string name="sharing_members_subtitle">Invitez des personnes par e-mail. Les éditeurs peuvent modifier les listes et plans partagés ; les lecteurs peuvent les consulter. Ce foyer s'applique à la nutrition, aux aventures et au budget.</string>
+    <string name="sharing_members_subtitle">Invitez des personnes par e-mail pour planifier repas et courses ensemble. Les éditeurs peuvent modifier les listes et plans partagés ; les lecteurs peuvent les consulter.</string>
     <string name="sharing_members_empty">Aucun membre pour l'instant. Ajoutez quelqu'un pour commencer à partager.</string>
     <string name="sharing_members_add_person">Ajouter une personne</string>
     <string name="sharing_members_add_group">Ajouter un groupe</string>

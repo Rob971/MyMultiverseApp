@@ -47,7 +47,12 @@
     <string name="nutrition_week_label">Week starting %1$s</string>
     <string name="nutrition_grocery_add_hint">Add an item for this week</string>
     <string name="nutrition_grocery_add_button">Add</string>
-    <string name="nutrition_grocery_empty">No items yet. Add your first grocery item.</string>
+    <string name="nutrition_grocery_empty">Add groceries for this week so everyone knows what to buy.</string>
+    <string name="sharing_members_solo_cta">Invite someone</string>
+    <string name="sharing_members_solo_body">Invite someone to plan meals and groceries with you.</string>
+    <string name="sharing_members_solo_title">You're the only one here</string>
+    <string name="nutrition_grocery_empty_cta">Add an item</string>
+    <string name="nutrition_grocery_empty_title">Nothing on the list yet</string>
     <string name="nutrition_meal_lunch">Lunch</string>
     <string name="nutrition_meal_dinner">Dinner</string>
     <string name="nutrition_meal_generate_grocery">Generate AI grocery list</string>
@@ -703,7 +708,7 @@
     <string name="auth_loading">Signing in...</string>
     <string name="household_manage_members">Manage household members</string>
     <string name="sharing_members_title">Household members</string>
-    <string name="sharing_members_subtitle">Invite people by email. Editors can change shared lists and plans; viewers can read them. This household applies to nutrition, adventures, and budget.</string>
+    <string name="sharing_members_subtitle">Invite people by email to plan meals and groceries together. Editors can change shared lists and plans; viewers can read them.</string>
     <string name="sharing_members_empty">No members yet. Add someone to start sharing.</string>
     <string name="sharing_members_add_person">Add person</string>
     <string name="sharing_members_add_group">Add group</string>

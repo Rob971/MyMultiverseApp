@@ -204,31 +204,11 @@ fun EmptyStateCard(
     icon: ImageVector,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = FamilyLogisticsDesign.cardShape,
-        color = SharedJourneyColors.GlassWhite,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = SharedJourneyColors.InkMuted.copy(alpha = 0.7f),
-                modifier = Modifier.size(40.dp),
-            )
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = SharedJourneyColors.InkMuted,
-            )
-        }
-    }
+    JourneyEmptyState(
+        title = message,
+        icon = icon,
+        modifier = modifier,
+    )
 }
 
 @Composable

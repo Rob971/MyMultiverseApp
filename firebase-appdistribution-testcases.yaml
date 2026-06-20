@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 20
+version: 21
 updated: 2026-06-20
 
 summary: |
@@ -12,6 +12,7 @@ summary: |
   Viewers are read-only: they cannot edit any shared nutrition entry. Invites require auth email to match.
   Home onboarding: accept invites or create a named household (default last name) and invite members;
   Welcome content stays hidden until setup completes.
+  Empty states: grocery list and solo-household members use guided CTAs (add item / invite someone).
 
 testcases:
   - id: auth-sign-in
@@ -159,6 +160,23 @@ testcases:
       - Get started together checklist appears with invite and nutrition steps.
       - Tapping invite opens Household members; tapping nutrition opens the Nutrition hub.
       - Not now hides the checklist until both steps are completed.
+
+  - id: grocery-empty-state
+    title: Grocery list empty state with add CTA
+    steps:
+      - Open Nutrition → Grocery with no items for the current week.
+    expected:
+      - Empty card shows title, body, and Add an item button (testTag grocery_empty_state).
+      - Tapping the button focuses the add-item field at the bottom.
+
+  - id: household-solo-invite-empty
+    title: Solo household members empty state
+    steps:
+      - Sign in as owner of a household with only yourself (no pending invites).
+      - Open Household members from Home.
+    expected:
+      - Solo invite empty state appears with Invite someone CTA (testTag household_members_solo_empty_state).
+      - Tapping opens the add-person invite dialog.
 
   - id: home-rename-household
     title: Rename household from Welcome Home (owner or admin)

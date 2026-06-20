@@ -47,7 +47,12 @@
     <string name="nutrition_week_label">Settimana d' 'o %1$s</string>
     <string name="nutrition_grocery_add_hint">Azzecca nu articolo pe' sta settimana</string>
     <string name="nutrition_grocery_add_button">Azzecca</string>
-    <string name="nutrition_grocery_empty">Nun ce stanno articule. Azzecca 'o primmo.</string>
+    <string name="nutrition_grocery_empty">Mette 'a spesa d' 'a semmana accussì tuttu sape che cosa accattà.</string>
+    <string name="sharing_members_solo_cta">Invita ll'ata</string>
+    <string name="sharing_members_solo_body">Invita ll'ata a planificà pasti e spesa cu te.</string>
+    <string name="sharing_members_solo_title">Si' solo d'accà</string>
+    <string name="nutrition_grocery_empty_cta">Azzecca n'articulo</string>
+    <string name="nutrition_grocery_empty_title">'A lista è vuota</string>
     <string name="nutrition_meal_lunch">Pranzo</string>
     <string name="nutrition_meal_dinner">Cena</string>
     <string name="nutrition_meal_generate_grocery">Genera 'a lista spesa IA</string>
@@ -702,7 +707,7 @@
     <string name="auth_loading">Accesso in corso...</string>
     <string name="household_manage_members">Gestisce membri d''o famiglia</string>
     <string name="sharing_members_title">Membri d' 'a famiglia</string>
-    <string name="sharing_members_subtitle">Invita a gente pe' email. Li editor ponno cagnà liste e piani condivisi; li viewer ponno legge. Sta famiglia vale pe' nutrizione, avventure e budget.</string>
+    <string name="sharing_members_subtitle">Invita ll'ata pe' email pe' planificà pasti e spesa insieme. Ll'editor ponno cagnà liste e piani condivisi; ll'osservatore leggeno.</string>
     <string name="sharing_members_empty">Nisciuno membro ancora. Miette quacuno pe' accummincià a spartì.</string>
     <string name="sharing_members_add_person">Aggiunge persona</string>
     <string name="sharing_members_add_group">Aggiunge gruppo</string>

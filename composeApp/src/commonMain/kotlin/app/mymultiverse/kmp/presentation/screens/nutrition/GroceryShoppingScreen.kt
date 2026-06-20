@@ -41,6 +41,8 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_groc
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_edit_item
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty_active
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty_cta
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_progress
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_save_edit
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_section_completed_count
@@ -55,8 +57,8 @@ import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionsSection
+import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
 import app.mymultiverse.kmp.presentation.components.WeekSelectorBanner
-import app.mymultiverse.kmp.presentation.components.EmptyStateCard
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.GroceryDashboardCard
 import app.mymultiverse.kmp.presentation.components.GroceryInputBar
@@ -77,6 +79,7 @@ object GroceryListTestTags {
     const val CHECKBOX_PREFIX = GroceryItemRowTestTags.CHECKBOX_PREFIX
     const val CLEAR_CHECKED_ACTION = "grocery_clear_checked"
     const val SCROLL_LIST = "grocery_scroll_list"
+    const val EMPTY_STATE = "grocery_empty_state"
     const val COMPLETED_SECTION_HEADER = "grocery_completed_section_header"
 }
 
@@ -263,7 +266,7 @@ fun GroceryShoppingScreen(
                             totalCount,
                         )
                     } else {
-                        stringResource(Res.string.nutrition_grocery_empty)
+                        stringResource(Res.string.nutrition_grocery_empty_title)
                     },
                     progress = if (totalCount == 0) 0f else checkedCount.toFloat() / totalCount,
                     accentColor = accentColor,
@@ -294,9 +297,21 @@ fun GroceryShoppingScreen(
 
             if (totalCount == 0 && aiGroceryItems.isEmpty()) {
                 item(key = "empty-state") {
-                    EmptyStateCard(
-                        message = stringResource(Res.string.nutrition_grocery_empty),
+                    JourneyEmptyState(
+                        title = stringResource(Res.string.nutrition_grocery_empty_title),
+                        body = stringResource(Res.string.nutrition_grocery_empty),
                         icon = AppIcons.Restaurant,
+                        primaryActionLabel = if (canWrite) {
+                            stringResource(Res.string.nutrition_grocery_empty_cta)
+                        } else {
+                            null
+                        },
+                        onPrimaryAction = if (canWrite) {
+                            { refocusInput = true }
+                        } else {
+                            null
+                        },
+                        testTag = GroceryListTestTags.EMPTY_STATE,
                     )
                 }
             } else if (totalCount > 0) {

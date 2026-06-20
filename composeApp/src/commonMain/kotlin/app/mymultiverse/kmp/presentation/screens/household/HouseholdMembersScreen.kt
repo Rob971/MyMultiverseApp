@@ -39,11 +39,13 @@ import app.mymultiverse.kmp.domain.sharing.canAssignAdminRole
 import app.mymultiverse.kmp.domain.sharing.canChangeRoleOf
 import app.mymultiverse.kmp.domain.sharing.canRemoveMember
 import app.mymultiverse.kmp.domain.repository.AuthRepository
+import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.screenContentArea
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
+import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_add_dependent
@@ -56,7 +58,9 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_member
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_dependent_name_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_email_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_email_label
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_empty
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_solo_body
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_solo_cta
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_solo_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_cannot_add_self
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_email_required
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_generic
@@ -115,6 +119,7 @@ object HouseholdMembersTestTags {
     const val TRANSFER_OWNERSHIP_BUTTON = "household_members_transfer_ownership"
     const val TRANSFER_DIALOG = "household_members_transfer_dialog"
     const val ADD_DEPENDANT_BUTTON = "household_members_add_dependant"
+    const val SOLO_EMPTY_STATE = "household_members_solo_empty_state"
     const val ROLE_CHANGE_CONFIRM_BUTTON = "household_members_role_change_confirm"
     const val PROMOTE_ADMIN_CONFIRM_BUTTON = "household_members_promote_admin_confirm"
 }
@@ -129,6 +134,10 @@ fun HouseholdMembersScreen(
     val uiState by screenModel.uiState.collectAsState()
     val authState by authRepository.authState.collectAsState()
     val ownerFallback = stringResource(Res.string.sharing_members_owner_fallback)
+    val personMemberCount = uiState.members.count { it.kind == HouseholdMemberKind.Person }
+    val showSoloInviteEmpty = !uiState.isLoading &&
+        personMemberCount <= 1 &&
+        uiState.outboundInvites.isEmpty()
     val snackbarHostState = remember { SnackbarHostState() }
     var pendingPromoteAdminConfirm by remember { mutableStateOf(false) }
     val errorMessage = uiState.error?.let { error -> mapErrorMessage(error) }
@@ -244,11 +253,19 @@ fun HouseholdMembersScreen(
                         PendingInviteRow(invite = invite)
                     }
                 }
-                if (uiState.members.isEmpty()) {
+                if (showSoloInviteEmpty && uiState.canManageMembers) {
                     item {
-                        Text(stringResource(Res.string.sharing_members_empty))
+                        JourneyEmptyState(
+                            title = stringResource(Res.string.sharing_members_solo_title),
+                            body = stringResource(Res.string.sharing_members_solo_body),
+                            icon = AppIcons.Person,
+                            primaryActionLabel = stringResource(Res.string.sharing_members_solo_cta),
+                            onPrimaryAction = screenModel::openAddPersonDialog,
+                            testTag = HouseholdMembersTestTags.SOLO_EMPTY_STATE,
+                        )
                     }
-                } else {
+                }
+                if (uiState.members.isNotEmpty()) {
                     items(uiState.members, key = { it.id }) { member ->
                         MemberRow(
                             member = member,

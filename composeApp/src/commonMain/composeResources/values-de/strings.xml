@@ -47,7 +47,12 @@
     <string name="nutrition_week_label">Woche ab %1$s</string>
     <string name="nutrition_grocery_add_hint">Artikel für diese Woche hinzufügen</string>
     <string name="nutrition_grocery_add_button">Hinzufügen</string>
-    <string name="nutrition_grocery_empty">Noch keine Artikel. Fügen Sie den ersten hinzu.</string>
+    <string name="nutrition_grocery_empty">Füge Einkäufe für diese Woche hinzu, damit alle wissen, was zu kaufen ist.</string>
+    <string name="sharing_members_solo_cta">Jemanden einladen</string>
+    <string name="sharing_members_solo_body">Lade jemanden ein, Mahlzeiten und Einkäufe mit dir zu planen.</string>
+    <string name="sharing_members_solo_title">Du bist hier allein</string>
+    <string name="nutrition_grocery_empty_cta">Artikel hinzufügen</string>
+    <string name="nutrition_grocery_empty_title">Die Liste ist leer</string>
     <string name="nutrition_meal_lunch">Mittagessen</string>
     <string name="nutrition_meal_dinner">Abendessen</string>
     <string name="nutrition_meal_generate_grocery">KI-Einkaufsliste erstellen</string>
@@ -702,7 +707,7 @@
     <string name="auth_loading">Anmeldung läuft...</string>
     <string name="household_manage_members">Haushaltsmitglieder verwalten</string>
     <string name="sharing_members_title">Haushaltsmitglieder</string>
-    <string name="sharing_members_subtitle">Lade Personen per E-Mail ein. Bearbeiter können geteilte Listen und Pläne ändern; Betrachter können sie lesen. Dieser Haushalt gilt für Ernährung, Abenteuer und Budget.</string>
+    <string name="sharing_members_subtitle">Lade Personen per E-Mail ein, um Mahlzeiten und Einkäufe gemeinsam zu planen. Editoren können geteilte Listen und Pläne ändern; Betrachter können sie lesen.</string>
     <string name="sharing_members_empty">Noch keine Mitglieder. Füge jemanden hinzu, um zu teilen.</string>
     <string name="sharing_members_add_person">Person hinzufügen</string>
     <string name="sharing_members_add_group">Gruppe hinzufügen</string>

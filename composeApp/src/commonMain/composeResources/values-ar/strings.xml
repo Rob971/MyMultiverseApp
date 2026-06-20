@@ -47,7 +47,12 @@
     <string name="nutrition_week_label">الأسبوع بدءًا من %1$s</string>
     <string name="nutrition_grocery_add_hint">أضف عنصرًا لهذا الأسبوع</string>
     <string name="nutrition_grocery_add_button">إضافة</string>
-    <string name="nutrition_grocery_empty">لا توجد عناصر بعد. أضف أول عنصر.</string>
+    <string name="nutrition_grocery_empty">أضف البقالة لهذا الأسبوع ليعرف الجميع ما يجب شراؤه.</string>
+    <string name="sharing_members_solo_cta">ادعُ شخصًا</string>
+    <string name="sharing_members_solo_body">ادعُ شخصًا للتخطيط للوجبات والبقالة معك.</string>
+    <string name="sharing_members_solo_title">أنت وحدك هنا</string>
+    <string name="nutrition_grocery_empty_cta">أضف عنصرًا</string>
+    <string name="nutrition_grocery_empty_title">القائمة فارغة</string>
     <string name="nutrition_meal_lunch">الغداء</string>
     <string name="nutrition_meal_dinner">العشاء</string>
     <string name="nutrition_meal_generate_grocery">إنشاء قائمة مشتريات بالذكاء الاصطناعي</string>
@@ -702,7 +707,7 @@
     <string name="auth_loading">جارٍ تسجيل الدخول...</string>
     <string name="household_manage_members">إدارة أعضاء الأسرة</string>
     <string name="sharing_members_title">أعضاء الأسرة</string>
-    <string name="sharing_members_subtitle">ادعُ أشخاصًا بالبريد الإلكتروني. يمكن للمحررين تغيير القوائم والخطط المشتركة؛ ويمكن للمشاهدين قراءتها. تنطبق هذه الأسرة على التغذية والمغامرات والميزانية.</string>
+    <string name="sharing_members_subtitle">ادعُ أشخاصًا بالبريد الإلكتروني للتخطيط للوجبات والبقالة معًا. يمكن للمحررين تغيير القوائم والخطط المشتركة؛ ويمكن للمشاهدين القراءة فقط.</string>
     <string name="sharing_members_empty">لا يوجد أعضاء بعد. أضف شخصًا لبدء المشاركة.</string>
     <string name="sharing_members_add_person">إضافة شخص</string>
     <string name="sharing_members_add_group">إضافة مجموعة</string>
