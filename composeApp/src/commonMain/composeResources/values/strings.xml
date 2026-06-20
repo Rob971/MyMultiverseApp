@@ -4,7 +4,7 @@
     <string name="home_banner_headline">WELCOME HOME</string>
     <string name="home_banner_loading">Loading your household...</string>
     <string name="home_banner_description">A shared household to cultivate our family dreams, track S.M.A.R.T. goals and strengthen our daily bonds.</string>
-    <string name="home_dreams_title">our Family logistics</string>
+    <string name="home_dreams_title">Family logistics</string>
     <string name="home_logistics_nutrition_title">Nutrition</string>
     <string name="home_logistics_nutrition_description">Meals, groceries, and weekly planning for the family.</string>
     <string name="home_household_title">Household</string>
@@ -280,7 +280,9 @@
     <string name="category_long_term_ai_action">Generate milestone blueprint</string>
     <string name="category_long_term_plan_title">Milestone Blueprint</string>
     <string name="home_greeting">The beating heart of our family.</string>
+    <string name="home_greeting_loading">Loading inspiration…</string>
     <string name="home_greeting_personalized">Hello, %1$s</string>
+    <string name="home_coming_soon_features">Adventures &amp; Budget</string>
     <string name="home_onboarding_wait_for_invite_title">Waiting for an invite?</string>
     <string name="home_onboarding_wait_for_invite_body">When someone invites %1$s, you will see it here. You can also refresh to check now.</string>
     <string name="home_onboarding_refresh_invites">Refresh invites</string>

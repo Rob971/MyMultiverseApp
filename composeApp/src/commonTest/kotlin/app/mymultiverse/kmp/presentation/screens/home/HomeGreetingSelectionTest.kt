@@ -4,32 +4,31 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * Documents the banner supporting-line rules used by [HomeContent].
- * Keeps greeting selection testable without a Compose runtime.
+ * Documents the banner supporting-line rules used by [HomeWelcomeContent].
  */
 class HomeGreetingSelectionTest {
 
     @Test
-    fun selectSupportingLine_showsLoadingWhileGreetingPending() {
-        assertEquals(
-            HomeGreetingSelection.Loading,
-            HomeGreetingSelection.select(greetingReady = false, userDisplayName = "Roberto"),
-        )
-    }
-
-    @Test
-    fun selectSupportingLine_personalizesWhenNameAvailable() {
+    fun select_personalizesWhenNameAvailable() {
         assertEquals(
             HomeGreetingSelection.Personalized("Roberto"),
-            HomeGreetingSelection.select(greetingReady = true, userDisplayName = "Roberto"),
+            HomeGreetingSelection.select(userDisplayName = "Roberto"),
         )
     }
 
     @Test
-    fun selectSupportingLine_fallsBackToGenericFamilyMessage() {
+    fun select_fallsBackToGenericFamilyMessage() {
         assertEquals(
             HomeGreetingSelection.Generic,
-            HomeGreetingSelection.select(greetingReady = true, userDisplayName = null),
+            HomeGreetingSelection.select(userDisplayName = null),
+        )
+    }
+
+    @Test
+    fun select_personalizesEvenWhileGreetingPending() {
+        assertEquals(
+            HomeGreetingSelection.Personalized("Roberto"),
+            HomeGreetingSelection.select(userDisplayName = "Roberto"),
         )
     }
 }

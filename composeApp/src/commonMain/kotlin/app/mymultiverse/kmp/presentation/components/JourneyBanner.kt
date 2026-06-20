@@ -23,6 +23,7 @@ fun JourneyBanner(
     supportingLine: String?,
     description: String? = null,
     supportingLineTestTag: String? = null,
+    descriptionTestTag: String? = null,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(32.dp)
@@ -73,7 +74,11 @@ fun JourneyBanner(
                                 color = SharedJourneyColors.InkDeep.copy(alpha = 0.8f),
                                 fontWeight = FontWeight.Normal,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(top = 8.dp)
+                                modifier = Modifier
+                                    .padding(top = 8.dp)
+                                    .then(
+                                        descriptionTestTag?.let { Modifier.testTag(it) } ?: Modifier,
+                                    ),
                             )
                         }
                         supportingLine?.let { line ->

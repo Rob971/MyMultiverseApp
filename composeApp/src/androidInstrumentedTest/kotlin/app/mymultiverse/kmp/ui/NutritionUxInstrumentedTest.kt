@@ -484,11 +484,12 @@ class NutritionUxInstrumentedTest {
         }
 
         composeRule.onNodeWithTag(HomeTestTags.LOADING_INDICATOR).assertIsDisplayed()
-        composeRule.onNodeWithText("Loading your household...").assertIsDisplayed()
+        composeRule.onNodeWithText("Loading inspiration…").assertIsDisplayed()
+        composeRule.onNodeWithText("Hello, Roberto").assertIsDisplayed()
     }
 
     @Test
-    fun homeContent_withoutGreeting_showsLoadingIndicator() {
+    fun homeContent_withoutGreeting_showsInspirationLoadingWhenAnonymous() {
         composeRule.setContent {
             AppTheme {
                 InstrumentedKoinHost {
@@ -513,6 +514,36 @@ class NutritionUxInstrumentedTest {
         }
 
         composeRule.onNodeWithTag(HomeTestTags.LOADING_INDICATOR).assertIsDisplayed()
+        composeRule.onNodeWithText("Loading inspiration…").assertIsDisplayed()
+    }
+
+    @Test
+    fun homeContent_withGreeting_showsInspirationText() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeWelcomeContent(
+                        greeting = Greeting("Small steps keep the week calm."),
+                        userDisplayName = "Roberto",
+                        householdName = null,
+                        canRenameHousehold = false,
+                        onRenameHousehold = {},
+                        isRefreshing = false,
+                        pendingInvites = emptyList(),
+                        onRefreshClick = {},
+                        onOpenNutrition = {},
+                        onOpenHouseholdMembers = {},
+                        onAcceptInvite = {},
+                        onDeclineInvite = {},
+                        onExportPersonalData = {},
+                        onDeleteAccount = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.INSPIRATION_LINE).assertIsDisplayed()
+        composeRule.onNodeWithText("Small steps keep the week calm.").assertIsDisplayed()
     }
 
     @Test
@@ -544,6 +575,7 @@ class NutritionUxInstrumentedTest {
             composeRule.onAllNodesWithTag(HomeTestTags.LOADING_INDICATOR)
                 .fetchSemanticsNodes().isEmpty(),
         )
+        composeRule.onNodeWithTag(HomeTestTags.INSPIRATION_LINE).assertIsDisplayed()
         composeRule.onNodeWithTag(HomeTestTags.NUTRITION_CARD)
             .performScrollTo()
             .assertIsDisplayed()

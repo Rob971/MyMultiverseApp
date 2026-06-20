@@ -4,7 +4,7 @@
     <string name="home_banner_headline">BENVENUTI A CASA</string>
     <string name="home_banner_loading">Caricamento del tuo nucleo familiare...</string>
     <string name="home_banner_description">Un nucleo familiare condiviso per coltivare i sogni della nostra famiglia, tracciare obiettivi S.M.A.R.T. e rafforzare i nostri legami quotidiani.</string>
-    <string name="home_dreams_title">la nostra logistica di famiglia</string>
+    <string name="home_dreams_title">Logistica di famiglia</string>
     <string name="home_logistics_nutrition_title">Nutrizione</string>
     <string name="home_household_title">Famiglia</string>
     <string name="home_household_description">Invita persone a collaborare su nutrizione, avventure e budget.</string>
@@ -280,7 +280,9 @@
     <string name="category_long_term_ai_action">Genera piano traguardo</string>
     <string name="category_long_term_plan_title">Piano traguardo</string>
     <string name="home_greeting">Il cuore pulsante della nostra famiglia.</string>
+    <string name="home_greeting_loading">Caricamento ispirazione…</string>
     <string name="home_greeting_personalized">Ciao, %1$s</string>
+    <string name="home_coming_soon_features">Avventure e budget</string>
     <string name="home_onboarding_wait_for_invite_title">In attesa di un invito?</string>
     <string name="home_onboarding_wait_for_invite_body">Quando qualcuno invita %1$s, lo vedrai qui. Puoi anche aggiornare per controllare ora.</string>
     <string name="home_onboarding_refresh_invites">Aggiorna inviti</string>
