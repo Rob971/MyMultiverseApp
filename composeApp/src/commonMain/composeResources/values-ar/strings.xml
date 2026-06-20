@@ -11,7 +11,7 @@
     <string name="home_household_description_named">إدارة الأشخاص في %1$s — مشترك عبر التغذية والمغامرات والميزانية.</string>
     <string name="home_logistics_requires_household">الأسرة مطلوبة</string>
     <string name="household_gate_title">إعداد أسرتك</string>
-    <string name="household_gate_subtitle">أنشئ أسرة أو اقبل دعوة قبل استخدام التغذية أو المغامرات أو الميزانية.</string>
+    <string name="household_gate_subtitle">اقبل دعوة أو أنشئ أسرتك وادعُ الأعضاء.</string>
     <string name="household_gate_create_title">إنشاء أسرة جديدة</string>
     <string name="household_gate_name_label">اسم الأسرة</string>
     <string name="household_gate_create_button">إنشاء الأسرة</string>
@@ -300,6 +300,8 @@
     <string name="home_onboarding_wait_for_invite_title">في انتظار دعوة؟</string>
     <string name="home_onboarding_wait_for_invite_body">عندما يدعو أحدهم %1$s، ستظهر الدعوة هنا. يمكنك أيضاً التحديث للتحقق الآن.</string>
     <string name="home_onboarding_refresh_invites">تحديث الدعوات</string>
+    <string name="home_onboarding_name_hint">مقترح من اسم العائلة — يمكنك تغييره في أي وقت.</string>
+    <string name="home_onboarding_create_invite_hint">بعد الإنشاء، اضغط اسم أسرتك في الصفحة الرئيسية لدعوة أشخاص عبر البريد.</string>
     <string name="calendar_weekday_mon">الإثنين</string>
     <string name="calendar_weekday_tue">الثلاثاء</string>
     <string name="calendar_weekday_wed">الأربعاء</string>

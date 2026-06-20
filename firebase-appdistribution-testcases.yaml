@@ -1,18 +1,18 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: Nutrition, Adventures, and Budget share one household (2+ members).
 
-version: 15
+version: 16
 updated: 2026-06-20
 
 summary: |
   Verify auth, household members on Home (shared across nutrition, adventures, budget),
   nutrition hub (grocery / meal plan / AI adviser), CRUD on shared week data, sync status,
   Crashlytics on tester builds, and sign-out.
-  Welcome Home: time-based greeting, localized inspiration line, section headers (This week /
-  Household / More), live nutrition status on the card, Adventures and Budget in one
-  coming-soon row, account actions in the settings sheet (⋮), pull-to-refresh.
+  Welcome Home: time-based greeting, localized inspiration, household name button
+  (manage or view members), then Nutrition / Adventures / Budget cards.
   Viewers are read-only: they cannot edit any shared nutrition entry. Invites require auth email to match.
-  Home onboarding (no separate gate screen): Join and Create sections; pull-to-refresh for invites.
+  Home onboarding: accept invites or create a named household (default last name) and invite members;
+  module cards stay hidden until setup completes.
 
 testcases:
   - id: auth-sign-in
@@ -143,20 +143,20 @@ testcases:
     title: Home onboarding blocks modules until setup
     steps:
       - Sign in with a new account that has no household and no pending invites.
-      - Observe Home onboarding: Join section (wait-for-invite copy) and Create household section.
-      - Pull down to refresh invites, then enter a unique household name and tap Create household.
+      - Confirm Nutrition, Adventures, and Budget cards are not shown.
+      - Observe prefilled household name (last name when available); edit if needed and tap Create household.
     expected:
       - Name availability shows Available before create is enabled; taken names show Taken inline.
-      - Welcome Home appears with Nutrition enabled after household is created.
-      - Adventures and Budget appear as a single coming-soon row under More (not separate cards).
+      - Hint explains inviting members after creation via the household name button.
+      - Welcome Home shows household button plus Nutrition, Adventures, and Budget cards after setup.
 
   - id: home-coming-soon-row
     title: Adventures and Budget coming soon on Welcome Home
     steps:
-      - Sign in on Welcome Home and scroll to the More section.
+      - Sign in on Welcome Home with an active household.
     expected:
-      - One combined coming-soon row lists Adventures and Budget with a coming-soon badge and hint.
-      - Row is not tappable; Nutrition and Household cards above remain actionable.
+      - Separate Adventures and Budget cards appear below Nutrition with coming-soon badges.
+      - Cards are not tappable; Nutrition and the household name button remain actionable.
 
   - id: home-rename-household
     title: Rename household from Welcome Home (owner or admin)
@@ -189,15 +189,13 @@ testcases:
       - Household must exist before Nutrition is reachable from Home.
 
   - id: home-household-members
-    title: Invite household members from Home
+    title: Open household from the name button
     steps:
-      - From Welcome Home, scroll to the Household section and tap the Household card.
-      - Add a second person by email (existing account) or send an invite (unknown email).
+      - From Welcome Home, tap the household name button (shows Manage members or View members).
+      - Owners/admins: use the edit icon on the button to rename without leaving Home.
     expected:
-      - Members screen explains the household is shared across nutrition, adventures, and budget.
-      - Owner can invite and promote household admin; admins can invite editors/viewers; editors/viewers see read-only member list.
-      - Pending invites appear on the members screen until accepted.
-      - Snackbar confirms invitation sent to the exact email address (invitee must accept on their device).
+      - Members screen opens from the main button tap.
+      - Rename dialog opens only from the edit icon when permitted.
 
   - id: household-transfer-ownership-leave
     title: Owner transfers ownership then leaves
@@ -295,8 +293,8 @@ testcases:
   - id: home-nutrition-card
     title: Open nutrition from home
     steps:
-      - Launch the app and go to Welcome Home.
-      - Under This week, tap the Nutrition card.
+      - Launch the app and go to Welcome Home with an active household.
+      - Tap the Nutrition card below the household name button.
     expected:
       - Nutrition hub opens with Grocery, Meal plan, and AI adviser cards.
 

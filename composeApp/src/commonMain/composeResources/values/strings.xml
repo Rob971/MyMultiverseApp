@@ -12,7 +12,7 @@
     <string name="home_household_description_named">Manage people in %1$s — shared across nutrition, adventures, and budget.</string>
     <string name="home_logistics_requires_household">Household required</string>
     <string name="household_gate_title">Set up your household</string>
-    <string name="household_gate_subtitle">Create a household or accept an invite before using Nutrition, Adventures, or Budget.</string>
+    <string name="household_gate_subtitle">Accept an invitation or create your household and invite members.</string>
     <string name="household_gate_create_title">Create a new household</string>
     <string name="household_gate_name_label">Household name</string>
     <string name="household_gate_create_button">Create household</string>
@@ -300,6 +300,8 @@
     <string name="home_onboarding_wait_for_invite_title">Waiting for an invite?</string>
     <string name="home_onboarding_wait_for_invite_body">When someone invites %1$s, you will see it here. You can also refresh to check now.</string>
     <string name="home_onboarding_refresh_invites">Refresh invites</string>
+    <string name="home_onboarding_name_hint">Suggested from your last name — change it anytime.</string>
+    <string name="home_onboarding_create_invite_hint">After creating, tap your household name on Home to invite people by email.</string>
     <string name="calendar_weekday_mon">Mon</string>
     <string name="calendar_weekday_tue">Tue</string>
     <string name="calendar_weekday_wed">Wed</string>

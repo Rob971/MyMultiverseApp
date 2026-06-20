@@ -11,7 +11,7 @@
     <string name="home_household_description_named">Gérez les personnes de %1$s — partagé entre nutrition, aventures et budget.</string>
     <string name="home_logistics_requires_household">Foyer requis</string>
     <string name="household_gate_title">Configurez votre foyer</string>
-    <string name="household_gate_subtitle">Créez un foyer ou acceptez une invitation avant d'utiliser Nutrition, Aventures ou Budget.</string>
+    <string name="household_gate_subtitle">Acceptez une invitation ou créez votre foyer et invitez des membres.</string>
     <string name="household_gate_create_title">Créer un nouveau foyer</string>
     <string name="household_gate_name_label">Nom du foyer</string>
     <string name="household_gate_create_button">Créer le foyer</string>
@@ -300,6 +300,8 @@
     <string name="home_onboarding_wait_for_invite_title">En attente d'une invitation ?</string>
     <string name="home_onboarding_wait_for_invite_body">Quand quelqu'un invite %1$s, l'invitation apparaîtra ici. Vous pouvez aussi actualiser pour vérifier.</string>
     <string name="home_onboarding_refresh_invites">Actualiser les invitations</string>
+    <string name="home_onboarding_name_hint">Suggéré à partir de votre nom de famille — modifiable à tout moment.</string>
+    <string name="home_onboarding_create_invite_hint">Après la création, touchez le nom du foyer sur l’accueil pour inviter des personnes par e-mail.</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>

@@ -43,6 +43,8 @@ object HomeStringKeys {
         "home_onboarding_wait_for_invite_title",
         "home_onboarding_wait_for_invite_body",
         "home_onboarding_refresh_invites",
+        "home_onboarding_name_hint",
+        "home_onboarding_create_invite_hint",
         "home_household_name_edit",
         "home_household_open_manage",
         "home_household_open_view",

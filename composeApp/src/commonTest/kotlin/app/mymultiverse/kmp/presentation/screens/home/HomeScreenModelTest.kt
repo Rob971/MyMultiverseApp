@@ -545,6 +545,11 @@ class HomeScreenModelTest {
         val screenModel = model(
             repository = FakeGreetingRepository(Greeting("Welcome home")),
             householdRepository = householdRepository,
+            authRepository = FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(id = "test-user", email = "", displayName = null),
+                ),
+            ),
         )
         advanceUntilIdle()
         screenModel.createHousehold()

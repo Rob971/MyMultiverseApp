@@ -11,7 +11,7 @@
     <string name="home_household_description_named">Verwalte Personen in %1$s — geteilt für Ernährung, Abenteuer und Budget.</string>
     <string name="home_logistics_requires_household">Haushalt erforderlich</string>
     <string name="household_gate_title">Haushalt einrichten</string>
-    <string name="household_gate_subtitle">Erstelle einen Haushalt oder nimm eine Einladung an, bevor du Ernährung, Abenteuer oder Budget nutzt.</string>
+    <string name="household_gate_subtitle">Nimm eine Einladung an oder erstelle deinen Haushalt und lade Mitglieder ein.</string>
     <string name="household_gate_create_title">Neuen Haushalt erstellen</string>
     <string name="household_gate_name_label">Haushaltsname</string>
     <string name="household_gate_create_button">Haushalt erstellen</string>
@@ -300,6 +300,8 @@
     <string name="home_onboarding_wait_for_invite_title">Auf eine Einladung warten?</string>
     <string name="home_onboarding_wait_for_invite_body">Wenn jemand %1$s einlädt, erscheint die Einladung hier. Sie können auch aktualisieren, um jetzt zu prüfen.</string>
     <string name="home_onboarding_refresh_invites">Einladungen aktualisieren</string>
+    <string name="home_onboarding_name_hint">Vorschlag aus deinem Nachnamen — jederzeit änderbar.</string>
+    <string name="home_onboarding_create_invite_hint">Nach dem Erstellen tippe auf den Haushaltsnamen auf Home, um Personen per E-Mail einzuladen.</string>
     <string name="calendar_weekday_mon">Mo</string>
     <string name="calendar_weekday_tue">Di</string>
     <string name="calendar_weekday_wed">Mi</string>

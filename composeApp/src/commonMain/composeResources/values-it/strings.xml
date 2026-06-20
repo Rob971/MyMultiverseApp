@@ -11,7 +11,7 @@
     <string name="home_household_description_named">Gestisci le persone di %1$s — condiviso tra nutrizione, avventure e budget.</string>
     <string name="home_logistics_requires_household">Famiglia richiesta</string>
     <string name="household_gate_title">Configura la tua famiglia</string>
-    <string name="household_gate_subtitle">Crea una famiglia o accetta un invito prima di usare Nutrizione, Avventure o Budget.</string>
+    <string name="household_gate_subtitle">Accetta un invito o crea la tua famiglia e invita altre persone.</string>
     <string name="household_gate_create_title">Crea una nuova famiglia</string>
     <string name="household_gate_name_label">Nome della famiglia</string>
     <string name="household_gate_create_button">Crea famiglia</string>
@@ -300,6 +300,8 @@
     <string name="home_onboarding_wait_for_invite_title">In attesa di un invito?</string>
     <string name="home_onboarding_wait_for_invite_body">Quando qualcuno invita %1$s, lo vedrai qui. Puoi anche aggiornare per controllare ora.</string>
     <string name="home_onboarding_refresh_invites">Aggiorna inviti</string>
+    <string name="home_onboarding_name_hint">Suggerito dal tuo cognome — modificalo quando vuoi.</string>
+    <string name="home_onboarding_create_invite_hint">Dopo la creazione, tocca il nome della famiglia in Home per invitare persone via email.</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>

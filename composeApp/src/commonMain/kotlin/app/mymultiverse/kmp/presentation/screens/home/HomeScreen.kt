@@ -81,6 +81,8 @@ object HomeTestTags {
     const val ONBOARDING_CREATE_BUTTON = "home_onboarding_create_button"
     const val ONBOARDING_REFRESH_INVITES = "home_onboarding_refresh_invites"
     const val ONBOARDING_WAIT_FOR_INVITE = "home_onboarding_wait_for_invite"
+    const val ONBOARDING_CREATE_INVITE_HINT = "home_onboarding_create_invite_hint"
+    const val ONBOARDING_NAME_HINT = "home_onboarding_name_hint"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -563,6 +565,13 @@ fun HomeOnboardingContent(
 
         HouseholdNameAvailabilityLabel(onboardingUiState.nameAvailability)
 
+        Text(
+            text = stringResource(Res.string.home_onboarding_name_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = SharedJourneyColors.InkMuted,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
         val canCreate = onboardingUiState.householdNameInput.isNotBlank() &&
             !onboardingUiState.isCreating &&
             onboardingUiState.nameAvailability == HouseholdNameAvailability.Available
@@ -588,6 +597,15 @@ fun HomeOnboardingContent(
                 HomeCreateButtonLabel(isCreating = onboardingUiState.isCreating)
             }
         }
+
+        Text(
+            text = stringResource(Res.string.home_onboarding_create_invite_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = SharedJourneyColors.InkMuted,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(HomeTestTags.ONBOARDING_CREATE_INVITE_HINT),
+        )
 
         Spacer(Modifier.height(8.dp))
         }

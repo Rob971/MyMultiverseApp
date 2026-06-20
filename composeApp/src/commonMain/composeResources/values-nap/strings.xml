@@ -11,7 +11,7 @@
     <string name="home_household_description_named">Gestisce a gente 'e %1$s — condiviso pe' nutrizione, avventure e budget.</string>
     <string name="home_logistics_requires_household">Famiglia richiesta</string>
     <string name="household_gate_title">Configure a famiglia</string>
-    <string name="household_gate_subtitle">Crea 'na famiglia o accetta 'n invito primma 'e ausà Nutrizione, Avventure o Budget.</string>
+    <string name="household_gate_subtitle">Accetta 'n invito o crea a famiglia toja e invita ll’ata.</string>
     <string name="household_gate_create_title">Crea 'na famiglia nova</string>
     <string name="household_gate_name_label">Nomme d'â famiglia</string>
     <string name="household_gate_create_button">Crea famiglia</string>
@@ -300,6 +300,8 @@
     <string name="home_onboarding_wait_for_invite_title">Aspettanno 'n invito?</string>
     <string name="home_onboarding_wait_for_invite_body">Quanno quacuno invita %1$s, 'o vede ccà. Può aggiornà pe' verificà mo'.</string>
     <string name="home_onboarding_refresh_invites">Aggiorna 'e inviti</string>
+    <string name="home_onboarding_name_hint">Suggerito 'o cognome — cagnalo quanno vuò.</string>
+    <string name="home_onboarding_create_invite_hint">Doppo 'a creazione, tocch 'o nomme d' 'a famiglia ncopp'â Home pe' invità ll’ata pe' email.</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>

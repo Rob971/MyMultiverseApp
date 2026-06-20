@@ -11,7 +11,7 @@
     <string name="home_household_description_named">Gestiona las personas de %1$s — compartido en nutrición, aventuras y presupuesto.</string>
     <string name="home_logistics_requires_household">Hogar requerido</string>
     <string name="household_gate_title">Configura tu hogar</string>
-    <string name="household_gate_subtitle">Crea un hogar o acepta una invitación antes de usar Nutrición, Aventuras o Presupuesto.</string>
+    <string name="household_gate_subtitle">Acepta una invitación o crea tu hogar e invita a otras personas.</string>
     <string name="household_gate_create_title">Crear un hogar nuevo</string>
     <string name="household_gate_name_label">Nombre del hogar</string>
     <string name="household_gate_create_button">Crear hogar</string>
@@ -300,6 +300,8 @@
     <string name="home_onboarding_wait_for_invite_title">¿Esperando una invitación?</string>
     <string name="home_onboarding_wait_for_invite_body">Cuando alguien invite a %1$s, lo verás aquí. También puedes actualizar para comprobar ahora.</string>
     <string name="home_onboarding_refresh_invites">Actualizar invitaciones</string>
+    <string name="home_onboarding_name_hint">Sugerido desde tu apellido — cámbialo cuando quieras.</string>
+    <string name="home_onboarding_create_invite_hint">Tras crear el hogar, toca su nombre en Inicio para invitar personas por correo.</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mié</string>
