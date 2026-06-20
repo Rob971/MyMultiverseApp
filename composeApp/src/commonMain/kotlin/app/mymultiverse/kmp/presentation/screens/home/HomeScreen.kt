@@ -629,18 +629,17 @@ fun HomeWelcomeContent(
     onOpenHouseholdMembers: () -> Unit,
     onAcceptInvite: (String) -> Unit,
     onDeclineInvite: (String) -> Unit,
+    greetingHour: Int? = null,
     modifier: Modifier = Modifier,
 ) {
     val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
     val comingSoonFeaturesLabel = stringResource(Res.string.home_coming_soon_features)
-    val greetingSelection = HomeGreetingSelection.select(userDisplayName = userDisplayName)
-    val supportingLine = when (greetingSelection) {
-        is HomeGreetingSelection.Personalized -> stringResource(
-            Res.string.home_greeting_personalized,
-            greetingSelection.name,
-        )
-        HomeGreetingSelection.Generic -> stringResource(Res.string.home_greeting)
-    }
+    val comingSoonHint = stringResource(Res.string.home_coming_soon_hint)
+    val greetingSelection = HomeGreetingSelection.select(
+        userDisplayName = userDisplayName,
+        hour = greetingHour ?: currentLocalHour(),
+    )
+    val supportingLine = homeGreetingSupportingLine(greetingSelection)
     val inspirationLine = when (val line = HomeInspirationLine.select(greeting)) {
         HomeInspirationLine.Loading -> stringResource(Res.string.home_greeting_loading)
         is HomeInspirationLine.Ready -> line.text
@@ -770,6 +769,7 @@ fun HomeWelcomeContent(
             HomeComingSoonRow(
                 label = comingSoonFeaturesLabel,
                 badge = comingSoonLabel,
+                hint = comingSoonHint,
             )
         }
         }

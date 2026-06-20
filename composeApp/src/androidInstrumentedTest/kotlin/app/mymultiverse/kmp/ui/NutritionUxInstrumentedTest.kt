@@ -325,6 +325,7 @@ class NutritionUxInstrumentedTest {
                         onOpenHouseholdMembers = { openedHousehold = true },
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        greetingHour = 9,
                     )
                 }
             }
@@ -358,6 +359,7 @@ class NutritionUxInstrumentedTest {
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        greetingHour = 9,
                     )
                 }
             }
@@ -389,13 +391,14 @@ class NutritionUxInstrumentedTest {
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        greetingHour = 9,
                     )
                 }
             }
         }
 
         composeRule.onNodeWithTag(HomeTestTags.GREETING_LINE).assertIsDisplayed()
-        composeRule.onNodeWithText("Hello, Roberto").assertIsDisplayed()
+        composeRule.onNodeWithText("Good morning, Roberto").assertIsDisplayed()
     }
 
     @Test
@@ -417,12 +420,13 @@ class NutritionUxInstrumentedTest {
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        greetingHour = 14,
                     )
                 }
             }
         }
 
-        composeRule.onNodeWithText("Hello, maria").assertIsDisplayed()
+        composeRule.onNodeWithText("Good afternoon, maria").assertIsDisplayed()
     }
 
     @Test
@@ -444,13 +448,14 @@ class NutritionUxInstrumentedTest {
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        greetingHour = 20,
                     )
                 }
             }
         }
 
         composeRule.onNodeWithTag(HomeTestTags.GREETING_LINE).assertIsDisplayed()
-        composeRule.onNodeWithText("The beating heart of our family.").assertIsDisplayed()
+        composeRule.onNodeWithText("Good evening").assertIsDisplayed()
     }
 
     @Test
@@ -472,6 +477,7 @@ class NutritionUxInstrumentedTest {
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        greetingHour = 9,
                     )
                 }
             }
@@ -479,7 +485,7 @@ class NutritionUxInstrumentedTest {
 
         composeRule.onNodeWithTag(HomeTestTags.LOADING_INDICATOR).assertIsDisplayed()
         composeRule.onNodeWithText("Loading inspiration…").assertIsDisplayed()
-        composeRule.onNodeWithText("Hello, Roberto").assertIsDisplayed()
+        composeRule.onNodeWithText("Good morning, Roberto").assertIsDisplayed()
     }
 
     @Test
@@ -501,6 +507,7 @@ class NutritionUxInstrumentedTest {
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        greetingHour = 9,
                     )
                 }
             }
@@ -529,6 +536,7 @@ class NutritionUxInstrumentedTest {
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        greetingHour = 9,
                     )
                 }
             }
@@ -557,6 +565,7 @@ class NutritionUxInstrumentedTest {
                         onOpenHouseholdMembers = {},
                         onAcceptInvite = {},
                         onDeclineInvite = {},
+                        greetingHour = 9,
                     )
                 }
             }

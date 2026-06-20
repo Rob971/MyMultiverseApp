@@ -280,6 +280,13 @@
     <string name="category_long_term_ai_action">Meilensteinplan erstellen</string>
     <string name="category_long_term_plan_title">Meilensteinplan</string>
     <string name="home_greeting">Das schlagende Herz unserer Familie.</string>
+    <string name="home_greeting_morning">Guten Morgen</string>
+    <string name="home_greeting_afternoon">Guten Tag</string>
+    <string name="home_greeting_evening">Guten Abend</string>
+    <string name="home_greeting_morning_personalized">Guten Morgen, %1$s</string>
+    <string name="home_greeting_afternoon_personalized">Guten Tag, %1$s</string>
+    <string name="home_greeting_evening_personalized">Guten Abend, %1$s</string>
+    <string name="home_coming_soon_hint">Reisen, Ausflüge und gemeinsame Finanzen sind in Planung.</string>
     <string name="home_greeting_loading">Inspiration wird geladen…</string>
     <string name="home_greeting_personalized">Hallo, %1$s</string>
     <string name="home_coming_soon_features">Abenteuer &amp; Budget</string>

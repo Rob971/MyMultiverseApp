@@ -280,6 +280,13 @@
     <string name="category_long_term_ai_action">Generate milestone blueprint</string>
     <string name="category_long_term_plan_title">Milestone Blueprint</string>
     <string name="home_greeting">The beating heart of our family.</string>
+    <string name="home_greeting_morning">Good morning</string>
+    <string name="home_greeting_afternoon">Good afternoon</string>
+    <string name="home_greeting_evening">Good evening</string>
+    <string name="home_greeting_morning_personalized">Good morning, %1$s</string>
+    <string name="home_greeting_afternoon_personalized">Good afternoon, %1$s</string>
+    <string name="home_greeting_evening_personalized">Good evening, %1$s</string>
+    <string name="home_coming_soon_hint">Trips, outings, and shared finances are on the roadmap.</string>
     <string name="home_greeting_loading">Loading inspiration…</string>
     <string name="home_greeting_personalized">Hello, %1$s</string>
     <string name="home_coming_soon_features">Adventures &amp; Budget</string>
