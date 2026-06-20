@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_add_dream">Add Dream</string>
-    <string name="home_banner_headline">WELCOME HOME</string>
+    <string name="home_banner_headline">PLAN TOGETHER</string>
     <string name="home_banner_loading">Loading your household...</string>
-    <string name="home_banner_description">A shared household to cultivate our family dreams, track S.M.A.R.T. goals and strengthen our daily bonds.</string>
-    <string name="home_dreams_title">Family logistics</string>
+    <string name="home_banner_description">A shared space to plan weekly meals, coordinate groceries, and eat well as a household.</string>
+    <string name="home_dreams_title">Household planning</string>
     <string name="home_logistics_nutrition_title">Nutrition</string>
     <string name="home_logistics_nutrition_description">Meals, groceries, and weekly planning for the family.</string>
     <string name="home_household_title">Household</string>
-    <string name="home_household_description">Invite people to collaborate on nutrition, adventures, and budget.</string>
-    <string name="home_household_description_named">Manage people in %1$s — shared across nutrition, adventures, and budget.</string>
+    <string name="home_household_description">Invite people to plan meals and groceries with you.</string>
+    <string name="home_household_description_named">Manage people in %1$s — plan meals and groceries together.</string>
     <string name="home_logistics_requires_household">Household required</string>
     <string name="household_gate_title">Set up your household</string>
-    <string name="household_gate_subtitle">Accept an invitation or create your household and invite members.</string>
+    <string name="household_gate_subtitle">Create or join a household to plan meals and groceries together.</string>
     <string name="household_gate_create_title">Create a new household</string>
     <string name="household_gate_name_label">Household name</string>
     <string name="household_gate_create_button">Create household</string>
@@ -304,7 +304,7 @@
     <string name="category_long_term_questions_intro">Answer the project questions so the AI can turn the milestone into a staged, trackable roadmap.</string>
     <string name="category_long_term_ai_action">Generate milestone blueprint</string>
     <string name="category_long_term_plan_title">Milestone Blueprint</string>
-    <string name="home_greeting">The beating heart of our family.</string>
+    <string name="home_greeting">Your shared kitchen starts here.</string>
     <string name="home_greeting_morning">Good morning</string>
     <string name="home_greeting_afternoon">Good afternoon</string>
     <string name="home_greeting_evening">Good evening</string>
@@ -312,7 +312,7 @@
     <string name="home_greeting_afternoon_personalized">Good afternoon, %1$s</string>
     <string name="home_greeting_evening_personalized">Good evening, %1$s</string>
     <string name="home_coming_soon_hint">Trips, outings, and shared finances are on the roadmap.</string>
-    <string name="home_greeting_loading">Loading inspiration…</string>
+    <string name="home_greeting_loading">Loading your week…</string>
     <string name="home_greeting_personalized">Hello, %1$s</string>
     <string name="home_coming_soon_features">Adventures &amp; Budget</string>
     <string name="home_section_this_week">This week</string>
@@ -321,12 +321,13 @@
     <string name="home_settings_title">Account &amp; settings</string>
     <string name="home_settings_button">Open account and settings</string>
     <string name="home_nutrition_get_started">Start planning meals and groceries</string>
+    <string name="home_nutrition_continue_planning">Continue planning</string>
     <string name="home_onboarding_join_title">Were you invited?</string>
     <string name="home_onboarding_wait_for_invite_title">Waiting for an invite?</string>
     <string name="home_onboarding_wait_for_invite_body">When someone invites %1$s, you will see it here. You can also refresh to check now.</string>
     <string name="home_onboarding_refresh_invites">Refresh invites</string>
     <string name="home_onboarding_name_hint">Suggested from your last name — change it anytime.</string>
-    <string name="home_onboarding_create_invite_hint">After creating, tap your household name on Home to invite people by email.</string>
+    <string name="home_onboarding_create_invite_hint">After creating, open your household card on Home to invite people and plan together.</string>
     <string name="calendar_weekday_mon">Mon</string>
     <string name="calendar_weekday_tue">Tue</string>
     <string name="calendar_weekday_wed">Wed</string>
@@ -676,7 +677,7 @@
     <string name="longterm_opt_budget_moderate">Moderate (Some DIY, hiring pros for the big stuff)</string>
     <string name="longterm_opt_budget_full">Full Service (We want to hire vendors/professionals)</string>
     <string name="auth_title">Welcome to MyMultiverse</string>
-    <string name="auth_subtitle">Sign in to share family logistics with the people you choose.</string>
+    <string name="auth_subtitle">Plan meals and groceries together with your household.</string>
     <string name="auth_email_label">Email</string>
     <string name="auth_password_label">Password</string>
     <string name="auth_sign_in_button">Sign in</string>
@@ -830,8 +831,8 @@
     <string name="home_household_open_view">View members</string>
     <string name="home_rename_household_title">Rename household</string>
     <string name="home_rename_household_save">Save name</string>
-    <string name="auth_subtitle_sign_in">Sign in to join or manage your household.</string>
-    <string name="auth_subtitle_sign_up">Create your account, then set up or join a household.</string>
+    <string name="auth_subtitle_sign_in">Sign in to plan meals and groceries with your household.</string>
+    <string name="auth_subtitle_sign_up">Create your account to plan meals and groceries together.</string>
     <string name="sharing_members_role_admin">Household admin</string>
     <string name="sharing_members_change_role">Change role</string>
     <string name="sharing_members_promote_admin_confirm_title">Make household admin?</string>

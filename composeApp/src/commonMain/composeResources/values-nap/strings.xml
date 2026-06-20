@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_add_dream">Mitte nu Suonno</string>
-    <string name="home_banner_headline">BENVENUTI 'A CASA</string>
+    <string name="home_banner_headline">PLANIFICAMMO INSIEME</string>
     <string name="home_banner_loading">Sto caricanno 'o fuosso tojo...</string>
-    <string name="home_banner_description">Nu fuosso condiviso pe' cultivà 'e sogni d' 'a famiglia, seguì 'e goal S.M.A.R.T. e rafforzà 'e legami quotidiani.</string>
-    <string name="home_dreams_title">'A logistica 'e famiglia</string>
+    <string name="home_banner_description">Nu spazio condiviso pe' planificà 'e pasti d' 'a semmana, coordinà 'a spesa e magnà bene comme famiglia.</string>
+    <string name="home_dreams_title">Pianificazione d' 'a famiglia</string>
     <string name="home_logistics_nutrition_title">Nutrizione</string>
     <string name="home_household_title">Famiglia</string>
-    <string name="home_household_description">Invita a gente pe' collaborà ncopp'a nutrizione, avventure e budget.</string>
-    <string name="home_household_description_named">Gestisce a gente 'e %1$s — condiviso pe' nutrizione, avventure e budget.</string>
+    <string name="home_household_description">Invita ll'ata pe' planificà pasti e spesa cu te.</string>
+    <string name="home_household_description_named">Gestisce ll'ata dint'a %1$s — planificate pasti e spesa insieme.</string>
     <string name="home_logistics_requires_household">Famiglia richiesta</string>
     <string name="household_gate_title">Configure a famiglia</string>
-    <string name="household_gate_subtitle">Accetta 'n invito o crea a famiglia toja e invita ll’ata.</string>
+    <string name="household_gate_subtitle">Crea o uniscite a 'na famiglia pe' planificà pasti e spesa insieme.</string>
     <string name="household_gate_create_title">Crea 'na famiglia nova</string>
     <string name="household_gate_name_label">Nomme d'â famiglia</string>
     <string name="household_gate_create_button">Crea famiglia</string>
@@ -304,7 +304,7 @@
     <string name="category_long_term_questions_intro">Respunne 'e dumande progetto accussì l'AI trasforma 'o traguardo in roadmap tracciabile.</string>
     <string name="category_long_term_ai_action">Genera piano traguardo</string>
     <string name="category_long_term_plan_title">Piano traguardo</string>
-    <string name="home_greeting">'O core ca batte d' 'a famiglia.</string>
+    <string name="home_greeting">'A cucina condivisa accummincia d'accà.</string>
     <string name="home_greeting_morning">Buongiorno</string>
     <string name="home_greeting_afternoon">Buon pomeriggio</string>
     <string name="home_greeting_evening">Buonasera</string>
@@ -312,7 +312,7 @@
     <string name="home_greeting_afternoon_personalized">Buon pomeriggio, %1$s</string>
     <string name="home_greeting_evening_personalized">Buonasera, %1$s</string>
     <string name="home_coming_soon_hint">Viaggi, gite e finanzas condivise stanno arrivanno.</string>
-    <string name="home_greeting_loading">Sto caricanno 'a ispirazione…</string>
+    <string name="home_greeting_loading">Sto caricanno 'a semmana toja…</string>
     <string name="home_greeting_personalized">Ciao, %1$s</string>
     <string name="home_coming_soon_features">Avventure e budget</string>
     <string name="home_section_this_week">Chesta semmana</string>
@@ -321,12 +321,13 @@
     <string name="home_settings_title">Account e mpustazione</string>
     <string name="home_settings_button">Arè account e mpustazione</string>
     <string name="home_nutrition_get_started">Accummincia a pianificà pasti e spesa</string>
+    <string name="home_nutrition_continue_planning">Continua a planificà</string>
     <string name="home_onboarding_join_title">T'ann' a invitato?</string>
     <string name="home_onboarding_wait_for_invite_title">Aspettanno 'n invito?</string>
     <string name="home_onboarding_wait_for_invite_body">Quanno quacuno invita %1$s, 'o vede ccà. Può aggiornà pe' verificà mo'.</string>
     <string name="home_onboarding_refresh_invites">Aggiorna 'e inviti</string>
     <string name="home_onboarding_name_hint">Suggerito 'o cognome — cagnalo quanno vuò.</string>
-    <string name="home_onboarding_create_invite_hint">Doppo 'a creazione, tocch 'o nomme d' 'a famiglia ncopp'â Home pe' invità ll’ata pe' email.</string>
+    <string name="home_onboarding_create_invite_hint">Doppo 'a creazione, arap 'a card Famiglia ncopp'â Home pe' invità ll'ata e planificà insieme.</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>
@@ -675,7 +676,7 @@
     <string name="longterm_opt_budget_moderate">Moderato (un po' fai da te, professionisti pe' 'e cose grosse)</string>
     <string name="longterm_opt_budget_full">Servizio completo (vulimmo assumere professionisti)</string>
     <string name="auth_title">Benvenuto in MyMultiverse</string>
-    <string name="auth_subtitle">Accedi per condividere la logistica di famiglia con chi scegli tu.</string>
+    <string name="auth_subtitle">Planifica pasti e spesa cu 'a famiglia toja.</string>
     <string name="auth_email_label">Email</string>
     <string name="auth_password_label">Password</string>
     <string name="auth_sign_in_button">Accedi</string>
@@ -829,8 +830,8 @@
     <string name="home_household_open_view">Vide 'e membri</string>
     <string name="home_rename_household_title">Rinomina 'a famiglia</string>
     <string name="home_rename_household_save">Salva 'o nomme</string>
-    <string name="auth_subtitle_sign_in">Accetta pe' entrà o gestì 'a famiglia toja.</string>
-    <string name="auth_subtitle_sign_up">Crea 'o conto, po' configura o uniscite a 'na famiglia.</string>
+    <string name="auth_subtitle_sign_in">Accetta pe' planificà pasti e spesa cu 'a famiglia toja.</string>
+    <string name="auth_subtitle_sign_up">Crea 'o conto pe' planificà pasti e spesa insieme.</string>
     <string name="sharing_members_role_admin">Admin d' 'a famiglia</string>
     <string name="sharing_members_change_role">Cagna 'o ruolo</string>
     <string name="sharing_members_promote_admin_confirm_title">Fà admin d' 'a famiglia?</string>

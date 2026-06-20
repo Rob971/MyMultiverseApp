@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_add_dream">Traum Hinzufügen</string>
-    <string name="home_banner_headline">WILLKOMMEN ZU HAUSE</string>
+    <string name="home_banner_headline">GEMEINSAM PLANEN</string>
     <string name="home_banner_loading">Haushalt wird geladen...</string>
-    <string name="home_banner_description">Ein gemeinsamer Haushalt, um unsere Familienträume zu pflegen, S.M.A.R.T.-Ziele zu verfolgen und unsere täglichen Bindungen zu stärken.</string>
-    <string name="home_dreams_title">Familienlogistik</string>
+    <string name="home_banner_description">Ein gemeinsamer Ort, um Wochenmahlzeiten zu planen, Einkäufe zu koordinieren und gut zu essen.</string>
+    <string name="home_dreams_title">Haushaltsplanung</string>
     <string name="home_logistics_nutrition_title">Ernährung</string>
     <string name="home_household_title">Haushalt</string>
-    <string name="home_household_description">Lade Personen ein, um gemeinsam Ernährung, Abenteuer und Budget zu planen.</string>
-    <string name="home_household_description_named">Verwalte Personen in %1$s — geteilt für Ernährung, Abenteuer und Budget.</string>
+    <string name="home_household_description">Lade Personen ein, Mahlzeiten und Einkäufe mit dir zu planen.</string>
+    <string name="home_household_description_named">Verwalte Personen in %1$s — plant Mahlzeiten und Einkäufe gemeinsam.</string>
     <string name="home_logistics_requires_household">Haushalt erforderlich</string>
     <string name="household_gate_title">Haushalt einrichten</string>
-    <string name="household_gate_subtitle">Nimm eine Einladung an oder erstelle deinen Haushalt und lade Mitglieder ein.</string>
+    <string name="household_gate_subtitle">Erstelle oder tritt einem Haushalt bei, um Mahlzeiten und Einkäufe gemeinsam zu planen.</string>
     <string name="household_gate_create_title">Neuen Haushalt erstellen</string>
     <string name="household_gate_name_label">Haushaltsname</string>
     <string name="household_gate_create_button">Haushalt erstellen</string>
@@ -304,7 +304,7 @@
     <string name="category_long_term_questions_intro">Beantwortet die Projektfragen, damit die KI den Meilenstein in eine gestufte, nachverfolgbare Roadmap verwandelt.</string>
     <string name="category_long_term_ai_action">Meilensteinplan erstellen</string>
     <string name="category_long_term_plan_title">Meilensteinplan</string>
-    <string name="home_greeting">Das schlagende Herz unserer Familie.</string>
+    <string name="home_greeting">Deine gemeinsame Küche beginnt hier.</string>
     <string name="home_greeting_morning">Guten Morgen</string>
     <string name="home_greeting_afternoon">Guten Tag</string>
     <string name="home_greeting_evening">Guten Abend</string>
@@ -312,7 +312,7 @@
     <string name="home_greeting_afternoon_personalized">Guten Tag, %1$s</string>
     <string name="home_greeting_evening_personalized">Guten Abend, %1$s</string>
     <string name="home_coming_soon_hint">Reisen, Ausflüge und gemeinsame Finanzen sind in Planung.</string>
-    <string name="home_greeting_loading">Inspiration wird geladen…</string>
+    <string name="home_greeting_loading">Deine Woche wird geladen…</string>
     <string name="home_greeting_personalized">Hallo, %1$s</string>
     <string name="home_coming_soon_features">Abenteuer &amp; Budget</string>
     <string name="home_section_this_week">Diese Woche</string>
@@ -321,12 +321,13 @@
     <string name="home_settings_title">Konto &amp; Einstellungen</string>
     <string name="home_settings_button">Konto und Einstellungen öffnen</string>
     <string name="home_nutrition_get_started">Beginne mit der Planung von Mahlzeiten und Einkäufen</string>
+    <string name="home_nutrition_continue_planning">Planung fortsetzen</string>
     <string name="home_onboarding_join_title">Wurdest du eingeladen?</string>
     <string name="home_onboarding_wait_for_invite_title">Auf eine Einladung warten?</string>
     <string name="home_onboarding_wait_for_invite_body">Wenn jemand %1$s einlädt, erscheint die Einladung hier. Sie können auch aktualisieren, um jetzt zu prüfen.</string>
     <string name="home_onboarding_refresh_invites">Einladungen aktualisieren</string>
     <string name="home_onboarding_name_hint">Vorschlag aus deinem Nachnamen — jederzeit änderbar.</string>
-    <string name="home_onboarding_create_invite_hint">Nach dem Erstellen tippe auf den Haushaltsnamen auf Home, um Personen per E-Mail einzuladen.</string>
+    <string name="home_onboarding_create_invite_hint">Nach dem Erstellen öffne die Haushaltskarte auf der Startseite, um Personen einzuladen und gemeinsam zu planen.</string>
     <string name="calendar_weekday_mon">Mo</string>
     <string name="calendar_weekday_tue">Di</string>
     <string name="calendar_weekday_wed">Mi</string>
@@ -675,7 +676,7 @@
     <string name="longterm_opt_budget_moderate">Moderat (Etwas DIY, Profis für die großen Dinge)</string>
     <string name="longterm_opt_budget_full">Full Service (Wir möchten Dienstleister/Profis beauftragen)</string>
     <string name="auth_title">Willkommen bei MyMultiverse</string>
-    <string name="auth_subtitle">Melde dich an, um Familienlogistik mit den Menschen zu teilen, die du auswählst.</string>
+    <string name="auth_subtitle">Plant Mahlzeiten und Einkäufe gemeinsam mit eurem Haushalt.</string>
     <string name="auth_email_label">E-Mail</string>
     <string name="auth_password_label">Passwort</string>
     <string name="auth_sign_in_button">Anmelden</string>
@@ -829,8 +830,8 @@
     <string name="home_household_open_view">Mitglieder ansehen</string>
     <string name="home_rename_household_title">Haushalt umbenennen</string>
     <string name="home_rename_household_save">Name speichern</string>
-    <string name="auth_subtitle_sign_in">Melde dich an, um deinem Haushalt beizutreten oder ihn zu verwalten.</string>
-    <string name="auth_subtitle_sign_up">Erstelle dein Konto und richte dann einen Haushalt ein oder tritt einem bei.</string>
+    <string name="auth_subtitle_sign_in">Melde dich an, um Mahlzeiten und Einkäufe mit deinem Haushalt zu planen.</string>
+    <string name="auth_subtitle_sign_up">Erstelle dein Konto, um Mahlzeiten und Einkäufe gemeinsam zu planen.</string>
     <string name="sharing_members_role_admin">Haushalts-Admin</string>
     <string name="sharing_members_change_role">Rolle ändern</string>
     <string name="sharing_members_promote_admin_confirm_title">Zum Haushalts-Admin machen?</string>

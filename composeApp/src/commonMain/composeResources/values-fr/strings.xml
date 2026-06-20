@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_add_dream">Ajouter un Rêve</string>
-    <string name="home_banner_headline">BIENVENUE À LA MAISON</string>
+    <string name="home_banner_headline">PLANIFIONS ENSEMBLE</string>
     <string name="home_banner_loading">Chargement de votre foyer...</string>
-    <string name="home_banner_description">Un foyer partagé pour cultiver nos rêves de famille, suivre nos objectifs S.M.A.R.T. et renforcer nos liens quotidiens.</string>
-    <string name="home_dreams_title">Logistique familiale</string>
+    <string name="home_banner_description">Un espace partagé pour planifier les repas de la semaine, coordonner les courses et bien manger en foyer.</string>
+    <string name="home_dreams_title">Planification du foyer</string>
     <string name="home_logistics_nutrition_title">Nutrition</string>
     <string name="home_household_title">Foyer</string>
-    <string name="home_household_description">Invitez des personnes à collaborer sur la nutrition, les aventures et le budget.</string>
-    <string name="home_household_description_named">Gérez les personnes de %1$s — partagé entre nutrition, aventures et budget.</string>
+    <string name="home_household_description">Invitez des personnes à planifier repas et courses avec vous.</string>
+    <string name="home_household_description_named">Gérez les personnes de %1$s — planifiez repas et courses ensemble.</string>
     <string name="home_logistics_requires_household">Foyer requis</string>
     <string name="household_gate_title">Configurez votre foyer</string>
-    <string name="household_gate_subtitle">Acceptez une invitation ou créez votre foyer et invitez des membres.</string>
+    <string name="household_gate_subtitle">Créez ou rejoignez un foyer pour planifier repas et courses ensemble.</string>
     <string name="household_gate_create_title">Créer un nouveau foyer</string>
     <string name="household_gate_name_label">Nom du foyer</string>
     <string name="household_gate_create_button">Créer le foyer</string>
@@ -304,7 +304,7 @@
     <string name="category_long_term_questions_intro">Répondez aux questions du projet pour transformer le jalon en feuille de route par étapes et traçable.</string>
     <string name="category_long_term_ai_action">Générer le plan de jalon</string>
     <string name="category_long_term_plan_title">Plan de jalon</string>
-    <string name="home_greeting">Le cœur battant de notre famille.</string>
+    <string name="home_greeting">Votre cuisine partagée commence ici.</string>
     <string name="home_greeting_morning">Bonjour</string>
     <string name="home_greeting_afternoon">Bon après-midi</string>
     <string name="home_greeting_evening">Bonsoir</string>
@@ -312,7 +312,7 @@
     <string name="home_greeting_afternoon_personalized">Bon après-midi, %1$s</string>
     <string name="home_greeting_evening_personalized">Bonsoir, %1$s</string>
     <string name="home_coming_soon_hint">Voyages, sorties et finances partagées arrivent bientôt.</string>
-    <string name="home_greeting_loading">Chargement de l'inspiration…</string>
+    <string name="home_greeting_loading">Chargement de votre semaine…</string>
     <string name="home_greeting_personalized">Bonjour, %1$s</string>
     <string name="home_coming_soon_features">Aventures et budget</string>
     <string name="home_section_this_week">Cette semaine</string>
@@ -321,12 +321,13 @@
     <string name="home_settings_title">Compte et paramètres</string>
     <string name="home_settings_button">Ouvrir le compte et les paramètres</string>
     <string name="home_nutrition_get_started">Commencez à planifier les repas et les courses</string>
+    <string name="home_nutrition_continue_planning">Continuer la planification</string>
     <string name="home_onboarding_join_title">Vous avez été invité ?</string>
     <string name="home_onboarding_wait_for_invite_title">En attente d'une invitation ?</string>
     <string name="home_onboarding_wait_for_invite_body">Quand quelqu'un invite %1$s, l'invitation apparaîtra ici. Vous pouvez aussi actualiser pour vérifier.</string>
     <string name="home_onboarding_refresh_invites">Actualiser les invitations</string>
     <string name="home_onboarding_name_hint">Suggéré à partir de votre nom de famille — modifiable à tout moment.</string>
-    <string name="home_onboarding_create_invite_hint">Après la création, touchez le nom du foyer sur l’accueil pour inviter des personnes par e-mail.</string>
+    <string name="home_onboarding_create_invite_hint">Après la création, ouvrez la carte Foyer sur l'accueil pour inviter des personnes et planifier ensemble.</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>
@@ -675,7 +676,7 @@
     <string name="longterm_opt_budget_moderate">Modéré (un peu de bricolage, des pros pour les gros travaux)</string>
     <string name="longterm_opt_budget_full">Service complet (nous voulons faire appel à des prestataires / professionnels)</string>
     <string name="auth_title">Bienvenue sur MyMultiverse</string>
-    <string name="auth_subtitle">Connectez-vous pour partager la logistique familiale avec les personnes de votre choix.</string>
+    <string name="auth_subtitle">Planifiez repas et courses ensemble avec votre foyer.</string>
     <string name="auth_email_label">E-mail</string>
     <string name="auth_password_label">Mot de passe</string>
     <string name="auth_sign_in_button">Se connecter</string>
@@ -829,8 +830,8 @@
     <string name="home_household_open_view">Voir les membres</string>
     <string name="home_rename_household_title">Renommer le foyer</string>
     <string name="home_rename_household_save">Enregistrer</string>
-    <string name="auth_subtitle_sign_in">Connectez-vous pour rejoindre ou gérer votre foyer.</string>
-    <string name="auth_subtitle_sign_up">Créez votre compte, puis configurez ou rejoignez un foyer.</string>
+    <string name="auth_subtitle_sign_in">Connectez-vous pour planifier repas et courses avec votre foyer.</string>
+    <string name="auth_subtitle_sign_up">Créez votre compte pour planifier repas et courses ensemble.</string>
     <string name="sharing_members_role_admin">Admin du foyer</string>
     <string name="sharing_members_change_role">Changer le rôle</string>
     <string name="sharing_members_promote_admin_confirm_title">Nommer admin du foyer ?</string>

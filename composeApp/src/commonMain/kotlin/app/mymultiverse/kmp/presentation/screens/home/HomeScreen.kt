@@ -41,16 +41,17 @@ import androidx.compose.foundation.layout.safeDrawing
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import app.mymultiverse.kmp.domain.model.Greeting
-import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import app.mymultiverse.kmp.presentation.components.FamilyLogisticsCardSurface
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
-import app.mymultiverse.kmp.presentation.components.FamilyLogisticCard
 import app.mymultiverse.kmp.presentation.components.HomeHouseholdButton
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
@@ -65,6 +66,8 @@ import org.koin.compose.koinInject
 
 object HomeTestTags {
     const val NUTRITION_CARD = "home_nutrition_card"
+    const val NUTRITION_CTA = "home_nutrition_cta"
+    const val THIS_WEEK_SECTION = "home_this_week_section"
     const val HOUSEHOLD_CARD = "home_household_card"
     const val SIGN_OUT_BUTTON = "home_sign_out_button"
     const val EXPORT_DATA_BUTTON = "home_export_personal_data_button"
@@ -639,7 +642,6 @@ fun HomeWelcomeContent(
     greetingHour: Int? = null,
     modifier: Modifier = Modifier,
 ) {
-    val comingSoonLabel = stringResource(Res.string.home_logistics_coming_soon)
     val greetingSelection = HomeGreetingSelection.select(
         userDisplayName = userDisplayName,
         hour = greetingHour ?: currentLocalHour(),
@@ -650,28 +652,14 @@ fun HomeWelcomeContent(
         is HomeInspirationLine.Ready -> line.text
     }
     val showInspirationLoading = greeting == null
-    val nutritionStatusLine = when {
-        nutritionSummary == null -> null
-        nutritionSummary.groceryProgress == null && nutritionSummary.plannedMealSlots == 0 ->
-            stringResource(Res.string.home_nutrition_get_started)
-        else -> buildList {
-            nutritionSummary.groceryProgress?.let { progress ->
-                add(
-                    stringResource(
-                        Res.string.nutrition_grocery_progress,
-                        progress.checked,
-                        progress.total,
-                    ),
-                )
-            }
-            add(
-                stringResource(
-                    Res.string.nutrition_meal_plan_progress,
-                    nutritionSummary.plannedMealSlots,
-                    NutritionHubSummary.MEAL_SLOTS_PER_WEEK,
-                ),
-            )
-        }.joinToString(" · ")
+    val thisWeekStatusLine = homeThisWeekStatusLine(nutritionSummary)
+    val hasNutritionProgress = nutritionSummary?.let { summary ->
+        summary.plannedMealSlots > 0 || summary.groceryProgress?.total?.let { it > 0 } == true
+    } == true
+    val nutritionCtaLabel = if (hasNutritionProgress) {
+        stringResource(Res.string.home_nutrition_continue_planning)
+    } else {
+        stringResource(Res.string.home_nutrition_get_started)
     }
 
     val pullRefreshState = rememberPullToRefreshState()
@@ -690,69 +678,106 @@ fun HomeWelcomeContent(
             contentPadding = screenListPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-        item {
-            JourneyBanner(
-                headline = greetingLine,
-                supportingLine = null,
-                description = inspirationLine,
-                headlineTestTag = HomeTestTags.GREETING_LINE,
-                descriptionTestTag = if (showInspirationLoading) {
-                    HomeTestTags.LOADING_INDICATOR
-                } else {
-                    HomeTestTags.INSPIRATION_LINE
-                },
-            )
-        }
-
-        if (!householdName.isNullOrBlank()) {
             item {
-                HomeHouseholdButton(
-                    householdName = householdName,
-                    canManage = canRenameHousehold,
-                    onOpenHousehold = onOpenHouseholdMembers,
-                    onRenameHousehold = onRenameHousehold,
-                    modifier = Modifier.testTag(HomeTestTags.HOUSEHOLD_CARD),
+                JourneyBanner(
+                    headline = greetingLine,
+                    supportingLine = null,
+                    description = inspirationLine,
+                    headlineTestTag = HomeTestTags.GREETING_LINE,
+                    descriptionTestTag = if (showInspirationLoading) {
+                        HomeTestTags.LOADING_INDICATOR
+                    } else {
+                        HomeTestTags.INSPIRATION_LINE
+                    },
                 )
             }
-        }
 
-        item {
-            FamilyLogisticCard(
-                title = stringResource(Res.string.home_logistics_nutrition_title),
-                description = stringResource(Res.string.home_logistics_nutrition_description),
-                accentColor = SharedJourneyColors.SageSoft,
-                icon = AppIcons.Restaurant,
-                statusLine = nutritionStatusLine,
-                modifier = Modifier.testTag(HomeTestTags.NUTRITION_CARD),
-                onClick = onOpenNutrition,
-            )
-        }
+            item {
+                FamilyLogisticsSectionHeader(
+                    title = stringResource(Res.string.home_section_this_week),
+                    titleModifier = Modifier.testTag(HomeTestTags.THIS_WEEK_SECTION),
+                )
+            }
 
-        item {
-            FamilyLogisticCard(
-                title = stringResource(Res.string.home_logistics_adventures_title),
-                description = stringResource(Res.string.home_logistics_adventures_description),
-                accentColor = SharedJourneyColors.TerracottaOrange,
-                icon = AppIcons.Explore,
-                badge = comingSoonLabel,
-                enabled = false,
-                onClick = {},
-            )
-        }
+            item {
+                FamilyLogisticsCardSurface(
+                    accentColor = SharedJourneyColors.SageSoft,
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.home_logistics_nutrition_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = SharedJourneyColors.InkDeep,
+                        )
+                        Text(
+                            text = thisWeekStatusLine,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = SharedJourneyColors.InkMuted,
+                        )
+                        Button(
+                            onClick = onOpenNutrition,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(HomeTestTags.NUTRITION_CTA),
+                        ) {
+                            Text(nutritionCtaLabel)
+                        }
+                    }
+                }
+            }
 
-        item {
-            FamilyLogisticCard(
-                title = stringResource(Res.string.home_logistics_budget_title),
-                description = stringResource(Res.string.home_logistics_budget_description),
-                accentColor = SharedJourneyColors.MediterraneanTeal,
-                icon = AppIcons.AccountBalance,
-                badge = comingSoonLabel,
-                enabled = false,
-                onClick = {},
-            )
-        }
+            if (!householdName.isNullOrBlank()) {
+                item {
+                    FamilyLogisticsSectionHeader(
+                        title = stringResource(Res.string.home_section_household),
+                    )
+                }
+                item {
+                    HomeHouseholdButton(
+                        householdName = householdName,
+                        canManage = canRenameHousehold,
+                        onOpenHousehold = onOpenHouseholdMembers,
+                        onRenameHousehold = onRenameHousehold,
+                        modifier = Modifier.testTag(HomeTestTags.HOUSEHOLD_CARD),
+                    )
+                }
+            }
         }
     }
+}
+
+@Composable
+private fun homeThisWeekStatusLine(nutritionSummary: HomeNutritionSummary?): String {
+    val emptyLabel = stringResource(Res.string.home_nutrition_get_started)
+    if (nutritionSummary == null) {
+        return emptyLabel
+    }
+    val groceryProgress = nutritionSummary.groceryProgress
+    if (groceryProgress == null && nutritionSummary.plannedMealSlots == 0) {
+        return emptyLabel
+    }
+    return buildList {
+        groceryProgress?.let { progress ->
+            add(
+                stringResource(
+                    Res.string.nutrition_grocery_progress,
+                    progress.checked,
+                    progress.total,
+                ),
+            )
+        }
+        add(
+            stringResource(
+                Res.string.nutrition_meal_plan_progress,
+                nutritionSummary.plannedMealSlots,
+                NutritionHubSummary.MEAL_SLOTS_PER_WEEK,
+            ),
+        )
+    }.joinToString(" · ")
 }
 
 @Composable

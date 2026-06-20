@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_add_dream">Aggiungi Sogno</string>
-    <string name="home_banner_headline">BENVENUTI A CASA</string>
+    <string name="home_banner_headline">PIANIFICHIAMO INSIEME</string>
     <string name="home_banner_loading">Caricamento del tuo nucleo familiare...</string>
-    <string name="home_banner_description">Un nucleo familiare condiviso per coltivare i sogni della nostra famiglia, tracciare obiettivi S.M.A.R.T. e rafforzare i nostri legami quotidiani.</string>
-    <string name="home_dreams_title">Logistica di famiglia</string>
+    <string name="home_banner_description">Uno spazio condiviso per pianificare i pasti settimanali, coordinare la spesa e mangiare bene in famiglia.</string>
+    <string name="home_dreams_title">Pianificazione familiare</string>
     <string name="home_logistics_nutrition_title">Nutrizione</string>
     <string name="home_household_title">Famiglia</string>
-    <string name="home_household_description">Invita persone a collaborare su nutrizione, avventure e budget.</string>
-    <string name="home_household_description_named">Gestisci le persone di %1$s — condiviso tra nutrizione, avventure e budget.</string>
+    <string name="home_household_description">Invita persone a pianificare pasti e spesa con te.</string>
+    <string name="home_household_description_named">Gestisci le persone in %1$s — pianificate pasti e spesa insieme.</string>
     <string name="home_logistics_requires_household">Famiglia richiesta</string>
     <string name="household_gate_title">Configura la tua famiglia</string>
-    <string name="household_gate_subtitle">Accetta un invito o crea la tua famiglia e invita altre persone.</string>
+    <string name="household_gate_subtitle">Crea o unisciti a una famiglia per pianificare pasti e spesa insieme.</string>
     <string name="household_gate_create_title">Crea una nuova famiglia</string>
     <string name="household_gate_name_label">Nome della famiglia</string>
     <string name="household_gate_create_button">Crea famiglia</string>
@@ -304,7 +304,7 @@
     <string name="category_long_term_questions_intro">Rispondi alle domande progetto così l'IA trasforma il traguardo in una roadmap per fasi e tracciabile.</string>
     <string name="category_long_term_ai_action">Genera piano traguardo</string>
     <string name="category_long_term_plan_title">Piano traguardo</string>
-    <string name="home_greeting">Il cuore pulsante della nostra famiglia.</string>
+    <string name="home_greeting">La tua cucina condivisa inizia qui.</string>
     <string name="home_greeting_morning">Buongiorno</string>
     <string name="home_greeting_afternoon">Buon pomeriggio</string>
     <string name="home_greeting_evening">Buonasera</string>
@@ -312,7 +312,7 @@
     <string name="home_greeting_afternoon_personalized">Buon pomeriggio, %1$s</string>
     <string name="home_greeting_evening_personalized">Buonasera, %1$s</string>
     <string name="home_coming_soon_hint">Viaggi, uscite e finanze condivise sono in arrivo.</string>
-    <string name="home_greeting_loading">Caricamento ispirazione…</string>
+    <string name="home_greeting_loading">Caricamento della settimana…</string>
     <string name="home_greeting_personalized">Ciao, %1$s</string>
     <string name="home_coming_soon_features">Avventure e budget</string>
     <string name="home_section_this_week">Questa settimana</string>
@@ -321,12 +321,13 @@
     <string name="home_settings_title">Account e impostazioni</string>
     <string name="home_settings_button">Apri account e impostazioni</string>
     <string name="home_nutrition_get_started">Inizia a pianificare pasti e spesa</string>
+    <string name="home_nutrition_continue_planning">Continua a pianificare</string>
     <string name="home_onboarding_join_title">Ti hanno invitato?</string>
     <string name="home_onboarding_wait_for_invite_title">In attesa di un invito?</string>
     <string name="home_onboarding_wait_for_invite_body">Quando qualcuno invita %1$s, lo vedrai qui. Puoi anche aggiornare per controllare ora.</string>
     <string name="home_onboarding_refresh_invites">Aggiorna inviti</string>
     <string name="home_onboarding_name_hint">Suggerito dal tuo cognome — modificalo quando vuoi.</string>
-    <string name="home_onboarding_create_invite_hint">Dopo la creazione, tocca il nome della famiglia in Home per invitare persone via email.</string>
+    <string name="home_onboarding_create_invite_hint">Dopo la creazione, apri la scheda Famiglia in Home per invitare persone e pianificare insieme.</string>
     <string name="calendar_weekday_mon">Lun</string>
     <string name="calendar_weekday_tue">Mar</string>
     <string name="calendar_weekday_wed">Mer</string>
@@ -675,7 +676,7 @@
     <string name="longterm_opt_budget_moderate">Moderato (un po' di fai-da-te, professionisti per i lavori grossi)</string>
     <string name="longterm_opt_budget_full">Servizio completo (vogliamo assumere fornitori/professionisti)</string>
     <string name="auth_title">Benvenuto in MyMultiverse</string>
-    <string name="auth_subtitle">Accedi per condividere la logistica di famiglia con chi scegli tu.</string>
+    <string name="auth_subtitle">Pianifica pasti e spesa insieme alla tua famiglia.</string>
     <string name="auth_email_label">Email</string>
     <string name="auth_password_label">Password</string>
     <string name="auth_sign_in_button">Accedi</string>
@@ -829,8 +830,8 @@
     <string name="home_household_open_view">Visualizza membri</string>
     <string name="home_rename_household_title">Rinomina famiglia</string>
     <string name="home_rename_household_save">Salva nome</string>
-    <string name="auth_subtitle_sign_in">Accedi per unirti o gestire la tua famiglia.</string>
-    <string name="auth_subtitle_sign_up">Crea il tuo account, poi configura o unisciti a una famiglia.</string>
+    <string name="auth_subtitle_sign_in">Accedi per pianificare pasti e spesa con la tua famiglia.</string>
+    <string name="auth_subtitle_sign_up">Crea il tuo account per pianificare pasti e spesa insieme.</string>
     <string name="sharing_members_role_admin">Admin famiglia</string>
     <string name="sharing_members_change_role">Cambia ruolo</string>
     <string name="sharing_members_promote_admin_confirm_title">Rendere admin della famiglia?</string>

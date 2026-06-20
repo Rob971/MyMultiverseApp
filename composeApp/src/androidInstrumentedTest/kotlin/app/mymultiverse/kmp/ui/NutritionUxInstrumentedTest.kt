@@ -441,7 +441,7 @@ class NutritionUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(HomeTestTags.NUTRITION_CARD)
+        composeRule.onNodeWithTag(HomeTestTags.NUTRITION_CTA)
             .performScrollTo()
             .performClick()
 
@@ -548,7 +548,7 @@ class NutritionUxInstrumentedTest {
         }
 
         composeRule.onNodeWithTag(HomeTestTags.LOADING_INDICATOR).assertIsDisplayed()
-        composeRule.onNodeWithText("Loading inspiration…").assertIsDisplayed()
+        composeRule.onNodeWithText("Loading your week…").assertIsDisplayed()
         composeRule.onNodeWithText("Good morning, Roberto").assertIsDisplayed()
     }
 
@@ -575,7 +575,7 @@ class NutritionUxInstrumentedTest {
         }
 
         composeRule.onNodeWithTag(HomeTestTags.LOADING_INDICATOR).assertIsDisplayed()
-        composeRule.onNodeWithText("Loading inspiration…").assertIsDisplayed()
+        composeRule.onNodeWithText("Loading your week…").assertIsDisplayed()
     }
 
     @Test
@@ -631,7 +631,7 @@ class NutritionUxInstrumentedTest {
                 .fetchSemanticsNodes().isEmpty(),
         )
         composeRule.onNodeWithTag(HomeTestTags.INSPIRATION_LINE).assertIsDisplayed()
-        composeRule.onNodeWithTag(HomeTestTags.NUTRITION_CARD)
+        composeRule.onNodeWithTag(HomeTestTags.NUTRITION_CTA)
             .performScrollTo()
             .assertIsDisplayed()
     }

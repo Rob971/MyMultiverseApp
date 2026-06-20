@@ -10,12 +10,12 @@ Android and iOS share one UI and domain layer; platform code is limited to `andr
 
 ## Product overview (functional)
 
-MyMultiverse helps a **household** (family or roommates) coordinate day-to-day logistics. Today the shipped module is **Nutrition**; **Adventures** and **Budget** are shown on Home as coming soon but will use the **same household** when released.
+MyMultiverse helps a **household** (family or roommates) coordinate **weekly meals and groceries** together. The shipped product is the **Nutrition** module: shared grocery lists, meal plans, and a local AI nutrition assistant.
 
 | Concept | What it means for users |
 |---------|-------------------------|
 | **Account** | One person, one email (Supabase Auth). Sign up / sign in with email, Google, or Apple. |
-| **Household** | One shared household per user at a time. All modules (Nutrition, future Adventures/Budget) share one household id. |
+| **Household** | One shared household per user at a time. Nutrition data and membership are scoped to that household. |
 | **Home onboarding** | When signed in without a household, **Home** shows invites + create-household (no separate gate screen). Topic cards appear only after a household is active. |
 | **Invite** | Owner sends invite by email; invitee must **accept** on their device. No silent add. |
 | **Roles** | **Owner** — transfer/dissolve, promote admin, full control. **Household admin** — invite (editor/viewer), manage members; cannot transfer/dissolve or promote admin. **Editor** — edit shared nutrition. **Viewer** — read-only everywhere. |
@@ -43,10 +43,8 @@ Supported UI languages: English, French, Spanish, German, Italian, Arabic (incl.
               │    household): invites │
               │    + create household  │
               │  • welcome: greeting,  │
-              │    rename chip, cards  │
-              │  • Nutrition (enabled) │
-              │  • Adventures (soon)   │
-              │  • Budget (soon)       │
+              │    This week + CTA,   │
+              │    household chip     │
               └─────┬──────────┬───────┘
                     │          │
          Nutrition  │          │  Household members
@@ -484,7 +482,7 @@ firebase-appdistribution-testcases.yaml  Manual QA checklist
 | Track | Items |
 |-------|--------|
 | **Ops / QA** | Optional `SUPABASE_TEST_EMAIL` / `SUPABASE_TEST_PASSWORD` for CI auth round-trip; staging sign-off ([`docs/p2-staging-qa-checklist.md`](docs/p2-staging-qa-checklist.md), [`docs/qa-signoff-v14-home-onboarding.md`](docs/qa-signoff-v14-home-onboarding.md)) |
-| **Product** | Shared-email child login accounts (explicitly deferred); Adventures & Budget on `household_modules` |
+| **Product** | Shared-email child login accounts (explicitly deferred); post-traction modules beyond nutrition (deferred) |
 | **Legal** | External privacy policy wording review |
 
 ---

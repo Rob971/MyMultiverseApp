@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_add_dream">أضف حلماً</string>
-    <string name="home_banner_headline">مرحباً بك في بيتك</string>
+    <string name="home_banner_headline">لنخطط معًا</string>
     <string name="home_banner_loading">جاري تحميل أسرتك...</string>
-    <string name="home_banner_description">أسرة مشتركة لتنمية أحلام عائلتنا، وتتبع أهداف S.M.A.R.T. وتقوية روابطنا اليومية.</string>
-    <string name="home_dreams_title">لوجستيات عائلتنا</string>
+    <string name="home_banner_description">مساحة مشتركة لتخطيط وجبات الأسبوع وتنسيق البقالة والأكل جيدًا كأسرة.</string>
+    <string name="home_dreams_title">تخطيط الأسرة</string>
     <string name="home_logistics_nutrition_title">التغذية</string>
     <string name="home_household_title">الأسرة</string>
-    <string name="home_household_description">ادعُ أشخاصًا للتعاون في التغذية والمغامرات والميزانية.</string>
-    <string name="home_household_description_named">إدارة الأشخاص في %1$s — مشترك عبر التغذية والمغامرات والميزانية.</string>
+    <string name="home_household_description">ادعُ أشخاصًا للتخطيط للوجبات والبقالة معك.</string>
+    <string name="home_household_description_named">إدارة الأشخاص في %1$s — خططوا للوجبات والبقالة معًا.</string>
     <string name="home_logistics_requires_household">الأسرة مطلوبة</string>
     <string name="household_gate_title">إعداد أسرتك</string>
-    <string name="household_gate_subtitle">اقبل دعوة أو أنشئ أسرتك وادعُ الأعضاء.</string>
+    <string name="household_gate_subtitle">أنشئ أسرة أو انضم إليها للتخطيط للوجبات والبقالة معًا.</string>
     <string name="household_gate_create_title">إنشاء أسرة جديدة</string>
     <string name="household_gate_name_label">اسم الأسرة</string>
     <string name="household_gate_create_button">إنشاء الأسرة</string>
@@ -304,7 +304,7 @@
     <string name="category_long_term_questions_intro">أجب عن أسئلة المشروع ليحول الذكاء الاصطناعي المعلم إلى خارطة طريق قابلة للتتبع.</string>
     <string name="category_long_term_ai_action">إنشاء مخطط معلم</string>
     <string name="category_long_term_plan_title">مخطط المعلم</string>
-    <string name="home_greeting">قلب عائلتنا النابض.</string>
+    <string name="home_greeting">مطبخكم المشترك يبدأ من هنا.</string>
     <string name="home_greeting_morning">صباح الخير</string>
     <string name="home_greeting_afternoon">مساء الخير</string>
     <string name="home_greeting_evening">مساء الخير</string>
@@ -312,7 +312,7 @@
     <string name="home_greeting_afternoon_personalized">مساء الخير، %1$s</string>
     <string name="home_greeting_evening_personalized">مساء الخير، %1$s</string>
     <string name="home_coming_soon_hint">الرحلات والخروج والمال المشترك قادمة قريبًا.</string>
-    <string name="home_greeting_loading">جاري تحميل الإلهام…</string>
+    <string name="home_greeting_loading">جاري تحميل أسبوعك…</string>
     <string name="home_greeting_personalized">مرحباً، %1$s</string>
     <string name="home_coming_soon_features">المغامرات والميزانية</string>
     <string name="home_section_this_week">هذا الأسبوع</string>
@@ -321,12 +321,13 @@
     <string name="home_settings_title">الحساب والإعدادات</string>
     <string name="home_settings_button">فتح الحساب والإعدادات</string>
     <string name="home_nutrition_get_started">ابدأ بتخطيط الوجبات والبقالة</string>
+    <string name="home_nutrition_continue_planning">متابعة التخطيط</string>
     <string name="home_onboarding_join_title">هل تمت دعوتك؟</string>
     <string name="home_onboarding_wait_for_invite_title">في انتظار دعوة؟</string>
     <string name="home_onboarding_wait_for_invite_body">عندما يدعو أحدهم %1$s، ستظهر الدعوة هنا. يمكنك أيضاً التحديث للتحقق الآن.</string>
     <string name="home_onboarding_refresh_invites">تحديث الدعوات</string>
     <string name="home_onboarding_name_hint">مقترح من اسم العائلة — يمكنك تغييره في أي وقت.</string>
-    <string name="home_onboarding_create_invite_hint">بعد الإنشاء، اضغط اسم أسرتك في الصفحة الرئيسية لدعوة أشخاص عبر البريد.</string>
+    <string name="home_onboarding_create_invite_hint">بعد الإنشاء، افتح بطاقة الأسرة في الصفحة الرئيسية لدعوة أشخاص والتخطيط معًا.</string>
     <string name="calendar_weekday_mon">الإثنين</string>
     <string name="calendar_weekday_tue">الثلاثاء</string>
     <string name="calendar_weekday_wed">الأربعاء</string>
@@ -675,7 +676,7 @@
     <string name="longterm_opt_budget_moderate">معتدل (بعض الأعمال الذاتية، محترفون للأعمال الكبيرة)</string>
     <string name="longterm_opt_budget_full">خدمة كاملة (نريد توظيف موردين/محترفين)</string>
     <string name="auth_title">مرحبًا بك في MyMultiverse</string>
-    <string name="auth_subtitle">سجّل الدخول لمشاركة لوجستيات العائلة مع من تختار.</string>
+    <string name="auth_subtitle">خططوا للوجبات والبقالة مع أسرتكم.</string>
     <string name="auth_email_label">البريد الإلكتروني</string>
     <string name="auth_password_label">كلمة المرور</string>
     <string name="auth_sign_in_button">تسجيل الدخول</string>
@@ -829,8 +830,8 @@
     <string name="home_household_open_view">عرض الأعضاء</string>
     <string name="home_rename_household_title">إعادة تسمية الأسرة</string>
     <string name="home_rename_household_save">حفظ الاسم</string>
-    <string name="auth_subtitle_sign_in">سجّل الدخول للانضمام إلى أسرتك أو إدارتها.</string>
-    <string name="auth_subtitle_sign_up">أنشئ حسابك، ثم أنشئ أسرة أو انضم إلى واحدة.</string>
+    <string name="auth_subtitle_sign_in">سجّل الدخول للتخطيط للوجبات والبقالة مع أسرتك.</string>
+    <string name="auth_subtitle_sign_up">أنشئ حسابك للتخطيط للوجبات والبقالة معًا.</string>
     <string name="sharing_members_role_admin">مسؤول الأسرة</string>
     <string name="sharing_members_change_role">تغيير الدور</string>
     <string name="sharing_members_promote_admin_confirm_title">تعيين مسؤول للأسرة؟</string>
