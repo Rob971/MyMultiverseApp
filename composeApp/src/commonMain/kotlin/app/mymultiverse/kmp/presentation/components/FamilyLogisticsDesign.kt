@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -117,12 +119,39 @@ fun NutritionFeatureHeader(
     progressLabel: String,
     progress: Float,
     modifier: Modifier = Modifier,
+    canGoToPreviousWeek: Boolean = false,
+    canGoToNextWeek: Boolean = false,
+    previousWeekLabel: String? = null,
+    nextWeekLabel: String? = null,
+    onPreviousWeek: (() -> Unit)? = null,
+    onNextWeek: (() -> Unit)? = null,
+    planWithAiLabel: String? = null,
+    onPlanWithAi: (() -> Unit)? = null,
+    showPlanWithAi: Boolean = false,
+    planWithAiTestTag: String? = null,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(ScreenLayout.sectionSpacing),
     ) {
-        WeekContextBanner(weekLabel = weekLabel)
+        if (
+            onPreviousWeek != null &&
+            onNextWeek != null &&
+            previousWeekLabel != null &&
+            nextWeekLabel != null
+        ) {
+            WeekSelectorBanner(
+                weekLabel = weekLabel,
+                canGoToPreviousWeek = canGoToPreviousWeek,
+                canGoToNextWeek = canGoToNextWeek,
+                previousWeekLabel = previousWeekLabel,
+                nextWeekLabel = nextWeekLabel,
+                onPreviousWeek = onPreviousWeek,
+                onNextWeek = onNextWeek,
+            )
+        } else {
+            WeekContextBanner(weekLabel = weekLabel)
+        }
 
         FamilyLogisticsCardSurface(accentColor = accentColor) {
             Row(
@@ -160,6 +189,23 @@ fun NutritionFeatureHeader(
             progress = progress,
             accentColor = accentColor,
         )
+
+        if (showPlanWithAi && planWithAiLabel != null && onPlanWithAi != null) {
+            OutlinedButton(
+                onClick = onPlanWithAi,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(
+                        if (planWithAiTestTag != null) {
+                            Modifier.testTag(planWithAiTestTag)
+                        } else {
+                            Modifier
+                        },
+                    ),
+            ) {
+                Text(planWithAiLabel)
+            }
+        }
     }
 }
 

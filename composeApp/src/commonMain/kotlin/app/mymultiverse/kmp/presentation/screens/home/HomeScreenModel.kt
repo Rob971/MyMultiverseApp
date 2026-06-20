@@ -112,7 +112,7 @@ class HomeScreenModel(
                 HomeNutritionSummary(
                     weekKey = repository.weekKey,
                     groceryProgress = NutritionHubSummary.groceryProgress(groceryItems),
-                    plannedDays = NutritionHubSummary.plannedDaysCount(mealPlan.days),
+                    plannedMealSlots = NutritionHubSummary.plannedSlotsCount(mealPlan.days),
                 )
             }
         }

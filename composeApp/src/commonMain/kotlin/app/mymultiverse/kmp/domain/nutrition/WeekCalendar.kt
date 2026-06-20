@@ -33,6 +33,21 @@ object WeekCalendar {
         return start.plus(WeeklyMealPlan.DAYS_IN_WEEK - 1, DateTimeUnit.DAY)
     }
 
+    fun nextWeekKey(weekKey: String): String {
+        val start = LocalDate.parse(weekKey)
+        return start.plus(WeeklyMealPlan.DAYS_IN_WEEK, DateTimeUnit.DAY).toString()
+    }
+
+    fun weekKeyForOffset(
+        baseWeekKey: String = currentWeekKey(),
+        offset: Int,
+    ): String {
+        require(offset >= 0) { "week offset must be non-negative" }
+        var key = baseWeekKey
+        repeat(offset) { key = nextWeekKey(key) }
+        return key
+    }
+
     /** Compact range label, e.g. 19/05 – 25/05 (locale-neutral). */
     fun formatWeekRange(weekKey: String): String {
         val start = LocalDate.parse(weekKey)

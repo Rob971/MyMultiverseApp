@@ -26,16 +26,37 @@ class NutritionSessionCoordinatorImpl(
 
     private val personalRepository = NutritionRepositoryImpl(settings)
     private val _nutrition = MutableStateFlow<NutritionRepository>(personalRepository)
+    private var activeHouseholdId: String? = null
 
     override val nutrition = _nutrition.asStateFlow()
 
     override fun observeSyncStatus(): Flow<NutritionSyncStatus> = syncEngine.observeStatus()
 
     override suspend fun activateHousehold(householdId: String) {
+        activeHouseholdId = householdId
+        bindRepository(
+            householdId = householdId,
+            weekKey = WeekCalendar.currentWeekKey(),
+        )
+    }
+
+    override suspend fun selectWeek(weekKey: String) {
+        val householdId = activeHouseholdId ?: return
+        bindRepository(householdId = householdId, weekKey = weekKey)
+    }
+
+    override fun deactivate() {
+        realtimeSync?.stop()
+        syncEngine.markIdle()
+        diagnostics.activeHouseholdId = null
+        activeHouseholdId = null
+        _nutrition.value = personalRepository
+    }
+
+    private suspend fun bindRepository(householdId: String, weekKey: String) {
         realtimeSync?.stop()
         diagnostics.activeHouseholdId = householdId
-        logger.breadcrumb("nutrition_household_activated household_id=$householdId")
-        val weekKey = WeekCalendar.currentWeekKey()
+        logger.breadcrumb("nutrition_household_activated household_id=$householdId week_key=$weekKey")
         val repository = OfflineFirstNutritionRepository(
             localStore = NutritionLocalStore(
                 settings = settings,
@@ -55,13 +76,6 @@ class NutritionSessionCoordinatorImpl(
         ) { row ->
             repository.applyRemoteWeekData(row)
         }
-    }
-
-    override fun deactivate() {
-        realtimeSync?.stop()
-        syncEngine.markIdle()
-        diagnostics.activeHouseholdId = null
-        _nutrition.value = personalRepository
     }
 
     companion object {

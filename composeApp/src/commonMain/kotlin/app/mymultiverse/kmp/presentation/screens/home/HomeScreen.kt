@@ -41,7 +41,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import app.mymultiverse.kmp.domain.model.Greeting
-import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
+import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -652,7 +652,7 @@ fun HomeWelcomeContent(
     val showInspirationLoading = greeting == null
     val nutritionStatusLine = when {
         nutritionSummary == null -> null
-        nutritionSummary.groceryProgress == null && nutritionSummary.plannedDays == 0 ->
+        nutritionSummary.groceryProgress == null && nutritionSummary.plannedMealSlots == 0 ->
             stringResource(Res.string.home_nutrition_get_started)
         else -> buildList {
             nutritionSummary.groceryProgress?.let { progress ->
@@ -667,8 +667,8 @@ fun HomeWelcomeContent(
             add(
                 stringResource(
                     Res.string.nutrition_meal_plan_progress,
-                    nutritionSummary.plannedDays,
-                    WeeklyMealPlan.DAYS_IN_WEEK,
+                    nutritionSummary.plannedMealSlots,
+                    NutritionHubSummary.MEAL_SLOTS_PER_WEEK,
                 ),
             )
         }.joinToString(" · ")

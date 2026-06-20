@@ -396,6 +396,69 @@ class NutritionScreenModelTest {
         assertEquals(2, repository.aiGrocery.value.size)
         assertEquals("Garlic", repository.aiGrocery.value.first().label)
     }
+
+    @Test
+    fun adoptAllAiGrocerySuggestions_movesDistinctItemsToEditableList() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.aiGrocery.value = listOf(
+            GroceryItem("ai-1", "Milk"),
+            GroceryItem("ai-2", "Eggs"),
+        )
+        val model = nutritionScreenModel(repository, scope = modelScope) {
+            if (repository.grocery.value.isEmpty()) "grocery-1" else "grocery-2"
+        }
+        advanceUntilIdle()
+
+        model.adoptAllAiGrocerySuggestions()
+        advanceUntilIdle()
+
+        assertEquals(setOf("Milk", "Eggs"), repository.grocery.value.map { it.label }.toSet())
+        assertTrue(repository.aiGrocery.value.isEmpty())
+        assertEquals(2, model.adoptAllGroceryResult.value)
+    }
+
+    @Test
+    fun copyDinnerToTomorrowLunch_copiesTextToNextDay() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val model = nutritionScreenModel(repository, scope = modelScope)
+        advanceUntilIdle()
+
+        model.updateMeal(1, dinner = "Leftover stew")
+        advanceUntilIdle()
+        model.copyDinnerToTomorrowLunch(1)
+        advanceUntilIdle()
+
+        assertEquals("Leftover stew", repository.mealPlan.value.days[2].lunch)
+    }
+
+    @Test
+    fun clearMealPlanWeek_resetsAllDays() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val model = nutritionScreenModel(repository, scope = modelScope)
+        model.updateMeal(0, lunch = "Soup")
+        advanceUntilIdle()
+
+        model.clearMealPlanWeek()
+        advanceUntilIdle()
+
+        assertTrue(repository.mealPlan.value.days.all { it.lunch.isBlank() && it.dinner.isBlank() })
+    }
+
+    @Test
+    fun generateGroceryForAllPlannedMeals_appendsDistinctAiItems() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService(mealGroceryLabels = listOf("Garlic", "Pasta"))
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+        model.updateMeal(0, lunch = "Pasta")
+        model.updateMeal(0, dinner = "Salad")
+        advanceUntilIdle()
+
+        model.generateGroceryForAllPlannedMeals()
+        advanceUntilIdle()
+
+        assertEquals(2, repository.aiGrocery.value.size)
+        assertIs<NutritionScreenModel.BulkMealGroceryResult>(model.bulkMealGroceryResult.value)
+    }
 }
 
 private class FakeNutritionRepository(

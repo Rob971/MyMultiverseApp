@@ -188,7 +188,11 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                WeeklyMealPlanScreen(onBack = {}, screenModel = screenModel)
+                WeeklyMealPlanScreen(
+                    onBack = {},
+                    onOpenSection = { _, _ -> },
+                    screenModel = screenModel,
+                )
             }
         }
 
@@ -219,7 +223,11 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                WeeklyMealPlanScreen(onBack = {}, screenModel = screenModel)
+                WeeklyMealPlanScreen(
+                    onBack = {},
+                    onOpenSection = { _, _ -> },
+                    screenModel = screenModel,
+                )
             }
         }
 

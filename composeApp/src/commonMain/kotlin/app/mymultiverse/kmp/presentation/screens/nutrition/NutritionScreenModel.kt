@@ -5,6 +5,7 @@ import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
+import app.mymultiverse.kmp.domain.nutrition.MealPlanPresentation
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
@@ -48,11 +49,24 @@ class NutritionScreenModel(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
     private val newItemId: () -> String = { "${Random.nextLong()}_${Random.nextInt()}" },
 ) {
+    companion object {
+        const val MAX_WEEK_OFFSET = 1
+    }
+
     private val repository: NutritionRepository
         get() = session.nutrition.value
 
     val weekKey: String
         get() = repository.weekKey
+
+    private val _weekOffset = MutableStateFlow(0)
+    val weekOffset: StateFlow<Int> = _weekOffset.asStateFlow()
+
+    val canGoToPreviousWeek: Boolean
+        get() = _weekOffset.value > 0
+
+    val canGoToNextWeek: Boolean
+        get() = _weekOffset.value < MAX_WEEK_OFFSET
 
     val groceryItems: StateFlow<List<GroceryItem>> = session.nutrition
         .flatMapLatest { it.observeGroceryItems() }
@@ -84,7 +98,17 @@ class NutritionScreenModel(
         .stateIn(scope, SharingStarted.Eagerly, true)
 
     suspend fun activateHousehold(householdId: String) {
+        _weekOffset.value = 0
         session.activateHousehold(householdId)
+    }
+
+    fun selectWeekOffset(offset: Int) {
+        if (offset !in 0..MAX_WEEK_OFFSET) return
+        if (offset == _weekOffset.value) return
+        scope.launch {
+            _weekOffset.value = offset
+            session.selectWeek(WeekCalendar.weekKeyForOffset(offset = offset))
+        }
     }
 
     private val _aiState = MutableStateFlow<NutritionAiState>(NutritionAiState.Idle)
@@ -104,6 +128,21 @@ class NutritionScreenModel(
 
     private val _mealGroceryResult = MutableStateFlow<MealGroceryResult?>(null)
     val mealGroceryResult: StateFlow<MealGroceryResult?> = _mealGroceryResult.asStateFlow()
+
+    data class BulkMealGroceryResult(
+        val addedCount: Int,
+        val mealsProcessed: Int,
+        val isError: Boolean = false,
+    )
+
+    private val _bulkMealGroceryLoading = MutableStateFlow(false)
+    val bulkMealGroceryLoading: StateFlow<Boolean> = _bulkMealGroceryLoading.asStateFlow()
+
+    private val _bulkMealGroceryResult = MutableStateFlow<BulkMealGroceryResult?>(null)
+    val bulkMealGroceryResult: StateFlow<BulkMealGroceryResult?> = _bulkMealGroceryResult.asStateFlow()
+
+    private val _adoptAllGroceryResult = MutableStateFlow<Int?>(null)
+    val adoptAllGroceryResult: StateFlow<Int?> = _adoptAllGroceryResult.asStateFlow()
 
     fun addGroceryItem(label: String): Boolean {
         if (!canWriteHouseholdData.value) return false
@@ -201,6 +240,34 @@ class NutritionScreenModel(
         }
     }
 
+    fun clearMealSlot(dayIndex: Int, slot: MealSlot) {
+        when (slot) {
+            MealSlot.Lunch -> updateMeal(dayIndex, lunch = "")
+            MealSlot.Dinner -> updateMeal(dayIndex, dinner = "")
+        }
+    }
+
+    fun clearMealsForDay(dayIndex: Int) {
+        updateMeal(dayIndex, lunch = "", dinner = "")
+    }
+
+    fun clearMealPlanWeek() {
+        if (!canWriteHouseholdData.value) return
+        scope.launch {
+            repository.saveMealPlan(
+                mealPlan.value.copy(days = List(WeeklyMealPlan.DAYS_IN_WEEK) { DayMeals() }),
+            )
+        }
+    }
+
+    fun copyDinnerToTomorrowLunch(dayIndex: Int) {
+        if (!canWriteHouseholdData.value) return
+        val tomorrowIndex = MealPlanPresentation.tomorrowIndex(dayIndex) ?: return
+        val dinner = mealPlan.value.days[dayIndex].dinner.trim()
+        if (dinner.isEmpty()) return
+        updateMeal(tomorrowIndex, lunch = dinner)
+    }
+
     fun runAiAssistant(
         mode: NutritionAiMode,
         criteria: String,
@@ -269,6 +336,31 @@ class NutritionScreenModel(
         return true
     }
 
+    fun adoptAllAiGrocerySuggestions() {
+        if (!canWriteHouseholdData.value) return
+        val suggestions = aiGroceryItems.value
+        if (suggestions.isEmpty()) return
+        scope.launch {
+            var adoptedCount = 0
+            var grocery = groceryItems.value
+            suggestions.forEach { suggestion ->
+                val trimmed = suggestion.label.trim()
+                if (trimmed.isEmpty()) return@forEach
+                if (!GroceryListPresentation.isDuplicateLabel(grocery, trimmed)) {
+                    grocery = listOf(GroceryItem(id = newId(), label = trimmed)) + grocery
+                    adoptedCount++
+                }
+            }
+            repository.saveGroceryItems(grocery)
+            repository.saveAiGroceryItems(emptyList())
+            _adoptAllGroceryResult.value = adoptedCount
+        }
+    }
+
+    fun consumeAdoptAllGroceryResult() {
+        _adoptAllGroceryResult.value = null
+    }
+
     fun clearAiGrocery(): List<GroceryItem> {
         if (!canWriteHouseholdData.value) return emptyList()
         val snapshot = aiGroceryItems.value
@@ -318,6 +410,35 @@ class NutritionScreenModel(
                 }
             _mealGroceryLoading.value = null
         }
+    }
+
+    fun generateGroceryForAllPlannedMeals() {
+        if (!canWriteHouseholdData.value) return
+        val plannedMeals = MealPlanPresentation.plannedMeals(mealPlan.value.days)
+        if (plannedMeals.isEmpty()) return
+
+        scope.launch {
+            _bulkMealGroceryLoading.value = true
+            var totalAdded = 0
+            var hadError = false
+            plannedMeals.forEach { plannedMeal ->
+                _mealGroceryLoading.value = MealGroceryRequest(plannedMeal.dayIndex, plannedMeal.slot)
+                aiAssistant.generateGroceryForMeal(plannedMeal.text)
+                    .onSuccess { labels -> totalAdded += appendAiGrocery(labels) }
+                    .onFailure { hadError = true }
+            }
+            _mealGroceryLoading.value = null
+            _bulkMealGroceryResult.value = BulkMealGroceryResult(
+                addedCount = totalAdded,
+                mealsProcessed = plannedMeals.size,
+                isError = hadError,
+            )
+            _bulkMealGroceryLoading.value = false
+        }
+    }
+
+    fun consumeBulkMealGroceryResult() {
+        _bulkMealGroceryResult.value = null
     }
 
     fun consumeMealGroceryResult() {

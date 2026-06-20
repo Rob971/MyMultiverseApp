@@ -393,6 +393,56 @@ testcases:
     expected:
       - Today is highlighted; other days can expand/collapse.
       - Lunch and dinner fields save while on screen.
+      - Progress shows meals planned (e.g. 2 of 14).
+
+  - id: meal-plan-next-week
+    title: Plan meals for next week
+    steps:
+      - Open Weekly meal plan.
+      - Tap next week in the week banner and enter a meal.
+      - Open Grocery shopping.
+    expected:
+      - Both screens show the same next-week date range.
+
+  - id: meal-plan-empty-state
+    title: Empty meal plan guidance
+    steps:
+      - Open Weekly meal plan with no meals entered.
+      - Tap Plan with AI.
+    expected:
+      - AI adviser opens in meal plan mode.
+
+  - id: meal-plan-bulk-grocery
+    title: Generate groceries for all planned meals
+    steps:
+      - Enter meals on at least two days.
+      - Tap Generate groceries for planned meals.
+    expected:
+      - AI chips appear with a summary snackbar.
+
+  - id: meal-plan-adopt-all-chips
+    title: Adopt all AI grocery suggestions
+    steps:
+      - Generate AI grocery suggestions.
+      - Tap Add all to list.
+    expected:
+      - Items move to the editable grocery list.
+
+  - id: meal-plan-copy-leftovers
+    title: Copy dinner to tomorrow lunch
+    steps:
+      - Enter dinner on a weekday before Sunday.
+      - Tap Copy to tomorrow's lunch.
+    expected:
+      - Tomorrow lunch is filled with the dinner text.
+
+  - id: meal-plan-clear-week
+    title: Clear week meals
+    steps:
+      - Enter meals on several days.
+      - Overflow menu → Clear week → confirm.
+    expected:
+      - All meal fields reset for the selected week.
 
   - id: meal-plan-meal-grocery
     title: Generate AI grocery for a single meal (lunch or dinner)

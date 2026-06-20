@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class NutritionSessionCoordinatorImplTest {
 
@@ -131,8 +132,12 @@ class NutritionSessionCoordinatorImplTest {
         coordinator.activateHousehold("household-family")
 
         assertEquals(
-            listOf("nutrition_household_activated household_id=household-family"),
-            crashReporter.breadcrumbs,
+            1,
+            crashReporter.breadcrumbs.size,
+        )
+        assertTrue(
+            crashReporter.breadcrumbs.single()
+                .startsWith("nutrition_household_activated household_id=household-family week_key="),
         )
     }
 

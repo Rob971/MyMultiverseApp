@@ -24,7 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_suggestions_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_next
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_previous
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_delete_item
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_add_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_cancel_edit
@@ -49,7 +52,8 @@ import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
-import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionChips
+import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionsSection
+import app.mymultiverse.kmp.presentation.components.WeekSelectorBanner
 import app.mymultiverse.kmp.presentation.components.EmptyStateCard
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.GroceryDashboardCard
@@ -82,6 +86,7 @@ fun GroceryShoppingScreen(
     val items by screenModel.groceryItems.collectAsState()
     val aiGroceryItems by screenModel.aiGroceryItems.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
+    val weekOffset by screenModel.weekOffset.collectAsState()
     var newItemText by rememberSaveable { mutableStateOf("") }
     var editingItemId by rememberSaveable { mutableStateOf<String?>(null) }
     var refocusInput by rememberSaveable { mutableStateOf(false) }
@@ -96,6 +101,10 @@ fun GroceryShoppingScreen(
         Res.string.nutrition_week_label,
         WeekCalendar.formatWeekRange(screenModel.weekKey),
     )
+    val previousWeekLabel = stringResource(Res.string.nutrition_week_previous)
+    val nextWeekLabel = stringResource(Res.string.nutrition_week_next)
+    val aiSuggestionsTitle = stringResource(Res.string.nutrition_ai_grocery_suggestions_title)
+    val adoptAllLabel = stringResource(Res.string.nutrition_ai_adopt_all_grocery)
     val sections = remember(items) { GroceryListPresentation.partition(items) }
     val checkedCount = sections.completed.size
     val totalCount = items.size
@@ -118,7 +127,6 @@ fun GroceryShoppingScreen(
     )
     val clearCheckedLabel = stringResource(Res.string.nutrition_grocery_clear_checked)
     val clearCheckedMessage = stringResource(Res.string.nutrition_grocery_clear_checked_undo)
-    val aiSuggestionsTitle = stringResource(Res.string.nutrition_ai_grocery_suggestions_title)
 
     fun showMessage(message: String) {
         scope.launch { snackbarHostState.showSnackbar(message) }
@@ -217,9 +225,19 @@ fun GroceryShoppingScreen(
             contentPadding = screenListPadding(extraBottom = ScreenLayout.listItemSpacing),
             verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
         ) {
+            item(key = "week-selector") {
+                WeekSelectorBanner(
+                    weekLabel = weekLabel,
+                    canGoToPreviousWeek = screenModel.canGoToPreviousWeek,
+                    canGoToNextWeek = screenModel.canGoToNextWeek,
+                    previousWeekLabel = previousWeekLabel,
+                    nextWeekLabel = nextWeekLabel,
+                    onPreviousWeek = { screenModel.selectWeekOffset(weekOffset - 1) },
+                    onNextWeek = { screenModel.selectWeekOffset(weekOffset + 1) },
+                )
+            }
             item(key = "dashboard") {
                 GroceryDashboardCard(
-                    weekLabel = weekLabel,
                     description = stringResource(Res.string.nutrition_grocery_description),
                     progressLabel = if (totalCount > 0) {
                         stringResource(
@@ -242,22 +260,17 @@ fun GroceryShoppingScreen(
             }
 
             if (aiGroceryItems.isNotEmpty()) {
-                item(key = "ai-suggestions-title") {
-                    Text(
-                        text = aiSuggestionsTitle,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = SharedJourneyColors.InkMuted,
-                        modifier = Modifier.padding(top = 4.dp, start = 2.dp),
-                    )
-                }
-                item(key = "ai-suggestions-chips") {
-                    AiGrocerySuggestionChips(
+                item(key = "ai-suggestions") {
+                    AiGrocerySuggestionsSection(
+                        title = aiSuggestionsTitle,
                         items = aiGroceryItems,
-                        enabled = canWrite,
+                        adoptAllLabel = adoptAllLabel,
+                        onAdoptAll = { screenModel.adoptAllAiGrocerySuggestions() },
                         onAdopt = { suggestion ->
                             screenModel.adoptAiGrocerySuggestion(suggestion.id)
                             pendingScrollLabel = suggestion.label
                         },
+                        enabled = canWrite,
                     )
                 }
             }
