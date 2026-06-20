@@ -146,23 +146,44 @@ if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
     exit 1
   fi
 
-  echo "==> Calling ensure_household as authenticated user"
-  HOUSEHOLD_JSON="$(curl -fsS -X POST "${REST_URL}/rpc/ensure_household" \
+  echo "==> Resolving household via membership status (gatekeeping-aware)"
+  MEMBERSHIP_JSON="$(curl -fsS -X POST "${REST_URL}/rpc/household_membership_status" \
     -H "apikey: ${ANON_KEY}" \
     -H "Authorization: Bearer ${ACCESS_TOKEN}" \
     -H "Content-Type: application/json" \
     -d '{}')"
+  MEMBERSHIP_STATUS="$(echo "${MEMBERSHIP_JSON}" | jq -r '.status')"
+
+  if [[ "${MEMBERSHIP_STATUS}" == "none" ]]; then
+    echo "==> No active household; calling create_household for CI smoke user"
+    HOUSEHOLD_JSON="$(curl -fsS -X POST "${REST_URL}/rpc/create_household" \
+      -H "apikey: ${ANON_KEY}" \
+      -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+      -H "Content-Type: application/json" \
+      -d '{"p_name":"CI Smoke Household"}')"
+  elif [[ "${MEMBERSHIP_STATUS}" == "active" ]]; then
+    echo "==> Active household found; calling ensure_household"
+    HOUSEHOLD_JSON="$(curl -fsS -X POST "${REST_URL}/rpc/ensure_household" \
+      -H "apikey: ${ANON_KEY}" \
+      -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+      -H "Content-Type: application/json" \
+      -d '{}')"
+  else
+    echo "ERROR: unexpected household_membership_status response" >&2
+    echo "${MEMBERSHIP_JSON}" >&2
+    exit 1
+  fi
 
   HOUSEHOLD_ID="$(echo "${HOUSEHOLD_JSON}" | jq -r '.household_id')"
   FEATURE_COUNT="$(echo "${HOUSEHOLD_JSON}" | jq -r '.features | length')"
 
   if [[ -z "${HOUSEHOLD_ID}" || "${HOUSEHOLD_ID}" == "null" ]]; then
-    echo "ERROR: ensure_household did not return household_id" >&2
+    echo "ERROR: household RPC did not return household_id" >&2
     echo "${HOUSEHOLD_JSON}" >&2
     exit 1
   fi
 
-  echo "OK: household_id=${HOUSEHOLD_ID} features=${FEATURE_COUNT}"
+  echo "OK: household_id=${HOUSEHOLD_ID} features=${FEATURE_COUNT} (membership=${MEMBERSHIP_STATUS})"
 
   WEEK_KEY="$(date -u +%Y-%m-%d)"
   PAYLOAD='[{"id":"verify-1","label":"Supabase verify rice","isChecked":false}]'
