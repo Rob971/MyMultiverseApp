@@ -17,9 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
@@ -221,7 +220,7 @@ private fun MealPlanMealField(
     }
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        OutlinedTextField(
+        JourneyTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier
@@ -229,7 +228,7 @@ private fun MealPlanMealField(
                 .testTag(fieldTestTag),
             label = { Text(label) },
             placeholder = { Text(label) },
-            shape = FamilyLogisticsDesign.fieldShape,
+            singleLine = false,
             minLines = 2,
             readOnly = readOnly,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -237,7 +236,7 @@ private fun MealPlanMealField(
             trailingIcon = if (value.isNotBlank() && !readOnly && onClear != null) {
                 {
                     JourneyIconButton(onClick = onClear) {
-                        androidx.compose.material3.Icon(
+                        Icon(
                             imageVector = AppIcons.Delete,
                             contentDescription = clearFieldLabel,
                         )
@@ -246,11 +245,7 @@ private fun MealPlanMealField(
             } else {
                 null
             },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = accentColor,
-                focusedLabelColor = accentColor,
-                cursorColor = accentColor,
-            ),
+            focusAccentColor = accentColor,
         )
         if (suggestions.isNotEmpty()) {
             LazyRow(
@@ -296,7 +291,7 @@ private fun MealPlanMealField(
                         )
                         Spacer(Modifier.width(8.dp))
                     } else {
-                        androidx.compose.material3.Icon(
+                        Icon(
                             imageVector = AppIcons.Sparkles,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
