@@ -3,6 +3,7 @@ package app.mymultiverse.kmp.ui
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.hasTestTag
@@ -730,8 +731,8 @@ class NutritionUxInstrumentedTest {
     @Test
     fun mealPlan_emptyState_chip_opensHelperSheet() {
         val screenModel = nutritionScreenModel()
-        var sheetVisible = false
-        var launchContext = AiHelperLaunchContext(mode = NutritionAiMode.MealPlan)
+        val sheetVisible = mutableStateOf(false)
+        val launchContext = mutableStateOf(AiHelperLaunchContext(mode = NutritionAiMode.MealPlan))
 
         composeRule.setContent {
             AppTheme {
@@ -740,16 +741,16 @@ class NutritionUxInstrumentedTest {
                         onBack = {},
                         onOpenSection = { _, _ -> },
                         onOpenAiSheet = { context ->
-                            launchContext = context
-                            sheetVisible = true
+                            launchContext.value = context
+                            sheetVisible.value = true
                         },
                         screenModel = screenModel,
                     )
                     AiHelperSheet(
-                        visible = sheetVisible,
-                        launchContext = launchContext,
-                        onDismiss = { sheetVisible = false },
-                        onApplied = { sheetVisible = false },
+                        visible = sheetVisible.value,
+                        launchContext = launchContext.value,
+                        onDismiss = { sheetVisible.value = false },
+                        onApplied = { sheetVisible.value = false },
                         screenModel = screenModel,
                     )
                 }
@@ -765,8 +766,8 @@ class NutritionUxInstrumentedTest {
     @Test
     fun mealPlan_planWithAi_opensHelperSheet() {
         val screenModel = nutritionScreenModel()
-        var sheetVisible = false
-        var launchContext = AiHelperLaunchContext(mode = NutritionAiMode.MealPlan)
+        val sheetVisible = mutableStateOf(false)
+        val launchContext = mutableStateOf(AiHelperLaunchContext(mode = NutritionAiMode.MealPlan))
 
         composeRule.setContent {
             AppTheme {
@@ -775,16 +776,16 @@ class NutritionUxInstrumentedTest {
                         onBack = {},
                         onOpenSection = { _, _ -> },
                         onOpenAiSheet = { context ->
-                            launchContext = context
-                            sheetVisible = true
+                            launchContext.value = context
+                            sheetVisible.value = true
                         },
                         screenModel = screenModel,
                     )
                     AiHelperSheet(
-                        visible = sheetVisible,
-                        launchContext = launchContext,
-                        onDismiss = { sheetVisible = false },
-                        onApplied = { sheetVisible = false },
+                        visible = sheetVisible.value,
+                        launchContext = launchContext.value,
+                        onDismiss = { sheetVisible.value = false },
+                        onApplied = { sheetVisible.value = false },
                         screenModel = screenModel,
                     )
                 }
@@ -802,8 +803,8 @@ class NutritionUxInstrumentedTest {
         val weekKey = WeekCalendar.currentWeekKey()
         val dayIndex = WeekCalendar.todayIndexInWeek(weekKey) ?: 0
         val screenModel = nutritionScreenModel(weekKey = weekKey)
-        var sheetVisible = false
-        var launchContext = AiHelperLaunchContext(mode = NutritionAiMode.MealPlan)
+        val sheetVisible = mutableStateOf(false)
+        val launchContext = mutableStateOf(AiHelperLaunchContext(mode = NutritionAiMode.MealPlan))
 
         composeRule.setContent {
             AppTheme {
@@ -812,16 +813,16 @@ class NutritionUxInstrumentedTest {
                         onBack = {},
                         onOpenSection = { _, _ -> },
                         onOpenAiSheet = { context ->
-                            launchContext = context
-                            sheetVisible = true
+                            launchContext.value = context
+                            sheetVisible.value = true
                         },
                         screenModel = screenModel,
                     )
                     AiHelperSheet(
-                        visible = sheetVisible,
-                        launchContext = launchContext,
-                        onDismiss = { sheetVisible = false },
-                        onApplied = { sheetVisible = false },
+                        visible = sheetVisible.value,
+                        launchContext = launchContext.value,
+                        onDismiss = { sheetVisible.value = false },
+                        onApplied = { sheetVisible.value = false },
                         screenModel = screenModel,
                     )
                 }
@@ -848,8 +849,8 @@ class NutritionUxInstrumentedTest {
             weekKey = weekKey,
             plannedLunch = dayIndex to "Pasta primavera",
         )
-        var sheetVisible = false
-        var launchContext = AiHelperLaunchContext(mode = NutritionAiMode.GroceryList)
+        val sheetVisible = mutableStateOf(false)
+        val launchContext = mutableStateOf(AiHelperLaunchContext(mode = NutritionAiMode.GroceryList))
 
         composeRule.setContent {
             AppTheme {
@@ -857,16 +858,16 @@ class NutritionUxInstrumentedTest {
                     GroceryShoppingScreen(
                         onBack = {},
                         onOpenAiSheet = { context ->
-                            launchContext = context
-                            sheetVisible = true
+                            launchContext.value = context
+                            sheetVisible.value = true
                         },
                         screenModel = screenModel,
                     )
                     AiHelperSheet(
-                        visible = sheetVisible,
-                        launchContext = launchContext,
-                        onDismiss = { sheetVisible = false },
-                        onApplied = { sheetVisible = false },
+                        visible = sheetVisible.value,
+                        launchContext = launchContext.value,
+                        onDismiss = { sheetVisible.value = false },
+                        onApplied = { sheetVisible.value = false },
                         screenModel = screenModel,
                     )
                 }
