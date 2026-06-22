@@ -73,7 +73,7 @@ fun JourneyBanner(
                             Text(
                                 text = text,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = SharedJourneyColors.InkDeep.copy(alpha = 0.8f),
+                                color = SharedJourneyColors.InkSecondary,
                                 fontWeight = FontWeight.Normal,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier

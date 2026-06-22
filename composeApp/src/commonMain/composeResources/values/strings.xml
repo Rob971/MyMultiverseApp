@@ -21,10 +21,6 @@
     <string name="household_gate_error_not_configured">Supabase is not configured on this build.</string>
     <string name="household_gate_error_already_active">You already belong to a household.</string>
     <string name="household_gate_retry">Try again</string>
-    <string name="home_logistics_adventures_title">Adventures</string>
-    <string name="home_logistics_adventures_description">Trips, outings, and experiences we plan together.</string>
-    <string name="home_logistics_budget_title">Budget</string>
-    <string name="home_logistics_budget_description">Spending, savings, and shared family finances.</string>
     <string name="nutrition_hub_title">Nutrition</string>
     <string name="nutrition_entry_loading">Opening your household nutrition...</string>
     <string name="nutrition_entry_error_generic">Could not open nutrition. Try again.</string>
@@ -71,6 +67,8 @@
     <string name="nutrition_ai_loading">Finding nutritional guidance...</string>
     <string name="nutrition_ai_error">Could not generate advice. Try again.</string>
     <string name="nutrition_ai_empty_question">Please enter a nutrition question.</string>
+    <string name="nutrition_ai_idle_title">Describe what you need</string>
+    <string name="nutrition_ai_idle_body">Choose a mode, pick a suggestion, or type your own criteria — then tap Generate.</string>
     <string name="home_logistics_coming_soon">Coming soon</string>
     <string name="nutrition_week_dates">%1$s – %2$s</string>
     <string name="nutrition_grocery_progress">%1$d of %2$d checked</string>

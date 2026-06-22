@@ -49,6 +49,8 @@ object NutritionStringKeys {
         "nutrition_ai_loading",
         "nutrition_ai_error",
         "nutrition_ai_empty_question",
+        "nutrition_ai_idle_title",
+        "nutrition_ai_idle_body",
         "nutrition_week_dates",
         "nutrition_grocery_progress",
         "nutrition_meal_plan_progress",

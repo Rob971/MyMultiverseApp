@@ -279,6 +279,21 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun nutritionAi_idle_showsEmptyStatePrompt() {
+        val screenModel = nutritionScreenModel()
+
+        composeRule.setContent {
+            AppTheme {
+                NutritionAiAdviceScreen(onBack = {}, screenModel = screenModel)
+            }
+        }
+
+        composeRule.onNodeWithTag(NutritionAiTestTags.SCROLL_LIST)
+            .performScrollToNode(hasTestTag(NutritionAiTestTags.IDLE_EMPTY))
+        composeRule.onNodeWithTag(NutritionAiTestTags.IDLE_EMPTY).assertIsDisplayed()
+    }
+
+    @Test
     fun nutritionAi_askQuestion_showsAnswer() {
         val answer = "Add leafy greens to every lunch."
         val screenModel = nutritionScreenModel(adviceAnswer = answer)

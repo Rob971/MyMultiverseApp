@@ -21,10 +21,6 @@
     <string name="household_gate_error_already_active">Du gehörst bereits zu einem Haushalt.</string>
     <string name="household_gate_retry">Erneut versuchen</string>
     <string name="home_logistics_nutrition_description">Mahlzeiten, Einkäufe und Wochenplanung für die Familie.</string>
-    <string name="home_logistics_adventures_title">Abenteuer</string>
-    <string name="home_logistics_adventures_description">Reisen, Ausflüge und Erlebnisse, die wir gemeinsam planen.</string>
-    <string name="home_logistics_budget_title">Budget</string>
-    <string name="home_logistics_budget_description">Ausgaben, Sparen und gemeinsame Familienfinanzen.</string>
     <string name="nutrition_hub_title">Ernährung</string>
     <string name="nutrition_entry_loading">Haushalts-Ernährung wird geöffnet...</string>
     <string name="nutrition_entry_error_generic">Ernährung konnte nicht geöffnet werden. Bitte erneut versuchen.</string>
@@ -71,6 +67,8 @@
     <string name="nutrition_ai_loading">Ernährungstipps werden gesucht...</string>
     <string name="nutrition_ai_error">Beratung konnte nicht erstellt werden. Bitte erneut versuchen.</string>
     <string name="nutrition_ai_empty_question">Bitte geben Sie eine Ernährungsfrage ein.</string>
+    <string name="nutrition_ai_idle_title">Beschreiben Sie, was Sie brauchen</string>
+    <string name="nutrition_ai_idle_body">Wählen Sie einen Modus, einen Vorschlag oder geben Sie Ihre Kriterien ein — dann auf Generieren tippen.</string>
     <string name="home_logistics_coming_soon">Demnächst</string>
     <string name="nutrition_week_dates">%1$s – %2$s</string>
     <string name="nutrition_grocery_progress">%1$d von %2$d erledigt</string>

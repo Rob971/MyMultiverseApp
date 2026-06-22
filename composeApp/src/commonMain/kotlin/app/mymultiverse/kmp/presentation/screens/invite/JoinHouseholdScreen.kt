@@ -208,7 +208,7 @@ private fun JoinHouseholdContent(
         Text(
             text = stringResource(Res.string.invite_join_subtitle, preview.inviterName),
             style = MaterialTheme.typography.bodyLarge,
-            color = SharedJourneyColors.InkDeep.copy(alpha = 0.75f),
+            color = SharedJourneyColors.InkSecondary,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(24.dp))

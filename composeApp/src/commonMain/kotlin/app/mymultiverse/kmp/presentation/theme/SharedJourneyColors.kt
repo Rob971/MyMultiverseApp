@@ -18,6 +18,7 @@ object SharedJourneyColors {
     
     // Accents & Ink
     val InkDeep = Color(0xFF1C1C1C)
+    val InkSecondary = Color(0xFF4F4F4F)
     val InkMuted = Color(0xFF5C5C5C)
     val SageSoft = Color(0xFF8DAA91)
     

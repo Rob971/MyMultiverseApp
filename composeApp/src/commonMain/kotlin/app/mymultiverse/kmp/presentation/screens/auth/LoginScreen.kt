@@ -121,7 +121,7 @@ fun LoginScreen(
                     },
                 ),
                 style = MaterialTheme.typography.bodyLarge,
-                color = SharedJourneyColors.InkDeep.copy(alpha = 0.75f),
+                color = SharedJourneyColors.InkSecondary,
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(28.dp))
