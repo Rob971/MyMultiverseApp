@@ -6,14 +6,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
+import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -154,14 +154,15 @@ fun HomeScreen(
                 )
             },
             confirmButton = {
-                Button(onClick = screenModel::confirmLeaveAndAccept) {
+                JourneyPrimaryButton(onClick = screenModel::confirmLeaveAndAccept) {
                     Text(stringResource(Res.string.auth_pending_invites_switch_confirm))
                 }
             },
             dismissButton = {
-                TextButton(onClick = screenModel::dismissSwitchHouseholdPrompt) {
-                    Text(stringResource(Res.string.auth_pending_invites_switch_cancel))
-                }
+                JourneyTertiaryButton(
+                    onClick = screenModel::dismissSwitchHouseholdPrompt,
+                    label = stringResource(Res.string.auth_pending_invites_switch_cancel),
+                )
             },
         )
     }
@@ -172,14 +173,15 @@ fun HomeScreen(
             title = { Text(stringResource(Res.string.home_delete_account_confirm_title)) },
             text = { Text(stringResource(Res.string.home_delete_account_confirm_message)) },
             confirmButton = {
-                Button(onClick = screenModel::confirmDeleteAccount) {
+                JourneyPrimaryButton(onClick = screenModel::confirmDeleteAccount) {
                     Text(stringResource(Res.string.home_delete_account_confirm_action))
                 }
             },
             dismissButton = {
-                TextButton(onClick = screenModel::dismissDeleteAccountDialog) {
-                    Text(stringResource(Res.string.auth_pending_invites_switch_cancel))
-                }
+                JourneyTertiaryButton(
+                    onClick = screenModel::dismissDeleteAccountDialog,
+                    label = stringResource(Res.string.auth_pending_invites_switch_cancel),
+                )
             },
         )
     }
@@ -484,7 +486,7 @@ private fun HomeErrorContent(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 24.dp),
             )
-            Button(
+            JourneyPrimaryButton(
                 onClick = onRetry,
                 modifier = Modifier
                     .padding(top = 16.dp)
@@ -610,14 +612,15 @@ fun HomeOnboardingContent(
             !onboardingUiState.isCreating &&
             onboardingUiState.nameAvailability == HouseholdNameAvailability.Available
 
-        Button(
+        JourneyPrimaryButton(
             onClick = onCreate,
             enabled = canCreate,
+            isLoading = onboardingUiState.isCreating,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag(HomeTestTags.ONBOARDING_CREATE_BUTTON),
         ) {
-            HomeCreateButtonLabel(isCreating = onboardingUiState.isCreating)
+            Text(stringResource(Res.string.household_gate_create_button))
         }
 
         Text(
@@ -632,17 +635,6 @@ fun HomeOnboardingContent(
         Spacer(Modifier.height(8.dp))
         }
     }
-}
-
-@Composable
-private fun HomeCreateButtonLabel(isCreating: Boolean) {
-    if (isCreating) {
-        CircularProgressIndicator(
-            modifier = Modifier.padding(end = 8.dp),
-            strokeWidth = 2.dp,
-        )
-    }
-    Text(stringResource(Res.string.household_gate_create_button))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -755,7 +747,7 @@ fun HomeWelcomeContent(
                             style = MaterialTheme.typography.bodyMedium,
                             color = SharedJourneyColors.InkMuted,
                         )
-                        Button(
+                        JourneyPrimaryButton(
                             onClick = onOpenNutrition,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -864,24 +856,21 @@ private fun HomeRenameHouseholdDialog(
             }
         },
         confirmButton = {
-            Button(
+            JourneyPrimaryButton(
                 onClick = onConfirm,
                 enabled = !uiState.isSaving &&
                     uiState.nameAvailability == HouseholdNameAvailability.Available,
+                isLoading = uiState.isSaving,
             ) {
-                if (uiState.isSaving) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.padding(end = 8.dp),
-                        strokeWidth = 2.dp,
-                    )
-                }
                 Text(stringResource(Res.string.home_rename_household_save))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !uiState.isSaving) {
-                Text(stringResource(Res.string.auth_pending_invites_switch_cancel))
-            }
+            JourneyTertiaryButton(
+                onClick = onDismiss,
+                enabled = !uiState.isSaving,
+                label = stringResource(Res.string.auth_pending_invites_switch_cancel),
+            )
         },
     )
 }

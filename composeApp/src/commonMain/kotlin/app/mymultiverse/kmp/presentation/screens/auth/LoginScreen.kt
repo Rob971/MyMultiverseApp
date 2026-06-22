@@ -11,14 +11,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
+import app.mymultiverse.kmp.presentation.components.JourneySecondaryButton
+import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -126,7 +125,7 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(28.dp))
 
-            OutlinedButton(
+            JourneySecondaryButton(
                 onClick = screenModel::signInWithGoogle,
                 enabled = !uiState.isLoading && !showConfigMissing,
                 modifier = Modifier
@@ -136,7 +135,7 @@ fun LoginScreen(
                 Text(stringResource(Res.string.auth_continue_google))
             }
             Spacer(modifier = Modifier.height(12.dp))
-            OutlinedButton(
+            JourneySecondaryButton(
                 onClick = screenModel::signInWithApple,
                 enabled = !uiState.isLoading && !showConfigMissing,
                 modifier = Modifier
@@ -198,44 +197,35 @@ fun LoginScreen(
             }
 
             Spacer(modifier = Modifier.height(20.dp))
-            Button(
+            JourneyPrimaryButton(
                 onClick = screenModel::submitEmailAuth,
-                enabled = !uiState.isLoading && !showConfigMissing && uiState.canSubmitEmailAuth,
+                enabled = !showConfigMissing && uiState.canSubmitEmailAuth,
+                isLoading = uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag(LoginTestTags.SUBMIT_BUTTON),
             ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.height(20.dp),
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    Text(
-                        stringResource(
-                            if (uiState.isSignUpMode) {
-                                Res.string.auth_sign_up_button
-                            } else {
-                                Res.string.auth_sign_in_button
-                            },
-                        ),
-                    )
-                }
-            }
-            TextButton(
-                onClick = screenModel::toggleSignUpMode,
-                enabled = !uiState.isLoading && !showConfigMissing,
-            ) {
                 Text(
                     stringResource(
                         if (uiState.isSignUpMode) {
-                            Res.string.auth_switch_to_sign_in
+                            Res.string.auth_sign_up_button
                         } else {
-                            Res.string.auth_switch_to_sign_up
+                            Res.string.auth_sign_in_button
                         },
                     ),
                 )
             }
+            JourneyTertiaryButton(
+                onClick = screenModel::toggleSignUpMode,
+                enabled = !uiState.isLoading && !showConfigMissing,
+                label = stringResource(
+                    if (uiState.isSignUpMode) {
+                        Res.string.auth_switch_to_sign_in
+                    } else {
+                        Res.string.auth_switch_to_sign_up
+                    },
+                ),
+            )
         }
     }
 }
