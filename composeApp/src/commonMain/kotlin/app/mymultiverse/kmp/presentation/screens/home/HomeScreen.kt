@@ -5,8 +5,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
+import app.mymultiverse.kmp.presentation.components.JourneyErrorContent
 import app.mymultiverse.kmp.presentation.components.JourneyIconButton
+import app.mymultiverse.kmp.presentation.components.JourneyLoadingContent
 import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -188,18 +189,42 @@ fun HomeScreen(
 
     when (val phase = homePhase) {
         HomePhase.Loading -> {
-            HomeLoadingContent(
-                onSignOut = screenModel::signOut,
-                modifier = Modifier.testTag(HomeTestTags.ONBOARDING_LOADING),
-            )
+            Scaffold(
+                topBar = { HomeTopBar(onSignOut = screenModel::signOut) },
+                containerColor = Color.Transparent,
+            ) { padding ->
+                JourneyLoadingContent(
+                    message = stringResource(Res.string.household_gate_loading),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    containerTestTag = HomeTestTags.ONBOARDING_LOADING,
+                )
+            }
         }
 
         is HomePhase.Error -> {
-            HomeErrorContent(
-                error = phase.cause,
-                onRetry = { screenModel.refreshMembership(forceLoadingState = true) },
-                onSignOut = screenModel::signOut,
-            )
+            val message = when (phase.cause) {
+                HouseholdGateError.Generic -> stringResource(Res.string.household_gate_error_generic)
+                HouseholdGateError.NotConfigured -> stringResource(Res.string.household_gate_error_not_configured)
+                HouseholdGateError.AlreadyActive -> stringResource(Res.string.household_gate_error_already_active)
+                HouseholdGateError.HouseholdRequired -> stringResource(Res.string.household_gate_error_generic)
+            }
+            Scaffold(
+                topBar = { HomeTopBar(onSignOut = screenModel::signOut) },
+                containerColor = Color.Transparent,
+            ) { padding ->
+                JourneyErrorContent(
+                    message = message,
+                    retryLabel = stringResource(Res.string.household_gate_retry),
+                    onRetry = { screenModel.refreshMembership(forceLoadingState = true) },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    containerTestTag = HomeTestTags.ONBOARDING_ERROR,
+                    retryButtonTestTag = HomeTestTags.ONBOARDING_RETRY_BUTTON,
+                )
+            }
         }
 
         HomePhase.Onboarding -> {
@@ -426,75 +451,6 @@ private fun HomeTopBar(
             }
         },
     )
-}
-
-@Composable
-private fun HomeLoadingContent(
-    onSignOut: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Scaffold(
-        topBar = { HomeTopBar(onSignOut = onSignOut) },
-        containerColor = Color.Transparent,
-    ) { padding ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(padding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            CircularProgressIndicator(color = SharedJourneyColors.MediterraneanTeal)
-            Text(
-                text = stringResource(Res.string.household_gate_loading),
-                modifier = Modifier.padding(top = 12.dp),
-                color = SharedJourneyColors.InkMuted,
-            )
-        }
-    }
-}
-
-@Composable
-private fun HomeErrorContent(
-    error: HouseholdGateError,
-    onRetry: () -> Unit,
-    onSignOut: () -> Unit,
-) {
-    val message = when (error) {
-        HouseholdGateError.Generic -> stringResource(Res.string.household_gate_error_generic)
-        HouseholdGateError.NotConfigured -> stringResource(Res.string.household_gate_error_not_configured)
-        HouseholdGateError.AlreadyActive -> stringResource(Res.string.household_gate_error_already_active)
-        HouseholdGateError.HouseholdRequired -> stringResource(Res.string.household_gate_error_generic)
-    }
-
-    Scaffold(
-        topBar = { HomeTopBar(onSignOut = onSignOut) },
-        containerColor = Color.Transparent,
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .testTag(HomeTestTags.ONBOARDING_ERROR),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                text = message,
-                color = SharedJourneyColors.TerracottaOrange,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 24.dp),
-            )
-            JourneyPrimaryButton(
-                onClick = onRetry,
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .testTag(HomeTestTags.ONBOARDING_RETRY_BUTTON),
-            ) {
-                Text(stringResource(Res.string.household_gate_retry))
-            }
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

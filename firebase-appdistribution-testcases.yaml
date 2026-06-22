@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 24
+version: 25
 updated: 2026-06-22
 
 summary: |
@@ -16,6 +16,7 @@ summary: |
   Post-create: snackbar on Welcome Home offers Invite action to open Household members.
   UI polish: create household is always primary; grocery uses cart icon; destructive actions use terracotta styling.
   Touch targets: grocery row edit/save, meal plan clear, scaffold back, week nav, and overflow actions use 48dp icon buttons.
+  Home membership loading and error states use shared Journey loading/error components (teal spinner, terracotta retry).
 
 testcases:
   - id: auth-sign-in
