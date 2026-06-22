@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 30
+version: 31
 updated: 2026-06-22
 
 summary: |
@@ -21,6 +21,7 @@ summary: |
   Foundation polish: InkSecondary subtitles, complete typography scale, nutrition AI idle empty state, removed orphaned adventures/budget home strings.
   Wave B mobile polish: snackbars above grocery input bar, inline login/join field validation, pull-to-refresh on grocery and meal plan, route transitions, grocery row min height, animated collapsible chevrons, light haptics on grocery toggle.
   Wave C platform breadth: system dark theme with Napolitan dark palette; grocery side-panel input and two-column meal plan (today vs rest of week) on width >= 600dp; terracotta AI read-only grocery accent.
+  Wave C QA (v31): dedicated manual cases for dark theme, wide grocery/meal plan layouts, and AI terracotta accent.
 
 testcases:
   - id: auth-sign-in
@@ -382,7 +383,7 @@ testcases:
     steps:
       - From Nutrition hub, tap the Grocery card.
     expected:
-      - Grocery screen shows week label, empty state or existing items, and add field at bottom.
+      - Grocery screen shows week label, empty state or existing items, and add field (sticky bottom bar on phone; right side panel when shortest width >= 600dp).
       - Keyboard does not cover the input when typing.
 
   - id: grocery-crud
@@ -526,6 +527,56 @@ testcases:
       - Enter criteria, generate preview, tap Apply to meal plan.
     expected:
       - Preview shows lunch/dinner lines; apply fills the selected week's meal fields.
+
+  - id: wavec-dark-theme-napolitan
+    title: System dark theme (Napolitan palette)
+    steps:
+      - Sign in with an active household.
+      - Enable system dark mode (Settings → Display → Dark theme, or quick settings).
+      - Visit Welcome Home, Nutrition hub, Grocery shopping, and Weekly meal plan.
+      - Toggle back to light mode and spot-check the same screens.
+    expected:
+      - Dark mode uses warm charcoal backgrounds (not pure black); body text stays readable on cards and glass surfaces.
+      - Napolitan background illustration is subdued (low alpha); primary terracotta and teal accents remain visible.
+      - No hardcoded light-only gray text; subtitles and empty states remain legible.
+      - Switching light ↔ dark updates visible screens without stale colors after navigation.
+
+  - id: wavec-wide-grocery-side-panel
+    title: Wide grocery layout (side-panel input)
+    steps:
+      - Use a tablet, foldable inner display, or emulator with shortest width >= 600dp (e.g. Pixel Tablet, 7" tablet AVD).
+      - Sign in as an editor; open Nutrition → Grocery shopping.
+      - Add an item from the input area; confirm list scroll and pull-to-refresh still work.
+      - Rotate or resize below 600dp width if possible.
+    expected:
+      - List occupies the main area on the left; add field and + button sit in a fixed right panel (testTag grocery_sticky_input_bar).
+      - No duplicate bottom sticky bar on wide layout; snackbars are not hidden behind input.
+      - Adding items works from the side panel; list updates immediately.
+      - Below 600dp width, layout falls back to phone mode (bottom sticky input bar).
+
+  - id: wavec-wide-meal-plan-columns
+    title: Wide meal plan layout (today vs week columns)
+    steps:
+      - Use a tablet or emulator with shortest width >= 600dp.
+      - Open Weekly meal plan on the current week (today visible in the week banner).
+      - Ensure at least one upcoming day exists in the plan or expand a day card.
+      - Resize below 600dp or switch to a phone.
+    expected:
+      - On wide layout, Today section and day cards appear in the left column; Rest of week (or Days) header and remaining day cards appear in the right column.
+      - Header, empty state, bulk grocery button, and AI chips remain full width above the columns.
+      - Day expand/collapse and meal editing work in both columns.
+      - Below 600dp, layout falls back to single-column stacked days (today block, then upcoming days).
+
+  - id: wavec-ai-grocery-terracotta-accent
+    title: AI read-only grocery terracotta accent
+    steps:
+      - As an editor, open Weekly meal plan, enter a meal, and tap Generate AI grocery list (or Generate groceries for planned meals).
+      - Open Grocery shopping and scroll to the AI suggestions section (read-only cards, not editable list rows).
+      - Compare with regular grocery item rows and meal-plan teal actions.
+    expected:
+      - AI suggestion cards use terracotta sparkles icon and terracotta left border accent (not Mediterranean teal).
+      - Subtitle under the section header uses muted ink; card labels use primary ink and remain readable in light and dark mode.
+      - Tapping Add all or individual adopt actions still moves items into the editable grocery list.
 
   - id: language-picker
     title: App language from Home settings
