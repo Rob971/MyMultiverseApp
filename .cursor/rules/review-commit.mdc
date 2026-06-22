@@ -1,0 +1,53 @@
+---
+description: PR review, self-review, and commit standards — enforce before merge or push
+alwaysApply: true
+---
+
+# Review & commit standards
+
+Apply on every implementation task, code review, and when the user asks for a commit or PR.
+
+## Before claiming done (self-review)
+
+1. **Scope** — Smallest correct diff; no drive-by refactors or unrelated files.
+2. **Architecture** — Domain ← data ← presentation; screen models do not import `*Impl`.
+3. **i18n** — New UI copy in all 8 `values*` locales; composables use `stringResource`; screen models expose data, not formatted English.
+4. **Design system** — Reuse `Journey*` / `FamilyLogistics*` / `JourneySemanticColors`; no raw `OutlinedTextField`, `Icons.Default`, or one-off hex colors.
+5. **UX states** — Loading, error, empty handled; snackbars above `bottomBar` where applicable; `imePadding` on text-heavy screens.
+6. **Tests** — Unit tests for domain/screen model changes; instrumented only for critical UI paths; fakes implement full interfaces.
+7. **QA YAML** — Update `firebase-appdistribution-testcases.yaml` (bump `version`) when user-facing flows change.
+8. **Secrets** — No credentials, `local.properties` values, or `google-services.json` in commits.
+9. **Gradle** — Run `:composeApp:testDebugUnitTest` (and instrumented compile if UI touched) before done.
+
+## PR checklist
+
+- Title: imperative, feature-focused (match repo style).
+- Body: summary bullets + test plan (unit / instrumented / manual).
+- CI: `gh pr checks N --watch` until green before merge.
+- Merge: squash to `main`; delete feature branch.
+- Release: **manual only** — `gh workflow run "KMP CI" --ref main -f job=release -f version_bump=patch` (not on every PR).
+
+## Commit rules
+
+- Commit **only when the user explicitly asks** (or clearly requests “ship” / “commit” / “finish with release”).
+- Message: 1–2 sentences, **why** not just what; use HEREDOC for formatting.
+- Never: `--no-verify`, force-push to `main`, amend unless user requested and HEAD is unpushed local commit.
+- Pre-commit: `git status`, `git diff`, `git log -1` for style; exclude secret files.
+
+## Review feedback priorities (blockers first)
+
+| Priority | Check |
+|----------|--------|
+| P0 | Security (RLS, auth, secrets), data loss, crash |
+| P1 | i18n parity, viewer read-only violations, wrong layer imports |
+| P2 | Missing tests, broken `testTag`s, Firebase YAML drift |
+| P3 | Design-system drift (non-Journey controls), touch targets &lt; 48dp |
+| P4 | Naming, minor style |
+
+## Anti-patterns in review
+
+- Hardcoded English in Kotlin UI layers.
+- `stringResource` inside `LaunchedEffect` / non-`@Composable` lambdas.
+- Business logic in `@Composable` bodies.
+- Mixing AI read-only lists with editable CRUD without explicit UX separation.
+- Phone-only layout assumptions (test wide ≥ `ScreenLayout.expandedMinWidth` when touching grocery/meal plan).

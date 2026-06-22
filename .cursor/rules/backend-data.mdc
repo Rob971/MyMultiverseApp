@@ -1,37 +1,53 @@
 ---
-description: Data layer, persistence, services, and repository implementations
+description: Data layer, offline-first sync, persistence, and service implementations
 globs: "**/data/**/*.kt"
 alwaysApply: false
 ---
 
 # Data & backend (client-side)
 
-This app is KMP-first; “backend” here means data layer, local persistence, and service implementations.
+KMP client data layer — not server schema (see `supabase-backend.mdc` for SQL/RLS).
 
 ## Repositories
 
-- Implement interfaces from `domain/repository/` (e.g. `NutritionRepository`, `NutritionSessionCoordinator`).
-- Split nutrition sharing into **local** (`data/local/`), **remote API** (`data/remote/`), and **sync** (`data/sync/`).
-- Personal nutrition: `NutritionRepositoryImpl` → `NutritionLocalStore` only.
-- Shared spaces: `OfflineFirstNutritionRepository` + `NutritionSyncEngine` (outbox on push failure) + Realtime.
+- Implement `domain/repository/` and domain ports (`NutritionSessionCoordinator`).
+- **Personal/local:** `NutritionRepositoryImpl` → `NutritionLocalStore`.
+- **Household shared:** `OfflineFirstNutritionRepository` + `NutritionSyncEngine` (outbox on push failure) + Supabase Realtime.
+- **Auth/household:** `SupabaseAuthRepository`, `SupabaseHouseholdRepository`, `SupabaseHouseholdCollaborationRepository`.
+- Map DTOs ↔ domain at boundary; composables never see DTOs.
+
+## Sync & offline
+
+- Local-first reads from `NutritionLocalStore`; push via sync engine when online.
+- Week key scopes grocery, meal plan, AI grocery per household week.
+- Conflict strategy: server wins on pull; outbox retries on push failure.
+- Test: `OfflineFirstNutritionRepositoryTest`, codec round-trips.
 
 ## Services
 
-- Implement `domain/service/` contracts in `data/service/` (e.g. `LocalNutritionAiAssistantService`).
-- Validate inputs; return `Result` with stable error messages for empty/invalid input.
-- Keep AI/business rules in **domain** (`NutritionAiPlanner`); services delegate after optional delay/simulation.
+- Implement `domain/service/` in `data/service/` (e.g. `LocalNutritionAiAssistantService`).
+- AI/business rules stay in **domain** (`NutritionAiPlanner`); services delegate after optional delay.
+- Validate inputs; return `Result` with stable error types — screen models map to UI.
 
-## Storage
+## Storage & codecs
 
-- Use shared codecs (`NutritionStorageCodec`) for serialization; test round-trips in unit tests.
-- Platform storage via expect/actual only when no shared store exists.
+- `NutritionStorageCodec` for serialization; unit test encode/decode round-trips.
+- `multiplatform-settings` for preferences where appropriate.
+- Platform storage `expect`/`actual` only when no shared store exists.
+
+## Observability
+
+- `data/observability/` — Crashlytics breadcrumbs (Android); no credentials in breadcrumbs.
+- Log via Kermit; redact tokens and emails in production paths.
 
 ## Error handling
 
-- Fail fast on invalid input at service boundary; screen models map failures to user-facing `NutritionAiState.Error` or snackbars.
-- No silent swallowing of persistence errors in production paths.
+- Fail fast on invalid input at service boundary.
+- No silent swallow of persistence errors on write paths.
+- Screen models: `NutritionAiState.Error`, snackbars, or inline field errors — not thrown exceptions to UI.
 
 ## Testing
 
-- Repository impl tests with fake/in-memory drivers where possible.
-- Service tests for validation and success paths (`LocalNutritionAdviceServiceTest`).
+- Repository tests with in-memory fakes / test store.
+- Supabase repos: mock HTTP or integration scripts; unit-test DTO mapping and error parsing.
+- When adding repository methods, update **all** fakes (`commonTest`, `androidInstrumentedTest`).

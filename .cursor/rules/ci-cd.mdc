@@ -1,6 +1,6 @@
 ---
-description: CI/CD, GitHub Actions, and Firebase App Distribution practices
-globs: "**/.github/**/*.{yml,yaml},**/firebase*.yaml"
+description: GitHub Actions, release workflow, Firebase App Distribution
+globs: "**/.github/**/*.{yml,yaml},**/firebase*.yaml,gradle/app-version.properties"
 alwaysApply: false
 ---
 
@@ -8,49 +8,61 @@ alwaysApply: false
 
 ## Workflows
 
-| Workflow | When | Purpose |
-|----------|------|---------|
-| [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml) | Push, PR, manual | Android unit+APK, merge-gate instrumented, Supabase migration validation |
-| [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml) | `main` supabase push, manual | `db push` + deploy `notify-household-invite` / `delete-account` + smoke probe |
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `.github/workflows/kmp-ci.yml` | PR, `main` push, manual | Android CI, instrumented, Supabase migration validation, release |
+| `.github/workflows/supabase-deploy.yml` | `main` supabase changes, manual | `db push`, edge deploy, smoke probes |
 
-### KMP CI jobs (tiered)
+## KMP CI jobs
 
-- **Feature branch:** open a PR to `main` — one workflow run per push (`pull_request` synchronize only; no duplicate `push` trigger).
-- **PR:** `Android CI`, `Supabase Migrations`, and `Android Instrumented UI Tests` in parallel; **no Firebase Release** (merge gate only).
-- **Push `main`/`master`:** same jobs as PR — **no automatic Firebase or version bump**.
-- **Manual dispatch:** `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `release`. **iOS compile is disabled** (`ios-compatibility` job `if: false`; verify locally with `./gradlew :composeApp:compileKotlinIosSimulatorArm64`).
+| Event | Jobs |
+|-------|------|
+| **PR / push `main`** | CI gate, Android CI (unit + APK), Android Instrumented UI Tests, Supabase Migrations |
+| **PR / push `main`** | No automatic release or version bump |
+| **Manual `workflow_dispatch`** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, **`release`** |
+| **iOS** | Job disabled (`if: false`); compile locally: `./gradlew :composeApp:compileKotlinIosSimulatorArm64` |
 
-### Supabase
+### Release job (manual only)
 
-- **CI validation (no remote writes):** `supabase start` applies migrations and exposes REST for invite preview RPC smoke tests; remote smoke via `scripts/verify-supabase-household.sh` on PR/`main` only. Set `SUPABASE_TEST_EMAIL` + `SUPABASE_TEST_PASSWORD` for authenticated round-trip (export RPC, device token, nutrition persistence).
-- **Deploy:** `supabase-deploy.yml` runs `db push`, configures outbox `pg_net` delivery, and edge function deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change. Migrations: `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`; optional `SUPABASE_URL` + `SUPABASE_ANON_KEY` for outbox auto-dispatch config. Functions: also `SUPABASE_SERVICE_ROLE_KEY`; optional `RESEND_API_KEY`, `INVITE_FROM_EMAIL`. Smoke: `scripts/verify-supabase-edge-functions.sh`, `scripts/verify-household-notification-delivery.sh`.
-- **Android builds:** `SUPABASE_URL` + `SUPABASE_ANON_KEY` → `local.properties` via composite setup action.
-- **`GOOGLE_SERVICES_JSON`:** enables Crashlytics in CI debug APKs.
+```bash
+gh workflow run "KMP CI" --ref main -f job=release -f version_bump=patch
+```
 
-### Release job
+Flow: bump `gradle/app-version.properties` → build debug APK → Firebase App Distribution → commit `chore(version): release X.Y.Z [skip ci]` → tag `vX.Y.Z` → push.
 
-- Runs on **manual `release` or `all` dispatch only** — not on PRs or `main` push.
-- Flow: **bump version** (`version_bump`: patch | minor | none) → **build debug APK** → Firebase App Distribution → **commit**, **git tag** `vX.Y.Z`, push (`chore(version): release … [skip ci]`).
-- **`release` only:** skips merge-gate jobs; builds and ships immediately after bump.
-- **`all`:** runs full CI first, then release with the selected bump.
+`version_bump`: `patch` | `minor` | `none`.
 
-## Change guidelines
+Watch: `gh pr checks N --watch --interval 15` on PRs.
 
-- Keep the tiered model: manual/feature work via **workflow_dispatch**; merge gate on PR/`main`.
-- Do not run `db push` inside KMP CI — deploy workflow only.
-- Never commit secrets; use GitHub Secrets.
-- **CI speed:** merged unit+APK; parallel merge-gate jobs; AVD snapshot cache; shallow checkout; Gradle `setup-gradle` cache; pinned `firebase-tools` with npm cache; Supabase validation parallel on PR/`main` only.
+## Secrets (GitHub — never commit)
+
+| Secret | Use |
+|--------|-----|
+| `SUPABASE_URL`, `SUPABASE_ANON_KEY` | Android CI `local.properties` |
+| `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF` | Migrations deploy |
+| `SUPABASE_SERVICE_ROLE_KEY` | Edge functions, smoke scripts |
+| `GOOGLE_SERVICES_JSON` | Crashlytics in CI APK |
+| Firebase App Distribution tokens | Release job composite action |
+
+## Supabase in CI
+
+- **Validation:** `supabase start` + migration apply + invite preview RPC smoke (no remote writes in PR CI).
+- **Deploy:** separate workflow on `main` when `supabase/**` changes — not inside KMP CI `db push`.
 
 ## Firebase App Distribution
 
-- Release notes: semver from `gradle/app-version.properties` + branch/SHA + QA checklist excerpt from `firebase-appdistribution-testcases.yaml`.
-- Update YAML when shipping UX changes.
+- Release notes: semver from `gradle/app-version.properties` + branch/SHA + QA checklist from `firebase-appdistribution-testcases.yaml`.
+- Keep YAML `version` in sync when adding manual test cases.
 
-## Commits & PRs
+## PR & commit policy
 
-- Commit only when user asks; match repo commit message style.
-- PRs: behavior change, test plan (unit + instrumented + manual), UI screenshots when relevant.
+- See `review-commit.mdc`: commit when user asks; squash merge to `main`; PR body includes test plan.
+- Do not force-push `main`; no secrets in artifacts or logs.
 
-## Artifacts
+## CI performance
 
-- Debug APK: `composeApp-debug-apk` from **Android CI** (validation only; Release rebuilds after bump).
+- Parallel merge-gate jobs; Gradle cache; shallow checkout; pinned `firebase-tools`; AVD snapshot for instrumented.
+
+## Current release line
+
+Check `gradle/app-version.properties` on `main` for `version.name` / `version.code` (e.g. 1.0.25 / 73).

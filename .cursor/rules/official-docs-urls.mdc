@@ -1,9 +1,34 @@
 ---
-description: Prefer Cursor-indexed official docs for new or fast-moving libraries
+description: Official documentation sources for this project's tech stack
 alwaysApply: true
 ---
 
 # Official documentation in Cursor
 
-- For **new libraries** or **latest major versions** (e.g. Framer Motion, a fresh Compose/KMP stack), outdated training patterns are common. Encourage indexing **current** official docs in Cursor (**Settings → Docs**), then grounding answers with **`@docs`** when those sources are listed.
-- When suggesting APIs for a dependency that may have drifted since training cutoffs, briefly note that the user should confirm against their indexed doc (or the library’s official site) if they have not added it yet.
+Training data drifts from current APIs. For new libraries or version bumps, index official docs in **Cursor Settings → Docs** and ground answers with **`@docs`**.
+
+## Recommended doc sources (this repo)
+
+| Stack | Official docs |
+|-------|----------------|
+| Kotlin / KMP | https://kotlinlang.org/docs/multiplatform.html |
+| Compose Multiplatform | https://www.jetbrains.com/compose-multiplatform/ |
+| Material 3 Compose | https://developer.android.com/develop/ui/compose/designsystems/material3 |
+| Koin | https://insert-koin.io/docs/reference/koin-mp/kmp/ |
+| kotlinx.coroutines | https://github.com/Kotlin/kotlinx.coroutines |
+| Supabase Kotlin | https://supabase.com/docs/reference/kotlin/introduction |
+| Supabase (DB, RLS, Edge) | https://supabase.com/docs |
+| Ktor client | https://ktor.io/docs/client.html |
+| Gradle KMP | https://kotlinlang.org/docs/gradle-configure-project.html |
+| Firebase Crashlytics (Android) | https://firebase.google.com/docs/crashlytics |
+
+## Repo-local skills
+
+- `.agents/skills/supabase/SKILL.md` — migrations, auth, RLS, edge functions, MCP/CLI.
+- `.agents/skills/supabase-postgres-best-practices/SKILL.md` — query and schema performance.
+
+## Version pins
+
+Confirm APIs against `gradle/libs.versions.toml` before suggesting deprecated patterns (e.g. Voyager is catalogued but **unused** — navigation is custom `AppNavigator`).
+
+When suggesting a dependency upgrade, note breaking changes from release notes and run unit + instrumented compile after bump.

@@ -1,10 +1,52 @@
 ---
-description: iOS-specific implementations in iosMain
-globs: "**/iosMain/**/*.kt"
+description: iOS-specific implementations, Swift interop, and platform gaps
+globs: "**/iosMain/**/*.{kt,swift}"
 alwaysApply: false
 ---
 
-# iOS Native Interop
+# iOS platform
 
-- Use `platform.UIKit.*` for native UI components.
-- Ensure all Swift interop uses `@ObjCName` to keep names clean for the iOS team.
+## Source set
+
+- `composeApp/src/iosMain/kotlin/app/mymultiverse/kmp/`
+- Shared UI in `commonMain` — iosMain is platform adapters only.
+
+## expect/actual in this project
+
+| Feature | iosMain location |
+|---------|------------------|
+| Auth deeplink | `data/supabase/AuthDeeplinkHandler.ios.kt` |
+| Language | `domain/manager/IOSLanguageManager.kt` |
+| Haptics | `presentation/platform/JourneyHaptics.ios.kt` (no-op today) |
+| Push token | `data/platform/` APNs registration |
+| Personal export | `data/platform/` |
+
+## UIKit & interop
+
+- Use `platform.UIKit.*` when native UI is required.
+- `@ObjCName` on public APIs exposed to Swift for clean names.
+- Prefer Compose Multiplatform for all screens — no duplicate SwiftUI flows unless unavoidable.
+
+## Build & CI
+
+- iOS compile **not** in default CI (cost); verify locally or manual workflow dispatch.
+- `./gradlew :composeApp:compileKotlinIosSimulatorArm64`
+- Xcode project: `iosApp/` — embeds Compose framework from KMP build.
+
+## Parity with Android
+
+- Same `AppTheme`, navigation, and i18n resources from `commonMain`.
+- Haptics: wire `JourneyHaptics.ios.kt` when UIKit feedback is ready (Android already has light click).
+- OAuth deeplink: same scheme `app.mymultiverse.kmp://auth/callback`.
+- Push: APNs token upload parallels FCM on Android.
+
+## Testing
+
+- No iosInstrumentedTest in repo today — rely on unit tests + manual iOS smoke.
+- After iosMain changes: compile iOS target before claiming done.
+
+## Anti-patterns
+
+- Android-only APIs in `commonMain` without expect/actual.
+- Platform-specific strings outside `composeResources`.
+- Duplicating nutrition/business logic in Swift.

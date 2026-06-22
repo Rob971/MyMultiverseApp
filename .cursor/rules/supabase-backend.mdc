@@ -1,0 +1,60 @@
+---
+description: Supabase migrations, RLS, edge functions, and client integration
+globs: "**/{supabase/**,**/data/supabase/**,**/supabase/**}/*"
+alwaysApply: false
+---
+
+# Supabase backend
+
+Use `.agents/skills/supabase/SKILL.md` and `supabase-postgres-best-practices/SKILL.md` for migrations, RLS, and query review.
+
+## Repo layout
+
+- `supabase/migrations/` — ordered SQL (never edit applied migrations; add new files).
+- `supabase/functions/` — Deno edge functions (`notify-household-invite`, `invite-open`, `delete-account`).
+- Client: `composeApp/.../data/supabase/` — factories, repositories, DTOs, `AuthDeeplinkHandler` expect/actual.
+
+## Migration rules
+
+- Every schema change: new timestamped migration; test locally with `supabase start` / `db reset`.
+- **RLS required** on user-facing tables; viewer read-only policies for nutrition data.
+- Household model: `households`, members, invites, roles (owner/admin/editor/viewer).
+- Nutrition sync: week-scoped payloads; realtime channels per household.
+- CI validates migrations on PR (`supabase start` + RPC smoke); deploy via `supabase-deploy.yml` on `main` push to `supabase/**`.
+
+## Edge functions
+
+- TypeScript/Deno; unit-test pure helpers in `*_test.ts` alongside function.
+- Secrets in GitHub Actions only: `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `INVITE_FROM_EMAIL`, FCM/APNs keys.
+- Smoke: `scripts/verify-supabase-edge-functions.sh`, `scripts/verify-household-notification-delivery.sh`.
+
+## Kotlin client (supabase-kt 3.5.0)
+
+- Build-time secrets: `local.properties` → generated `SupabaseSecrets.kt` (never commit keys).
+- Modules: auth, postgrest, realtime, functions.
+- `Unconfigured*` repositories when URL/key missing — UI shows configuration gate.
+- Auth: email/password, OAuth deeplink `app.mymultiverse.kmp://auth/callback`.
+- Map Supabase errors to domain failures; no raw exception messages in UI.
+
+## Invite & collaboration
+
+- Invite preview RPC + edge `invite-open` for deep links.
+- Email on invite must match auth email to accept.
+- Push via outbox + `notify-household-invite` (FCM Android, APNs iOS).
+
+## Testing & verification
+
+```bash
+./scripts/verify-supabase-household.sh      # staging smoke (needs env)
+./scripts/test-supabase-invite-edge.sh      # Deno edge helpers
+./scripts/ci-test-invite-preview-rpc.sh     # RPC smoke
+```
+
+Unit tests: `commonTest/.../data/supabase/`, invite parsers, collaboration repositories.
+
+## Security checklist (every migration/RLS change)
+
+1. RLS enabled; policies scoped to `auth.uid()` and household membership role.
+2. Viewers cannot write nutrition rows (enforce in RLS + client read-only UI).
+3. Service role only in edge functions / CI — never in app APK.
+4. No PII in migration comments or logs.

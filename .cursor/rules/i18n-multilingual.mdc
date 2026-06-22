@@ -1,46 +1,53 @@
 ---
-description: Multilingual (i18n) standards — consistent strings across all supported locales
+description: Multilingual (i18n) standards — 8 locales, parity tests, RTL
 alwaysApply: true
 ---
 
 # Multilingual support (i18n)
 
-User-facing text must be **fully localized and consistent** across every supported locale. Treat i18n as a first-class requirement, not an afterthought.
+User-facing text must be **fully localized** across every supported locale. i18n is a merge blocker.
 
 ## Supported locales (all required for new keys)
 
-Add every new string to **each** of these `composeResources` directories:
+Add every new `string name` to **each** directory under `composeApp/src/commonMain/composeResources/`:
 
-- `values` (English, default)
-- `values-fr`, `values-es`, `values-de`, `values-it`
-- `values-ar`, `values-ar-rSA`
-- `values-nap` (Neapolitan)
+| Directory | Language |
+|-----------|----------|
+| `values` | English (default) |
+| `values-fr` | French |
+| `values-es` | Spanish |
+| `values-de` | German |
+| `values-it` | Italian |
+| `values-ar` | Arabic |
+| `values-ar-rSA` | Arabic (Saudi) |
+| `values-nap` | Neapolitan |
 
-Missing a locale breaks parity tests and ships incomplete UX for part of the audience.
+Missing a locale fails `*LocaleStringsTest` and ships incomplete UX.
 
 ## Where strings live
 
-- **Resources only**: `composeApp/src/commonMain/composeResources/values*/strings.xml`
-- **UI**: `stringResource(Res.string.<key>, …)` in `@Composable` functions
-- **Never** hardcode user-visible English in composables, screen models, domain, or data layers
-- **Screen models** expose counts/ids; **composables** format messages (snackbars, summaries, labels)
+- **Resources only:** `composeResources/values*/strings.xml`
+- **UI:** `stringResource(Res.string.<key>, …)` in `@Composable` functions
+- **Never** hardcode user-visible text in composables, screen models, domain, or data
+- **Screen models** expose counts/ids/enums; **composables** format snackbars, labels, summaries
+- Resolve strings in composable scope — pass `String` into `LaunchedEffect`/callbacks, not `stringResource` inside them
 
 ## Key registry & tests
 
-- Register feature keys in `*StringKeys.kt` (`NutritionStringKeys`, `HomeStringKeys`) when adding a feature area covered by locale tests
-- Run `:composeApp:testDebugUnitTest` — includes `NutritionLocaleStringsTest` / home locale parity
-- Default `values` strings must be non-blank; placeholders must match across locales (`%1$d`, `%2$s`, same argument order)
+- Register feature keys in `i18n/*StringKeys.kt` (`NutritionStringKeys`, `HomeStringKeys`, `HouseholdStringKeys`, etc.)
+- Run `:composeApp:testDebugUnitTest` — includes locale parity suites
+- Default `values` strings non-blank; placeholders identical across locales (`%1$d`, `%2$s`, same order)
 
-## Consistency rules
+## Consistency
 
-- Reuse shared helpers for repeated labels (e.g. `nutritionDayLabel()`, meal lunch/dinner keys)
-- Use the same terminology across hub, detail screens, and Firebase QA copy for a feature
-- **RTL** (`values-ar*`): keep placeholders logical; avoid hard-coded LTR-only layout assumptions
-- Language switching via `LanguageManager` / `SupportedAppLanguages` must refresh visible strings (no stale hardcoded cache)
+- Reuse helpers: `nutritionDayLabel()`, shared meal slot keys, `action_back`
+- Same terminology in hub, detail screens, and `firebase-appdistribution-testcases.yaml`
+- **RTL** (`values-ar*`): logical placeholders; avoid hard-coded LTR-only layouts
+- `LanguageManager` / `SupportedAppLanguages` — switching language refreshes visible UI (no cached English)
 
 ## Review checklist (before PR)
 
-1. Every new/changed `string name` exists in all 8 locale files
+1. New/changed keys exist in all 8 locale files
 2. No new hardcoded UI copy in Kotlin
-3. Formatted strings use resources, not manual `.replace()` unless unavoidable in `LaunchedEffect`
-4. Locale tests pass; manual spot-check at least English + one non-Latin locale if layout-sensitive
+3. Formatted strings use resources, not `.replace()` hacks
+4. Locale tests pass; spot-check English + one RTL locale for layout-sensitive screens

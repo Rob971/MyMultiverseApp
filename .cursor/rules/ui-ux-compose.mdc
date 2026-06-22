@@ -1,263 +1,104 @@
 ---
-description: Compose UI and UX standards for presentation layer
+description: Compose UI/UX standards — shipped Journey design system, dark/wide layouts
 globs: "**/presentation/**/*.kt"
 alwaysApply: false
 ---
 
 # UI & UX (Compose Multiplatform)
 
+Product focus: **household nutrition logistics** (grocery + meal plan + local AI assistant). Home shows nutrition hub; Adventures/Budget are coming-soon only.
+
 ## Layout & scrolling
 
-- Use `ScreenLayout` tokens and `Modifier.screenContentArea()` + `screenListPadding()` for screen insets.
-- Lists with bottom inputs: weighted `LazyColumn` + input bar (not a fixed scaffold bar that fights the keyboard).
-- Apply `imePadding()` on scrollable content; Android activity uses `adjustResize` when adding text-heavy screens.
+- Tokens: `ScreenLayout` (`horizontalPadding` 24dp, `sectionSpacing` 16dp, `expandedMinWidth` 600dp, `expandedSidePanelWidth` 340dp).
+- Screen body: `Modifier.screenContentArea(padding)` + `screenListPadding()`.
+- Lists with sticky input: `NutritionScaffold` `bottomBar` on phone; side panel when `maxWidth >= expandedMinWidth` (grocery).
+- `imePadding()` on scrollable content and input bars; `JourneySnackbarHost(aboveBottomBar = …)` when bottom bar visible.
+- Wide layouts: `BoxWithConstraints`; test grocery + meal plan at ≥600dp and phone fallback.
 
-## Design system (current)
+## Design system — use these (shipped)
 
-### Reuse first
+### Journey primitives (required for new UI)
 
-- **Surfaces:** `FamilyLogisticsCardSurface`, `FamilyLogisticCard`, `NutritionFeatureHeader`, `FamilyLogisticsSectionHeader`, `JourneyBanner`
-- **Chrome:** `NutritionScaffold`, `NapolitanBackground`, `WeekContextBanner`, `NutritionSyncStatusBanner`
-- **Colors:** `SharedJourneyColors` only — no one-off hex in composables
-- **Icons:** `AppIcons` only — no `Icons.Default` / platform icon imports in presentation
-- **Layout tokens:** `ScreenLayout.horizontalPadding` (24dp), `sectionSpacing` (16dp), `FamilyLogisticsDesign` shapes
+| Component | Use |
+|-----------|-----|
+| `JourneyPrimaryButton` / `Secondary` / `Tertiary` | Action hierarchy |
+| `JourneyDestructiveOutlinedButton` / `DestructiveTextButton` | Sign out, delete, clear irreversible |
+| `JourneyTextField` | All user-facing forms (56dp min, `isError`, `supportingText`) |
+| `JourneyIconButton` | 48×48dp icon actions |
+| `JourneyLoadingContent` / `JourneyErrorContent` / `JourneyEmptyState` | Async and empty UX |
+| `JourneySnackbarHost` | Snackbars above grocery bottom bar |
+| `JourneyBanner` | Inline notices |
 
-### Planned primitives (implement before wide screen refactors)
+### Family logistics & chrome
 
-| Primitive | Purpose | Extract from |
-|-----------|---------|--------------|
-| `JourneyButton` (Primary / Secondary / Tertiary / Destructive) | Consistent action hierarchy + loading slot | `LoginScreen`, `HomeScreen` onboarding |
-| `JourneyTextField` | Branded focus, shape, placeholder colors | `GroceryInputBar`, `NutritionAiAdviceScreen` |
-| `JourneyIconButton` | 48×48dp minimum touch target | `GroceryItemRow`, `MealPlanDayCard` |
-| `JourneyLoadingContent` | Spinner + optional message, brand color | Gates, `HomeLoadingContent` |
-| `JourneyErrorContent` | Message + retry | `HomeErrorContent`, entry gates |
-| `JourneyEmptyState` | Icon + title + body + optional CTAs | Unify `EmptyStateCard` + `MealPlanEmptyState` |
+- Surfaces: `FamilyLogisticsCardSurface`, `FamilyLogisticCard`, `FamilyLogisticsSectionHeader`, `NutritionFeatureHeader`
+- Nutrition: `NutritionScaffold`, `GroceryInputBar`, `GroceryItemRow`, `MealPlanDayCard`, `MealPlanEmptyState`
+- AI read-only: `AiReadOnlyGroceryList`, `AiGrocerySuggestionsSection` — terracotta accent (`AiReadOnlyAccent`), never mixed with editable rows
+- Background: `NapolitanBackground` inside `AppTheme`
+- Viewer: `HouseholdViewerReadOnlyNotice` when `canWriteHouseholdData` is false
 
----
+### Colors & theme
 
-## Icon semantics (`AppIcons.kt`)
+- Palettes: `SharedJourneyColors` + `sharedJourneyLightScheme()` / `sharedJourneyDarkScheme()`
+- **Semantic (theme-aware):** `JourneySemanticColors.inkDeep()`, `inkMuted()`, `cardSurface()`, `elevatedSurface()` — use on glass/surfaces in dark mode
+- Static brand: `TerracottaOrange`, `MediterraneanTeal`, `InkSecondary` for subtitles (not `InkDeep.copy(alpha=…)`)
+- Icons: `AppIcons` only — no `Icons.Default` in presentation
 
-**Rule:** Every `AppIcons` name must match user intent. Never alias unrelated icons.
+### Typography (`AppTheme.kt`)
 
-### Broken aliases (fix in PR1 — ship blocker)
+Roles defined: `displaySmall`, `headlineMedium`, `titleLarge/Medium/Small`, `bodyLarge/Medium/Small`, `labelLarge/Medium/Small`. Body line height ~1.5×.
 
-| Symbol | Current alias | User expectation | Used in |
-|--------|---------------|------------------|---------|
-| `MoreVert` | `Sparkles` | Overflow ⋮ menu | `HomeScreen`, `WeeklyMealPlanScreen` |
-| `DateRange` | `Notifications` | Calendar / week range | `MealPlanEmptyState`, `NutritionHubScreen`, `WeeklyMealPlanScreen` |
-| `KeyboardArrowDown` | `ChevronRight` | Expand section ↓ | `FamilyLogisticsDesign` collapsible |
-| `KeyboardArrowUp` | `ChevronLeft` | Collapse section ↑ | same |
-| `Check` | `CheckCircle` | Save / confirm (distinct from list check) | `GroceryItemRow` save |
-| `Refresh` | `Sparkles` | Pull-to-refresh / reload | *(unused — add when needed)* |
+### Touch targets
 
-### Correct custom vectors (keep)
-
-`ChevronLeft`, `ChevronRight`, `ArrowBack`, `Add`, `Delete`, `Edit`, `CheckCircle`, `RadioButtonUnchecked`, `Restaurant`, `Explore`, `AccountBalance`, `Sparkles` (AI only)
-
-### Dead aliases (implement real vector or delete)
-
-`Favorite`, `Info`, `Person`, `Star` — no call sites today.
-
-### Semantic rules
-
-- `Sparkles` → AI-generated content only (`AiReadOnlyGroceryList`, `NutritionAiAdviceScreen`, meal-plan AI actions)
-- `CheckCircle` / `RadioButtonUnchecked` → list completion state (grocery checkbox)
-- `ChevronRight` → navigation affordance on cards (`FamilyLogisticCard`, `HomeHouseholdButton`)
-
----
+- Minimum **48×48dp** — `JourneyIconButton`, `FamilyLogisticsDesign.minTouchTarget`, `FeatureAccentIconButton`
+- Grocery rows: `heightIn(min = 56.dp)`
 
 ## Button hierarchy
 
-| Variant | Material base | Color | When to use |
-|---------|---------------|-------|-------------|
-| **Primary** | `Button` | `MediterraneanTeal` fill (or theme primary) | Single main forward action per screen section |
-| **Secondary** | `OutlinedButton` | Teal border | Alternate path, second CTA (e.g. meal plan “add manually”) |
-| **Tertiary** | `TextButton` | `InkMuted` or teal | Cancel, dismiss dialog, low emphasis |
-| **Destructive** | `TextButton` or `OutlinedButton` | `TerracottaOrange` | Sign out, delete account, clear AI data — always confirm in dialog when irreversible |
+| Variant | When |
+|---------|------|
+| Primary (teal) | One main forward action per section |
+| Secondary (outlined) | Alternate path |
+| Tertiary (`TextButton`) | Cancel, dismiss |
+| Destructive (terracotta) | Irreversible — confirm in dialog |
 
-### Known inconsistencies to fix
-
-| Location | Issue | Target |
-|----------|-------|--------|
-| `HomeScreen` onboarding create | `OutlinedButton` when pending invites, `Button` when none | Primary for create; pending invites are separate cards |
-| `InviteEmailMismatchScreen` | Sign-out uses filled `Button` | Destructive `TextButton` or outlined destructive |
-| Account sheet (`HomeScreen`) | Sign out / export / delete all `TextButton` | Destructive delete uses destructive variant |
-| Dialogs | Mix of `Button` confirm + `TextButton` cancel | OK — document as standard dialog pattern |
-
-### Loading on buttons
-
-- Disable control while loading; show small `CircularProgressIndicator` inside button (see `LoginScreen`).
-- Do not stack a full-screen spinner **and** button spinner for the same action.
-
----
-
-## Typography & color
-
-### Defined roles (`AppTheme.kt`)
-
-`displaySmall`, `headlineMedium`, `titleLarge`, `titleMedium`, `bodyLarge`, `bodyMedium`, `labelLarge`
-
-### Roles used but undefined (add in foundation PR)
-
-`titleSmall`, `bodySmall`, `labelSmall`, `labelMedium` — currently Material defaults.
-
-### Line height
-
-Body text (`bodyLarge`, `bodyMedium`, `bodySmall`): target **1.5×** font size for readability.
-
-### Semantic colors (planned tokens)
-
-| Token | Value / source | Use |
-|-------|----------------|-----|
-| Error (inline) | `TerracottaOrange` | Gates, form validation — **prefer over** `colorScheme.error` for brand consistency |
-| Success | `MediterraneanTeal` | Email confirmation sent (`LoginScreen`) |
-| On glass muted | TBD (contrast fix) | Placeholder, hints on `GlassWhite` surfaces |
-| Focus border | `MediterraneanTeal` | `OutlinedTextField` focused state |
-| Cursor | `TerracottaOrange` | Text field caret |
-
-### Contrast watchlist
-
-- `InkMuted` on `ParchmentWarm` — passes AA for body text
-- `InkMuted` at reduced alpha on `GlassWhite` — **may fail** for `labelSmall` / hints — fix via `onGlassMuted` token
-
----
-
-## Touch targets
-
-- **Minimum:** 48×48dp for all interactive controls (Material 3).
-- **Token:** `FamilyLogisticsDesign.minTouchTarget` (add when implementing `JourneyIconButton`).
-- **Compliant today:** `FeatureAccentIconButton` (48dp), grocery checkbox `IconButton`, swipe-to-dismiss row.
-- **Non-compliant (fix in PR5+):** `GroceryItemRow` edit/save `IconButton`, `MealPlanDayCard` clear, `NutritionScaffold` back, `HomeScreen` overflow, week nav chevrons in `NutritionUxComponents`.
-
-Use `Modifier.minimumInteractiveComponentSize()` or explicit `size(48.dp)` on `IconButton`.
-
----
+Loading: disable control + small `CircularProgressIndicator` in button; no duplicate full-screen spinner for same action.
 
 ## UX state patterns
 
-### Requirements (every primary flow)
+| State | Pattern |
+|-------|---------|
+| Loading | `JourneyLoadingContent` or button spinner; spinner color `MediterraneanTeal` |
+| Error | `JourneyErrorContent` + retry, or snackbar for async |
+| Empty | `JourneyEmptyState` with icon + optional CTA + `testTag` |
+| Success | Snackbar (undo where applicable) |
 
-| State | Pattern | Component (target) |
-|-------|---------|-------------------|
-| **Loading** | Centered spinner + localized message when >300ms | `JourneyLoadingContent` |
-| **Error** | Inline or full-screen message + retry; snackbar for async | `JourneyErrorContent` / snackbar |
-| **Empty** | Helpful copy + optional CTA; never confuse with loading | `JourneyEmptyState` |
-| **Success** | Snackbar for async; inline only for form confirmation | existing snackbars |
-
-### Spinner color
-
-Always `SharedJourneyColors.MediterraneanTeal` (except inside buttons where default is OK).
-
-### Empty vs partial empty
-
-- **Truly empty** (zero items): `JourneyEmptyState` with icon + CTA.
-- **Partial empty** (e.g. all groceries checked): muted inline `Text` or compact empty — not full card.
-
----
-
-## Screen × state matrix (Phase 0 audit)
-
-Legend: ✅ adequate · ⚠️ partial · ❌ missing · — not applicable
-
-| Screen / surface | Loading | Empty | Error | Notes |
-|------------------|---------|-------|-------|-------|
-| **App** (`AuthState.Loading`) | ⚠️ spinner only | — | — | No message; default spinner color |
-| **Login** | ✅ button spinner | — | ✅ inline text | Error uses `colorScheme.error` not brand |
-| **Join household** | ✅ preview + button | — | ✅ inline | Multi-step OTP flow |
-| **Invite email mismatch** | — | — | ✅ explanation | Sign-out should be destructive style |
-| **Invite accept** (`App.kt`) | ⚠️ spinner only | — | via mismatch screen | Blocks main app |
-| **Home — Loading** | ✅ teal spinner + text | — | — | `HomeLoadingContent` |
-| **Home — Error** | — | — | ✅ retry | `HomeErrorContent` — migrate to `JourneyErrorContent` |
-| **Home — Onboarding** | ✅ create button spinner | ⚠️ no invites empty | ✅ name validation | Button style flips on pending invites |
-| **Home — Welcome** | ⚠️ greeting shimmer | — | snackbar | Dense nutrition status line |
-| **Home — Account sheet** | ✅ export/delete spinners | — | snackbar | Destructive actions not visually distinct |
-| **Nutrition entry gate** | ✅ text | — | ✅ retry | Duplicate of household gate — share component |
-| **Household members gate** | ✅ text | — | ✅ retry | Same copy as nutrition gate |
-| **Nutrition hub** | — | — | — | Always shows cards; sync banner for offline |
-| **Grocery** | — | ✅ `EmptyStateCard` | snackbar | No CTA on empty; partial empty is plain `Text` |
-| **Meal plan** | ✅ bulk action spinner | ✅ `MealPlanEmptyState` | snackbar | Reference implementation for empty |
-| **Nutrition AI** | ⚠️ text only, no spinner | ❌ no idle empty | ✅ inline terracotta | Mode discoverability low |
-| **Household members** | ✅ text | ⚠️ plain `Text` | inline + snackbar | No icon/CTA empty state |
-| **Rename household dialog** | ✅ saving spinner | — | inline availability | “Checking…” not shown while debouncing |
-
-### Empty-state backlog (priority)
-
-1. Grocery — add CTA (focus input / open AI)
-2. Household members — `JourneyEmptyState` + invite hint
-3. Nutrition AI idle — prompt to enter criteria
-4. Home onboarding — optional illustration when no pending invites
-5. Grocery “all checked” — optional compact celebration empty
-
----
-
-## UX requirements
-
-- **States**: loading (progress on buttons), error (snackbar or inline), empty (helpful copy + CTA).
-- **Destructive actions**: confirm or swipe + undo snackbar where appropriate.
-- **AI-generated data**: clearly read-only (separate list, subtitle); never mix with user-editable CRUD without explicit design.
-- **Feedback**: snackbars for async success/failure; disable buttons while loading.
+- **AI data:** read-only sections with subtitle; editable list separate; adopt flows explicit.
+- **Pull-to-refresh:** grocery + meal plan via `NutritionScreenModel.refresh()`.
+- **Haptics:** `rememberJourneyHapticFeedback()` — light click on grocery toggle (Android; iOS no-op until wired).
+- **Route transitions:** `AnimatedContent` in `App.kt` (subtle horizontal slide).
 
 ## Strings & accessibility
 
-- Follow `i18n-multilingual.mdc` for all copy (8 locales, shared helpers, no hardcoded strings).
-- Icons: `contentDescription` for meaningful actions; `null` only for decorative duplicates.
-- After icon fix: update content descriptions to match true semantics (overflow menu, calendar, etc.).
+- `i18n-multilingual.mdc`: 8 locales, `stringResource` in composables only.
+- `contentDescription` on meaningful icons; `null` only when decorative duplicate.
+- Icon semantics: `Sparkles` = AI only; `CheckCircle`/`RadioButtonUnchecked` = grocery check state; chevrons = expand/nav.
 
 ## Testability
 
-- Expose stable `testTag`s on primary controls (`*TestTags` objects, e.g. `MealPlanTestTags.groceryButton`).
-- Empty/loading/error states must have testTags when user-visible (see gate patterns).
-- Touch-target instrumented tests for grocery row actions after `JourneyIconButton` lands.
+- `*TestTags` objects per feature (`MealPlanTestTags`, `GroceryInputBarTestTags`, `GroceryListTestTags`, etc.).
+- Empty/loading/error: stable `testTag` when user-visible.
+- Instrumented tests use tags, not display text.
 
 ## Anti-patterns
 
-- Hardcoded English in composables or screen models.
-- Business logic heavy in `@Composable` functions (move to screen model or domain).
-- Calling `stringResource` inside non-`@Composable` lambdas or `LaunchedEffect`—resolve strings in composable scope first.
-- **Icon aliasing** (`MoreVert` → `Sparkles`, `DateRange` → `Notifications`).
-- **Raw `IconButton`** without 48dp touch target in list rows.
-- **Default `OutlinedTextField`** on user-facing forms when `JourneyTextField` exists.
-- Duplicate gate UI — copy-paste `Column` + orange `Text` + `Button` (use shared error/loading).
+- Hardcoded English; `stringResource` in `LaunchedEffect`/callbacks.
+- Raw `OutlinedTextField`, raw `IconButton` without 48dp, one-off hex colors.
+- Business logic in `@Composable`; duplicate gate loading/error columns.
+- Phone-only grocery bottom bar on wide screens (use side panel + hide bottom bar).
+- Teal accent on AI read-only cards (use terracotta).
 
-## Implementation sequence (reference)
+## Do not regress (Waves A–C complete)
 
-### Wave A — Trust & clarity (ship blockers)
-
-1. PR1 — Icon fixes + dead alias cleanup + `AppIconsTest`
-2. PR2 — Semantic text colors (`InkSecondary`), contrast tokens, complete typography scale
-3. PR3 — `JourneyButton` / `JourneyTextField` / `JourneyIconButton` (focus, `isError`, `supportingText`, 56dp min height, 16dp field spacing)
-4. PR4 — `JourneyLoading` / `JourneyError` / `JourneyEmpty` + i18n
-5. PR5–8 — Screen migrations (grocery → home → meal plan → household → auth/account)
-6. PR9 — Touch-target instrumented tests + Firebase QA YAML
-
-### Wave B — Mobile polish (post-beta)
-
-7. PR10 — Snackbar anchor above `bottomBar` (`NutritionScaffold` padding helper); grocery undo flow QA
-8. PR11 — Inline form validation (login, join/OTP `isError` on field, rename household)
-9. PR12 — Haptics via `expect fun performJourneyHaptic()` (Android first; no-op on iOS until wired)
-10. PR13 — `AnimatedContent` route transitions in `App.kt` (subtle horizontal slide)
-11. PR14 — Pull-to-refresh on grocery + meal plan (sync with `NutritionScreenModel.refresh`)
-12. PR15 — List row ergonomics: `heightIn(min = 56.dp)` on dense rows; collapsible chevron rotation
-
-### Wave C — Platform breadth (product decision)
-
-13. Dark theme — brand `darkColorScheme` + system follow (defer until light polish done)
-14. Window size classes — two-column meal plan / grocery on `width > 600dp`
-15. AI read-only accent — optional terracotta tint on `AiReadOnlyGroceryList` wrapper (cards already have `FamilyLogisticsCardSurface` border)
-
-### Already in good shape (do not regress)
-
-- **Back navigation:** `BackHandler` in `App.kt`; `NutritionScaffold` back icon uses `Res.string.action_back` as `contentDescription`
-- **Invite deep links:** `InviteRedirectUrls` + `MainActivity` intent handling + `InviteJoinFlowCoordinator`
-- **Locale parity:** `*LocaleStringsTest` in `commonTest/kotlin/.../i18n/` (5 suites)
-- **AI read-only separation:** `AiReadOnlyGroceryList` uses `FamilyLogisticsCardSurface` + sparkles + subtitle
-
-### Text color rule (Review 2)
-
-Prefer `SharedJourneyColors.InkSecondary` (add in PR2) over `InkDeep.copy(alpha = 0.65f–0.75f)` for subtitles and hints — alpha stacking fails contrast on glass surfaces.
-
-### Form ergonomics defaults (`JourneyTextField`)
-
-- Min height 56dp; 16dp vertical spacing between fields
-- `isError` + `supportingText` for validation (errors below field, not only screen-level `Text`)
-- IME: `Next` on intermediate fields, `Done` on last field, `Go`/`Send` on single-field submit
+Journey form controls on all screens; home/nutrition gates use Journey loading/error; inline validation on login/join; snackbars above grocery input; pull-to-refresh; dark theme follow system; wide grocery/meal plan layouts; locale parity tests green.

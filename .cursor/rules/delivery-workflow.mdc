@@ -9,36 +9,37 @@ Every task—planning, review, fix, test, or implementation—must follow this s
 
 ## 1. Plan
 
-- Restate the goal, acceptance criteria, and affected layers (UI, domain, data, CI, QA).
-- Read existing code and conventions before designing; prefer extending over inventing.
-- Call out risks (i18n, persistence, keyboard/scroll, AI read-only vs editable data, platform splits).
+- Restate goal, acceptance criteria, and affected layers (UI, domain, data, Supabase, CI, QA).
+- Read existing code and `.cursor/rules/` before designing; prefer extending over inventing.
+- Call out risks: i18n (8 locales), persistence/sync, keyboard/scroll, AI read-only vs editable data, wide layout (≥600dp), dark theme, platform splits.
 - Keep scope minimal: smallest correct change.
 
 ## 2. Implement
 
-- Match project architecture and naming; reuse shared components (`ScreenLayout`, `FamilyLogistics*`, scaffolds).
-- No drive-by refactors, secrets in repo, or hardcoded user-facing strings (see `i18n-multilingual.mdc`).
-- Platform code only when no multiplatform library exists (`expect`/`actual` as last resort).
+- Match clean architecture and naming; reuse shared components (see `ui-ux-compose.mdc`).
+- No drive-by refactors, secrets in repo, or hardcoded user-facing strings (`i18n-multilingual.mdc`).
+- `expect`/`actual` only when no multiplatform library exists.
+- Navigation: `AppNavigator` + `AppRoute` — not Voyager (catalog only, unused).
 
 ## 3. Test
 
-- **Unit** (`commonTest`): domain logic, screen models, repositories, codecs, i18n key parity.
-- **Instrumented** (`androidInstrumentedTest`): critical UX paths with `testTag`s; use fakes, not production network.
-- Update `firebase-appdistribution-testcases.yaml` when user-facing flows change.
-- Run relevant Gradle tasks before claiming done (e.g. `:composeApp:testDebugUnitTest`).
+- **Unit** (`commonTest`): domain, screen models, repositories, codecs, i18n parity, navigation contracts.
+- **Instrumented** (`androidInstrumentedTest`): critical UX with `testTag`s; `Instrumented*Fakes`, not production network.
+- **Supabase** (when touching invites/migrations): `scripts/verify-supabase-household.sh`, edge Deno tests if helpers change.
+- Update `firebase-appdistribution-testcases.yaml` when user-facing flows change (bump `version`).
+- Run before done: `./gradlew :composeApp:testDebugUnitTest` (+ `compileDebugAndroidTestKotlinAndroid` if UI changed).
 
-## 4. Review (self-check)
+## 4. Review
 
-- UX: loading/error/empty states, snackbars, keyboard + `imePadding`, accessibility labels on icons.
-- Architecture: dependencies point inward; no UI in domain/data.
-- Security: no credentials committed; env/secrets only in CI secrets.
-- i18n: follow `i18n-multilingual.mdc` (all 8 locales, no hardcoded UI copy, parity tests green).
+Follow `review-commit.mdc` self-review checklist: UX states, architecture boundaries, security, i18n, design system, tests, QA YAML.
 
-## 5. CI/CD alignment
+## 5. CI/CD & release
 
-- Push runs unit and instrumented tests; manual dispatch can target `all`, `android`, or `android-instrumented-tests`.
-- Firebase releases: keep `firebase-appdistribution-testcases.yaml` in sync; release notes reference QA checklist when distributing.
+- **PR:** push feature branch → PR to `main` → CI (Android unit, instrumented, Supabase migrations) → squash merge.
+- **Release:** manual dispatch only after merge — `gh workflow run "KMP CI" --ref main -f job=release -f version_bump=patch`.
+- Firebase distribute embeds QA checklist from `firebase-appdistribution-testcases.yaml`.
+- iOS compile: manual dispatch or local `./gradlew :composeApp:compileKotlinIosSimulatorArm64` (CI iOS job disabled for cost).
 
 ## Definition of done
 
-Feature works on target platforms, tests added/updated and passing, strings localized, manual QA steps documented, no new linter issues in touched files.
+Feature works on target platforms; tests added/updated and passing; strings localized in all 8 locales; manual QA steps in Firebase YAML when flows change; no new linter issues in touched files; review-commit checklist satisfied.

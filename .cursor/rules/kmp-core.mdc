@@ -1,15 +1,63 @@
 ---
-description: Global KMP standards for commonMain
-globs: "**/commonMain/**/*.kt"
+description: Global KMP standards — stack versions, navigation, DI, Compose, resources
 alwaysApply: true
 ---
 
 # KMP coding standards
 
-- Follow `delivery-workflow.mdc` for plan → implement → test → review on every change.
-- Prioritize `expect`/`actual` only when no multiplatform library exists.
-- Use `kotlinx-coroutines` for concurrency; never use platform-specific threads.
-- For UI, use `org.jetbrains.compose` (Compose Multiplatform).
-- For resources, use the Compose `Res` API (`Res.string.*`, `Res.drawable.*`), not platform-specific IDs.
-- Multilingual: follow `i18n-multilingual.mdc` — all locales, consistent keys, UI-layer formatting.
-- Navigation: Voyager screens/routes in `presentation/navigation/`; keep screen composables thin.
+## Stack (pin in `gradle/libs.versions.toml`)
+
+| Area | Version / library |
+|------|-------------------|
+| Kotlin | 2.3.21 |
+| Compose Multiplatform | 1.8.0 |
+| AGP | 9.2.1 |
+| Koin | 4.0.2 |
+| Coroutines | 1.10.2 |
+| Supabase Kotlin | 3.5.0 (auth, postgrest, realtime, functions) |
+| Ktor | 3.4.0 |
+| kotlinx-serialization | 1.8.1 |
+| kotlinx-datetime | 0.6.1 |
+| multiplatform-settings | 1.1.1 |
+
+**Not in use:** Voyager (in catalog only), SQLDelight (catalog only). Do not add Voyager navigation without an explicit migration plan.
+
+## Architecture & packages
+
+- Base: `app.mymultiverse.kmp`
+- `domain/` → `data/` → `presentation/` (see `architecture-clean.mdc`)
+- Single module: `:composeApp`
+
+## Navigation (custom, not Voyager)
+
+- `AppRoute` sealed class: `Home`, `HouseholdMembers`, `Nutrition(section, aiMode)`
+- `AppNavigator`: `navigateTo`, `replaceCurrent`, `navigateBack`, `canGoBack`
+- `App.kt`: auth gate → `AnimatedContent` over routes; `BackHandler` for stack back
+- Screen models: plain Koin-injected classes (`*ScreenModel`), not Voyager `ScreenModel`
+
+## Concurrency & platform
+
+- `kotlinx-coroutines` only; no platform threads in shared code.
+- `expect`/`actual` for: haptics, auth deeplinks, language manager, personal export, push tokens.
+
+## UI & resources
+
+- Compose: `org.jetbrains.compose` + Material 3.
+- Strings/drawables: `Res.string.*` / `Res.drawable.*` from `composeResources` — never Android `R.string` in shared UI.
+- Theme: wrap screens in `AppTheme` (system light/dark).
+- i18n: `i18n-multilingual.mdc`; format in composables, not screen models.
+
+## DI (Koin)
+
+- Register in `presentation/di/AppModule.kt` + `PlatformModule.kt` (android/ios).
+- Inject repositories/services into screen models; composables use `koinInject()` for screen models or receive callbacks.
+- Tests: `koin-test` + fakes in `commonTest/.../presentation/di/`.
+
+## Logging
+
+- Kermit for shared logging; map sensitive data before logging.
+
+## When upgrading dependencies
+
+- Check official docs (index in Cursor Settings → Docs); run full unit + instrumented compile after bump.
+- Supabase client changes: verify auth session, realtime, and RPC calls against staging.

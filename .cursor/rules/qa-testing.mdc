@@ -1,6 +1,6 @@
 ---
-description: QA, unit tests, instrumented tests, and Firebase manual test cases
-globs: "**/*{Test,test}*/**/*.{kt,yaml,yml}"
+description: QA pyramid, unit/instrumented tests, Firebase manual checklist
+globs: "**/*{Test,test}*/**/*.{kt,yaml,yml},firebase-appdistribution-testcases.yaml"
 alwaysApply: false
 ---
 
@@ -8,41 +8,67 @@ alwaysApply: false
 
 ## Test pyramid
 
-1. **Unit** (`composeApp/src/commonTest`): fast, deterministic; fake repositories/services.
-2. **Instrumented** (`androidInstrumentedTest`): Compose UI tests for happy paths and regressions.
-3. **Manual** (`firebase-appdistribution-testcases.yaml`): steps for Firebase App Distribution testers.
+1. **Unit** (`composeApp/src/commonTest`) — fast, deterministic; fake repositories/services.
+2. **Instrumented** (`androidInstrumentedTest`) — Compose UI smoke on critical paths.
+3. **Manual** (`firebase-appdistribution-testcases.yaml`) — Firebase App Distribution testers (currently **v31**).
 
 ## Unit tests
 
-- Test domain pure functions (`NutritionAiPlanner`, codecs, presentation helpers) without mocks when possible.
-- Screen models: `runTest` + `TestDispatcher`; `advanceUntilIdle()` after async `update*` calls that use `scope.launch`.
-- Fakes must implement **full** service interfaces (all methods, including new API additions).
-- i18n: `NutritionLocaleStringsTest` / `HomeStringKeys`—every locale file must define required keys.
-- **Invite flows** (deep link, OTP, preview RPC, edge email): add unit tests in `commonTest` for every new parser/store/validator; Deno tests for edge-function pure helpers; extend `scripts/verify-supabase-household.sh` / `scripts/ci-test-invite-preview-rpc.sh` for RPC smoke checks.
+- Pure domain: no mocks (`NutritionAiPlanner`, `WeekCalendar`, `GroceryListPresentation`, codecs).
+- Screen models: `runTest` + `TestDispatcher`; `advanceUntilIdle()` after `scope.launch` updates.
+- Fakes must implement **full** interfaces — update when APIs grow (`FakeAuthRepository`, instrumented fakes).
+- **i18n parity:** `*LocaleStringsTest` (Auth, Home, Nutrition, Household, Sharing) — every key in all 8 locales.
+- **Navigation:** `AppNavigatorTest`, `AppNavigationTest`, `HouseholdNavigationContractTest`.
+- **Theme:** `AppIconsTest` — no broken semantic aliases.
+- **Invite/collab:** parsers, OTP, preview RPC; Deno tests for edge pure helpers.
+
+```bash
+./gradlew :composeApp:testDebugUnitTest
+```
 
 ## Instrumented tests
 
-- Use `createAndroidComposeRule`, `AppTheme`, and inject `NutritionScreenModel` with `InstrumentedNutrition*` fakes.
-- Prefer `onNodeWithTag` over text; use `performScrollTo` before off-screen nodes.
-- Use `InstrumentedComposeTest.waitFor` / `waitUntil` (no `Thread.sleep` polling).
-- Keep instrumented scope to **AppCompat + Compose integration smoke** per screen; CRUD and screen-model rules belong in `NutritionScreenModelTest` / domain unit tests.
-- Cover: grocery add, meal-plan AI grocery button, AI advice UI, hub navigation (grocery / meal plan / AI / members), home + Koin tap, `FamilyLogisticCard` enabled/disabled.
+- `createAndroidComposeRule` + `AppTheme` + `InstrumentedKoinHost` / `InstrumentedNutritionFakes`.
+- `onNodeWithTag` over text; `performScrollTo` before off-screen nodes.
+- `InstrumentedComposeTest.waitFor` / `waitUntil` — no `Thread.sleep`.
+- Scope: integration smoke (navigation, grocery add, meal-plan AI button, hub cards, touch targets).
+- Deep CRUD rules belong in `NutritionScreenModelTest` / domain unit tests.
+
+```bash
+./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid
+```
+
+CI runs instrumented on PR and `main` push; local optional via emulator.
 
 ## Manual QA (Firebase)
 
-When changing user-visible nutrition/grocery/meal/AI flows, update `firebase-appdistribution-testcases.yaml`:
+Update `firebase-appdistribution-testcases.yaml` when user-visible flows change:
 
-- Clear steps, expected results, ids for each scenario.
-- Distinguish editable grocery vs read-only AI grocery.
-- Hub layout: three category cards before Household members; back from a section returns to hub.
-- Crashlytics smoke on builds with `google-services.json` (see `crashlytics-smoke` case).
+- Bump top-level `version` and `updated` date.
+- Add `id`, `title`, `steps`, `expected` per scenario.
+- Distinguish editable grocery vs AI read-only (terracotta) suggestions.
+- Wave C cases: `wavec-dark-theme-napolitan`, `wavec-wide-grocery-side-panel`, `wavec-wide-meal-plan-columns`, `wavec-ai-grocery-terracotta-accent`.
+- Hub: grocery + meal plan entry; back returns to hub.
+- Crashlytics: `crashlytics-smoke` on builds with `google-services.json`.
+
+Release workflow embeds checklist excerpt in Firebase release notes.
 
 ## Before merge
 
 ```bash
 ./gradlew :composeApp:testDebugUnitTest
 ./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid
-./scripts/test-supabase-invite-edge.sh   # when invite edge helpers exist (requires Deno)
 ```
 
-Run instrumented tests locally or via CI (push, or `workflow_dispatch` with `all` / `android` / `android-instrumented-tests`).
+When touching invites/migrations:
+
+```bash
+./scripts/test-supabase-invite-edge.sh
+./scripts/verify-supabase-household.sh   # staging, needs credentials
+```
+
+## Test naming
+
+- Unit: `*Test.kt` under mirrored package path.
+- Instrumented: `*InstrumentedTest.kt` in `androidInstrumentedTest/.../ui/`.
+- Fakes: `Fake*` / `Instrumented*Fakes.kt`.
