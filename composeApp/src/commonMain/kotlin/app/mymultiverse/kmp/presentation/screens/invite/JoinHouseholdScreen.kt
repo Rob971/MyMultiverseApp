@@ -16,7 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
+import app.mymultiverse.kmp.presentation.components.JourneyTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -248,14 +248,13 @@ private fun JoinHouseholdEmailStep(
     showConfigMissing: Boolean,
     screenModel: JoinHouseholdScreenModel,
 ) {
-    OutlinedTextField(
+    JourneyTextField(
         value = uiState.email,
         onValueChange = screenModel::onEmailChange,
         label = { Text(stringResource(Res.string.auth_email_label)) },
         supportingText = {
             Text(stringResource(Res.string.invite_join_email_helper))
         },
-        singleLine = true,
         enabled = !uiState.isLoading && !showConfigMissing,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Email,
@@ -324,11 +323,10 @@ private fun JoinHouseholdOtpStep(
     )
     Spacer(modifier = Modifier.height(16.dp))
 
-    OutlinedTextField(
+    JourneyTextField(
         value = uiState.otpCode,
         onValueChange = screenModel::onOtpCodeChange,
         label = { Text(stringResource(Res.string.invite_join_otp_label)) },
-        singleLine = true,
         enabled = !uiState.isLoading && !showConfigMissing,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.NumberPassword,
