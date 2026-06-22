@@ -64,6 +64,7 @@ Watch: `gh pr checks N --watch --interval 15` on PRs.
 ## CI performance
 
 - Parallel merge-gate jobs; Gradle cache; shallow checkout; pinned `firebase-tools`; AVD snapshot for instrumented.
+- Instrumented UI tests: **2-shard matrix on PRs only** (`numShards` / `shardIndex`); **1 shard** on `main` push and `workflow_dispatch` — faster PR feedback without doubling cost on every `main` run.
 
 ## Current release line
 
