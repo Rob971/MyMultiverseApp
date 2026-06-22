@@ -116,6 +116,10 @@
     <string name="nutrition_grocery_undo_action">Undo</string>
     <string name="nutrition_grocery_clear_checked_undo">Checked items cleared</string>
     <string name="nutrition_grocery_duplicate">That item is already on your list</string>
+    <string name="nutrition_collaboration_actor_unknown">Someone</string>
+    <string name="nutrition_collaboration_grocery_added">%1$s added %2$s</string>
+    <string name="nutrition_collaboration_grocery_checked">%1$s checked off %2$s</string>
+    <string name="nutrition_collaboration_grocery_batch">%1$s updated %2$d items on the grocery list</string>
     <string name="nutrition_grocery_toggle_item">Mark item bought</string>
     <string name="nutrition_grocery_empty_active">Everything is checked off. Add more items or clear checked items below.</string>
     <string name="nutrition_ai_try_again">Start over</string>

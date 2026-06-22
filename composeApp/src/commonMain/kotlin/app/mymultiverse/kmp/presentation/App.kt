@@ -23,6 +23,7 @@ import app.mymultiverse.kmp.domain.manager.ThemeManager
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
 import app.mymultiverse.kmp.presentation.navigation.AppMainTab
+import app.mymultiverse.kmp.data.invite.HouseholdPushEvents
 import app.mymultiverse.kmp.presentation.navigation.AppRoute
 import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
 import app.mymultiverse.kmp.presentation.navigation.MainTabShell
@@ -173,6 +174,26 @@ private fun AuthenticatedMainApp() {
     LaunchedEffect(nutritionContext?.id) {
         if (nutritionContext != null) {
             nutritionHousehold = nutritionContext
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        HouseholdPushEvents.consumePendingMemberJoinedHouseholdId()?.let { householdId ->
+            if (nutritionContext?.id == householdId || resolvedHousehold?.id == householdId) {
+                navigator.navigateTo(
+                    AppRoute.HouseholdMembers(household = resolvedHousehold ?: nutritionContext),
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        HouseholdPushEvents.memberJoinedHouseholdIds.collect { householdId ->
+            if (nutritionContext?.id == householdId || resolvedHousehold?.id == householdId) {
+                navigator.navigateTo(
+                    AppRoute.HouseholdMembers(household = resolvedHousehold ?: nutritionContext),
+                )
+            }
         }
     }
 

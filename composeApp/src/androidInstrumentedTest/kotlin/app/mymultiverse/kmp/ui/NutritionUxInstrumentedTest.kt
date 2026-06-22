@@ -93,6 +93,7 @@ class NutritionUxInstrumentedTest {
         return NutritionScreenModel(
             session = InstrumentedNutritionSessionCoordinator(repository),
             householdRepository = InstrumentedHouseholdRepository(),
+            collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(adviceAnswer),
             scope = scope,
             newItemId = {

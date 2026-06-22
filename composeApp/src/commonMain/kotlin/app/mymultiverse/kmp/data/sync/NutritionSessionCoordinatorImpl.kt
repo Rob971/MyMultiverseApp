@@ -5,6 +5,8 @@ import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
+import app.mymultiverse.kmp.domain.nutrition.NutritionCollaborationActivity
+import app.mymultiverse.kmp.domain.nutrition.NutritionCollaborationActivityDetector
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.domain.observability.DiagnosticsContext
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
@@ -12,7 +14,9 @@ import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class NutritionSessionCoordinatorImpl(
@@ -26,11 +30,15 @@ class NutritionSessionCoordinatorImpl(
 
     private val personalRepository = NutritionRepositoryImpl(settings)
     private val _nutrition = MutableStateFlow<NutritionRepository>(personalRepository)
+    private val _collaborationActivity = MutableSharedFlow<NutritionCollaborationActivity>(extraBufferCapacity = 8)
     private var activeHouseholdId: String? = null
 
     override val nutrition = _nutrition.asStateFlow()
 
     override fun observeSyncStatus(): Flow<NutritionSyncStatus> = syncEngine.observeStatus()
+
+    override fun observeCollaborationActivity(): Flow<NutritionCollaborationActivity> =
+        _collaborationActivity.asSharedFlow()
 
     override suspend fun activateHousehold(householdId: String) {
         activeHouseholdId = householdId
@@ -74,7 +82,20 @@ class NutritionSessionCoordinatorImpl(
             householdId = householdId,
             weekKey = weekKey,
         ) { row ->
-            repository.applyRemoteWeekData(row)
+            if (row.dataKind == "grocery") {
+                val before = repository.currentGroceryItems()
+                repository.applyRemoteWeekData(row)
+                val after = repository.currentGroceryItems()
+                NutritionCollaborationActivityDetector.detectGroceryChanges(
+                    before = before,
+                    after = after,
+                    actorUserId = row.updatedBy,
+                ).forEach { activity ->
+                    _collaborationActivity.tryEmit(activity)
+                }
+            } else {
+                repository.applyRemoteWeekData(row)
+            }
         }
     }
 

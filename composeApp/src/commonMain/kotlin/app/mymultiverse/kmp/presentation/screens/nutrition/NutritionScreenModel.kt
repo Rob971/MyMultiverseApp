@@ -8,14 +8,19 @@ import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.MealPlanPresentation
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
+import app.mymultiverse.kmp.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.domain.sharing.canWriteHouseholdData
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
+import app.mymultiverse.kmp.domain.nutrition.NutritionCollaborationActivityKind
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flatMapLatest
@@ -47,6 +52,7 @@ sealed class NutritionAiState {
 class NutritionScreenModel(
     private val session: NutritionSessionCoordinator,
     private val householdRepository: HouseholdRepository,
+    private val collaborationRepository: HouseholdCollaborationRepository,
     private val aiAssistant: NutritionAiAssistantService,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
     private val newItemId: () -> String = { "${Random.nextLong()}_${Random.nextInt()}" },
@@ -54,6 +60,7 @@ class NutritionScreenModel(
     companion object {
         const val MAX_WEEK_OFFSET = 1
         private const val SYNCED_PULSE_MS = 2_500L
+        private const val COLLABORATION_DEBOUNCE_MS = 2_000L
     }
 
     private val repository: NutritionRepository
@@ -89,10 +96,40 @@ class NutritionScreenModel(
 
     private val _displaySyncStatus = MutableStateFlow<NutritionSyncStatus>(NutritionSyncStatus.Idle)
     private var syncPulseJob: Job? = null
+    private var cachedHouseholdMembers: List<HouseholdMember> = emptyList()
+    private val pendingCollaborationActivities = mutableListOf<app.mymultiverse.kmp.domain.nutrition.NutritionCollaborationActivity>()
+    private var collaborationDebounceJob: Job? = null
 
     val syncStatus: StateFlow<NutritionSyncStatus> = _displaySyncStatus.asStateFlow()
 
+    data class CollaborationSnackbarEvent(
+        val actorName: String,
+        val kind: NutritionCollaborationActivityKind,
+        val itemLabel: String,
+        val batchedCount: Int,
+    )
+
+    private val _collaborationSnackbar = MutableStateFlow<CollaborationSnackbarEvent?>(null)
+    val collaborationSnackbar: StateFlow<CollaborationSnackbarEvent?> = _collaborationSnackbar.asStateFlow()
+
     init {
+        scope.launch {
+            session.nutrition
+                .flatMapLatest { repository ->
+                    val householdId = repository.householdId
+                    if (householdId.isNullOrBlank()) {
+                        emptyFlow()
+                    } else {
+                        collaborationRepository.observeMembers(householdId)
+                    }
+                }
+                .collect { members ->
+                    cachedHouseholdMembers = members
+                }
+        }
+        scope.launch {
+            session.observeCollaborationActivity().collect(::onCollaborationActivity)
+        }
         scope.launch {
             session.observeSyncStatus().collect { raw ->
                 when {
@@ -518,6 +555,46 @@ class NutritionScreenModel(
         if (newItems.isEmpty()) return 0
         repository.saveAiGroceryItems(aiGroceryItems.value + newItems)
         return newItems.size
+    }
+
+    fun consumeCollaborationSnackbar() {
+        _collaborationSnackbar.value = null
+    }
+
+    private fun onCollaborationActivity(
+        activity: app.mymultiverse.kmp.domain.nutrition.NutritionCollaborationActivity,
+    ) {
+        pendingCollaborationActivities += activity
+        collaborationDebounceJob?.cancel()
+        collaborationDebounceJob = scope.launch {
+            delay(COLLABORATION_DEBOUNCE_MS)
+            val batch = pendingCollaborationActivities.toList()
+            pendingCollaborationActivities.clear()
+            emitCollaborationSnackbar(batch)
+        }
+    }
+
+    private fun emitCollaborationSnackbar(
+        batch: List<app.mymultiverse.kmp.domain.nutrition.NutritionCollaborationActivity>,
+    ) {
+        if (batch.isEmpty()) return
+        val latest = batch.last()
+        _collaborationSnackbar.value = CollaborationSnackbarEvent(
+            actorName = resolveActorName(latest.actorUserId),
+            kind = latest.kind,
+            itemLabel = latest.itemLabel,
+            batchedCount = batch.size,
+        )
+    }
+
+    private fun resolveActorName(userId: String?): String {
+        if (userId.isNullOrBlank()) return ""
+        return cachedHouseholdMembers
+            .asSequence()
+            .filter { it.kind == HouseholdMemberKind.Person }
+            .firstOrNull { it.referenceId == userId }
+            ?.displayName
+            .orEmpty()
     }
 
     private fun Throwable.toAiMessage(): String = message ?: "unknown_error"

@@ -10,6 +10,7 @@ import {
   resolveInviteOpenLinkBase,
 } from "./invite-content.ts";
 import { buildInvitePushData, inviteTokenFromPayload } from "./invite-token.ts";
+import { buildMemberJoinedPushData } from "./member-joined-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -47,6 +48,210 @@ async function resolveInviteToken(
   return token || null;
 }
 
+async function sendPushToUserTokens(
+  admin: SupabaseClient,
+  userId: string,
+  title: string,
+  body: string,
+  data: Record<string, string>,
+  fcmServiceAccountJson: string,
+  apnsTeamId: string,
+  apnsKeyId: string,
+  apnsPrivateKey: string,
+  apnsBundleId: string,
+  apnsUseSandbox: boolean,
+): Promise<void> {
+  const { data: tokens } = await admin
+    .from("user_device_tokens")
+    .select("token, platform")
+    .eq("user_id", userId);
+
+  const apnsConfigured = Boolean(apnsKeyId && apnsTeamId && apnsPrivateKey);
+  let androidPushSent = 0;
+  let iosPushSent = 0;
+
+  for (const tokenRow of tokens ?? []) {
+    const token = String(tokenRow.token ?? "");
+    const platform = String(tokenRow.platform ?? "");
+
+    if (fcmServiceAccountJson && isDeliverableAndroidToken(token, platform)) {
+      const ok = await sendAndroidInvitePush(
+        fcmServiceAccountJson,
+        token,
+        title,
+        body,
+        data,
+      );
+      if (ok) androidPushSent += 1;
+      continue;
+    }
+
+    if (apnsConfigured && isDeliverableIosToken(token, platform)) {
+      const ok = await sendIosInvitePush(
+        apnsTeamId,
+        apnsKeyId,
+        apnsPrivateKey,
+        apnsBundleId,
+        apnsUseSandbox,
+        token,
+        title,
+        body,
+        data,
+      );
+      if (ok) iosPushSent += 1;
+    }
+  }
+
+  console.log("push_delivery", {
+    userId,
+    tokenCount: tokens?.length ?? 0,
+    androidPushSent,
+    iosPushSent,
+    fcmConfigured: Boolean(fcmServiceAccountJson),
+    apnsConfigured,
+  });
+}
+
+async function processHouseholdInvite(
+  admin: SupabaseClient,
+  payload: Record<string, unknown>,
+  resendApiKey: string,
+  fromEmail: string,
+  inviteOpenLinkBase: string,
+  fcmServiceAccountJson: string,
+  apnsKeyId: string,
+  apnsTeamId: string,
+  apnsPrivateKey: string,
+  apnsBundleId: string,
+  apnsUseSandbox: boolean,
+): Promise<void> {
+  const inviteeEmail = String(payload.invitee_email ?? "");
+  const householdName = String(payload.household_name ?? "MyMultiverse");
+  const inviterName = String(payload.inviter_name ?? "Someone");
+  const inviteToken = await resolveInviteToken(admin, payload);
+
+  if (resendApiKey && inviteeEmail) {
+    const emailContent = inviteToken
+      ? {
+        inviterName,
+        householdName,
+        inviteeEmail,
+        inviteWebLink: buildInviteWebLink(inviteToken, inviteOpenLinkBase),
+        inviteDeepLink: buildInviteDeepLink(inviteToken),
+      }
+      : null;
+
+    const emailResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(
+        emailContent
+          ? {
+            from: fromEmail,
+            to: [inviteeEmail],
+            subject: buildInviteEmailSubject(emailContent),
+            html: buildInviteEmailHtml(emailContent),
+            text: buildInviteEmailText(emailContent),
+          }
+          : {
+            from: fromEmail,
+            to: [inviteeEmail],
+            subject: `${inviterName} invited you to ${householdName}`,
+            html: `<p>${inviterName} invited you to join <strong>${householdName}</strong> on MyMultiverse.</p><p>Open the app and sign in with <strong>${inviteeEmail}</strong> to accept.</p>`,
+            text: [
+              `${inviterName} invited you to join ${householdName} on MyMultiverse.`,
+              `Open the app and sign in with ${inviteeEmail} to accept.`,
+            ].join("\n"),
+          },
+      ),
+    });
+    if (!emailResponse.ok) {
+      console.error("resend_failed", await emailResponse.text());
+    } else if (!inviteToken) {
+      console.warn("invite_email_sent_without_token", { inviteeEmail, householdName });
+    }
+  } else {
+    console.log("invite_notification_skipped", { inviteeEmail, householdName });
+  }
+
+  const inviteeUserId = payload.invitee_user_id as string | null | undefined;
+  if (inviteeUserId) {
+    const pushTitle = `${inviterName} invited you`;
+    const pushBody = `Join ${householdName} on MyMultiverse`;
+    const pushData = buildInvitePushData(payload, inviteToken);
+    await sendPushToUserTokens(
+      admin,
+      inviteeUserId,
+      pushTitle,
+      pushBody,
+      pushData,
+      fcmServiceAccountJson,
+      apnsTeamId,
+      apnsKeyId,
+      apnsPrivateKey,
+      apnsBundleId,
+      apnsUseSandbox,
+    );
+  }
+}
+
+async function processMemberJoined(
+  admin: SupabaseClient,
+  payload: Record<string, unknown>,
+  fcmServiceAccountJson: string,
+  apnsKeyId: string,
+  apnsTeamId: string,
+  apnsPrivateKey: string,
+  apnsBundleId: string,
+  apnsUseSandbox: boolean,
+): Promise<void> {
+  const householdId = String(payload.household_id ?? "").trim();
+  const memberUserId = String(payload.member_user_id ?? "").trim();
+  const memberName = String(payload.member_name ?? "Someone");
+  const householdName = String(payload.household_name ?? "your household");
+
+  if (!householdId || !memberUserId) {
+    console.warn("member_joined_missing_ids", { householdId, memberUserId });
+    return;
+  }
+
+  const { data: members, error } = await admin
+    .from("household_members")
+    .select("user_id")
+    .eq("household_id", householdId)
+    .neq("user_id", memberUserId);
+
+  if (error) {
+    console.error("member_joined_recipients_failed", error.message);
+    return;
+  }
+
+  const pushTitle = `${memberName} joined`;
+  const pushBody = `Now collaborating in ${householdName}`;
+  const pushData = buildMemberJoinedPushData(payload);
+
+  for (const member of members ?? []) {
+    const userId = String(member.user_id ?? "").trim();
+    if (!userId) continue;
+    await sendPushToUserTokens(
+      admin,
+      userId,
+      pushTitle,
+      pushBody,
+      pushData,
+      fcmServiceAccountJson,
+      apnsTeamId,
+      apnsKeyId,
+      apnsPrivateKey,
+      apnsBundleId,
+      apnsUseSandbox,
+    );
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -77,7 +282,7 @@ Deno.serve(async (req) => {
       .from("household_notification_outbox")
       .select("id, kind, payload")
       .is("processed_at", null)
-      .eq("kind", "household_invite")
+      .in("kind", ["household_invite", "household_member_joined"])
       .order("created_at", { ascending: true })
       .limit(25);
 
@@ -101,114 +306,32 @@ Deno.serve(async (req) => {
 
     for (const row of (rows ?? []) as OutboxRow[]) {
       const payload = row.payload ?? {};
-      const inviteeEmail = String(payload.invitee_email ?? "");
-      const householdName = String(payload.household_name ?? "MyMultiverse");
-      const inviterName = String(payload.inviter_name ?? "Someone");
-      const inviteToken = await resolveInviteToken(admin, payload);
 
-      if (resendApiKey && inviteeEmail) {
-        const emailContent = inviteToken
-          ? {
-            inviterName,
-            householdName,
-            inviteeEmail,
-            inviteWebLink: buildInviteWebLink(inviteToken, inviteOpenLinkBase),
-            inviteDeepLink: buildInviteDeepLink(inviteToken),
-          }
-          : null;
-
-        const emailResponse = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${resendApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(
-            emailContent
-              ? {
-                from: fromEmail,
-                to: [inviteeEmail],
-                subject: buildInviteEmailSubject(emailContent),
-                html: buildInviteEmailHtml(emailContent),
-                text: buildInviteEmailText(emailContent),
-              }
-              : {
-                from: fromEmail,
-                to: [inviteeEmail],
-                subject: `${inviterName} invited you to ${householdName}`,
-                html: `<p>${inviterName} invited you to join <strong>${householdName}</strong> on MyMultiverse.</p><p>Open the app and sign in with <strong>${inviteeEmail}</strong> to accept.</p>`,
-                text: [
-                  `${inviterName} invited you to join ${householdName} on MyMultiverse.`,
-                  `Open the app and sign in with ${inviteeEmail} to accept.`,
-                ].join("\n"),
-              },
-          ),
-        });
-        if (!emailResponse.ok) {
-          console.error("resend_failed", await emailResponse.text());
-        } else if (!inviteToken) {
-          console.warn("invite_email_sent_without_token", { inviteeEmail, householdName });
-        }
-      } else {
-        console.log("invite_notification_skipped", { inviteeEmail, householdName });
-      }
-
-      const inviteeUserId = payload.invitee_user_id as string | null | undefined;
-      if (inviteeUserId) {
-        const { data: tokens } = await admin
-          .from("user_device_tokens")
-          .select("token, platform")
-          .eq("user_id", inviteeUserId);
-
-        const pushTitle = `${inviterName} invited you`;
-        const pushBody = `Join ${householdName} on MyMultiverse`;
-        const pushData = buildInvitePushData(payload, inviteToken);
-
-        let androidPushSent = 0;
-        let iosPushSent = 0;
-        const apnsConfigured = Boolean(apnsKeyId && apnsTeamId && apnsPrivateKey);
-
-        for (const tokenRow of tokens ?? []) {
-          const token = String(tokenRow.token ?? "");
-          const platform = String(tokenRow.platform ?? "");
-
-          if (fcmServiceAccountJson && isDeliverableAndroidToken(token, platform)) {
-            const ok = await sendAndroidInvitePush(
-              fcmServiceAccountJson,
-              token,
-              pushTitle,
-              pushBody,
-              pushData,
-            );
-            if (ok) androidPushSent += 1;
-            continue;
-          }
-
-          if (apnsConfigured && isDeliverableIosToken(token, platform)) {
-            const ok = await sendIosInvitePush(
-              apnsTeamId,
-              apnsKeyId,
-              apnsPrivateKey,
-              apnsBundleId,
-              apnsUseSandbox,
-              token,
-              pushTitle,
-              pushBody,
-              pushData,
-            );
-            if (ok) iosPushSent += 1;
-          }
-        }
-
-        console.log("push_delivery", {
-          userId: inviteeUserId,
-          tokenCount: tokens?.length ?? 0,
-          androidPushSent,
-          iosPushSent,
-          hasInviteToken: Boolean(inviteToken),
-          fcmConfigured: Boolean(fcmServiceAccountJson),
-          apnsConfigured,
-        });
+      if (row.kind === "household_invite") {
+        await processHouseholdInvite(
+          admin,
+          payload,
+          resendApiKey,
+          fromEmail,
+          inviteOpenLinkBase,
+          fcmServiceAccountJson,
+          apnsKeyId,
+          apnsTeamId,
+          apnsPrivateKey,
+          apnsBundleId,
+          apnsUseSandbox,
+        );
+      } else if (row.kind === "household_member_joined") {
+        await processMemberJoined(
+          admin,
+          payload,
+          fcmServiceAccountJson,
+          apnsKeyId,
+          apnsTeamId,
+          apnsPrivateKey,
+          apnsBundleId,
+          apnsUseSandbox,
+        );
       }
 
       await admin

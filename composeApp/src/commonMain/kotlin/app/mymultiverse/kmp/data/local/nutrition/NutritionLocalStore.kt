@@ -26,6 +26,8 @@ class NutritionLocalStore(
 
     fun observeGroceryItems(): Flow<List<GroceryItem>> = _groceryItems.asStateFlow()
 
+    fun currentGroceryItems(): List<GroceryItem> = _groceryItems.value
+
     fun observeAiGroceryItems(): Flow<List<GroceryItem>> = _aiGroceryItems.asStateFlow()
 
     fun observeMealPlan(): Flow<WeeklyMealPlan> = _mealPlan.asStateFlow()

@@ -116,6 +116,10 @@
     <string name="nutrition_grocery_undo_action">تراجع</string>
     <string name="nutrition_grocery_clear_checked_undo">تم مسح العناصر المحددة</string>
     <string name="nutrition_grocery_duplicate">هذا العنصر موجود بالفعل في القائمة</string>
+    <string name="nutrition_collaboration_actor_unknown">شخص ما</string>
+    <string name="nutrition_collaboration_grocery_added">أضاف %1$s %2$s</string>
+    <string name="nutrition_collaboration_grocery_checked">حدّد %1$s %2$s كمُشترى</string>
+    <string name="nutrition_collaboration_grocery_batch">حدّث %1$s %2$d عناصر في قائمة البقالة</string>
     <string name="nutrition_grocery_toggle_item">تحديد كمشترى</string>
     <string name="nutrition_grocery_empty_active">تم تحديد كل العناصر. أضف المزيد أو امسح المكتمل أدناه.</string>
     <string name="nutrition_ai_try_again">ابدأ من جديد</string>
