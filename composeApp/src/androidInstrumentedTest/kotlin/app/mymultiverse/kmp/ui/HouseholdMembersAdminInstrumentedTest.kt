@@ -16,6 +16,7 @@ import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
+import app.mymultiverse.kmp.domain.platform.PersonalDataExporter
 import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersScreen
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersScreenModel
@@ -33,6 +34,12 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class HouseholdMembersAdminInstrumentedTest {
+
+    private val noopPersonalDataExporter = object : PersonalDataExporter {
+        override fun shareJson(filename: String, content: String): Boolean = true
+
+        override fun shareText(chooserTitle: String, message: String): Boolean = true
+    }
 
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
@@ -86,6 +93,7 @@ class HouseholdMembersAdminInstrumentedTest {
                     onBack = {},
                     screenModel = screenModel,
                     authRepository = authRepository,
+                    personalDataExporter = noopPersonalDataExporter,
                 )
             }
         }
@@ -149,6 +157,7 @@ class HouseholdMembersAdminInstrumentedTest {
                     onBack = {},
                     screenModel = screenModel,
                     authRepository = authRepository,
+                    personalDataExporter = noopPersonalDataExporter,
                 )
             }
         }
