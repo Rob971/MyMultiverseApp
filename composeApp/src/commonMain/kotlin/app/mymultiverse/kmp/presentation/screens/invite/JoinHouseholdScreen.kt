@@ -172,17 +172,21 @@ private fun JoinHouseholdContent(
     val preview = previewState.preview
     val actionError = when {
         showConfigMissing -> stringResource(Res.string.auth_error_config_missing) to false
-        uiState.message is JoinHouseholdMessage.Error -> when ((uiState.message as JoinHouseholdMessage.Error).type) {
-            JoinHouseholdError.ConfigMissing -> stringResource(Res.string.auth_error_config_missing) to false
-            JoinHouseholdError.ProviderComingSoon -> stringResource(Res.string.auth_provider_coming_soon) to false
-            JoinHouseholdError.InvalidEmail -> stringResource(Res.string.invite_join_error_invalid_email) to false
-            JoinHouseholdError.OtpInvalid -> stringResource(Res.string.invite_join_error_otp_invalid) to false
-            JoinHouseholdError.OtpExpired -> stringResource(Res.string.invite_join_error_otp_expired) to false
-            JoinHouseholdError.OtpRateLimited -> stringResource(Res.string.invite_join_error_otp_rate_limited) to false
-            JoinHouseholdError.Generic -> stringResource(Res.string.invite_join_error_generic) to false
+        uiState.message is JoinHouseholdMessage.Error -> {
+            val error = (uiState.message as JoinHouseholdMessage.Error).type
+            if (error.isScreenLevelOnly()) {
+                when (error) {
+                    JoinHouseholdError.ConfigMissing -> stringResource(Res.string.auth_error_config_missing) to false
+                    JoinHouseholdError.ProviderComingSoon -> stringResource(Res.string.auth_provider_coming_soon) to false
+                    else -> stringResource(Res.string.invite_join_error_generic) to false
+                }
+            } else {
+                null
+            }
         }
         else -> null
     }
+    val joinFieldError = (uiState.message as? JoinHouseholdMessage.Error)?.type
 
     Column(
         modifier = Modifier
@@ -218,11 +222,13 @@ private fun JoinHouseholdContent(
                 uiState = uiState,
                 invitedEmail = preview.inviteeEmail,
                 showConfigMissing = showConfigMissing,
+                fieldError = joinFieldError,
                 screenModel = screenModel,
             )
             JoinOtpStep.Code -> JoinHouseholdOtpStep(
                 uiState = uiState,
                 showConfigMissing = showConfigMissing,
+                fieldError = joinFieldError,
                 screenModel = screenModel,
             )
         }
@@ -246,16 +252,24 @@ private fun JoinHouseholdEmailStep(
     uiState: JoinHouseholdUiState,
     invitedEmail: String,
     showConfigMissing: Boolean,
+    fieldError: JoinHouseholdError?,
     screenModel: JoinHouseholdScreenModel,
 ) {
+    val emailErrorText = when (fieldError) {
+        JoinHouseholdError.InvalidEmail -> stringResource(Res.string.invite_join_error_invalid_email)
+        else -> null
+    }
     JourneyTextField(
         value = uiState.email,
         onValueChange = screenModel::onEmailChange,
         label = { Text(stringResource(Res.string.auth_email_label)) },
         supportingText = {
-            Text(stringResource(Res.string.invite_join_email_helper))
+            Text(
+                text = emailErrorText ?: stringResource(Res.string.invite_join_email_helper),
+            )
         },
         enabled = !uiState.isLoading && !showConfigMissing,
+        isError = emailErrorText != null,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Email,
             imeAction = ImeAction.Done,
@@ -305,8 +319,15 @@ private fun JoinHouseholdEmailStep(
 private fun JoinHouseholdOtpStep(
     uiState: JoinHouseholdUiState,
     showConfigMissing: Boolean,
+    fieldError: JoinHouseholdError?,
     screenModel: JoinHouseholdScreenModel,
 ) {
+    val otpErrorText = when (fieldError) {
+        JoinHouseholdError.OtpInvalid -> stringResource(Res.string.invite_join_error_otp_invalid)
+        JoinHouseholdError.OtpExpired -> stringResource(Res.string.invite_join_error_otp_expired)
+        JoinHouseholdError.OtpRateLimited -> stringResource(Res.string.invite_join_error_otp_rate_limited)
+        else -> null
+    }
     Text(
         text = stringResource(Res.string.invite_join_otp_title),
         style = MaterialTheme.typography.titleMedium,
@@ -328,6 +349,8 @@ private fun JoinHouseholdOtpStep(
         onValueChange = screenModel::onOtpCodeChange,
         label = { Text(stringResource(Res.string.invite_join_otp_label)) },
         enabled = !uiState.isLoading && !showConfigMissing,
+        isError = otpErrorText != null,
+        supportingText = otpErrorText?.let { error -> { Text(error) } },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.NumberPassword,
             imeAction = ImeAction.Done,

@@ -1,5 +1,12 @@
 package app.mymultiverse.kmp.presentation
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -144,7 +151,17 @@ private fun AuthenticatedMainApp() {
         navigator.navigateBack()
     }
 
-    when (route) {
+    AnimatedContent(
+        targetState = route,
+        transitionSpec = {
+            fadeIn(animationSpec = tween(220)) +
+                slideInHorizontally(animationSpec = tween(220)) { fullWidth -> fullWidth / 4 } togetherWith
+                fadeOut(animationSpec = tween(180)) +
+                slideOutHorizontally(animationSpec = tween(180)) { fullWidth -> -fullWidth / 4 }
+        },
+        label = "authenticated_route",
+    ) { currentRoute ->
+    when (currentRoute) {
         AppRoute.Home -> HomeScreen(
             onOpenNutrition = {
                 navigator.navigateTo(AppRoute.Nutrition())
@@ -155,7 +172,7 @@ private fun AuthenticatedMainApp() {
         )
 
         is AppRoute.HouseholdMembers -> HouseholdMembersFlow(
-            household = route.household,
+            household = currentRoute.household,
             onBack = navigator::navigateBack,
             onHouseholdReady = { household ->
                 navigator.replaceCurrent(AppRoute.HouseholdMembers(household = household))
@@ -163,14 +180,14 @@ private fun AuthenticatedMainApp() {
         )
 
         is AppRoute.Nutrition -> NutritionFlow(
-            household = route.household,
-            section = route.section,
-            initialAiMode = route.initialAiMode,
+            household = currentRoute.household,
+            section = currentRoute.section,
+            initialAiMode = currentRoute.initialAiMode,
             onBack = navigator::navigateBack,
             onOpenSection = { section, initialAiMode ->
                 navigator.navigateTo(
                     AppRoute.Nutrition(
-                        household = route.household,
+                        household = currentRoute.household,
                         section = section,
                         initialAiMode = initialAiMode,
                     ),
@@ -185,5 +202,6 @@ private fun AuthenticatedMainApp() {
                 )
             },
         )
+    }
     }
 }

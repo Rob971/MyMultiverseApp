@@ -114,6 +114,21 @@ class NutritionScreenModel(
     private val _aiState = MutableStateFlow<NutritionAiState>(NutritionAiState.Idle)
     val aiState: StateFlow<NutritionAiState> = _aiState.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    fun refresh() {
+        if (_isRefreshing.value) return
+        scope.launch {
+            _isRefreshing.value = true
+            try {
+                repository.refreshFromRemote()
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
+    }
+
     data class MealGroceryRequest(val dayIndex: Int, val slot: MealSlot)
 
     data class MealGroceryResult(

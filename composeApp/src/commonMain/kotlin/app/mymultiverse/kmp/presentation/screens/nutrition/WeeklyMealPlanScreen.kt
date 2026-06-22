@@ -12,9 +12,11 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import app.mymultiverse.kmp.presentation.components.JourneyIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,6 +41,7 @@ import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionsSection
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
+import app.mymultiverse.kmp.presentation.components.JourneySnackbarHost
 import app.mymultiverse.kmp.presentation.components.MealPlanDayCard
 import app.mymultiverse.kmp.presentation.components.MealPlanEmptyState
 import app.mymultiverse.kmp.presentation.components.MealPlanTestTags
@@ -95,6 +98,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeeklyMealPlanScreen(
     onBack: () -> Unit,
@@ -104,6 +108,7 @@ fun WeeklyMealPlanScreen(
     val mealPlan by screenModel.mealPlan.collectAsState()
     val aiGrocery by screenModel.aiGroceryItems.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
+    val isRefreshing by screenModel.isRefreshing.collectAsState()
     val mealGroceryLoading by screenModel.mealGroceryLoading.collectAsState()
     val mealGroceryResult by screenModel.mealGroceryResult.collectAsState()
     val bulkGroceryLoading by screenModel.bulkMealGroceryLoading.collectAsState()
@@ -113,6 +118,7 @@ fun WeeklyMealPlanScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    val pullRefreshState = rememberPullToRefreshState()
     var showClearWeekDialog by remember { mutableStateOf(false) }
     var showOverflowMenu by remember { mutableStateOf(false) }
 
@@ -296,7 +302,7 @@ fun WeeklyMealPlanScreen(
     NutritionScaffold(
         title = stringResource(Res.string.nutrition_meal_plan_title),
         onBack = onBack,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { JourneySnackbarHost(hostState = snackbarHostState) },
         actions = {
             if (canWrite) {
                 JourneyIconButton(onClick = { showOverflowMenu = true }) {
@@ -321,9 +327,15 @@ fun WeeklyMealPlanScreen(
             }
         },
     ) { padding ->
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = screenModel::refresh,
+            state = pullRefreshState,
+            modifier = Modifier.screenContentArea(padding),
+        ) {
         LazyColumn(
             modifier = Modifier
-                .screenContentArea(padding)
+                .fillMaxWidth()
                 .testTag(MealPlanTestTags.SCROLL_LIST),
             state = listState,
             contentPadding = screenListPadding(),
@@ -425,6 +437,7 @@ fun WeeklyMealPlanScreen(
                     dayCard(entry, isToday = false, initiallyExpanded = false)
                 }
             }
+        }
         }
     }
 }

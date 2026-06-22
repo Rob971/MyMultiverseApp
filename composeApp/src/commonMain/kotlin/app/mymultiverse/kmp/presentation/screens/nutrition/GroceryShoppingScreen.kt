@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -65,6 +67,7 @@ import app.mymultiverse.kmp.presentation.components.GroceryInputBar
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.kmp.presentation.components.GroceryItemRow
 import app.mymultiverse.kmp.presentation.components.GroceryItemRowTestTags
+import app.mymultiverse.kmp.presentation.components.JourneySnackbarHost
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.screenListPadding
@@ -83,6 +86,7 @@ object GroceryListTestTags {
     const val COMPLETED_SECTION_HEADER = "grocery_completed_section_header"
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroceryShoppingScreen(
     onBack: () -> Unit,
@@ -92,6 +96,7 @@ fun GroceryShoppingScreen(
     val aiGroceryItems by screenModel.aiGroceryItems.collectAsState()
     val adoptAllResult by screenModel.adoptAllGroceryResult.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
+    val isRefreshing by screenModel.isRefreshing.collectAsState()
     val weekOffset by screenModel.weekOffset.collectAsState()
     var newItemText by rememberSaveable { mutableStateOf("") }
     var editingItemId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -102,6 +107,7 @@ fun GroceryShoppingScreen(
     val listState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val pullRefreshState = rememberPullToRefreshState()
 
     val weekLabel = stringResource(
         Res.string.nutrition_week_label,
@@ -219,7 +225,12 @@ fun GroceryShoppingScreen(
     NutritionScaffold(
         title = stringResource(Res.string.nutrition_grocery_title),
         onBack = onBack,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+            JourneySnackbarHost(
+                hostState = snackbarHostState,
+                aboveBottomBar = canWrite,
+            )
+        },
         bottomBar = {
             if (canWrite) {
                 GroceryInputBar(
@@ -235,10 +246,17 @@ fun GroceryShoppingScreen(
             }
         },
     ) { padding ->
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = screenModel::refresh,
+            state = pullRefreshState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+        ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .padding(horizontal = ScreenLayout.horizontalPadding)
                 .testTag(GroceryListTestTags.SCROLL_LIST),
             state = listState,
@@ -408,6 +426,7 @@ fun GroceryShoppingScreen(
                     }
                 }
             }
+        }
         }
     }
 }
