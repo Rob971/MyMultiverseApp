@@ -1,8 +1,11 @@
 package app.mymultiverse.kmp.domain.model.sharing
 
-enum class AddMemberResult {
-    Added,
-    InviteSent,
+sealed class AddMemberResult {
+    data object Added : AddMemberResult()
+
+    data class InviteSent(
+        val inviteToken: String,
+    ) : AddMemberResult()
 }
 
 data class HouseholdInvite(
@@ -12,4 +15,5 @@ data class HouseholdInvite(
     val email: String,
     val role: HouseholdMemberRole,
     val expiresAtEpochMillis: Long?,
+    val inviteToken: String? = null,
 )

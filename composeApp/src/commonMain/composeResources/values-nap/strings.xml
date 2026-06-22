@@ -352,6 +352,10 @@
     <string name="nav_tab_meal_plan">Piano</string>
     <string name="nav_tab_grocery">Spesa</string>
     <string name="home_first_win_dismiss">Mo' no</string>
+    <string name="home_sunday_plan_nudge_title">Pianà chesta semmana?</string>
+    <string name="home_sunday_plan_nudge_body">'O piano pasti è vacante. Quache minuto mo' fa cchiù facile 'a spesa dopo.</string>
+    <string name="home_sunday_plan_nudge_action">Arè 'o piano pasti</string>
+    <string name="home_sunday_plan_nudge_dismiss">Chiure</string>
     <string name="home_onboarding_join_title">T'ann' a invitato?</string>
     <string name="home_onboarding_wait_for_invite_title">Aspettanno 'n invito?</string>
     <string name="home_onboarding_wait_for_invite_body">Quanno quacuno invita %1$s, 'o vede ccà. Può aggiornà pe' verificà mo'.</string>
@@ -786,6 +790,9 @@
     <string name="sharing_members_event_expires_required">Piglia 'na data 'e fine pe' gruppi viaggio o evento.</string>
     <string name="sharing_members_group_expired">Scaduto</string>
     <string name="sharing_members_invite_sent">Invito mandato a %1$s. Pònno accettà dopo 'o accesso.</string>
+    <string name="sharing_members_invite_share_title">Condividere 'o invito</string>
+    <string name="sharing_members_invite_share_action">Condividere</string>
+    <string name="sharing_members_invite_share_message">Si' invitato a unìte a %1$s ncopp'a MyMultiverse! Arè stu link pe' accettà: %2$s</string>
     <string name="sharing_members_member_added">Membro azzeccato â famiglia toja.</string>
     <string name="sharing_members_pending_invites_title">Inviti 'n attesa</string>
     <string name="sharing_members_pending_invite_label">'N attesa · %1$s</string>

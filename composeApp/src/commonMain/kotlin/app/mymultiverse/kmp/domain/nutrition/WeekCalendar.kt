@@ -65,6 +65,10 @@ object WeekCalendar {
         return index.takeIf { it in 0 until WeeklyMealPlan.DAYS_IN_WEEK }
     }
 
+    fun isSunday(
+        today: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault()),
+    ): Boolean = today.dayOfWeek == DayOfWeek.SUNDAY
+
     private fun formatShortDate(date: LocalDate): String {
         val day = date.dayOfMonth.toString().padStart(2, '0')
         val month = date.monthNumber.toString().padStart(2, '0')

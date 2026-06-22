@@ -1,8 +1,8 @@
 # Product UX backlog — nutrition logistics & silent-butler AI
 
-**Status:** In progress (Phase 2) · **Updated:** 2026-06-22  
-**App:** MyMultiverse (KMP) · **QA YAML baseline:** v38  
-**Current sprint:** **S8** — E3-2, E1-7 (sync trust + onboarding polish)
+**Status:** In progress (Phase 3) · **Updated:** 2026-06-22  
+**App:** MyMultiverse (KMP) · **QA YAML baseline:** v39  
+**Current sprint:** **S9** — E3-3, E3-4 (push + invite polish)
 
 This backlog synthesizes product thesis, UX roadmap, and AI interaction model for household grocery + meal planning. Use it as the scope razor before building anything new.
 
@@ -16,8 +16,8 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 |-------|---------|--------|
 | **Phase 0** — Grandma adds milk | S1, S2 | **Done** |
 | **Phase 1** — Paper at the store | S3, S4 | **Done** |
-| **Phase 2** — Silent butler | S5–S7 | **Done** · Phase 3 next |
-| **Phase 3** — Family in the loop | S8–S10 | Planned |
+| **Phase 2** — Silent butler | S5–S7 | **Done** |
+| **Phase 3** — Family in the loop | S8–S10 | In progress |
 | **Phase 4** — Ghost magic | S11–S12 | Optional |
 
 ### Shipped stories (23 unique IDs + E6-3 ongoing)
@@ -31,8 +31,9 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **S5** | E4-1, E4-4 (+ sheet dismiss on apply; instrumented: `AiHelperSheet`) |
 | **S6** | E4-2, E4-3, E4-8 (+ `AiHelperLaunchContext`, grocery sheet; instrumented: inline triggers) |
 | **S7** | E4-5, E4-6, E4-7, E5-3 (+ chip-first sheet, empty-state chips; instrumented) |
+| **S8** | E3-2, E1-7 (+ invite share sheet, Sunday plan nudge on Today) |
 
-**Next up (S8):** E3-2, E1-7
+**Next up (S9):** E3-3, E3-4
 
 ---
 

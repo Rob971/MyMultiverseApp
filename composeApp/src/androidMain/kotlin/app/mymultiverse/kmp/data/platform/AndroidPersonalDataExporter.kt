@@ -24,4 +24,19 @@ class AndroidPersonalDataExporter(
             clipboard.setPrimaryClip(ClipData.newPlainText(filename, content))
             true
         }
+
+    override fun shareText(chooserTitle: String, message: String): Boolean =
+        runCatching {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, message)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(Intent.createChooser(intent, chooserTitle).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            true
+        }.getOrElse {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            clipboard.setPrimaryClip(ClipData.newPlainText(chooserTitle, message))
+            true
+        }
 }

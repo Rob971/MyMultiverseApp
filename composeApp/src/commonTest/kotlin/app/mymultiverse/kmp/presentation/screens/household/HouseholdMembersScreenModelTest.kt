@@ -57,7 +57,7 @@ class HouseholdMembersScreenModelTest {
 
     @Test
     fun submitAddPerson_withUnknownEmail_closesDialogAndTracksOutbound() = runTest(testDispatcher) {
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddPersonDialog()
         model.onEmailChange("invite@example.com")
         model.onRoleChange(HouseholdMemberRole.Viewer)
@@ -69,11 +69,18 @@ class HouseholdMembersScreenModelTest {
         assertEquals(HouseholdMembersSuccess.InviteSent, model.uiState.value.successMessageKey)
         assertEquals(1, model.uiState.value.outboundInvites.size)
         assertEquals("invite@example.com", model.uiState.value.outboundInvites.single().email)
+        assertEquals(
+            HouseholdInviteSharePayload(
+                householdName = "Test Household",
+                inviteToken = model.uiState.value.outboundInvites.single().inviteToken.orEmpty(),
+            ),
+            model.uiState.value.pendingInviteShare,
+        )
     }
 
     @Test
     fun submitAddPerson_withBlankEmail_keepsDialogOpenWithInlineError() = runTest(testDispatcher) {
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddPersonDialog()
 
         model.submitAddPerson("household-1")
@@ -86,7 +93,7 @@ class HouseholdMembersScreenModelTest {
     @Test
     fun submitAddPerson_whenRepositoryFails_keepsDialogOpenWithError() = runTest(testDispatcher) {
         repository.addMemberFailure = IllegalStateException("insufficient_role")
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddPersonDialog()
         model.onEmailChange("partner@example.com")
 
@@ -99,7 +106,7 @@ class HouseholdMembersScreenModelTest {
 
     @Test
     fun submitAddPerson_withKnownEmail_sendsInvite() = runTest(testDispatcher) {
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddPersonDialog()
         model.onEmailChange("member@example.com")
 
@@ -114,7 +121,7 @@ class HouseholdMembersScreenModelTest {
     @Test
     fun submitAddPerson_whenInviteeAlreadyInHousehold_showsInlineError() = runTest(testDispatcher) {
         repository.emailsAlreadyInAnotherHousehold = setOf("taken@example.com")
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddPersonDialog()
         model.onEmailChange("taken@example.com")
 
@@ -137,7 +144,7 @@ class HouseholdMembersScreenModelTest {
             sessionCoordinator = sessionCoordinator,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "editor-1")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "editor-1")
         advanceUntilIdle()
 
         assertFalse(model.uiState.value.canManageMembers)
@@ -159,7 +166,7 @@ class HouseholdMembersScreenModelTest {
             ownerId = "owner",
             ownerDisplayName = "Owner",
         )
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         advanceUntilIdle()
 
         val member = model.uiState.value.members.single { it.role == HouseholdMemberRole.Editor }
@@ -184,7 +191,7 @@ class HouseholdMembersScreenModelTest {
             sessionCoordinator = sessionCoordinator,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "admin-1")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "admin-1")
         advanceUntilIdle()
 
         model.openAddPersonDialog()
@@ -194,7 +201,7 @@ class HouseholdMembersScreenModelTest {
 
     @Test
     fun confirmLeave_callsHouseholdRepositoryAndDeactivatesSession() = runTest(testDispatcher) {
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "editor-1")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "editor-1")
         advanceUntilIdle()
 
         model.requestLeave()
@@ -220,7 +227,7 @@ class HouseholdMembersScreenModelTest {
             ownerId = "owner",
             ownerDisplayName = "Owner",
         )
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         advanceUntilIdle()
 
         model.openTransferDialog()
@@ -236,7 +243,7 @@ class HouseholdMembersScreenModelTest {
 
     @Test
     fun household_withOwnerOnly_isNotReadyUntilSecondMemberJoins() = runTest(testDispatcher) {
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         advanceUntilIdle()
 
         assertEquals(1, householdMemberCount(model.uiState.value.members))
@@ -258,7 +265,7 @@ class HouseholdMembersScreenModelTest {
 
     @Test
     fun submitAddDependant_withValidName_closesDialogAndShowsSuccess() = runTest(testDispatcher) {
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddDependantDialog()
         model.onDependantNameChange("Mia")
 
@@ -277,7 +284,7 @@ class HouseholdMembersScreenModelTest {
 
     @Test
     fun submitAddDependant_withBlankName_keepsDialogOpenWithInlineError() = runTest(testDispatcher) {
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddDependantDialog()
 
         model.submitAddDependant("household-1")
@@ -290,7 +297,7 @@ class HouseholdMembersScreenModelTest {
     @Test
     fun submitAddDependant_whenRepositoryFails_keepsDialogOpenWithError() = runTest(testDispatcher) {
         repository.addDependantFailure = IllegalStateException(CollaborationErrorCodes.INSUFFICIENT_ROLE)
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddDependantDialog()
         model.onDependantNameChange("Mia")
 
@@ -303,7 +310,7 @@ class HouseholdMembersScreenModelTest {
 
     @Test
     fun removeDependant_removesMemberFromList() = runTest(testDispatcher) {
-        model.bindHousehold("household-1", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddDependantDialog()
         model.onDependantNameChange("Mia")
         model.submitAddDependant("household-1")

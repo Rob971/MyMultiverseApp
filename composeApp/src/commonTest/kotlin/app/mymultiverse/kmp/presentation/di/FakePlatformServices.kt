@@ -5,10 +5,16 @@ import app.mymultiverse.kmp.domain.platform.PushNotificationRegistrar
 
 class FakePersonalDataExporter(
     var lastSharedContent: String? = null,
+    var lastSharedText: String? = null,
     var shareResult: Boolean = true,
 ) : PersonalDataExporter {
     override fun shareJson(filename: String, content: String): Boolean {
         lastSharedContent = content
+        return shareResult
+    }
+
+    override fun shareText(chooserTitle: String, message: String): Boolean {
+        lastSharedText = message
         return shareResult
     }
 }

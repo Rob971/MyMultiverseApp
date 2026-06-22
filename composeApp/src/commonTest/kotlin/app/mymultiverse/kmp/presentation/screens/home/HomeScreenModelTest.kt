@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
 import app.mymultiverse.kmp.data.home.HomeFirstWinChecklistStore
+import app.mymultiverse.kmp.data.home.HomeWeekPlanNudgeStore
 import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
 import app.mymultiverse.kmp.domain.observability.DiagnosticsContext
@@ -77,6 +78,7 @@ class HomeScreenModelTest {
             initialRepository = NutritionRepositoryImpl(MapSettings()),
         ),
         firstWinChecklistStore: HomeFirstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
+        weekPlanNudgeStore: HomeWeekPlanNudgeStore = HomeWeekPlanNudgeStore(MapSettings()),
     ): HomeScreenModel =
         HomeScreenModel(
             getGreetingUseCase = GetGreetingUseCase(repository),
@@ -87,6 +89,7 @@ class HomeScreenModelTest {
             personalDataExporter = personalDataExporter,
             pushNotificationRegistrar = pushNotificationRegistrar,
             firstWinChecklistStore = firstWinChecklistStore,
+            weekPlanNudgeStore = weekPlanNudgeStore,
             logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
@@ -243,6 +246,7 @@ class HomeScreenModelTest {
             personalDataExporter = FakePersonalDataExporter(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
             firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
+            weekPlanNudgeStore = HomeWeekPlanNudgeStore(MapSettings()),
             logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
@@ -270,6 +274,7 @@ class HomeScreenModelTest {
             personalDataExporter = FakePersonalDataExporter(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
             firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
+            weekPlanNudgeStore = HomeWeekPlanNudgeStore(MapSettings()),
             logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
@@ -308,6 +313,7 @@ class HomeScreenModelTest {
             personalDataExporter = FakePersonalDataExporter(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
             firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
+            weekPlanNudgeStore = HomeWeekPlanNudgeStore(MapSettings()),
             logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
@@ -337,6 +343,7 @@ class HomeScreenModelTest {
             personalDataExporter = FakePersonalDataExporter(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
             firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
+            weekPlanNudgeStore = HomeWeekPlanNudgeStore(MapSettings()),
             logger = logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )

@@ -8,6 +8,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class WeekCalendarTest {
 
@@ -89,5 +91,11 @@ class WeekCalendarTest {
 
         assertEquals(current, WeekCalendar.weekKeyForOffset(baseWeekKey = current, offset = 0))
         assertEquals("2026-05-25", WeekCalendar.weekKeyForOffset(baseWeekKey = current, offset = 1))
+    }
+
+    @Test
+    fun isSunday_detectsSunday() {
+        assertTrue(WeekCalendar.isSunday(LocalDate(2026, 5, 24)))
+        assertFalse(WeekCalendar.isSunday(LocalDate(2026, 5, 25)))
     }
 }

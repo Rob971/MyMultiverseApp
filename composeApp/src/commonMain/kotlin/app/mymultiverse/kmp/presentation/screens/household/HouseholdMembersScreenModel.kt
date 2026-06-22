@@ -44,6 +44,11 @@ enum class HouseholdMembersLeaveAction {
     Dissolve,
 }
 
+data class HouseholdInviteSharePayload(
+    val householdName: String,
+    val inviteToken: String,
+)
+
 data class HouseholdMembersUiState(
     val members: List<HouseholdMember> = emptyList(),
     val outboundInvites: List<HouseholdInvite> = emptyList(),
@@ -55,6 +60,7 @@ data class HouseholdMembersUiState(
     val selectedRole: HouseholdMemberRole = HouseholdMemberRole.Editor,
     val successMessageKey: HouseholdMembersSuccess? = null,
     val invitedEmailForSuccess: String? = null,
+    val pendingInviteShare: HouseholdInviteSharePayload? = null,
     val transferredToDisplayName: String? = null,
     val error: HouseholdMembersError? = null,
     val dialogError: HouseholdMembersError? = null,
@@ -95,6 +101,7 @@ class HouseholdMembersScreenModel(
     val uiState: StateFlow<HouseholdMembersUiState> = _uiState.asStateFlow()
 
     private var activeHouseholdId: String? = null
+    private var activeHouseholdName: String = ""
     private var activeOwnerId: String = ""
     private var activeOwnerDisplayName: String = ""
     private var activeUserIsOwner: Boolean = false
@@ -103,17 +110,20 @@ class HouseholdMembersScreenModel(
 
     fun bindHousehold(
         householdId: String,
+        householdName: String,
         ownerId: String,
         ownerDisplayName: String,
         currentUserId: String?,
     ) {
         if (activeHouseholdId == householdId &&
+            activeHouseholdName == householdName &&
             activeOwnerId == ownerId &&
             activeOwnerDisplayName == ownerDisplayName
         ) {
             return
         }
         activeHouseholdId = householdId
+        activeHouseholdName = householdName
         activeOwnerId = ownerId
         activeOwnerDisplayName = ownerDisplayName
 
@@ -298,11 +308,18 @@ class HouseholdMembersScreenModel(
                             emailInput = "",
                             dialogError = null,
                             invitedEmailForSuccess = when (addResult) {
-                                AddMemberResult.InviteSent -> email
+                                is AddMemberResult.InviteSent -> email
+                                AddMemberResult.Added -> null
+                            },
+                            pendingInviteShare = when (addResult) {
+                                is AddMemberResult.InviteSent -> HouseholdInviteSharePayload(
+                                    householdName = activeHouseholdName,
+                                    inviteToken = addResult.inviteToken,
+                                )
                                 AddMemberResult.Added -> null
                             },
                             successMessageKey = when (addResult) {
-                                AddMemberResult.InviteSent -> HouseholdMembersSuccess.InviteSent
+                                is AddMemberResult.InviteSent -> HouseholdMembersSuccess.InviteSent
                                 AddMemberResult.Added -> HouseholdMembersSuccess.MemberAdded
                             },
                         )
@@ -390,6 +407,10 @@ class HouseholdMembersScreenModel(
                     }
                 }
         }
+    }
+
+    fun consumePendingInviteShare() {
+        _uiState.update { it.copy(pendingInviteShare = null) }
     }
 
     fun clearSuccessMessage() {

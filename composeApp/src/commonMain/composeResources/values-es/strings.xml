@@ -352,6 +352,10 @@
     <string name="nav_tab_meal_plan">Plan</string>
     <string name="nav_tab_grocery">Compras</string>
     <string name="home_first_win_dismiss">Ahora no</string>
+    <string name="home_sunday_plan_nudge_title">¿Planificar la semana?</string>
+    <string name="home_sunday_plan_nudge_body">Tu plan de comidas está vacío. Unos minutos ahora facilitan las compras después.</string>
+    <string name="home_sunday_plan_nudge_action">Abrir plan de comidas</string>
+    <string name="home_sunday_plan_nudge_dismiss">Cerrar</string>
     <string name="home_onboarding_join_title">¿Te invitaron?</string>
     <string name="home_onboarding_wait_for_invite_title">¿Esperando una invitación?</string>
     <string name="home_onboarding_wait_for_invite_body">Cuando alguien invite a %1$s, lo verás aquí. También puedes actualizar para comprobar ahora.</string>
@@ -786,6 +790,9 @@
     <string name="sharing_members_event_expires_required">Elige una fecha de fin para grupos de viaje o evento.</string>
     <string name="sharing_members_group_expired">Caducado</string>
     <string name="sharing_members_invite_sent">Invitación enviada a %1$s. Puede aceptar tras iniciar sesión.</string>
+    <string name="sharing_members_invite_share_title">Compartir invitación</string>
+    <string name="sharing_members_invite_share_action">Compartir</string>
+    <string name="sharing_members_invite_share_message">¡Te invitamos a unirte a %1$s en MyMultiverse! Abre este enlace para aceptar: %2$s</string>
     <string name="sharing_members_member_added">Miembro añadido a tu familia.</string>
     <string name="sharing_members_pending_invites_title">Invitaciones pendientes</string>
     <string name="sharing_members_pending_invite_label">Pendiente · %1$s</string>

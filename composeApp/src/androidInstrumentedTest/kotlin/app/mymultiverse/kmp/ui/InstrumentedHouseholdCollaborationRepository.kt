@@ -54,7 +54,7 @@ class InstrumentedHouseholdCollaborationRepository : HouseholdCollaborationRepos
         householdId: String,
         email: String,
         role: HouseholdMemberRole,
-    ): Result<AddMemberResult> = Result.success(AddMemberResult.InviteSent)
+    ): Result<AddMemberResult> = Result.success(AddMemberResult.InviteSent(inviteToken = "instrumented-invite-token"))
 
     override suspend fun removeMember(memberId: String): Result<Unit> = Result.success(Unit)
 

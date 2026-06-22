@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 38
+version: 39
 updated: 2026-06-22
 
 summary: |
@@ -28,6 +28,7 @@ summary: |
   Phase 2 UX (v36): AiHelperSheet bottom sheet on Plan tab; output-first AI copy (no chatbot tone).
   Phase 2 UX (v37): inline AI triggers — empty meal slot “Suggest 20-min meal”, grocery “Build list from this week’s meals” chip, terracotta AI suggestion chips.
   Phase 2 UX (v38): chip-first AI sheet (quick picks generate on tap; criteria behind More options); mode locked from context; plan empty-state AI chips; full-screen AI adviser demoted to deep link only.
+  Phase 3 UX (v39): invite share sheet after sending (SMS/WhatsApp with deep link); Sunday empty-week plan nudge on Today (dismissible).
 
 testcases:
   - id: auth-sign-in
@@ -743,6 +744,28 @@ testcases:
       - AI suggestion cards use terracotta sparkles icon and terracotta left border accent (not Mediterranean teal).
       - Subtitle under the section header uses muted ink; card labels use primary ink and remain readable in light and dark mode.
       - Tapping Add all or individual adopt actions still moves items into the editable grocery list.
+
+  - id: phase3-invite-share-sheet
+    title: Invite share sheet with pre-written message
+    steps:
+      - As household owner, open Household members and invite someone by email.
+      - When the invite is sent, confirm the system share sheet opens (or tap Share on the pending invite row).
+      - Share via Messages or copy the text.
+    expected:
+      - Share message includes the household name and an invite deep link (app.mymultiverse.kmp://invite?token=…).
+      - Pending invite row shows a Share button for resending.
+      - Snackbar confirms invite sent.
+
+  - id: phase3-sunday-plan-nudge
+    title: Sunday empty-week nudge on Today
+    steps:
+      - On a Sunday (or simulate empty current week with no meal slots), open the Today tab with an active household.
+      - Confirm a gentle plan-week nudge appears above This week when the meal plan is empty.
+      - Tap Dismiss, then pull to refresh.
+    expected:
+      - Nudge is dismissible and does not block navigation.
+      - Open meal plan CTA navigates to Plan tab.
+      - Nudge stays hidden for the same week after dismiss; returns next Sunday if the week is still empty.
 
   - id: language-picker
     title: App language from Home settings
