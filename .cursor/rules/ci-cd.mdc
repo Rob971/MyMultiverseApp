@@ -64,7 +64,8 @@ Watch: `gh pr checks N --watch --interval 15` on PRs.
 ## CI performance
 
 - Parallel merge-gate jobs; Gradle cache; shallow checkout; pinned `firebase-tools`; AVD snapshot for instrumented.
-- Instrumented UI tests: **2-shard matrix on PRs only** (`numShards` / `shardIndex`); **1 shard** on `main` push and `workflow_dispatch` — faster PR feedback without doubling cost on every `main` run.
+- **Android CI** builds debug + `androidTest` APKs once (`assembleDebugAndroidTest`); **instrumented** job downloads them and runs `scripts/ci-run-instrumented-tests.sh` via `adb` (no Gradle compile on the emulator runner).
+- **Path filters** (`ci-changes` + `dorny/paths-filter`): skip instrumented when the diff does not touch `composeApp/**`, Gradle, or Android CI workflow files; manual `workflow_dispatch` always runs instrumented when selected.
 
 ## Current release line
 
