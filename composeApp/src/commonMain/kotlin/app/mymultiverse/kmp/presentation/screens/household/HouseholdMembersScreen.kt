@@ -13,7 +13,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -40,6 +39,7 @@ import app.mymultiverse.kmp.domain.sharing.canChangeRoleOf
 import app.mymultiverse.kmp.domain.sharing.canRemoveMember
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
+import app.mymultiverse.kmp.presentation.components.JourneyTextField
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.screenContentArea
@@ -337,12 +337,11 @@ fun HouseholdMembersScreen(
             title = { Text(stringResource(Res.string.sharing_members_add_person)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
+                    JourneyTextField(
                         value = uiState.emailInput,
                         onValueChange = screenModel::onEmailChange,
                         label = { Text(stringResource(Res.string.sharing_members_email_label)) },
                         placeholder = { Text(stringResource(Res.string.sharing_members_email_hint)) },
-                        singleLine = true,
                         enabled = !uiState.isSaving,
                         isError = dialogErrorMessage != null,
                         modifier = Modifier.fillMaxWidth(),
@@ -455,11 +454,10 @@ fun HouseholdMembersScreen(
             title = { Text(stringResource(Res.string.sharing_members_add_dependent)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
+                    JourneyTextField(
                         value = uiState.dependantNameInput,
                         onValueChange = screenModel::onDependantNameChange,
                         label = { Text(stringResource(Res.string.sharing_members_dependent_name_label)) },
-                        singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     if (dialogErrorMessage != null) {

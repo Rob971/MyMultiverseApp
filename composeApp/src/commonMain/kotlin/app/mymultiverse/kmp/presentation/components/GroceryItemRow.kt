@@ -14,7 +14,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -193,15 +192,13 @@ private fun GroceryFlatRowContent(
             }
 
             if (isEditing) {
-                OutlinedTextField(
+                JourneyTextField(
                     value = editText,
                     onValueChange = { editText = it },
                     modifier = Modifier
                         .weight(1f)
                         .testTag("${GroceryItemRowTestTags.EDIT_FIELD_PREFIX}${item.id}"),
                     label = { Text(editLabel) },
-                    singleLine = true,
-                    shape = FamilyLogisticsDesign.fieldShape,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
                         onDone = {

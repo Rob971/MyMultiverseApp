@@ -10,12 +10,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
+import app.mymultiverse.kmp.presentation.components.JourneyTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -290,22 +289,18 @@ fun NutritionAiAdviceScreen(
             }
 
             item {
-                OutlinedTextField(
+                JourneyTextField(
                     value = criteria,
                     onValueChange = { criteria = it },
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag(NutritionAiTestTags.CRITERIA_FIELD),
                     placeholder = { Text(stringResource(Res.string.nutrition_ai_criteria_hint)) },
-                    shape = FamilyLogisticsDesign.fieldShape,
+                    singleLine = false,
                     minLines = 3,
                     maxLines = 5,
                     enabled = inputsEnabled,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = accentColor,
-                        focusedLabelColor = accentColor,
-                        cursorColor = accentColor,
-                    ),
+                    focusAccentColor = accentColor,
                 )
             }
 
