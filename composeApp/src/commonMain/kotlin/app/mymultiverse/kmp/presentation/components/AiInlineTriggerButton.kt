@@ -13,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
@@ -29,6 +31,9 @@ fun AiInlineTriggerButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
+            .semantics(mergeDescendants = true) {
+                contentDescription = label
+            }
             .then(if (testTag != null) Modifier.testTag(testTag) else Modifier),
         enabled = enabled,
     ) {

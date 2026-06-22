@@ -48,16 +48,19 @@ fun MainTabShell(
                         containerColor = JourneySemanticColors.elevatedSurface(),
                         contentColor = JourneySemanticColors.inkDeep(),
                     ) {
+                        val homeTabLabel = stringResource(Res.string.nav_tab_home)
+                        val mealPlanTabLabel = stringResource(Res.string.nav_tab_meal_plan)
+                        val groceryTabLabel = stringResource(Res.string.nav_tab_grocery)
                         NavigationBarItem(
                             selected = selectedTab == AppMainTab.Home,
                             onClick = { onTabSelected(AppMainTab.Home) },
                             icon = {
                                 Icon(
                                     imageVector = AppIcons.Home,
-                                    contentDescription = null,
+                                    contentDescription = homeTabLabel,
                                 )
                             },
-                            label = { Text(stringResource(Res.string.nav_tab_home)) },
+                            label = { Text(homeTabLabel) },
                             modifier = Modifier.testTag(NavigationTestTags.TAB_HOME),
                             colors = navigationBarItemColors(),
                         )
@@ -67,10 +70,10 @@ fun MainTabShell(
                             icon = {
                                 Icon(
                                     imageVector = AppIcons.DateRange,
-                                    contentDescription = null,
+                                    contentDescription = mealPlanTabLabel,
                                 )
                             },
-                            label = { Text(stringResource(Res.string.nav_tab_meal_plan)) },
+                            label = { Text(mealPlanTabLabel) },
                             modifier = Modifier.testTag(NavigationTestTags.TAB_MEAL_PLAN),
                             colors = navigationBarItemColors(),
                         )
@@ -80,10 +83,10 @@ fun MainTabShell(
                             icon = {
                                 Icon(
                                     imageVector = AppIcons.ShoppingCart,
-                                    contentDescription = null,
+                                    contentDescription = groceryTabLabel,
                                 )
                             },
-                            label = { Text(stringResource(Res.string.nav_tab_grocery)) },
+                            label = { Text(groceryTabLabel) },
                             modifier = Modifier.testTag(NavigationTestTags.TAB_GROCERY),
                             colors = navigationBarItemColors(),
                         )

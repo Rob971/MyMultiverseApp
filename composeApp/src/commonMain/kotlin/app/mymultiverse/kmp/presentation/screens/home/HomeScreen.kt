@@ -61,6 +61,8 @@ import app.mymultiverse.kmp.presentation.components.HomeFirstWinChecklistCard
 import app.mymultiverse.kmp.presentation.components.HomeSundayPlanNudgeCard
 import app.mymultiverse.kmp.presentation.components.HomeHouseholdButton
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
+import app.mymultiverse.kmp.presentation.components.WeekContextBanner
+import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.domain.repository.AuthRepository
@@ -90,6 +92,7 @@ object HomeTestTags {
     const val LOADING_INDICATOR = "home_loading_indicator"
     const val GREETING_LINE = "home_greeting_line"
     const val INSPIRATION_LINE = "home_inspiration_line"
+    const val WEEK_CONTEXT_BANNER = "home_week_context_banner"
     const val SETTINGS_BUTTON = "home_settings_button"
     const val ONBOARDING_LOADING = "home_onboarding_loading"
     const val ONBOARDING_ERROR = "home_onboarding_error"
@@ -710,6 +713,18 @@ fun HomeWelcomeContent(
                         HomeTestTags.INSPIRATION_LINE
                     },
                 )
+            }
+
+            nutritionSummary?.weekKey?.takeIf { it.isNotBlank() }?.let { weekKey ->
+                item {
+                    WeekContextBanner(
+                        weekLabel = stringResource(
+                            Res.string.nutrition_week_label,
+                            WeekCalendar.formatWeekRange(weekKey),
+                        ),
+                        modifier = Modifier.testTag(HomeTestTags.WEEK_CONTEXT_BANNER),
+                    )
+                }
             }
 
             if (firstWinChecklist.visible) {

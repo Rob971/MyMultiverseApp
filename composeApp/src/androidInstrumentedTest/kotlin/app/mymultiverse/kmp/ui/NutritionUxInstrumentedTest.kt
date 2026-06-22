@@ -482,6 +482,65 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun homeContent_showsWeekContextBanner_whenWeekKeyPresent() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeWelcomeContent(
+                        greeting = Greeting("Hello"),
+                        userDisplayName = "Test User",
+                        householdName = null,
+                        canRenameHousehold = false,
+                        onRenameHousehold = {},
+                        nutritionSummary = HomeNutritionSummary(
+                            weekKey = WeekCalendar.currentWeekKey(),
+                            groceryProgress = null,
+                            plannedMealSlots = 0,
+                        ),
+                        isRefreshing = false,
+                        onRefresh = {},
+                        onOpenMealPlan = {},
+                        onOpenGrocery = {},
+                        onOpenHouseholdMembers = {},
+                        greetingHour = 9,
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.WEEK_CONTEXT_BANNER)
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun homeContent_hidesWeekContextBanner_whenNutritionSummaryMissing() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeWelcomeContent(
+                        greeting = Greeting("Hello"),
+                        userDisplayName = "Test User",
+                        householdName = null,
+                        canRenameHousehold = false,
+                        onRenameHousehold = {},
+                        nutritionSummary = null,
+                        isRefreshing = false,
+                        onRefresh = {},
+                        onOpenMealPlan = {},
+                        onOpenGrocery = {},
+                        onOpenHouseholdMembers = {},
+                        greetingHour = 9,
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeTestTags.WEEK_CONTEXT_BANNER)
+            .assertDoesNotExist()
+    }
+
+    @Test
     fun homeContent_tapNutritionCard_invokesCallback() {
         var openedNutrition = false
 
