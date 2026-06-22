@@ -58,6 +58,7 @@ import androidx.compose.ui.semantics.semantics
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsCardSurface
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.HomeFirstWinChecklistCard
+import app.mymultiverse.kmp.presentation.components.HomeSundayPlanNudgeCard
 import app.mymultiverse.kmp.presentation.components.HomeHouseholdButton
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
@@ -125,6 +126,7 @@ fun HomeScreen(
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val nutritionSummary by screenModel.nutritionSummary.collectAsState()
     val firstWinChecklist by screenModel.firstWinChecklist.collectAsState()
+    val weekPlanNudge by screenModel.weekPlanNudge.collectAsState()
     val pendingInvites by screenModel.pendingInvites.collectAsState()
     val inviteActionMessage by screenModel.inviteActionMessage.collectAsState()
     val postCreateInvitePrompt by screenModel.postCreateInvitePrompt.collectAsState()
@@ -306,10 +308,12 @@ fun HomeScreen(
                     onRenameHousehold = screenModel::openRenameHouseholdDialog,
                     nutritionSummary = nutritionSummary,
                     firstWinChecklist = firstWinChecklist,
+                    weekPlanNudge = weekPlanNudge,
                     onOpenMealPlan = onOpenMealPlan,
                     onOpenGrocery = onOpenGrocery,
                     onOpenHouseholdMembers = onOpenHouseholdMembers,
                     onDismissFirstWinChecklist = screenModel::dismissFirstWinChecklist,
+                    onDismissWeekPlanNudge = screenModel::dismissWeekPlanNudge,
                     isRefreshing = isRefreshing,
                     onRefresh = screenModel::refresh,
                     embeddedInMainTabs = embeddedInMainTabs,
@@ -640,12 +644,14 @@ fun HomeWelcomeContent(
     onRenameHousehold: () -> Unit,
     nutritionSummary: HomeNutritionSummary?,
     firstWinChecklist: HomeFirstWinChecklistUiState = HomeFirstWinChecklistUiState(),
+    weekPlanNudge: HomeWeekPlanNudgeUiState = HomeWeekPlanNudgeUiState(),
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onOpenMealPlan: () -> Unit,
     onOpenGrocery: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
     onDismissFirstWinChecklist: () -> Unit = {},
+    onDismissWeekPlanNudge: () -> Unit = {},
     embeddedInMainTabs: Boolean = false,
     greetingHour: Int? = null,
     modifier: Modifier = Modifier,
@@ -720,6 +726,19 @@ fun HomeWelcomeContent(
                         onInviteClick = onOpenHouseholdMembers,
                         onNutritionClick = onOpenMealPlan,
                         onDismiss = onDismissFirstWinChecklist,
+                    )
+                }
+            }
+
+            if (weekPlanNudge.visible) {
+                item {
+                    HomeSundayPlanNudgeCard(
+                        title = stringResource(Res.string.home_sunday_plan_nudge_title),
+                        body = stringResource(Res.string.home_sunday_plan_nudge_body),
+                        actionLabel = stringResource(Res.string.home_sunday_plan_nudge_action),
+                        dismissLabel = stringResource(Res.string.home_sunday_plan_nudge_dismiss),
+                        onOpenMealPlan = onOpenMealPlan,
+                        onDismiss = onDismissWeekPlanNudge,
                     )
                 }
             }

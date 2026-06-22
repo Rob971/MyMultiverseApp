@@ -38,7 +38,10 @@ import app.mymultiverse.kmp.domain.sharing.canAssignAdminRole
 import app.mymultiverse.kmp.domain.sharing.canChangeRoleOf
 import app.mymultiverse.kmp.domain.sharing.canRemoveMember
 import app.mymultiverse.kmp.domain.repository.AuthRepository
+import app.mymultiverse.kmp.data.invite.InviteRedirectUrls
+import app.mymultiverse.kmp.domain.platform.PersonalDataExporter
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
+import app.mymultiverse.kmp.presentation.components.JourneySecondaryButton
 import app.mymultiverse.kmp.presentation.components.JourneyTextField
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
@@ -86,6 +89,9 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_member
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_error_transfer_target
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_leave_gdpr_note
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_owner_transfer_required
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_share_action
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_share_message
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_share_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_sent
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_kind_dependent
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_loading
@@ -122,6 +128,7 @@ object HouseholdMembersTestTags {
     const val SOLO_EMPTY_STATE = "household_members_solo_empty_state"
     const val ROLE_CHANGE_CONFIRM_BUTTON = "household_members_role_change_confirm"
     const val PROMOTE_ADMIN_CONFIRM_BUTTON = "household_members_promote_admin_confirm"
+    const val PENDING_INVITE_SHARE = "household_members_pending_invite_share"
 }
 
 @Composable
@@ -130,6 +137,7 @@ fun HouseholdMembersScreen(
     onBack: () -> Unit,
     screenModel: HouseholdMembersScreenModel = koinInject(),
     authRepository: AuthRepository = koinInject(),
+    personalDataExporter: PersonalDataExporter = koinInject(),
 ) {
     val uiState by screenModel.uiState.collectAsState()
     val authState by authRepository.authState.collectAsState()
@@ -161,13 +169,30 @@ fun HouseholdMembersScreen(
     }
     val currentUserId = (authState as? AuthState.Authenticated)?.user?.id
 
+    val shareTitle = stringResource(Res.string.sharing_members_invite_share_title)
+    val pendingSharePayload = uiState.pendingInviteShare
+    val pendingShareMessage = pendingSharePayload?.let { payload ->
+        stringResource(
+            Res.string.sharing_members_invite_share_message,
+            payload.householdName,
+            InviteRedirectUrls.build(payload.inviteToken),
+        )
+    }
+
     LaunchedEffect(household.id, household.ownerId, household.ownerDisplayName, currentUserId) {
         screenModel.bindHousehold(
             householdId = household.id,
+            householdName = household.name,
             ownerId = household.ownerId,
             ownerDisplayName = household.ownerDisplayName ?: ownerFallback,
             currentUserId = currentUserId,
         )
+    }
+
+    LaunchedEffect(pendingShareMessage, shareTitle) {
+        val message = pendingShareMessage ?: return@LaunchedEffect
+        personalDataExporter.shareText(shareTitle, message)
+        screenModel.consumePendingInviteShare()
     }
 
     LaunchedEffect(successMessage) {
@@ -250,7 +275,20 @@ fun HouseholdMembersScreen(
                         )
                     }
                     items(uiState.outboundInvites, key = { it.id }) { invite ->
-                        PendingInviteRow(invite = invite)
+                        val shareMessage = invite.inviteToken?.let { token ->
+                            stringResource(
+                                Res.string.sharing_members_invite_share_message,
+                                household.name,
+                                InviteRedirectUrls.build(token),
+                            )
+                        }
+                        PendingInviteRow(
+                            invite = invite,
+                            shareActionLabel = stringResource(Res.string.sharing_members_invite_share_action),
+                            onShare = shareMessage?.let { message ->
+                                { personalDataExporter.shareText(shareTitle, message) }
+                            },
+                        )
                     }
                 }
                 if (showSoloInviteEmpty && uiState.canManageMembers) {
@@ -714,7 +752,11 @@ private fun MemberRow(
 }
 
 @Composable
-private fun PendingInviteRow(invite: HouseholdInvite) {
+private fun PendingInviteRow(
+    invite: HouseholdInvite,
+    shareActionLabel: String,
+    onShare: (() -> Unit)?,
+) {
     val roleLabel = when (invite.role) {
         HouseholdMemberRole.Owner -> stringResource(Res.string.sharing_members_role_owner)
         HouseholdMemberRole.Admin -> stringResource(Res.string.sharing_members_role_admin)
@@ -732,5 +774,16 @@ private fun PendingInviteRow(invite: HouseholdInvite) {
             text = stringResource(Res.string.sharing_members_pending_invite_label, roleLabel),
             color = SharedJourneyColors.InkSecondary,
         )
+        if (onShare != null) {
+            JourneySecondaryButton(
+                onClick = onShare,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .testTag("${HouseholdMembersTestTags.PENDING_INVITE_SHARE}_${invite.id}"),
+            ) {
+                Text(shareActionLabel)
+            }
+        }
     }
 }

@@ -33,6 +33,7 @@ data class HouseholdInviteRow(
     @SerialName("household_id") val householdId: String,
     val email: String,
     val role: String,
+    val token: String? = null,
     @SerialName("expires_at") val expiresAt: String? = null,
     @SerialName("accepted_at") val acceptedAt: String? = null,
     @SerialName("declined_at") val declinedAt: String? = null,

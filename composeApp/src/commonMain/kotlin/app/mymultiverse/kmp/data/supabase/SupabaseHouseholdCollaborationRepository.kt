@@ -14,6 +14,7 @@ import app.mymultiverse.kmp.data.supabase.dto.HouseholdRow
 import app.mymultiverse.kmp.domain.model.sharing.AddMemberResult
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvitePreview
+import app.mymultiverse.kmp.domain.sharing.emailsMatch
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMember
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
@@ -197,14 +198,21 @@ class SupabaseHouseholdCollaborationRepository(
             ),
         )
 
-        when (row.result) {
-            "invited" -> {
-                refreshOutboundInvites(householdId)
-                AddMemberResult.InviteSent
-            }
-            "added" -> {
+        when {
+            row.result == "added" -> {
                 refreshMembers(householdId, currentUserId, currentProfileDisplayName(currentUserId))
                 AddMemberResult.Added
+            }
+            row.result == "invited" || !row.inviteId.isNullOrBlank() -> {
+                refreshOutboundInvites(householdId)
+                val token = row.inviteToken?.trim().orEmpty().ifEmpty {
+                    outboundInvitesFlow(householdId).value
+                        .firstOrNull { invite -> emailsMatch(invite.email, trimmed) }
+                        ?.inviteToken
+                        .orEmpty()
+                }
+                require(token.isNotEmpty()) { "invite_token_missing" }
+                AddMemberResult.InviteSent(inviteToken = token)
             }
             else -> throw IllegalStateException("invite_household_member_unexpected_result")
         }
@@ -417,6 +425,7 @@ class SupabaseHouseholdCollaborationRepository(
             email = email,
             role = role.toHouseholdMemberRole(),
             expiresAtEpochMillis = expiresAt?.toEpochMillis(),
+            inviteToken = token?.trim()?.takeIf { it.isNotEmpty() },
         )
 
     private fun HouseholdMemberRole.wireName(): String =

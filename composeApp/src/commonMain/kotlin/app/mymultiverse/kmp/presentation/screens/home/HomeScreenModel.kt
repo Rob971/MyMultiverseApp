@@ -1,7 +1,9 @@
 package app.mymultiverse.kmp.presentation.screens.home
 
 import app.mymultiverse.kmp.data.home.HomeFirstWinChecklistStore
+import app.mymultiverse.kmp.data.home.HomeWeekPlanNudgeStore
 import app.mymultiverse.kmp.domain.home.HomeFirstWinChecklist
+import app.mymultiverse.kmp.domain.home.HomeWeekPlanNudge
 import app.mymultiverse.kmp.domain.home.HomeTonightDinner
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
@@ -44,6 +46,9 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 
 class HomeScreenModel(
     private val getGreetingUseCase: GetGreetingUseCase,
@@ -54,6 +59,7 @@ class HomeScreenModel(
     private val personalDataExporter: PersonalDataExporter,
     private val pushNotificationRegistrar: PushNotificationRegistrar,
     private val firstWinChecklistStore: HomeFirstWinChecklistStore,
+    private val weekPlanNudgeStore: HomeWeekPlanNudgeStore,
     private val logger: AppLogger,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
@@ -146,6 +152,7 @@ class HomeScreenModel(
         .stateIn(scope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val _firstWinDismissed = MutableStateFlow(false)
+    private val _weekPlanNudgeDismissedWeekKey = MutableStateFlow<String?>(null)
 
     private data class HomeCollaborationSnapshot(
         val members: List<HouseholdMember> = emptyList(),
@@ -197,6 +204,22 @@ class HomeScreenModel(
         )
     }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), HomeFirstWinChecklistUiState())
 
+    val weekPlanNudge: StateFlow<HomeWeekPlanNudgeUiState> = combine(
+        hasActiveHousehold,
+        _weekPlanNudgeDismissedWeekKey,
+        nutritionSummary,
+    ) { activeHousehold, dismissedWeekKey, nutrition ->
+        HomeWeekPlanNudgeUiState(
+            visible = HomeWeekPlanNudge.shouldShow(
+                hasActiveHousehold = activeHousehold,
+                plannedMealSlots = nutrition?.plannedMealSlots ?: 0,
+                weekKey = nutrition?.weekKey.orEmpty(),
+                today = Clock.System.todayIn(TimeZone.currentSystemDefault()),
+                dismissedWeekKey = dismissedWeekKey,
+            ),
+        )
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), HomeWeekPlanNudgeUiState())
+
     val userDisplayName: StateFlow<String?> = authRepository.authState
         .map(::displayNameForAuthState)
         .stateIn(
@@ -213,6 +236,7 @@ class HomeScreenModel(
                     _household.value = status.household
                     _membershipStatusOverride.value = null
                     syncFirstWinDismissed(status.household.id)
+                    syncWeekPlanNudgeDismissed(status.household.id)
                     refreshCollaborationSnapshot(status.household)
                 } else if (status == HouseholdMembershipStatus.None) {
                     _household.value = null
@@ -255,6 +279,13 @@ class HomeScreenModel(
         val householdId = _household.value?.id ?: return
         firstWinChecklistStore.setDismissed(householdId)
         _firstWinDismissed.value = true
+    }
+
+    fun dismissWeekPlanNudge() {
+        val householdId = _household.value?.id ?: return
+        val weekKey = nutritionSummary.value?.weekKey ?: return
+        weekPlanNudgeStore.setDismissed(householdId, weekKey)
+        _weekPlanNudgeDismissedWeekKey.value = weekKey
     }
 
     fun refreshMembership(forceLoadingState: Boolean = false) {
@@ -666,6 +697,10 @@ class HomeScreenModel(
 
     private fun syncFirstWinDismissed(householdId: String) {
         _firstWinDismissed.value = firstWinChecklistStore.isDismissed(householdId)
+    }
+
+    private fun syncWeekPlanNudgeDismissed(householdId: String) {
+        _weekPlanNudgeDismissedWeekKey.value = weekPlanNudgeStore.dismissedWeekKey(householdId)
     }
 
     private fun refreshCollaborationSnapshot(household: Household) {

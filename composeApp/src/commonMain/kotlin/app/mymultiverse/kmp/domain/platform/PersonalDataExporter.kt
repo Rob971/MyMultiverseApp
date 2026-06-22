@@ -5,4 +5,6 @@ package app.mymultiverse.kmp.domain.platform
  */
 interface PersonalDataExporter {
     fun shareJson(filename: String, content: String): Boolean
+
+    fun shareText(chooserTitle: String, message: String): Boolean
 }

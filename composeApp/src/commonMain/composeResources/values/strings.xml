@@ -352,6 +352,10 @@
     <string name="nav_tab_meal_plan">Plan</string>
     <string name="nav_tab_grocery">Groceries</string>
     <string name="home_first_win_dismiss">Not now</string>
+    <string name="home_sunday_plan_nudge_title">Plan this week?</string>
+    <string name="home_sunday_plan_nudge_body">Your meal plan is empty. A few minutes now makes shopping easier later.</string>
+    <string name="home_sunday_plan_nudge_action">Open meal plan</string>
+    <string name="home_sunday_plan_nudge_dismiss">Dismiss</string>
     <string name="home_onboarding_join_title">Were you invited?</string>
     <string name="home_onboarding_wait_for_invite_title">Waiting for an invite?</string>
     <string name="home_onboarding_wait_for_invite_body">When someone invites %1$s, you will see it here. You can also refresh to check now.</string>
@@ -787,6 +791,9 @@
     <string name="sharing_members_event_expires_required">Pick an end date for trip or event groups.</string>
     <string name="sharing_members_group_expired">Expired</string>
     <string name="sharing_members_invite_sent">Invitation sent to %1$s. They can accept after signing in.</string>
+    <string name="sharing_members_invite_share_title">Share invitation</string>
+    <string name="sharing_members_invite_share_action">Share</string>
+    <string name="sharing_members_invite_share_message">You are invited to join %1$s on MyMultiverse! Open this link to accept: %2$s</string>
     <string name="sharing_members_member_added">Member added to your family.</string>
     <string name="sharing_members_select_role">Access level</string>
     <string name="sharing_members_pending_invites_title">Pending invites</string>

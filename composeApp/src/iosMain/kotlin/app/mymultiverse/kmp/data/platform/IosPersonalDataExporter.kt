@@ -18,6 +18,16 @@ class IosPersonalDataExporter : PersonalDataExporter {
         return true
     }
 
+    override fun shareText(chooserTitle: String, message: String): Boolean {
+        val presenter = topViewController() ?: return false
+        val activityController = UIActivityViewController(
+            activityItems = listOf(message),
+            applicationActivities = null,
+        )
+        presenter.presentViewController(activityController, animated = true, completion = null)
+        return true
+    }
+
     @OptIn(ExperimentalForeignApi::class)
     @Suppress("DEPRECATION")
     private fun topViewController(): UIViewController? {
