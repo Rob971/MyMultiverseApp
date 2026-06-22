@@ -1,12 +1,12 @@
 package app.mymultiverse.kmp.presentation.screens.home
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import app.mymultiverse.kmp.presentation.components.JourneyIconButton
 import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,7 +48,6 @@ import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.contentDescription
@@ -404,10 +403,9 @@ private fun HomeTopBar(
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         actions = {
             onOpenSettings?.let { openSettings ->
-                IconButton(
+                JourneyIconButton(
                     onClick = openSettings,
                     modifier = Modifier
-                        .size(48.dp)
                         .testTag(HomeTestTags.SETTINGS_BUTTON)
                         .semantics { contentDescription = settingsDescription },
                 ) {

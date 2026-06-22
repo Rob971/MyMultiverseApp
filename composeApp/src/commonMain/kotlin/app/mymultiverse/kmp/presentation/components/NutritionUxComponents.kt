@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -54,7 +53,7 @@ fun WeekSelectorBanner(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            IconButton(
+            JourneyIconButton(
                 onClick = onPreviousWeek,
                 enabled = canGoToPreviousWeek,
                 modifier = Modifier.testTag(WeekSelectorTestTags.PREVIOUS),
@@ -78,7 +77,7 @@ fun WeekSelectorBanner(
                 color = SharedJourneyColors.InkDeep,
                 fontWeight = FontWeight.SemiBold,
             )
-            IconButton(
+            JourneyIconButton(
                 onClick = onNextWeek,
                 enabled = canGoToNextWeek,
                 modifier = Modifier.testTag(WeekSelectorTestTags.NEXT),

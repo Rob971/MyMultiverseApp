@@ -38,6 +38,7 @@ object FamilyLogisticsDesign {
     val fieldCornerRadius = 16.dp
     val iconCircleSize = 52.dp
     val iconSize = 28.dp
+    val minTouchTarget = 48.dp
 
     val cardShape = RoundedCornerShape(cardCornerRadius)
     val bannerShape = RoundedCornerShape(bannerCornerRadius)
