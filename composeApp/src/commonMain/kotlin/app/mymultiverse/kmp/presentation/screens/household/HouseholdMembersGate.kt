@@ -1,23 +1,16 @@
 package app.mymultiverse.kmp.presentation.screens.household
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.presentation.components.JourneyErrorContent
+import app.mymultiverse.kmp.presentation.components.JourneyLoadingContent
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_entry_error_generic
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_entry_error_not_configured
@@ -57,20 +50,13 @@ fun HouseholdMembersGate(
     ) { padding ->
         when (val current = state) {
             HouseholdMembersEntryState.Loading -> {
-                Column(
+                JourneyLoadingContent(
+                    message = stringResource(Res.string.nutrition_entry_loading),
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding)
-                        .testTag(HouseholdMembersEntryTestTags.LOADING),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    CircularProgressIndicator()
-                    Text(
-                        text = stringResource(Res.string.nutrition_entry_loading),
-                        modifier = Modifier.padding(top = 12.dp),
-                    )
-                }
+                        .padding(padding),
+                    containerTestTag = HouseholdMembersEntryTestTags.LOADING,
+                )
             }
 
             is HouseholdMembersEntryState.Error -> {
@@ -78,27 +64,16 @@ fun HouseholdMembersGate(
                     HouseholdMembersEntryError.Generic -> stringResource(Res.string.nutrition_entry_error_generic)
                     HouseholdMembersEntryError.NotConfigured -> stringResource(Res.string.nutrition_entry_error_not_configured)
                 }
-                Column(
+                JourneyErrorContent(
+                    message = message,
+                    retryLabel = stringResource(Res.string.nutrition_entry_retry),
+                    onRetry = entryScreenModel::ensureHousehold,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding)
-                        .testTag(HouseholdMembersEntryTestTags.ERROR),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        text = message,
-                        color = SharedJourneyColors.TerracottaOrange,
-                    )
-                    Button(
-                        onClick = entryScreenModel::ensureHousehold,
-                        modifier = Modifier
-                            .padding(top = 16.dp)
-                            .testTag(HouseholdMembersEntryTestTags.RETRY_BUTTON),
-                    ) {
-                        Text(stringResource(Res.string.nutrition_entry_retry))
-                    }
-                }
+                        .padding(padding),
+                    containerTestTag = HouseholdMembersEntryTestTags.ERROR,
+                    retryButtonTestTag = HouseholdMembersEntryTestTags.RETRY_BUTTON,
+                )
             }
 
             is HouseholdMembersEntryState.Ready -> Unit
