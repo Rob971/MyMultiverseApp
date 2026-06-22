@@ -16,6 +16,7 @@ object HouseholdStringKeys {
         "household_gate_error_not_configured",
         "household_gate_error_already_active",
         "household_gate_retry",
+        "household_gate_create_divider",
         "household_name_checking",
         "household_name_available",
         "household_name_taken",

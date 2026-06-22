@@ -1,11 +1,38 @@
 # Product UX backlog — nutrition logistics & silent-butler AI
 
-**Status:** Planning · **Updated:** 2026-06-22  
-**App:** MyMultiverse (KMP) · **QA YAML baseline:** v32
+**Status:** In progress (Phase 2) · **Updated:** 2026-06-22  
+**App:** MyMultiverse (KMP) · **QA YAML baseline:** v38  
+**Current sprint:** **S8** — E3-2, E1-7 (sync trust + onboarding polish)
 
 This backlog synthesizes product thesis, UX roadmap, and AI interaction model for household grocery + meal planning. Use it as the scope razor before building anything new.
 
 **Related rules:** `.cursor/rules/ui-ux-compose.mdc`, `i18n-multilingual.mdc`, `qa-testing.mdc`
+
+---
+
+## Progress summary
+
+| Phase | Sprints | Status |
+|-------|---------|--------|
+| **Phase 0** — Grandma adds milk | S1, S2 | **Done** |
+| **Phase 1** — Paper at the store | S3, S4 | **Done** |
+| **Phase 2** — Silent butler | S5–S7 | **Done** · Phase 3 next |
+| **Phase 3** — Family in the loop | S8–S10 | Planned |
+| **Phase 4** — Ghost magic | S11–S12 | Optional |
+
+### Shipped stories (23 unique IDs + E6-3 ongoing)
+
+| Sprint | Stories |
+|--------|---------|
+| **S1** | E1-1, E1-2, E1-3, E3-1, E6-3 |
+| **S2** | E1-4, E2-1, E2-3, E5-1 |
+| **S3** | E2-2, E2-4, E3-5 |
+| **S4** | E3-6, E1-5 (+ instrumented: swipe-to-check, wakelock, empty-grocery CTA) |
+| **S5** | E4-1, E4-4 (+ sheet dismiss on apply; instrumented: `AiHelperSheet`) |
+| **S6** | E4-2, E4-3, E4-8 (+ `AiHelperLaunchContext`, grocery sheet; instrumented: inline triggers) |
+| **S7** | E4-5, E4-6, E4-7, E5-3 (+ chip-first sheet, empty-state chips; instrumented) |
+
+**Next up (S8):** E3-2, E1-7
 
 ---
 
@@ -29,13 +56,15 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 
 - Adventures / Budget surfaces
 - Floating AI chat bubble / FAB
-- Full-screen AI as the default path
+- Full-screen AI as the **default** tab path (sheet is default on Plan; full-screen remains for overlay/deep link until E4-7)
 - Anonymous guest editing (RLS model requires auth)
 - Auto-aisle grouping, recipe scrape, live presence, predictive pantry (Phase 4+)
 
 ---
 
 ## Already shipped (do not regress)
+
+**Foundation (pre–UX backlog)**
 
 - Bottom tabs: Today / Plan / Groceries (`MainTabShell`, v32)
 - Sticky `GroceryInputBar` (phone bottom bar; side panel ≥600dp)
@@ -47,6 +76,34 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 - Per-meal and bulk meal → grocery (`nutrition_meal_generate_grocery`)
 - Journey design system Waves A–C (dark theme, wide layouts, 48dp targets)
 - 8-locale i18n + parity tests
+
+**Phase 0 — S1–S2 (v33)**
+
+- Plain-language copy: “family” not “household”; no Supabase/sync jargon (E1-1)
+- Tonight’s dinner card on Today → tap opens Plan tab (E1-2)
+- Solo one-tap create family + bottom tabs (`quickCreateHousehold`, E1-3)
+- Friendlier sync banner + icons + brief synced pulse (E3-1)
+- Post-create auto-focus Groceries tab (E1-4)
+- Keep screen on while shopping — `KeepScreenOn` on Groceries (E2-1)
+- iOS haptics on grocery check-off (E2-3)
+- Hero “Add to grocery list” on `MealPlanDayCard` (E5-1)
+- Firebase QA YAML maintained through v33 (E6-3)
+
+**Phase 1 — S3–S4 (v34–v35)**
+
+- Bidirectional swipe on grocery rows: right = check, left = delete (E2-2)
+- Shopping mode: unchecked first; hide/show checked toggle (E2-4)
+- Viewer read-only banner on Groceries + Plan tab roots (E3-5)
+- Skip redundant `NutritionEntryGate` when family already resolved in tabs (E3-6)
+- Empty grocery CTA on Today when list is empty (E1-5)
+- Instrumented tests: swipe-to-check, wakelock flag, empty-grocery CTA
+
+**Phase 2 — S5 (v36)**
+
+- `AiHelperSheet` — `ModalBottomSheet` ~60% over Plan tab; dismiss on apply (E4-1)
+- Shared `NutritionAiAssistantContent`; Plan tab “Plan with AI” opens sheet (not full-screen)
+- AI copy rewrite — output-first, no chatbot tone, all 8 locales (E4-4)
+- Instrumented tests: `AiHelperSheet` visibility + meal-plan opener
 
 ---
 
@@ -62,129 +119,130 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **E6** | Paper | Accessibility & polish |
 | **E7** | All | Bigger bets (deferred) |
 
-**Priority:** P0 = next sprint · P1 = following 2–3 sprints · P2 = later · P3 = deferred
+**Priority:** P0 = next sprint · P1 = following 2–3 sprints · P2 = later · P3 = deferred  
+**Status:** ✅ shipped · 🔜 next · ⏳ planned
 
 ---
 
 ## E1 — Onboarding & Today
 
-| ID | Story | P | Effort | Primary touchpoints |
+| ID | Story | P | Status | Primary touchpoints |
 |----|-------|---|--------|---------------------|
-| E1-1 | Plain-language copy pass (“family” not “household”; no Supabase/sync jargon to end users) | P0 | S | All 8 `composeResources/values*/strings.xml`, locale parity tests |
-| E1-2 | “Tonight’s dinner” on Today tab → tap opens Plan (today expanded) | P0 | S | `HomeScreen`, `HomeScreenModel`, `nutritionSummary` |
-| E1-3 | Solo path: one-tap create family + show bottom tabs immediately | P0 | M | `HomeScreen` onboarding, `App.kt` `showBottomBar` |
-| E1-4 | Post-create: auto-focus Groceries tab or prominent “Add first item” on Today | P0 | S | `App.kt` tab state |
-| E1-5 | Empty grocery CTA on Today when list is empty | P1 | S | `HomeScreen` This week section |
-| E1-6 | Week context banner on Today (“Week of …”) | P1 | S | `WeekContextBanner` pattern on home |
-| E1-7 | Sunday empty-week nudge on Today | P1 | M | `HomeScreenModel`, `WeekCalendar` |
+| E1-1 | Plain-language copy pass (“family” not “household”; no Supabase/sync jargon to end users) | P0 | ✅ S1 | All 8 `composeResources/values*/strings.xml`, locale parity tests |
+| E1-2 | “Tonight’s dinner” on Today tab → tap opens Plan (today expanded) | P0 | ✅ S1 | `HomeScreen`, `HomeScreenModel`, `nutritionSummary` |
+| E1-3 | Solo path: one-tap create family + show bottom tabs immediately | P0 | ✅ S1 | `HomeScreen` onboarding, `App.kt` `showBottomBar` |
+| E1-4 | Post-create: auto-focus Groceries tab or prominent “Add first item” on Today | P0 | ✅ S2 | `App.kt` tab state, `PostCreateFocusTarget` |
+| E1-5 | Empty grocery CTA on Today when list is empty | P1 | ✅ S4 | `HomeScreen` This week section |
+| E1-6 | Week context banner on Today (“Week of …”) | P1 | ⏳ | `WeekContextBanner` pattern on home |
+| E1-7 | Sunday empty-week nudge on Today | P1 | ⏳ S8 | `HomeScreenModel`, `WeekCalendar` |
 
 ---
 
 ## E2 — Grocery at the store
 
-| ID | Story | P | Effort | Primary touchpoints |
+| ID | Story | P | Status | Primary touchpoints |
 |----|-------|---|--------|---------------------|
-| E2-1 | Wakelock setting: “Keep screen on while shopping” (optional auto on Groceries tab) | P0 | S | `expect/actual` platform; settings or Groceries screen |
-| E2-2 | Swipe-to-check (wide gesture); retain row tap + haptics; reconcile with swipe-to-delete | P0 | M | `GroceryItemRow.kt` |
-| E2-3 | Wire iOS haptics on grocery check-off | P0 | S | `JourneyHaptics.ios.kt` |
-| E2-4 | Shopping mode: unchecked first; optional hide checked | P1 | M | `GroceryShoppingScreen`, `GroceryListPresentation` |
-| E2-5 | Auto-aisle categorization | P3 | L | Deferred |
-| E2-6 | Smart paste / recipe ingredient parse | P3 | L | Deferred |
+| E2-1 | Wakelock setting: “Keep screen on while shopping” (auto on Groceries tab) | P0 | ✅ S2 | `KeepScreenOn` expect/actual; `GroceryShoppingScreen` |
+| E2-2 | Swipe-to-check (wide gesture); retain row tap + haptics; reconcile with swipe-to-delete | P0 | ✅ S3 | `GroceryItemRow.kt` |
+| E2-3 | Wire iOS haptics on grocery check-off | P0 | ✅ S2 | `JourneyHaptics.ios.kt` |
+| E2-4 | Shopping mode: unchecked first; optional hide checked | P1 | ✅ S3 | `GroceryShoppingScreen`, `GroceryListPresentation` |
+| E2-5 | Auto-aisle categorization | P3 | Deferred | — |
+| E2-6 | Smart paste / recipe ingredient parse | P3 | Deferred | — |
 
 ---
 
 ## E3 — Sync & collaboration trust
 
-| ID | Story | P | Effort | Primary touchpoints |
+| ID | Story | P | Status | Primary touchpoints |
 |----|-------|---|--------|---------------------|
-| E3-1 | Friendlier sync copy + status icon (pending → synced) | P0 | S | `NutritionSyncStatusBanner.kt`, string keys |
-| E3-2 | Invite share sheet with pre-written SMS/WhatsApp message + deep link | P1 | M | `HouseholdMembersScreen` |
-| E3-3 | Push notifications: invite received / member joined | P1 | L | `InvitePushPayload`, `PlatformPushSetup`, edge |
-| E3-4 | Lightweight activity snackbar (“Maria added milk”) | P2 | M | `NutritionScreenModel`, realtime/sync |
-| E3-5 | Viewer read-only banner on Groceries + Plan tab roots | P1 | S | `HouseholdViewerReadOnlyNotice` on tab entry |
-| E3-6 | Skip redundant `NutritionEntryGate` when household already resolved | P1 | S | `NutritionFlow.kt`, `App.kt` |
-| E3-7 | Silent duplicate merge (e.g. two “Milk” → one line or count) vs error snackbar | P2 | M | Domain + `GroceryShoppingScreen` |
-| E3-8 | Live presence (“Alex is shopping now”) | P3 | L | Deferred |
+| E3-1 | Friendlier sync copy + status icon (pending → synced) | P0 | ✅ S1 | `NutritionSyncStatusBanner.kt`, string keys |
+| E3-2 | Invite share sheet with pre-written SMS/WhatsApp message + deep link | P1 | ⏳ S8 | `HouseholdMembersScreen` |
+| E3-3 | Push notifications: invite received / member joined | P1 | ⏳ S9 | `InvitePushPayload`, `PlatformPushSetup`, edge |
+| E3-4 | Lightweight activity snackbar (“Maria added milk”) | P2 | ⏳ S9 | `NutritionScreenModel`, realtime/sync |
+| E3-5 | Viewer read-only banner on Groceries + Plan tab roots | P1 | ✅ S3 | `HouseholdViewerReadOnlyNotice` on tab entry |
+| E3-6 | Skip redundant `NutritionEntryGate` when household already resolved | P1 | ✅ S4 | `NutritionFlow.kt`, `App.kt` |
+| E3-7 | Silent duplicate merge (e.g. two “Milk” → one line or count) vs error snackbar | P2 | ⏳ S10 | Domain + `GroceryShoppingScreen` |
+| E3-8 | Live presence (“Alex is shopping now”) | P3 | Deferred | — |
 
 ---
 
 ## E4 — Silent butler AI
 
-| ID | Story | P | Effort | Primary touchpoints |
+| ID | Story | P | Status | Primary touchpoints |
 |----|-------|---|--------|---------------------|
-| E4-1 | `AiHelperSheet` (`ModalBottomSheet` ~60%) reusing `NutritionScreenModel.runAiAssistant()` | P0 | L | New composable; pattern from `HomeAccountSheet` |
-| E4-2 | Inline trigger: empty meal slot → “Suggest 20-min meal” (Sparkles, tertiary) | P0 | M | `MealPlanDayCard` |
-| E4-3 | Grocery chip: “Build list from this week’s meals” | P0 | M | `GroceryShoppingScreen` |
-| E4-4 | Copy rewrite — output-first, no chatbot tone (8 locales) | P0 | M | `nutrition_ai_*` keys |
-| E4-5 | Chip-first sheet; text field behind “More options” | P1 | M | `AiHelperSheet` |
-| E4-6 | Mode from launch context (hide Advice/Grocery/Meal plan switcher in default flow) | P1 | M | Sheet launch params |
-| E4-7 | Demote full-screen `NutritionAiAdviceScreen` to fallback/deep link only | P1 | S | `NutritionFlow`, `WeeklyMealPlanScreen` |
-| E4-8 | Terracotta AI chips in read-only zones (fix teal on `AiGrocerySuggestionChips` where AI-origin) | P1 | S | `ui-ux-compose.mdc` |
-| E4-9 | Ghost pairing banner (“+ Add salsa and cheese?”) | P2 | M | `JourneyBanner` + domain helper |
-| E4-10 | Pantry check section: “Check if you have these” on meal→grocery | P2 | M | Separate from active shopping list |
-| E4-11 | Contextual chips from history (“Use up chicken”) | P2 | L | Domain signals from meals/list |
+| E4-1 | `AiHelperSheet` (`ModalBottomSheet` ~60%) reusing `NutritionScreenModel.runAiAssistant()` | P0 | ✅ S5 | `AiHelperSheet.kt`, `NutritionAiAssistantContent.kt` |
+| E4-2 | Inline trigger: empty meal slot → “Suggest 20-min meal” (Sparkles, tertiary) | P0 | ✅ S6 | `MealPlanDayCard` |
+| E4-3 | Grocery chip: “Build list from this week’s meals” | P0 | ✅ S6 | `GroceryShoppingScreen` |
+| E4-4 | Copy rewrite — output-first, no chatbot tone (8 locales) | P0 | ✅ S5 | `nutrition_ai_*` keys |
+| E4-5 | Chip-first sheet; text field behind “More options” | P1 | ✅ S7 | `AiHelperSheet` |
+| E4-6 | Mode from launch context (hide Advice/Grocery/Meal plan switcher in default flow) | P1 | ✅ S7 | Sheet launch params |
+| E4-7 | Demote full-screen `NutritionAiAdviceScreen` to fallback/deep link only | P1 | ✅ S7 | `NutritionFlow`, `WeeklyMealPlanScreen` |
+| E4-8 | Terracotta AI chips in read-only zones (fix teal on `AiGrocerySuggestionChips` where AI-origin) | P1 | ✅ S6 | `ui-ux-compose.mdc` |
+| E4-9 | Ghost pairing banner (“+ Add salsa and cheese?”) | P2 | ⏳ S11 | `JourneyBanner` + domain helper |
+| E4-10 | Pantry check section: “Check if you have these” on meal→grocery | P2 | ⏳ S11 | Separate from active shopping list |
+| E4-11 | Contextual chips from history (“Use up chicken”) | P2 | ⏳ S12 | Domain signals from meals/list |
 
 ---
 
 ## E5 — Meal ↔ grocery loop
 
-| ID | Story | P | Effort | Primary touchpoints |
+| ID | Story | P | Status | Primary touchpoints |
 |----|-------|---|--------|---------------------|
-| E5-1 | Primary CTA per meal: “Add to grocery list” (hero on `MealPlanDayCard`) | P0 | S | `WeeklyMealPlanScreen`, existing string keys |
-| E5-2 | Sheet flow: suggest meal → add → optional ingredients in one path | P1 | M | E4 + E5 integration |
-| E5-3 | Plan tab empty state: contextual AI chips opening sheet | P1 | M | `MealPlanEmptyState` |
-| E5-4 | Predictive replenishment | P3 | L | Deferred |
-| E5-5 | Pantry memory for AI suggestions | P3 | L | Deferred |
+| E5-1 | Primary CTA per meal: “Add to grocery list” (hero on `MealPlanDayCard`) | P0 | ✅ S2 | `WeeklyMealPlanScreen`, `MealPlanDayCard` |
+| E5-2 | Sheet flow: suggest meal → add → optional ingredients in one path | P1 | ⏳ S10 | E4 + E5 integration |
+| E5-3 | Plan tab empty state: contextual AI chips opening sheet | P1 | ✅ S7 | `MealPlanEmptyState` |
+| E5-4 | Predictive replenishment | P3 | Deferred | — |
+| E5-5 | Pantry memory for AI suggestions | P3 | Deferred | — |
 
 ---
 
 ## E6 — Accessibility & polish
 
-| ID | Story | P | Effort | Primary touchpoints |
+| ID | Story | P | Status | Primary touchpoints |
 |----|-------|---|--------|---------------------|
-| E6-1 | System font scaling on grocery rows + meal plan | P1 | M | `GroceryItemRow`, `MealPlanDayCard` |
-| E6-2 | `contentDescription` audit on tab bar + AI entry points | P2 | S | `MainTabShell` |
-| E6-3 | Firebase QA YAML + manual cases for changed flows | P0 | S | `firebase-appdistribution-testcases.yaml` (bump version) |
+| E6-1 | System font scaling on grocery rows + meal plan | P1 | ⏳ S10 | `GroceryItemRow`, `MealPlanDayCard` |
+| E6-2 | `contentDescription` audit on tab bar + AI entry points | P2 | ⏳ | `MainTabShell` |
+| E6-3 | Firebase QA YAML + manual cases for changed flows | P0 | ✅ ongoing | `firebase-appdistribution-testcases.yaml` (currently **v38**) |
 
 ---
 
 ## Execution plan (12 weeks)
 
-### Phase 0 — “Grandma adds milk” (weeks 1–2)
+### Phase 0 — “Grandma adds milk” (weeks 1–2) ✅
 
 **Promise:** “I opened the app and added milk without getting lost.”
 
-| Sprint | Deliverables |
-|--------|----------------|
-| **S1** | E1-1, E1-2, E1-3, E3-1, E6-3 |
-| **S2** | E1-4, E2-1, E2-3, E5-1 |
+| Sprint | Deliverables | Status |
+|--------|----------------|--------|
+| **S1** | E1-1, E1-2, E1-3, E3-1, E6-3 | ✅ |
+| **S2** | E1-4, E2-1, E2-3, E5-1 | ✅ |
 
 **Exit metrics:** onboarding completion ↑ · time-to-first-grocery-item &lt; 2 min median · locale tests green.
 
-### Phase 1 — “Paper at the store” (weeks 3–4)
+### Phase 1 — “Paper at the store” (weeks 3–4) ✅
 
 **Promise:** “At the store, this beats my notes app.”
 
-| Sprint | Deliverables |
-|--------|----------------|
-| **S3** | E2-2, E2-4, E3-5 |
-| **S4** | E3-6, E1-5, instrumented tests (swipe, wakelock) |
+| Sprint | Deliverables | Status |
+|--------|----------------|--------|
+| **S3** | E2-2, E2-4, E3-5 | ✅ |
+| **S4** | E3-6, E1-5, instrumented tests (swipe, wakelock) | ✅ |
 
 **Exit metrics:** check-offs per shop ↑ · Groceries tab weekly opens ↑.
 
-### Phase 2 — “Silent butler” (weeks 5–7)
+### Phase 2 — “Silent butler” (weeks 5–7) ✅
 
 **Promise:** “AI suggests dinner in place — it doesn’t talk at me.”
 
-| Sprint | Deliverables |
-|--------|----------------|
-| **S5** | E4-1, E4-4, sheet dismiss on apply |
-| **S6** | E4-2, E4-3, E4-8 |
-| **S7** | E4-5, E4-6, E4-7, E5-3 |
+| Sprint | Deliverables | Status |
+|--------|----------------|--------|
+| **S5** | E4-1, E4-4, sheet dismiss on apply | ✅ |
+| **S6** | E4-2, E4-3, E4-8 | ✅ |
+| **S7** | E4-5, E4-6, E4-7, E5-3 | ✅ |
 
 **Exit metrics:** AI opens from inline &gt; 80% · keyboard use in AI &lt; 20% · adopt rate ↑.
 
-### Phase 3 — “Family in the loop” (weeks 8–10)
+### Phase 3 — “Family in the loop” (weeks 8–10) — next
 
 **Promise:** “My partner and I trust the same list.”
 
@@ -210,10 +268,10 @@ Only if Phases 0–2 metrics are green.
 ## Dependency graph
 
 ```
-E1-3 solo onboarding ──► E1-4 Groceries focus
-E4-1 AiHelperSheet ──► E4-2, E4-3, E4-5, E5-2
-E2-2 swipe-to-check ──► instrumented grocery tests (after E2-1)
-E1-1 copy pass ──► E4-4 AI copy (batch i18n where possible)
+E1-3 solo onboarding ──► E1-4 Groceries focus ✅
+E4-1 AiHelperSheet ✅ ──► E4-2, E4-3, E4-5, E5-2
+E2-2 swipe-to-check ✅ ──► instrumented grocery tests ✅
+E1-1 copy pass ✅ ──► E4-4 AI copy ✅
 ```
 
 ---
@@ -246,13 +304,15 @@ E1-1 copy pass ──► E4-4 AI copy (batch i18n where possible)
 
 ## Minimum viable path (6 weeks, constrained capacity)
 
-1. **S1 + S2** — onboarding, tonight’s dinner, wakelock, copy  
-2. **S5 + S6** — `AiHelperSheet` + inline triggers  
-3. **S3** — swipe-to-check + E5-1 meal CTA  
+1. ~~**S1 + S2** — onboarding, tonight’s dinner, wakelock, copy~~ ✅  
+2. ~~**S5–S7** — silent butler AI (sheet, inline triggers, chip-first)~~ ✅ · **S8** — family sync trust next  
+3. ~~**S3** — swipe-to-check + E5-1 meal CTA~~ ✅  
 
 ---
 
 ## GitHub tracking
+
+Close shipped story issues when merging to `main`. **Close on merge:** #48–#50, #57 (S7). **Open / next:** #38, #32 (S8).
 
 | Kind | Issue |
 |------|-------|
@@ -271,47 +331,47 @@ E1-1 copy pass ──► E4-4 AI copy (batch i18n where possible)
 
 ### Story index (#26–#65)
 
-| ID | Issue | Phase | P |
-|----|-------|-------|---|
-| E1-1 | [#26](https://github.com/Rob971/MyMultiverseApp/issues/26) | 0 | P0 |
-| E1-2 | [#27](https://github.com/Rob971/MyMultiverseApp/issues/27) | 0 | P0 |
-| E1-3 | [#28](https://github.com/Rob971/MyMultiverseApp/issues/28) | 0 | P0 |
-| E1-4 | [#29](https://github.com/Rob971/MyMultiverseApp/issues/29) | 0 | P0 |
-| E1-5 | [#30](https://github.com/Rob971/MyMultiverseApp/issues/30) | 1 | P1 |
-| E1-6 | [#31](https://github.com/Rob971/MyMultiverseApp/issues/31) | 1 | P1 |
-| E1-7 | [#32](https://github.com/Rob971/MyMultiverseApp/issues/32) | 3 | P1 |
-| E2-1 | [#33](https://github.com/Rob971/MyMultiverseApp/issues/33) | 0 | P0 |
-| E2-2 | [#34](https://github.com/Rob971/MyMultiverseApp/issues/34) | 1 | P0 |
-| E2-3 | [#35](https://github.com/Rob971/MyMultiverseApp/issues/35) | 0 | P0 |
-| E2-4 | [#36](https://github.com/Rob971/MyMultiverseApp/issues/36) | 1 | P1 |
-| E3-1 | [#37](https://github.com/Rob971/MyMultiverseApp/issues/37) | 0 | P0 |
-| E3-2 | [#38](https://github.com/Rob971/MyMultiverseApp/issues/38) | 3 | P1 |
-| E3-3 | [#39](https://github.com/Rob971/MyMultiverseApp/issues/39) | 3 | P1 |
-| E3-4 | [#40](https://github.com/Rob971/MyMultiverseApp/issues/40) | 3 | P2 |
-| E3-5 | [#41](https://github.com/Rob971/MyMultiverseApp/issues/41) | 1 | P1 |
-| E3-6 | [#42](https://github.com/Rob971/MyMultiverseApp/issues/42) | 1 | P1 |
-| E3-7 | [#43](https://github.com/Rob971/MyMultiverseApp/issues/43) | 3 | P2 |
-| E4-1 | [#44](https://github.com/Rob971/MyMultiverseApp/issues/44) | 2 | P0 |
-| E4-2 | [#45](https://github.com/Rob971/MyMultiverseApp/issues/45) | 2 | P0 |
-| E4-3 | [#46](https://github.com/Rob971/MyMultiverseApp/issues/46) | 2 | P0 |
-| E4-4 | [#47](https://github.com/Rob971/MyMultiverseApp/issues/47) | 2 | P0 |
-| E4-5 | [#48](https://github.com/Rob971/MyMultiverseApp/issues/48) | 2 | P1 |
-| E4-6 | [#49](https://github.com/Rob971/MyMultiverseApp/issues/49) | 2 | P1 |
-| E4-7 | [#50](https://github.com/Rob971/MyMultiverseApp/issues/50) | 2 | P1 |
-| E4-8 | [#51](https://github.com/Rob971/MyMultiverseApp/issues/51) | 2 | P1 |
-| E4-9 | [#52](https://github.com/Rob971/MyMultiverseApp/issues/52) | 4 | P2 |
-| E4-10 | [#53](https://github.com/Rob971/MyMultiverseApp/issues/53) | 4 | P2 |
-| E4-11 | [#54](https://github.com/Rob971/MyMultiverseApp/issues/54) | 4 | P2 |
-| E5-1 | [#55](https://github.com/Rob971/MyMultiverseApp/issues/55) | 0 | P0 |
-| E5-2 | [#56](https://github.com/Rob971/MyMultiverseApp/issues/56) | 3 | P1 |
-| E5-3 | [#57](https://github.com/Rob971/MyMultiverseApp/issues/57) | 2 | P1 |
-| E6-1 | [#58](https://github.com/Rob971/MyMultiverseApp/issues/58) | 3 | P1 |
-| E6-2 | [#59](https://github.com/Rob971/MyMultiverseApp/issues/59) | 3 | P2 |
-| E6-3 | [#60](https://github.com/Rob971/MyMultiverseApp/issues/60) | 0 | P0 |
-| E2-5 | [#61](https://github.com/Rob971/MyMultiverseApp/issues/61) | 4 | P3 deferred |
-| E2-6 | [#62](https://github.com/Rob971/MyMultiverseApp/issues/62) | 4 | P3 deferred |
-| E3-8 | [#63](https://github.com/Rob971/MyMultiverseApp/issues/63) | 4 | P3 deferred |
-| E5-4 | [#64](https://github.com/Rob971/MyMultiverseApp/issues/64) | 4 | P3 deferred |
-| E5-5 | [#65](https://github.com/Rob971/MyMultiverseApp/issues/65) | 4 | P3 deferred |
+| ID | Issue | Phase | P | Status |
+|----|-------|-------|---|--------|
+| E1-1 | [#26](https://github.com/Rob971/MyMultiverseApp/issues/26) | 0 | P0 | ✅ S1 |
+| E1-2 | [#27](https://github.com/Rob971/MyMultiverseApp/issues/27) | 0 | P0 | ✅ S1 |
+| E1-3 | [#28](https://github.com/Rob971/MyMultiverseApp/issues/28) | 0 | P0 | ✅ S1 |
+| E1-4 | [#29](https://github.com/Rob971/MyMultiverseApp/issues/29) | 0 | P0 | ✅ S2 |
+| E1-5 | [#30](https://github.com/Rob971/MyMultiverseApp/issues/30) | 1 | P1 | ✅ S4 |
+| E1-6 | [#31](https://github.com/Rob971/MyMultiverseApp/issues/31) | 1 | P1 | ⏳ |
+| E1-7 | [#32](https://github.com/Rob971/MyMultiverseApp/issues/32) | 3 | P1 | ⏳ S8 |
+| E2-1 | [#33](https://github.com/Rob971/MyMultiverseApp/issues/33) | 0 | P0 | ✅ S2 |
+| E2-2 | [#34](https://github.com/Rob971/MyMultiverseApp/issues/34) | 1 | P0 | ✅ S3 |
+| E2-3 | [#35](https://github.com/Rob971/MyMultiverseApp/issues/35) | 0 | P0 | ✅ S2 |
+| E2-4 | [#36](https://github.com/Rob971/MyMultiverseApp/issues/36) | 1 | P1 | ✅ S3 |
+| E3-1 | [#37](https://github.com/Rob971/MyMultiverseApp/issues/37) | 0 | P0 | ✅ S1 |
+| E3-2 | [#38](https://github.com/Rob971/MyMultiverseApp/issues/38) | 3 | P1 | ⏳ S8 |
+| E3-3 | [#39](https://github.com/Rob971/MyMultiverseApp/issues/39) | 3 | P1 | ⏳ S9 |
+| E3-4 | [#40](https://github.com/Rob971/MyMultiverseApp/issues/40) | 3 | P2 | ⏳ S9 |
+| E3-5 | [#41](https://github.com/Rob971/MyMultiverseApp/issues/41) | 1 | P1 | ✅ S3 |
+| E3-6 | [#42](https://github.com/Rob971/MyMultiverseApp/issues/42) | 1 | P1 | ✅ S4 |
+| E3-7 | [#43](https://github.com/Rob971/MyMultiverseApp/issues/43) | 3 | P2 | ⏳ S10 |
+| E4-1 | [#44](https://github.com/Rob971/MyMultiverseApp/issues/44) | 2 | P0 | ✅ S5 |
+| E4-2 | [#45](https://github.com/Rob971/MyMultiverseApp/issues/45) | 2 | P0 | ✅ S6 |
+| E4-3 | [#46](https://github.com/Rob971/MyMultiverseApp/issues/46) | 2 | P0 | ✅ S6 |
+| E4-4 | [#47](https://github.com/Rob971/MyMultiverseApp/issues/47) | 2 | P0 | ✅ S5 |
+| E4-5 | [#48](https://github.com/Rob971/MyMultiverseApp/issues/48) | 2 | P1 | ✅ S7 |
+| E4-6 | [#49](https://github.com/Rob971/MyMultiverseApp/issues/49) | 2 | P1 | ✅ S7 |
+| E4-7 | [#50](https://github.com/Rob971/MyMultiverseApp/issues/50) | 2 | P1 | ✅ S7 |
+| E4-8 | [#51](https://github.com/Rob971/MyMultiverseApp/issues/51) | 2 | P1 | ✅ S6 |
+| E4-9 | [#52](https://github.com/Rob971/MyMultiverseApp/issues/52) | 4 | P2 | ⏳ S11 |
+| E4-10 | [#53](https://github.com/Rob971/MyMultiverseApp/issues/53) | 4 | P2 | ⏳ S11 |
+| E4-11 | [#54](https://github.com/Rob971/MyMultiverseApp/issues/54) | 4 | P2 | ⏳ S12 |
+| E5-1 | [#55](https://github.com/Rob971/MyMultiverseApp/issues/55) | 0 | P0 | ✅ S2 |
+| E5-2 | [#56](https://github.com/Rob971/MyMultiverseApp/issues/56) | 3 | P1 | ⏳ S10 |
+| E5-3 | [#57](https://github.com/Rob971/MyMultiverseApp/issues/57) | 2 | P1 | ✅ S7 |
+| E6-1 | [#58](https://github.com/Rob971/MyMultiverseApp/issues/58) | 3 | P1 | ⏳ S10 |
+| E6-2 | [#59](https://github.com/Rob971/MyMultiverseApp/issues/59) | 3 | P2 | ⏳ |
+| E6-3 | [#60](https://github.com/Rob971/MyMultiverseApp/issues/60) | 0 | P0 | ✅ ongoing |
+| E2-5 | [#61](https://github.com/Rob971/MyMultiverseApp/issues/61) | 4 | P3 | deferred |
+| E2-6 | [#62](https://github.com/Rob971/MyMultiverseApp/issues/62) | 4 | P3 | deferred |
+| E3-8 | [#63](https://github.com/Rob971/MyMultiverseApp/issues/63) | 4 | P3 | deferred |
+| E5-4 | [#64](https://github.com/Rob971/MyMultiverseApp/issues/64) | 4 | P3 | deferred |
+| E5-5 | [#65](https://github.com/Rob971/MyMultiverseApp/issues/65) | 4 | P3 | deferred |
 
 **Recreate issues:** `./scripts/create-ux-backlog-issues.sh` (idempotent only if issues do not already exist).

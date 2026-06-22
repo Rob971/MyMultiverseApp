@@ -39,6 +39,7 @@ fun JourneyEmptyState(
     onSecondaryAction: (() -> Unit)? = null,
     secondaryActionTestTag: String = JourneyEmptyStateTestTags.SECONDARY_ACTION,
     testTag: String? = null,
+    extraContent: @Composable (() -> Unit)? = null,
 ) {
     Surface(
         modifier = modifier
@@ -95,6 +96,7 @@ fun JourneyEmptyState(
                     Text(secondaryActionLabel)
                 }
             }
+            extraContent?.invoke()
         }
     }
 }

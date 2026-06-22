@@ -16,6 +16,17 @@ class NutritionAiPlannerTest {
     }
 
     @Test
+    fun generateMealPlan_quickCriteria_usesQuickProfile() {
+        val result = NutritionAiPlanner.generateMealPlan(
+            criteria = "Quick 20-min lunch",
+            scope = MealPlanGenerationScope.SingleDay(0),
+            currentPlan = WeeklyMealPlan(weekKey = "2026-W24"),
+        )
+
+        assertTrue(result.days[0].lunch.contains("20-min", ignoreCase = true))
+    }
+
+    @Test
     fun generateMealPlan_fullWeek_replacesAllDays() {
         val plan = WeeklyMealPlan(weekKey = "2026-05-18")
         val result = NutritionAiPlanner.generateMealPlan(

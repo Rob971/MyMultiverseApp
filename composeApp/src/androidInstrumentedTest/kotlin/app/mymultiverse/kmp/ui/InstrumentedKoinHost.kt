@@ -1,10 +1,11 @@
 package app.mymultiverse.kmp.ui
 
 import androidx.compose.runtime.Composable
+import app.mymultiverse.kmp.domain.manager.AppThemePreference
+import app.mymultiverse.kmp.domain.manager.AppThemePreferences
 import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.domain.manager.SupportedAppLanguages
 import app.mymultiverse.kmp.domain.manager.ThemeManager
-import app.mymultiverse.kmp.presentation.di.FakeThemeManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,9 +23,20 @@ private class InstrumentedLanguageManager(
     }
 }
 
+private class InstrumentedThemeManager(
+    initial: AppThemePreference = AppThemePreferences.DEFAULT,
+) : ThemeManager {
+    private val _currentPreference = MutableStateFlow(initial)
+    override val currentPreference: StateFlow<AppThemePreference> = _currentPreference.asStateFlow()
+
+    override fun changeThemePreference(preference: AppThemePreference) {
+        _currentPreference.value = preference
+    }
+}
+
 private val instrumentedKoinModule = module {
     single<LanguageManager> { InstrumentedLanguageManager() }
-    single<ThemeManager> { FakeThemeManager() }
+    single<ThemeManager> { InstrumentedThemeManager() }
 }
 
 /** Minimal Koin graph for composables that use `koinInject` (e.g. [LanguagePicker] on home). */

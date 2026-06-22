@@ -45,6 +45,8 @@ object GroceryItemRowTestTags {
     const val EDIT_FIELD_PREFIX = "grocery_edit_"
     const val EDIT_BUTTON_PREFIX = "grocery_edit_btn_"
     const val SAVE_BUTTON_PREFIX = "grocery_save_btn_"
+    const val SWIPE_CHECK_HINT = "grocery_swipe_check_hint"
+    const val SWIPE_DELETE_HINT = "grocery_swipe_delete_hint"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,18 +91,25 @@ fun GroceryItemRow(
         return
     }
 
+    val performHaptic = rememberJourneyHapticFeedback()
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                onDelete()
-                true
-            } else {
-                false
+            when (value) {
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    performHaptic(JourneyHapticFeedback.LightClick)
+                    onToggle()
+                    false
+                }
+                SwipeToDismissBoxValue.EndToStart -> {
+                    onDelete()
+                    true
+                }
+                else -> false
             }
         },
     )
 
-    LaunchedEffect(item.id) {
+    LaunchedEffect(item.id, isEditing) {
         if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
             dismissState.snapTo(SwipeToDismissBoxValue.Settled)
         }
@@ -108,19 +117,31 @@ fun GroceryItemRow(
 
     SwipeToDismissBox(
         state = dismissState,
-        enableDismissFromStartToEnd = false,
+        enableDismissFromStartToEnd = !isEditing,
+        enableDismissFromEndToStart = !isEditing,
         backgroundContent = {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                Icon(
+                    imageVector = if (item.isChecked) {
+                        AppIcons.RadioButtonUnchecked
+                    } else {
+                        AppIcons.CheckCircle
+                    },
+                    contentDescription = toggleContentDescription,
+                    tint = SharedJourneyColors.SageSoft,
+                    modifier = Modifier.testTag(GroceryItemRowTestTags.SWIPE_CHECK_HINT),
+                )
                 Icon(
                     imageVector = AppIcons.Delete,
                     contentDescription = deleteContentDescription,
                     tint = SharedJourneyColors.TerracottaOrange,
+                    modifier = Modifier.testTag(GroceryItemRowTestTags.SWIPE_DELETE_HINT),
                 )
             }
         },

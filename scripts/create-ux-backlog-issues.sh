@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Creates GitHub issues from docs/product-backlog.md
+# Progress tracker: see docs/product-backlog.md (Phase 2 done; S8 current)
 # Run from repo root: ./scripts/create-ux-backlog-issues.sh
 set -euo pipefail
 

@@ -58,9 +58,9 @@ fun AiGrocerySuggestionChips(
                     )
                 },
                 colors = SuggestionChipDefaults.suggestionChipColors(
-                    containerColor = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.12f),
-                    labelColor = SharedJourneyColors.MediterraneanTeal,
-                    iconContentColor = SharedJourneyColors.MediterraneanTeal,
+                    containerColor = SharedJourneyColors.AiReadOnlyAccent.copy(alpha = 0.12f),
+                    labelColor = SharedJourneyColors.AiReadOnlyAccent,
+                    iconContentColor = SharedJourneyColors.AiReadOnlyAccent,
                 ),
                 modifier = Modifier
                     .animateItem()

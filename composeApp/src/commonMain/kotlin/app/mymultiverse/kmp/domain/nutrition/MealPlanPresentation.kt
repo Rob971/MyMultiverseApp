@@ -39,6 +39,13 @@ object MealPlanPresentation {
         }
     }
 
+    /** Comma-separated meal labels for AI grocery criteria (domain data only; format in UI). */
+    fun groceryAiCriteriaSeed(days: List<DayMeals>): String =
+        plannedMeals(days)
+            .map { it.text }
+            .distinctBy { it.lowercase() }
+            .joinToString(", ")
+
     fun tomorrowIndex(dayIndex: Int): Int? =
         (dayIndex + 1).takeIf { it in 0 until WeeklyMealPlan.DAYS_IN_WEEK }
 

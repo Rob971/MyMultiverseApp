@@ -268,6 +268,31 @@ object NutritionAiPlanner {
                             ),
                         )
 
+                    keywords.contains("quick") ||
+                        keywords.contains("20-min") ||
+                        keywords.contains("20 min") ->
+                        MealProfile(
+                            label = "quick",
+                            lunches = listOf(
+                                "20-min veggie omelette with toast",
+                                "Quick turkey and cheese wrap",
+                                "Tuna salad sandwich with fruit",
+                                "Microwave lentil soup with bread",
+                                "Greek yogurt bowl with granola",
+                                "Quesadilla with black beans",
+                                "Caprese salad with whole-grain crackers",
+                            ),
+                            dinners = listOf(
+                                "20-min chicken stir-fry with rice",
+                                "Sheet-pan salmon and broccoli",
+                                "Quick pasta with tomato and basil",
+                                "Beef and vegetable skillet",
+                                "Shrimp tacos with slaw",
+                                "Egg fried rice with peas",
+                                "Baked gnocchi with spinach",
+                            ),
+                        )
+
                     else ->
                         MealProfile(
                             label = "balanced",

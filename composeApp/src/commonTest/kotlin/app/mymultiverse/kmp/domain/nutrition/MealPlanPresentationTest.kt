@@ -72,6 +72,17 @@ class MealPlanPresentationTest {
     }
 
     @Test
+    fun groceryAiCriteriaSeed_joinsDistinctPlannedMeals() {
+        val days = List(7) { DayMeals() }.toMutableList()
+        days[0] = DayMeals(lunch = "Pasta", dinner = "Salad")
+        days[1] = DayMeals(lunch = "pasta", dinner = "Soup")
+
+        val seed = MealPlanPresentation.groceryAiCriteriaSeed(days)
+
+        assertEquals("Pasta, Salad, Soup", seed)
+    }
+
+    @Test
     fun tomorrowIndex_wrapsWithinWeek() {
         assertEquals(1, MealPlanPresentation.tomorrowIndex(0))
         assertEquals(null, MealPlanPresentation.tomorrowIndex(6))

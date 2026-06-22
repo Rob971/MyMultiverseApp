@@ -18,6 +18,14 @@ object GroceryListPresentation {
         return Sections(active = active, completed = completed)
     }
 
+    /** Shopping mode: unchecked first; optionally omit completed from display. */
+    fun forShoppingDisplay(sections: Sections, hideCompleted: Boolean): Sections =
+        if (hideCompleted) {
+            sections.copy(completed = emptyList())
+        } else {
+            sections
+        }
+
     fun isDuplicateLabel(items: List<GroceryItem>, label: String, excludingId: String? = null): Boolean {
         val normalized = label.trim().lowercase()
         if (normalized.isEmpty()) return false
