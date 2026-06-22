@@ -147,6 +147,10 @@
     <string name="nutrition_ai_meal_plan_result_title">معاينة</string>
     <string name="nutrition_meal_plan_preview_line">%1$s: %2$s</string>
     <string name="nutrition_ai_apply_meal_plan">تطبيق على الخطة</string>
+    <string name="nutrition_ai_ingredients_step_title">إضافة المكونات؟</string>
+    <string name="nutrition_ai_ingredients_step_body">اقترح الذكاء الاصطناعي مشتريات لهذه الوجبة. أضفها إلى قائمتك أو تخطَّها الآن.</string>
+    <string name="nutrition_ai_ingredients_step_loading">جارٍ اقتراح المكونات…</string>
+    <string name="nutrition_ai_ingredients_step_skip">تخطٍ الآن</string>
     <string name="nutrition_ai_suggestion_veggie_grocery">مشتريات نباتية</string>
     <string name="nutrition_ai_suggestion_budget_grocery">قائمة اقتصادية</string>
     <string name="nutrition_ai_suggestion_protein_plan">وجبات غنية بالبروتين</string>

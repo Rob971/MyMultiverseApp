@@ -145,6 +145,7 @@ fun MealPlanDayCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (isPlanned) JourneySemanticColors.inkDeep() else JourneySemanticColors.inkMuted(),
                     fontWeight = if (isPlanned) FontWeight.Medium else FontWeight.Normal,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 

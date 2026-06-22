@@ -240,12 +240,14 @@ fun WeeklyMealPlanScreen(
         )
     }
 
-    fun openSuggestQuickMeal(dayIndex: Int, criteria: String) {
+    fun openSuggestQuickMeal(dayIndex: Int, criteria: String, slot: MealSlot) {
         onOpenAiSheet(
             AiHelperLaunchContext(
                 mode = NutritionAiMode.MealPlan,
                 mealPlanScope = MealPlanGenerationScope.SingleDay(dayIndex),
                 initialCriteria = criteria,
+                targetMealSlot = slot,
+                offerIngredientsAfterApply = true,
             ),
         )
     }
@@ -320,7 +322,7 @@ fun WeeklyMealPlanScreen(
                         MealSlot.Lunch -> quickLunchCriteria
                         MealSlot.Dinner -> quickDinnerCriteria
                     }
-                    openSuggestQuickMeal(entry.index, criteria)
+                    openSuggestQuickMeal(entry.index, criteria, slot)
                 }
             } else {
                 null

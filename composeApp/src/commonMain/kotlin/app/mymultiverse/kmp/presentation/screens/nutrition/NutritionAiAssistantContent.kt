@@ -37,6 +37,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
+import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiReadOnlyGroceryList
@@ -45,6 +46,7 @@ import app.mymultiverse.kmp.presentation.components.FamilyLogisticsDesign
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
 import app.mymultiverse.kmp.presentation.components.JourneyTextField
+import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.kmp.presentation.components.NutritionFeatureHeader
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
@@ -65,6 +67,13 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_g
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_result_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_saved_readonly_note
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_summary
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_ingredients_step_body
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_ingredients_step_loading
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_ingredients_step_skip
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_ingredients_step_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_none
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_summary
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_idle_body
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_idle_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_loading
@@ -110,6 +119,8 @@ fun NutritionAiAssistantContent(
     val aiState by screenModel.aiState.collectAsState()
     val aiGrocery by screenModel.aiGroceryItems.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
+    val mealGroceryLoading by screenModel.mealGroceryLoading.collectAsState()
+    val adoptAllResult by screenModel.adoptAllGroceryResult.collectAsState()
     val resolvedMode = launchContext?.mode ?: initialMode ?: NutritionAiMode.Advice
     var criteria by remember(launchContext?.initialCriteria) {
         mutableStateOf(launchContext?.initialCriteria.orEmpty())
@@ -130,7 +141,26 @@ fun NutritionAiAssistantContent(
     val localSnackbar = remember { SnackbarHostState() }
     val snackbar = snackbarHostState ?: localSnackbar
     var mealPlanApplyRequested by remember { mutableStateOf(false) }
+    var showIngredientsStep by remember { mutableStateOf(false) }
     val scopeLocked = launchContext?.mealPlanScope is MealPlanGenerationScope.SingleDay
+    val ingredientsAfterApplyFlow = chipFirstSheet &&
+        launchContext?.offerIngredientsAfterApply == true &&
+        launchContext.targetMealSlot != null &&
+        launchContext.mealPlanScope is MealPlanGenerationScope.SingleDay
+
+    val adoptAllNoneMessage = stringResource(Res.string.nutrition_ai_adopt_all_grocery_none)
+    val adoptAllSummaryMessage = adoptAllResult?.let { count ->
+        if (count == 0) {
+            adoptAllNoneMessage
+        } else {
+            stringResource(Res.string.nutrition_ai_adopt_all_grocery_summary, count)
+        }
+    }
+
+    fun finishIngredientsStep() {
+        showIngredientsStep = false
+        onMealPlanApplied()
+    }
 
     LaunchedEffect(launchContext) {
         if (launchContext != null) {
@@ -202,6 +232,14 @@ fun NutritionAiAssistantContent(
             mealPlanApplyRequested = false
             onMealPlanApplied()
         }
+    }
+
+    LaunchedEffect(adoptAllSummaryMessage, showIngredientsStep) {
+        if (!showIngredientsStep) return@LaunchedEffect
+        val message = adoptAllSummaryMessage ?: return@LaunchedEffect
+        snackbar.showSnackbar(message)
+        screenModel.consumeAdoptAllGroceryResult()
+        finishIngredientsStep()
     }
 
     LazyColumn(
@@ -384,7 +422,7 @@ fun NutritionAiAssistantContent(
             }
         }
 
-        if (aiGrocery.isNotEmpty() && mode != NutritionAiMode.GroceryList) {
+        if (aiGrocery.isNotEmpty() && mode != NutritionAiMode.GroceryList && !showIngredientsStep) {
             item {
                 AiReadOnlyGroceryList(
                     items = aiGrocery,
@@ -394,7 +432,57 @@ fun NutritionAiAssistantContent(
             }
         }
 
-        when (val state = aiState) {
+        if (showIngredientsStep) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(NutritionAiTestTags.INGREDIENTS_STEP),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text(
+                        text = stringResource(Res.string.nutrition_ai_ingredients_step_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = JourneySemanticColors.inkDeep(),
+                    )
+                    Text(
+                        text = stringResource(Res.string.nutrition_ai_ingredients_step_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = JourneySemanticColors.inkMuted(),
+                    )
+                    if (mealGroceryLoading != null) {
+                        Text(
+                            text = stringResource(Res.string.nutrition_ai_ingredients_step_loading),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = JourneySemanticColors.inkMuted(),
+                        )
+                    } else if (aiGrocery.isNotEmpty()) {
+                        AiReadOnlyGroceryList(
+                            items = aiGrocery,
+                            title = stringResource(Res.string.nutrition_ai_grocery_result_title),
+                            subtitle = stringResource(Res.string.nutrition_ai_grocery_saved_readonly_note),
+                        )
+                        JourneyPrimaryButton(
+                            onClick = { screenModel.adoptAllAiGrocerySuggestions() },
+                            enabled = canWrite,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(NutritionAiTestTags.INGREDIENTS_ADD_ALL),
+                        ) {
+                            Text(stringResource(Res.string.nutrition_ai_adopt_all_grocery))
+                        }
+                    }
+                    JourneyTertiaryButton(
+                        onClick = { finishIngredientsStep() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag(NutritionAiTestTags.INGREDIENTS_SKIP),
+                        label = stringResource(Res.string.nutrition_ai_ingredients_step_skip),
+                    )
+                }
+            }
+        } else when (val state = aiState) {
             NutritionAiState.Idle -> {
                 item {
                     JourneyEmptyState(
@@ -498,8 +586,20 @@ fun NutritionAiAssistantContent(
                 item {
                     Button(
                         onClick = {
-                            mealPlanApplyRequested = true
-                            screenModel.applyPreviewedMealPlan()
+                            if (ingredientsAfterApplyFlow) {
+                                val ctx = launchContext ?: return@Button
+                                val dayIndex =
+                                    (ctx.mealPlanScope as MealPlanGenerationScope.SingleDay).dayIndex
+                                val slot = ctx.targetMealSlot ?: return@Button
+                                coroutineScope.launch {
+                                    screenModel.applyPreviewedMealPlanAndAwait()
+                                    showIngredientsStep = true
+                                    screenModel.generateGroceryForMealSilent(dayIndex, slot)
+                                }
+                            } else {
+                                mealPlanApplyRequested = true
+                                screenModel.applyPreviewedMealPlan()
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()

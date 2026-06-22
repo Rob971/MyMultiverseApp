@@ -87,13 +87,13 @@ class NutritionScreenModelTest {
     }
 
     @Test
-    fun addGroceryItem_rejectsDuplicateLabels() = runTest(testDispatcher) {
+    fun addGroceryItem_mergesDuplicateLabelsSilently() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val model = nutritionScreenModel(repository, scope = modelScope) { "item-1" }
 
         assertTrue(model.addGroceryItem("Milk"))
         advanceUntilIdle()
-        assertFalse(model.addGroceryItem(" milk "))
+        assertTrue(model.addGroceryItem(" milk "))
         advanceUntilIdle()
 
         assertEquals(1, repository.grocery.value.size)

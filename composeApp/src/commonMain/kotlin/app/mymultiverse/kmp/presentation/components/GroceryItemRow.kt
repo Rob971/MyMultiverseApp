@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
@@ -188,12 +189,14 @@ private fun GroceryFlatRowContent(
         mutableStateOf(item.label)
     }
     val performHaptic = rememberJourneyHapticFeedback()
+    val fontScale = maxOf(1f, LocalDensity.current.fontScale)
+    val rowMinHeight = (56 * fontScale).dp
 
     Box(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 56.dp)
+                .heightIn(min = rowMinHeight)
                 .clickable(
                     enabled = !isEditing && !readOnly,
                     onClick = {
@@ -202,7 +205,7 @@ private fun GroceryFlatRowContent(
                     },
                 )
                 .padding(horizontal = 4.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = if (isEditing) Alignment.Top else Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             JourneyIconButton(
