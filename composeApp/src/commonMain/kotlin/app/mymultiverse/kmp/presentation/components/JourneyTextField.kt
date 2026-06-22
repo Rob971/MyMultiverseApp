@@ -47,6 +47,7 @@ fun JourneyTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    trailingIcon: @Composable (() -> Unit)? = null,
     focusAccentColor: Color = SharedJourneyColors.MediterraneanTeal,
 ) {
     OutlinedTextField(
@@ -65,6 +66,7 @@ fun JourneyTextField(
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
+        trailingIcon = trailingIcon,
         shape = FamilyLogisticsDesign.fieldShape,
         colors = JourneyTextFieldDefaults.colors(focusAccentColor = focusAccentColor),
     )
