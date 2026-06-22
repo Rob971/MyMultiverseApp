@@ -43,6 +43,7 @@ concurrency:
 permissions:
   contents: read
   actions: read
+  pull-requests: read
 
 env:
   FIREBASE_APP_ID: "1:37917280954:android:f25a8ccc787de9f3f91083"
