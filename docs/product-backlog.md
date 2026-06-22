@@ -1,8 +1,8 @@
 # Product UX backlog — nutrition logistics & silent-butler AI
 
 **Status:** In progress (Phase 3) · **Updated:** 2026-06-22  
-**App:** MyMultiverse (KMP) · **QA YAML baseline:** v39  
-**Current sprint:** **S9** — E3-3, E3-4 (push + invite polish)
+**App:** MyMultiverse (KMP) · **QA YAML baseline:** v40  
+**Current sprint:** **S10** — E3-7, E5-2, E6-1
 
 This backlog synthesizes product thesis, UX roadmap, and AI interaction model for household grocery + meal planning. Use it as the scope razor before building anything new.
 
@@ -17,10 +17,14 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **Phase 0** — Grandma adds milk | S1, S2 | **Done** |
 | **Phase 1** — Paper at the store | S3, S4 | **Done** |
 | **Phase 2** — Silent butler | S5–S7 | **Done** |
-| **Phase 3** — Family in the loop | S8–S10 | In progress |
+| **Phase 3** — Family in the loop | S8–S10 | In progress (S10 current) |
 | **Phase 4** — Ghost magic | S11–S12 | Optional |
 
-### Shipped stories (23 unique IDs + E6-3 ongoing)
+**Phases remaining:** **2** of 5 total — **Phase 3** (required; S9–S10 left after S8) and **Phase 4** (optional bets). Phases 0–2 are complete.
+
+**Open stories (non-deferred):** S10 → E3-7, E5-2, E6-1 · unscheduled → E1-6, E6-2 · Phase 4 → E4-9–E4-11.
+
+### Shipped stories (25 unique IDs + E6-3 ongoing)
 
 | Sprint | Stories |
 |--------|---------|
@@ -32,8 +36,9 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **S6** | E4-2, E4-3, E4-8 (+ `AiHelperLaunchContext`, grocery sheet; instrumented: inline triggers) |
 | **S7** | E4-5, E4-6, E4-7, E5-3 (+ chip-first sheet, empty-state chips; instrumented) |
 | **S8** | E3-2, E1-7 (+ invite share sheet, Sunday plan nudge on Today) |
+| **S9** | E3-3, E3-4 (+ member-joined push, foreground FCM, grocery collaboration snackbar) |
 
-**Next up (S9):** E3-3, E3-4
+**Next up (S10):** E3-7, E5-2, E6-1
 
 ---
 
@@ -99,12 +104,20 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 - Empty grocery CTA on Today when list is empty (E1-5)
 - Instrumented tests: swipe-to-check, wakelock flag, empty-grocery CTA
 
-**Phase 2 — S5 (v36)**
+**Phase 2 — S5–S7 (v36–v38)**
 
-- `AiHelperSheet` — `ModalBottomSheet` ~60% over Plan tab; dismiss on apply (E4-1)
+- `AiHelperSheet` — `ModalBottomSheet` ~60% over Plan tab; dismiss on apply (E4-1, S5)
 - Shared `NutritionAiAssistantContent`; Plan tab “Plan with AI” opens sheet (not full-screen)
-- AI copy rewrite — output-first, no chatbot tone, all 8 locales (E4-4)
-- Instrumented tests: `AiHelperSheet` visibility + meal-plan opener
+- AI copy rewrite — output-first, no chatbot tone, all 8 locales (E4-4, S5)
+- Inline empty meal slot “Suggest 20-min meal”; grocery “Build list from this week’s meals” chip; terracotta AI chips (E4-2, E4-3, E4-8, S6)
+- Chip-first sheet, launch context hides mode switcher, full-screen AI demoted to fallback; plan empty-state AI chips (E4-5, E4-6, E4-7, E5-3, S7)
+- Instrumented tests: `AiHelperSheet`, inline triggers, chip-first sheet, empty-state chips
+
+**Phase 3 — S8 (v39)**
+
+- Invite share sheet with pre-written SMS/WhatsApp message + deep link (E3-2)
+- Sunday empty-week plan nudge on Today — dismissible, week-scoped (E1-7)
+- Firebase QA YAML v39: invite share + Sunday nudge manual cases (E6-3)
 
 ---
 
@@ -135,7 +148,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | E1-4 | Post-create: auto-focus Groceries tab or prominent “Add first item” on Today | P0 | ✅ S2 | `App.kt` tab state, `PostCreateFocusTarget` |
 | E1-5 | Empty grocery CTA on Today when list is empty | P1 | ✅ S4 | `HomeScreen` This week section |
 | E1-6 | Week context banner on Today (“Week of …”) | P1 | ⏳ | `WeekContextBanner` pattern on home |
-| E1-7 | Sunday empty-week nudge on Today | P1 | ⏳ S8 | `HomeScreenModel`, `WeekCalendar` |
+| E1-7 | Sunday empty-week nudge on Today | P1 | ✅ S8 | `HomeSundayPlanNudgeCard`, `HomeWeekPlanNudgeStore` |
 
 ---
 
@@ -157,9 +170,9 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | ID | Story | P | Status | Primary touchpoints |
 |----|-------|---|--------|---------------------|
 | E3-1 | Friendlier sync copy + status icon (pending → synced) | P0 | ✅ S1 | `NutritionSyncStatusBanner.kt`, string keys |
-| E3-2 | Invite share sheet with pre-written SMS/WhatsApp message + deep link | P1 | ⏳ S8 | `HouseholdMembersScreen` |
-| E3-3 | Push notifications: invite received / member joined | P1 | ⏳ S9 | `InvitePushPayload`, `PlatformPushSetup`, edge |
-| E3-4 | Lightweight activity snackbar (“Maria added milk”) | P2 | ⏳ S9 | `NutritionScreenModel`, realtime/sync |
+| E3-2 | Invite share sheet with pre-written SMS/WhatsApp message + deep link | P1 | ✅ S8 | `HouseholdMembersScreen`, `HouseholdInviteSharePayload` |
+| E3-3 | Push notifications: invite received / member joined | P1 | ✅ S9 | `InvitePushPayload`, `PlatformPushSetup`, edge |
+| E3-4 | Lightweight activity snackbar (“Maria added milk”) | P2 | ✅ S9 | `NutritionScreenModel`, realtime/sync |
 | E3-5 | Viewer read-only banner on Groceries + Plan tab roots | P1 | ✅ S3 | `HouseholdViewerReadOnlyNotice` on tab entry |
 | E3-6 | Skip redundant `NutritionEntryGate` when household already resolved | P1 | ✅ S4 | `NutritionFlow.kt`, `App.kt` |
 | E3-7 | Silent duplicate merge (e.g. two “Milk” → one line or count) vs error snackbar | P2 | ⏳ S10 | Domain + `GroceryShoppingScreen` |
@@ -203,7 +216,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 |----|-------|---|--------|---------------------|
 | E6-1 | System font scaling on grocery rows + meal plan | P1 | ⏳ S10 | `GroceryItemRow`, `MealPlanDayCard` |
 | E6-2 | `contentDescription` audit on tab bar + AI entry points | P2 | ⏳ | `MainTabShell` |
-| E6-3 | Firebase QA YAML + manual cases for changed flows | P0 | ✅ ongoing | `firebase-appdistribution-testcases.yaml` (currently **v38**) |
+| E6-3 | Firebase QA YAML + manual cases for changed flows | P0 | ✅ ongoing | `firebase-appdistribution-testcases.yaml` (currently **v39**) |
 
 ---
 
@@ -243,15 +256,15 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 
 **Exit metrics:** AI opens from inline &gt; 80% · keyboard use in AI &lt; 20% · adopt rate ↑.
 
-### Phase 3 — “Family in the loop” (weeks 8–10) — next
+### Phase 3 — “Family in the loop” (weeks 8–10) — in progress
 
 **Promise:** “My partner and I trust the same list.”
 
-| Sprint | Deliverables |
-|--------|----------------|
-| **S8** | E3-2, E1-7 |
-| **S9** | E3-3, E3-4 |
-| **S10** | E3-7, E5-2, E6-1 |
+| Sprint | Deliverables | Status |
+|--------|----------------|--------|
+| **S8** | E3-2, E1-7 | ✅ |
+| **S9** | E3-3, E3-4 | ✅ done |
+| **S10** | E3-7, E5-2, E6-1 | 🔜 **current** |
 
 **Exit metrics:** invite accept within 48h ↑ · households with 2+ weekly actives ↑.
 
@@ -306,14 +319,15 @@ E1-1 copy pass ✅ ──► E4-4 AI copy ✅
 ## Minimum viable path (6 weeks, constrained capacity)
 
 1. ~~**S1 + S2** — onboarding, tonight’s dinner, wakelock, copy~~ ✅  
-2. ~~**S5–S7** — silent butler AI (sheet, inline triggers, chip-first)~~ ✅ · **S8** — family sync trust next  
+2. ~~**S5–S7** — silent butler AI (sheet, inline triggers, chip-first)~~ ✅  
 3. ~~**S3** — swipe-to-check + E5-1 meal CTA~~ ✅  
+4. ~~**S8** — invite share sheet + Sunday plan nudge~~ ✅ · ~~**S9** — push + activity snackbar~~ ✅ · **S10** — household polish **current**  
 
 ---
 
 ## GitHub tracking
 
-Close shipped story issues when merging to `main`. **Close on merge:** #48–#50, #57 (S7). **Open / next:** #38, #32 (S8).
+Close shipped story issues when merging to `main`. **Close on merge (S6–S9):** #45, #46, #51, #48–#50, #57, #38, #32, #39, #40. **Open / next:** S10 issues.
 
 | Kind | Issue |
 |------|-------|
@@ -340,15 +354,15 @@ Close shipped story issues when merging to `main`. **Close on merge:** #48–#50
 | E1-4 | [#29](https://github.com/Rob971/MyMultiverseApp/issues/29) | 0 | P0 | ✅ S2 |
 | E1-5 | [#30](https://github.com/Rob971/MyMultiverseApp/issues/30) | 1 | P1 | ✅ S4 |
 | E1-6 | [#31](https://github.com/Rob971/MyMultiverseApp/issues/31) | 1 | P1 | ⏳ |
-| E1-7 | [#32](https://github.com/Rob971/MyMultiverseApp/issues/32) | 3 | P1 | ⏳ S8 |
+| E1-7 | [#32](https://github.com/Rob971/MyMultiverseApp/issues/32) | 3 | P1 | ✅ S8 |
 | E2-1 | [#33](https://github.com/Rob971/MyMultiverseApp/issues/33) | 0 | P0 | ✅ S2 |
 | E2-2 | [#34](https://github.com/Rob971/MyMultiverseApp/issues/34) | 1 | P0 | ✅ S3 |
 | E2-3 | [#35](https://github.com/Rob971/MyMultiverseApp/issues/35) | 0 | P0 | ✅ S2 |
 | E2-4 | [#36](https://github.com/Rob971/MyMultiverseApp/issues/36) | 1 | P1 | ✅ S3 |
 | E3-1 | [#37](https://github.com/Rob971/MyMultiverseApp/issues/37) | 0 | P0 | ✅ S1 |
-| E3-2 | [#38](https://github.com/Rob971/MyMultiverseApp/issues/38) | 3 | P1 | ⏳ S8 |
-| E3-3 | [#39](https://github.com/Rob971/MyMultiverseApp/issues/39) | 3 | P1 | ⏳ S9 |
-| E3-4 | [#40](https://github.com/Rob971/MyMultiverseApp/issues/40) | 3 | P2 | ⏳ S9 |
+| E3-2 | [#38](https://github.com/Rob971/MyMultiverseApp/issues/38) | 3 | P1 | ✅ S8 |
+| E3-3 | [#39](https://github.com/Rob971/MyMultiverseApp/issues/39) | 3 | P1 | ✅ S9 |
+| E3-4 | [#40](https://github.com/Rob971/MyMultiverseApp/issues/40) | 3 | P2 | ✅ S9 |
 | E3-5 | [#41](https://github.com/Rob971/MyMultiverseApp/issues/41) | 1 | P1 | ✅ S3 |
 | E3-6 | [#42](https://github.com/Rob971/MyMultiverseApp/issues/42) | 1 | P1 | ✅ S4 |
 | E3-7 | [#43](https://github.com/Rob971/MyMultiverseApp/issues/43) | 3 | P2 | ⏳ S10 |

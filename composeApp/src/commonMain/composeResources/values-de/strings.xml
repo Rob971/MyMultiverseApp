@@ -116,6 +116,10 @@
     <string name="nutrition_grocery_undo_action">Rückgängig</string>
     <string name="nutrition_grocery_clear_checked_undo">Erledigte Artikel gelöscht</string>
     <string name="nutrition_grocery_duplicate">Dieser Artikel steht bereits auf der Liste</string>
+    <string name="nutrition_collaboration_actor_unknown">Jemand</string>
+    <string name="nutrition_collaboration_grocery_added">%1$s hat %2$s hinzugefügt</string>
+    <string name="nutrition_collaboration_grocery_checked">%1$s hat %2$s abgehakt</string>
+    <string name="nutrition_collaboration_grocery_batch">%1$s hat %2$d Artikel auf der Liste aktualisiert</string>
     <string name="nutrition_grocery_toggle_item">Als gekauft markieren</string>
     <string name="nutrition_grocery_empty_active">Alles ist erledigt. Füge Artikel hinzu oder lösche erledigte unten.</string>
     <string name="nutrition_ai_try_again">Neu beginnen</string>

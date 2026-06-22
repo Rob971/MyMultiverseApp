@@ -1,5 +1,6 @@
 package app.mymultiverse.kmp.domain.repository
 
+import app.mymultiverse.kmp.domain.nutrition.NutritionCollaborationActivity
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,6 +13,8 @@ interface NutritionSessionCoordinator {
     val nutrition: StateFlow<NutritionRepository>
 
     fun observeSyncStatus(): Flow<NutritionSyncStatus>
+
+    fun observeCollaborationActivity(): Flow<NutritionCollaborationActivity>
 
     suspend fun activateHousehold(householdId: String)
 

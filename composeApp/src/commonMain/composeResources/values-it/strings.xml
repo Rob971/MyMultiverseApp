@@ -116,6 +116,10 @@
     <string name="nutrition_grocery_undo_action">Annulla</string>
     <string name="nutrition_grocery_clear_checked_undo">Articoli selezionati cancellati</string>
     <string name="nutrition_grocery_duplicate">Questo articolo è già in lista</string>
+    <string name="nutrition_collaboration_actor_unknown">Qualcuno</string>
+    <string name="nutrition_collaboration_grocery_added">%1$s ha aggiunto %2$s</string>
+    <string name="nutrition_collaboration_grocery_checked">%1$s ha spuntato %2$s</string>
+    <string name="nutrition_collaboration_grocery_batch">%1$s ha aggiornato %2$d articoli nella lista</string>
     <string name="nutrition_grocery_toggle_item">Segna come comprato</string>
     <string name="nutrition_grocery_empty_active">Tutto spuntato. Aggiungi articoli o cancella gli spuntati sotto.</string>
     <string name="nutrition_ai_try_again">Ricomincia</string>

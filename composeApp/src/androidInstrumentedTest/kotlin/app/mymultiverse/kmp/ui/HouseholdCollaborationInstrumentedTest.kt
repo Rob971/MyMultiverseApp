@@ -37,6 +37,7 @@ class HouseholdCollaborationInstrumentedTest {
             householdRepository = InstrumentedHouseholdRepository(
                 role = HouseholdMemberRole.Viewer,
             ),
+            collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(),
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
         )
@@ -67,6 +68,7 @@ class HouseholdCollaborationInstrumentedTest {
             householdRepository = InstrumentedHouseholdRepository(
                 role = HouseholdMemberRole.Viewer,
             ),
+            collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(),
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
         )

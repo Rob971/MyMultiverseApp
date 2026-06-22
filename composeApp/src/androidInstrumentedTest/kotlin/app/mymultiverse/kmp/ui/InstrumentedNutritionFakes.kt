@@ -69,6 +69,9 @@ class InstrumentedNutritionSessionCoordinator(
 
     override fun observeSyncStatus(): Flow<NutritionSyncStatus> = flowOf(NutritionSyncStatus.Idle)
 
+    override fun observeCollaborationActivity(): Flow<app.mymultiverse.kmp.domain.nutrition.NutritionCollaborationActivity> =
+        flowOf()
+
     override suspend fun activateHousehold(householdId: String) {
         activatedHouseholdId = householdId
     }

@@ -34,6 +34,8 @@ class OfflineFirstNutritionRepository(
         syncEngine.pullRemote(householdId, weekKey) { applyRemoteWeekData(it) }
     }
 
+    fun currentGroceryItems(): List<GroceryItem> = localStore.currentGroceryItems()
+
     fun applyRemoteWeekData(row: NutritionWeekDataRow) {
         if (row.householdId != householdId || row.weekKey != weekKey) return
         localStore.applyPayload(row.dataKind, row.payload)

@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 39
+version: 40
 updated: 2026-06-22
 
 summary: |
@@ -766,6 +766,26 @@ testcases:
       - Nudge is dismissible and does not block navigation.
       - Open meal plan CTA navigates to Plan tab.
       - Nudge stays hidden for the same week after dismiss; returns next Sunday if the week is still empty.
+
+  - id: phase3-member-joined-push
+    title: Push when a household member joins
+    steps:
+      - With two accounts in the same household, register push tokens on device A (existing member).
+      - On device B, accept a household invite (or add member flow completes).
+      - On device A, confirm a push notification arrives (foreground shows a local notification; background uses system tray).
+      - Tap the notification.
+    expected:
+      - Push title mentions the new member; opens the app to Household members when the active household matches.
+      - Invite push still deep-links to join flow when the invitee receives an invite notification.
+
+  - id: phase3-grocery-collaboration-snackbar
+    title: Debounced grocery activity snackbar
+    steps:
+      - Two editors on the same household week: account A on Grocery tab, account B adds or checks off an item remotely.
+      - Wait ~2 seconds after the remote change syncs on A.
+    expected:
+      - A non-blocking snackbar names the remote member and item (e.g. Maria added milk) or batches multiple updates.
+      - No snackbar for the user's own edits; no chat UI.
 
   - id: language-picker
     title: App language from Home settings

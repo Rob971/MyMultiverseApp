@@ -41,4 +41,16 @@ class InvitePushPayloadTest {
 
         assertEquals(InviteRedirectUrls.build("token-abc"), url)
     }
+
+    @Test
+    fun memberJoinedHouseholdIdFromData_readsMemberJoinedPayload() {
+        val householdId = InvitePushPayload.memberJoinedHouseholdIdFromData(
+            mapOf(
+                InvitePushPayload.KEY_TYPE to InvitePushPayload.TYPE_MEMBER_JOINED,
+                InvitePushPayload.KEY_HOUSEHOLD_ID to "household-1",
+            ),
+        )
+
+        assertEquals("household-1", householdId)
+    }
 }

@@ -31,6 +31,7 @@ class AppNavigationInstrumentedTest {
         return NutritionScreenModel(
             session = InstrumentedNutritionSessionCoordinator(repository),
             householdRepository = InstrumentedHouseholdRepository(),
+            collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(),
             scope = scope,
             newItemId = { "instrumented-nav-item" },

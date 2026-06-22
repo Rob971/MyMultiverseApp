@@ -5,6 +5,7 @@ import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
+import app.mymultiverse.kmp.presentation.di.FakeHouseholdCollaborationRepository
 import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
@@ -372,6 +373,7 @@ class NutritionScreenModelTest {
         val model = NutritionScreenModel(
             session = session,
             householdRepository = FakeHouseholdRepository(),
+            collaborationRepository = FakeHouseholdCollaborationRepository(),
             aiAssistant = FakeNutritionAdviceService(),
             scope = modelScope,
         )
@@ -521,12 +523,14 @@ private fun nutritionScreenModel(
     repository: FakeNutritionRepository,
     advice: NutritionAiAssistantService = FakeNutritionAdviceService(),
     householdRepository: FakeHouseholdRepository = FakeHouseholdRepository(),
+    collaborationRepository: FakeHouseholdCollaborationRepository = FakeHouseholdCollaborationRepository(),
     scope: CoroutineScope,
     newItemId: () -> String = { "item-1" },
 ): NutritionScreenModel =
     NutritionScreenModel(
         session = nutritionSession(repository),
         householdRepository = householdRepository,
+        collaborationRepository = collaborationRepository,
         aiAssistant = advice,
         scope = scope,
         newItemId = newItemId,

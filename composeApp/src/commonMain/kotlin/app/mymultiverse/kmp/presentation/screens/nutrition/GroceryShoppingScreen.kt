@@ -40,6 +40,10 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_g
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_next
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_previous
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_delete_item
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_collaboration_actor_unknown
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_collaboration_grocery_added
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_collaboration_grocery_batch
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_collaboration_grocery_checked
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_add_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_build_from_meals
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_cancel_edit
@@ -66,6 +70,7 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_groc
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_label
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
+import app.mymultiverse.kmp.domain.nutrition.NutritionCollaborationActivityKind
 import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
 import app.mymultiverse.kmp.domain.nutrition.MealPlanPresentation
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
@@ -116,6 +121,7 @@ fun GroceryShoppingScreen(
     val mealPlan by screenModel.mealPlan.collectAsState()
     val aiGroceryItems by screenModel.aiGroceryItems.collectAsState()
     val adoptAllResult by screenModel.adoptAllGroceryResult.collectAsState()
+    val collaborationSnackbar by screenModel.collaborationSnackbar.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val weekOffset by screenModel.weekOffset.collectAsState()
@@ -172,6 +178,7 @@ fun GroceryShoppingScreen(
     )
     val clearCheckedMessage = stringResource(Res.string.nutrition_grocery_clear_checked_undo)
     val adoptAllNoneMessage = stringResource(Res.string.nutrition_ai_adopt_all_grocery_none)
+    val collaborationActorUnknown = stringResource(Res.string.nutrition_collaboration_actor_unknown)
     val adoptAllSummaryMessage = adoptAllResult?.let { count ->
         if (count == 0) {
             adoptAllNoneMessage
@@ -190,10 +197,37 @@ fun GroceryShoppingScreen(
     }
     val showBuildFromMealsChip = canWrite && mealsCriteriaSeed.isNotBlank() && onOpenAiSheet != null
 
+    val collaborationSnackbarMessage = collaborationSnackbar?.let { event ->
+        val actor = event.actorName.ifBlank { collaborationActorUnknown }
+        when {
+            event.batchedCount > 1 -> stringResource(
+                Res.string.nutrition_collaboration_grocery_batch,
+                actor,
+                event.batchedCount,
+            )
+            event.kind == NutritionCollaborationActivityKind.GroceryAdded -> stringResource(
+                Res.string.nutrition_collaboration_grocery_added,
+                actor,
+                event.itemLabel,
+            )
+            else -> stringResource(
+                Res.string.nutrition_collaboration_grocery_checked,
+                actor,
+                event.itemLabel,
+            )
+        }
+    }
+
     LaunchedEffect(adoptAllSummaryMessage) {
         val message = adoptAllSummaryMessage ?: return@LaunchedEffect
         snackbarHostState.showSnackbar(message)
         screenModel.consumeAdoptAllGroceryResult()
+    }
+
+    LaunchedEffect(collaborationSnackbarMessage) {
+        val message = collaborationSnackbarMessage ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(message)
+        screenModel.consumeCollaborationSnackbar()
     }
 
     fun showMessage(message: String) {
