@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -77,7 +75,7 @@ fun JourneyEmptyState(
                 )
             }
             if (primaryActionLabel != null && onPrimaryAction != null) {
-                Button(
+                JourneyPrimaryButton(
                     onClick = onPrimaryAction,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -87,7 +85,7 @@ fun JourneyEmptyState(
                 }
             }
             if (secondaryActionLabel != null && onSecondaryAction != null) {
-                OutlinedButton(
+                JourneySecondaryButton(
                     onClick = onSecondaryAction,
                     modifier = Modifier
                         .fillMaxWidth()

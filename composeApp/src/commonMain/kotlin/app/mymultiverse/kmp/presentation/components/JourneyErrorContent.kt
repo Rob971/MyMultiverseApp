@@ -3,7 +3,6 @@ package app.mymultiverse.kmp.presentation.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,7 +36,7 @@ fun JourneyErrorContent(
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp),
         )
-        Button(
+        JourneyPrimaryButton(
             onClick = onRetry,
             modifier = Modifier
                 .padding(top = 16.dp)
