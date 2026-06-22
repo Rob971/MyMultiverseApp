@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 /**
@@ -34,7 +35,7 @@ fun JourneyBanner(
             .padding(top = 16.dp),
         shape = shape,
         shadowElevation = 0.dp,
-        color = SharedJourneyColors.GlassWhite
+        color = JourneySemanticColors.bannerSurface(),
     ) {
         Box(
             modifier = Modifier
@@ -45,35 +46,35 @@ fun JourneyBanner(
                             SharedJourneyColors.TerracottaOrange.copy(alpha = 0.1f),
                             SharedJourneyColors.LemonZestYellow.copy(alpha = 0.05f),
                         ),
-                    )
+                    ),
                 )
                 .padding(28.dp),
         ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                VesuvianHeartLogo(modifier = Modifier.size(64.dp))
+
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Centered Logo
-                    VesuvianHeartLogo(modifier = Modifier.size(64.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = headline,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Black,
-                            color = SharedJourneyColors.MediterraneanTeal,
-                            textAlign = TextAlign.Center,
-                            modifier = headlineTestTag?.let { Modifier.testTag(it) } ?: Modifier,
-                        )
-                        description?.let { text ->
+                    Text(
+                        text = headline,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Black,
+                        color = JourneySemanticColors.onBannerHeadline(),
+                        textAlign = TextAlign.Center,
+                        modifier = headlineTestTag?.let { Modifier.testTag(it) } ?: Modifier,
+                    )
+                    description?.let { text ->
+                        if (text.isNotEmpty()) {
                             Text(
                                 text = text,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = SharedJourneyColors.InkSecondary,
+                                color = JourneySemanticColors.onBannerDescription(),
                                 fontWeight = FontWeight.Normal,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
@@ -83,22 +84,22 @@ fun JourneyBanner(
                                     ),
                             )
                         }
-                        supportingLine?.let { line ->
-                            Text(
-                                text = line,
-                                style = MaterialTheme.typography.labelMedium,
-                                color = SharedJourneyColors.TerracottaOrange,
-                                fontWeight = FontWeight.SemiBold,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .padding(top = 8.dp)
-                                    .then(
-                                        supportingLineTestTag?.let { Modifier.testTag(it) } ?: Modifier,
-                                    ),
-                            )
-                        }
                     }
-
+                    supportingLine?.let { line ->
+                        Text(
+                            text = line,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = SharedJourneyColors.TerracottaOrange,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .padding(top = 8.dp)
+                                .then(
+                                    supportingLineTestTag?.let { Modifier.testTag(it) } ?: Modifier,
+                                ),
+                        )
+                    }
+                }
             }
         }
     }

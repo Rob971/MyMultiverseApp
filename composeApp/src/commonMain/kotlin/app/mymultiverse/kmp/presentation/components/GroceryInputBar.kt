@@ -46,6 +46,7 @@ fun GroceryInputBar(
     requestFocus: Boolean = false,
     onFocusRequested: () -> Unit = {},
     embeddedInSidePanel: Boolean = false,
+    embeddedInMainTabs: Boolean = false,
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -68,10 +69,10 @@ fun GroceryInputBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .then(
-                    if (embeddedInSidePanel) {
-                        Modifier.imePadding()
-                    } else {
-                        Modifier.navigationBarsPadding().imePadding()
+                    when {
+                        embeddedInSidePanel -> Modifier.imePadding()
+                        embeddedInMainTabs -> Modifier.imePadding()
+                        else -> Modifier.navigationBarsPadding().imePadding()
                     },
                 )
                 .padding(

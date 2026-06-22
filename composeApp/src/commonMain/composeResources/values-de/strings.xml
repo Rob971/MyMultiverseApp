@@ -328,6 +328,13 @@
     <string name="home_first_win_title">Gemeinsam starten</string>
     <string name="home_first_win_invite">Lade jemanden ein, mit dir zu planen</string>
     <string name="home_first_win_nutrition">Plane eine Mahlzeit oder füge Einkäufe hinzu</string>
+    <string name="home_first_win_plan_title">Planen Sie Ihre erste Mahlzeit</string>
+    <string name="home_first_win_plan_action">Mahlzeit hinzufügen</string>
+    <string name="home_first_win_invite_title">Laden Sie jemanden zur Zusammenarbeit ein</string>
+    <string name="home_first_win_invite_action">Einladen</string>
+    <string name="nav_tab_home">Heute</string>
+    <string name="nav_tab_meal_plan">Plan</string>
+    <string name="nav_tab_grocery">Einkauf</string>
     <string name="home_first_win_dismiss">Nicht jetzt</string>
     <string name="home_onboarding_join_title">Wurdest du eingeladen?</string>
     <string name="home_onboarding_wait_for_invite_title">Auf eine Einladung warten?</string>

@@ -97,6 +97,7 @@ object GroceryListTestTags {
 @Composable
 fun GroceryShoppingScreen(
     onBack: () -> Unit,
+    embeddedInTabs: Boolean = false,
     screenModel: NutritionScreenModel = koinInject(),
 ) {
     val items by screenModel.groceryItems.collectAsState()
@@ -235,6 +236,7 @@ fun GroceryShoppingScreen(
     NutritionScaffold(
         title = stringResource(Res.string.nutrition_grocery_title),
         onBack = onBack,
+        showBackButton = !embeddedInTabs,
         snackbarHost = {
             JourneySnackbarHost(
                 hostState = snackbarHostState,
@@ -252,6 +254,7 @@ fun GroceryShoppingScreen(
                     accentColor = SharedJourneyColors.MediterraneanTeal,
                     requestFocus = refocusInput,
                     onFocusRequested = { refocusInput = false },
+                    embeddedInMainTabs = embeddedInTabs,
                 )
             }
         },

@@ -30,6 +30,7 @@ object NutritionEntryTestTags {
 fun NutritionEntryGate(
     onBack: () -> Unit,
     onReady: (HouseholdContext) -> Unit,
+    showBackButton: Boolean = true,
     screenModel: NutritionEntryScreenModel = koinInject(),
 ) {
     val state by screenModel.state.collectAsState()
@@ -47,6 +48,7 @@ fun NutritionEntryGate(
     NutritionScaffold(
         title = stringResource(Res.string.nutrition_hub_title),
         onBack = onBack,
+        showBackButton = showBackButton,
     ) { padding ->
         when (val current = state) {
             NutritionEntryState.Loading -> {

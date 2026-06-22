@@ -146,7 +146,7 @@ class HomeHouseholdUxInstrumentedTest {
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
-                        onOpenNutrition = {},
+                        onOpenMealPlan = {},
                         onOpenHouseholdMembers = { membersOpened = true },
                         greetingHour = 9,
                     )
@@ -179,7 +179,7 @@ class HomeHouseholdUxInstrumentedTest {
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
-                        onOpenNutrition = {},
+                        onOpenMealPlan = {},
                         onOpenHouseholdMembers = {},
                         greetingHour = 9,
                     )

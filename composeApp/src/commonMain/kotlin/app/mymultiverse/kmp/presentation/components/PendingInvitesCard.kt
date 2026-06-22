@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_pending_invites_accept
@@ -52,7 +53,7 @@ fun PendingInvitesCard(
             Text(
                 text = stringResource(Res.string.auth_pending_invites_title),
                 style = MaterialTheme.typography.titleSmall,
-                color = SharedJourneyColors.InkDeep,
+                color = JourneySemanticColors.inkDeep(),
             )
             invites.forEach { invite ->
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -62,7 +63,7 @@ fun PendingInvitesCard(
                             invite.householdName,
                         ),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = SharedJourneyColors.InkMuted,
+                        color = JourneySemanticColors.inkMuted(),
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),

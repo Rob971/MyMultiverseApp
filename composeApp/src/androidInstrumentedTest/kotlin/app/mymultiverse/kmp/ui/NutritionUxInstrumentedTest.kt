@@ -444,7 +444,7 @@ class NutritionUxInstrumentedTest {
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
-                        onOpenNutrition = {},
+                        onOpenMealPlan = {},
                         onOpenHouseholdMembers = { openedHousehold = true },
                         greetingHour = 9,
                     )
@@ -475,7 +475,7 @@ class NutritionUxInstrumentedTest {
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
-                        onOpenNutrition = { openedNutrition = true },
+                        onOpenMealPlan = { openedNutrition = true },
                         onOpenHouseholdMembers = {},
                         greetingHour = 9,
                     )
@@ -504,7 +504,7 @@ class NutritionUxInstrumentedTest {
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
-                        onOpenNutrition = {},
+                        onOpenMealPlan = {},
                         onOpenHouseholdMembers = {},
                         greetingHour = 9,
                     )
@@ -530,7 +530,7 @@ class NutritionUxInstrumentedTest {
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
-                        onOpenNutrition = {},
+                        onOpenMealPlan = {},
                         onOpenHouseholdMembers = {},
                         greetingHour = 14,
                     )
@@ -555,7 +555,7 @@ class NutritionUxInstrumentedTest {
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
-                        onOpenNutrition = {},
+                        onOpenMealPlan = {},
                         onOpenHouseholdMembers = {},
                         greetingHour = 20,
                     )
@@ -581,7 +581,7 @@ class NutritionUxInstrumentedTest {
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
-                        onOpenNutrition = {},
+                        onOpenMealPlan = {},
                         onOpenHouseholdMembers = {},
                         greetingHour = 9,
                     )
@@ -608,7 +608,7 @@ class NutritionUxInstrumentedTest {
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
-                        onOpenNutrition = {},
+                        onOpenMealPlan = {},
                         onOpenHouseholdMembers = {},
                         greetingHour = 9,
                     )
@@ -634,7 +634,7 @@ class NutritionUxInstrumentedTest {
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
-                        onOpenNutrition = {},
+                        onOpenMealPlan = {},
                         onOpenHouseholdMembers = {},
                         greetingHour = 9,
                     )
@@ -660,7 +660,7 @@ class NutritionUxInstrumentedTest {
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
-                        onOpenNutrition = {},
+                        onOpenMealPlan = {},
                         onOpenHouseholdMembers = {},
                         greetingHour = 9,
                     )

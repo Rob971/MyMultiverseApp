@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -21,6 +22,7 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.action_back
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.presentation.navigation.NavigationTestTags
 import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,6 +32,7 @@ fun NutritionScaffold(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    showBackButton: Boolean = true,
     actions: @Composable RowScope.() -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
@@ -48,33 +51,35 @@ fun NutritionScaffold(
                         Text(
                             text = title,
                             fontWeight = FontWeight.Bold,
-                            color = SharedJourneyColors.InkDeep,
+                            color = JourneySemanticColors.inkDeep(),
                         )
                     } else {
                         androidx.compose.foundation.layout.Column {
                             Text(
                                 text = title,
                                 fontWeight = FontWeight.Bold,
-                                color = SharedJourneyColors.InkDeep,
+                                color = JourneySemanticColors.inkDeep(),
                             )
                             Text(
                                 text = subtitle,
-                                style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
-                                color = SharedJourneyColors.InkMuted,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = JourneySemanticColors.inkMuted(),
                             )
                         }
                     }
                 },
                 navigationIcon = {
-                    JourneyIconButton(
-                        onClick = onBack,
-                        modifier = Modifier.testTag(NavigationTestTags.BACK_BUTTON),
-                    ) {
-                        Icon(
-                            imageVector = AppIcons.ArrowBack,
-                            contentDescription = backLabel,
-                            tint = SharedJourneyColors.MediterraneanTeal,
-                        )
+                    if (showBackButton) {
+                        JourneyIconButton(
+                            onClick = onBack,
+                            modifier = Modifier.testTag(NavigationTestTags.BACK_BUTTON),
+                        ) {
+                            Icon(
+                                imageVector = AppIcons.ArrowBack,
+                                contentDescription = backLabel,
+                                tint = SharedJourneyColors.MediterraneanTeal,
+                            )
+                        }
                     }
                 },
                 actions = actions,

@@ -328,6 +328,13 @@
     <string name="home_first_win_title">Get started together</string>
     <string name="home_first_win_invite">Invite someone to plan with you</string>
     <string name="home_first_win_nutrition">Plan a meal or add groceries</string>
+    <string name="home_first_win_plan_title">Plan your first meal</string>
+    <string name="home_first_win_plan_action">Add meal</string>
+    <string name="home_first_win_invite_title">Invite someone to collaborate</string>
+    <string name="home_first_win_invite_action">Invite</string>
+    <string name="nav_tab_home">Today</string>
+    <string name="nav_tab_meal_plan">Plan</string>
+    <string name="nav_tab_grocery">Groceries</string>
     <string name="home_first_win_dismiss">Not now</string>
     <string name="home_onboarding_join_title">Were you invited?</string>
     <string name="home_onboarding_wait_for_invite_title">Waiting for an invite?</string>

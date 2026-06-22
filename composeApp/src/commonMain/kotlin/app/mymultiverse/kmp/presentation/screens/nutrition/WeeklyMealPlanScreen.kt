@@ -106,6 +106,7 @@ import org.koin.compose.koinInject
 fun WeeklyMealPlanScreen(
     onBack: () -> Unit,
     onOpenSection: (NutritionSection, NutritionAiMode?) -> Unit,
+    showBackButton: Boolean = true,
     screenModel: NutritionScreenModel = koinInject(),
 ) {
     val mealPlan by screenModel.mealPlan.collectAsState()
@@ -305,6 +306,7 @@ fun WeeklyMealPlanScreen(
     NutritionScaffold(
         title = stringResource(Res.string.nutrition_meal_plan_title),
         onBack = onBack,
+        showBackButton = showBackButton,
         snackbarHost = { JourneySnackbarHost(hostState = snackbarHostState) },
         actions = {
             if (canWrite) {

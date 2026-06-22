@@ -2,7 +2,6 @@ package app.mymultiverse.kmp.presentation.screens.nutrition
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
@@ -16,16 +15,19 @@ fun NutritionFlow(
     onBack: () -> Unit,
     onOpenSection: (NutritionSection, NutritionAiMode?) -> Unit,
     onHouseholdSelected: (HouseholdContext) -> Unit,
+    embeddedInTabs: Boolean = false,
 ) {
     if (household == null) {
         NutritionEntryGate(
             onBack = onBack,
             onReady = onHouseholdSelected,
+            showBackButton = !embeddedInTabs,
         )
         return
     }
 
     val nutritionScreenModel = koinInject<NutritionScreenModel>()
+    val showBack = !embeddedInTabs
 
     when (section) {
         NutritionSection.Hub -> {
@@ -44,7 +46,10 @@ fun NutritionFlow(
             LaunchedEffect(household.id) {
                 nutritionScreenModel.activateHousehold(household.id)
             }
-            GroceryShoppingScreen(onBack = onBack)
+            GroceryShoppingScreen(
+                onBack = onBack,
+                embeddedInTabs = embeddedInTabs,
+            )
         }
 
         NutritionSection.MealPlan -> {
@@ -54,6 +59,7 @@ fun NutritionFlow(
             WeeklyMealPlanScreen(
                 onBack = onBack,
                 onOpenSection = { target, mode -> onOpenSection(target, mode) },
+                showBackButton = showBack,
             )
         }
 

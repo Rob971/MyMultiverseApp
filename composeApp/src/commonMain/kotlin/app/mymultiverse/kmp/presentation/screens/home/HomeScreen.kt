@@ -60,9 +60,12 @@ import app.mymultiverse.kmp.presentation.components.HomeHouseholdButton
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.theme.AppIcons
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import app.mymultiverse.kmp.domain.repository.AuthRepository
+import app.mymultiverse.kmp.domain.auth.avatarInitials
 import app.mymultiverse.kmp.domain.model.auth.AuthState
+import app.mymultiverse.kmp.presentation.components.UserAvatarButton
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
+import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import app.mymultiverse.kmp.presentation.invite.InviteJoinAcceptState
 import app.mymultiverse.kmp.presentation.invite.InviteJoinFlowCoordinator
 import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
@@ -96,8 +99,10 @@ object HomeTestTags {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onOpenNutrition: () -> Unit,
+    onOpenMealPlan: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
+    embeddedInMainTabs: Boolean = false,
+    modifier: Modifier = Modifier,
 ) {
     val screenModel = koinInject<HomeScreenModel>()
     val authRepository = koinInject<AuthRepository>()
@@ -123,6 +128,7 @@ fun HomeScreen(
     val authState by authRepository.authState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val sessionEmail = (authState as? AuthState.Authenticated)?.user?.email.orEmpty()
+    val avatarInitials = (authState as? AuthState.Authenticated)?.user?.avatarInitials() ?: "?"
 
     HomeInviteSnackbarEffects(
         snackbarHostState = snackbarHostState,
@@ -276,7 +282,10 @@ fun HomeScreen(
                 contentWindowInsets = WindowInsets.safeDrawing,
                 snackbarHost = { SnackbarHost(snackbarHostState) },
                 topBar = {
-                    HomeTopBar(onOpenSettings = { showAccountSheet = true })
+                    HomeTopBar(
+                        onOpenSettings = { showAccountSheet = true },
+                        avatarInitials = avatarInitials,
+                    )
                 },
                 containerColor = Color.Transparent,
             ) { padding ->
@@ -288,12 +297,13 @@ fun HomeScreen(
                     onRenameHousehold = screenModel::openRenameHouseholdDialog,
                     nutritionSummary = nutritionSummary,
                     firstWinChecklist = firstWinChecklist,
-                    onOpenNutrition = onOpenNutrition,
+                    onOpenMealPlan = onOpenMealPlan,
                     onOpenHouseholdMembers = onOpenHouseholdMembers,
                     onDismissFirstWinChecklist = screenModel::dismissFirstWinChecklist,
                     isRefreshing = isRefreshing,
                     onRefresh = screenModel::refresh,
-                    modifier = Modifier.padding(padding),
+                    embeddedInMainTabs = embeddedInMainTabs,
+                    modifier = Modifier.padding(padding).then(modifier),
                 )
             }
         }
@@ -421,6 +431,7 @@ private fun HomeInviteSnackbarEffects(
 private fun HomeTopBar(
     onSignOut: (() -> Unit)? = null,
     onOpenSettings: (() -> Unit)? = null,
+    avatarInitials: String? = null,
 ) {
     val settingsDescription = stringResource(Res.string.home_settings_button)
     TopAppBar(
@@ -428,18 +439,13 @@ private fun HomeTopBar(
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         actions = {
             onOpenSettings?.let { openSettings ->
-                JourneyIconButton(
+                UserAvatarButton(
+                    initials = avatarInitials ?: "?",
+                    contentDescription = settingsDescription,
                     onClick = openSettings,
-                    modifier = Modifier
-                        .testTag(HomeTestTags.SETTINGS_BUTTON)
-                        .semantics { contentDescription = settingsDescription },
-                ) {
-                    Icon(
-                        imageVector = AppIcons.MoreVert,
-                        contentDescription = null,
-                        tint = SharedJourneyColors.InkDeep,
-                    )
-                }
+                    modifier = Modifier.testTag(HomeTestTags.SETTINGS_BUTTON),
+                    showPersonFallback = avatarInitials == null || avatarInitials == "?",
+                )
             }
             onSignOut?.let { signOut ->
                 TextButton(
@@ -512,12 +518,12 @@ fun HomeOnboardingContent(
                         text = stringResource(Res.string.home_onboarding_wait_for_invite_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
-                        color = SharedJourneyColors.InkDeep,
+                        color = JourneySemanticColors.inkDeep(),
                     )
                     Text(
                         text = stringResource(Res.string.home_onboarding_wait_for_invite_body, sessionEmail),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = SharedJourneyColors.InkMuted,
+                        color = JourneySemanticColors.inkMuted(),
                     )
                     TextButton(
                         onClick = onRefreshInvites,
@@ -529,11 +535,11 @@ fun HomeOnboardingContent(
             }
 
             if (hasPendingInvites) {
-                HorizontalDivider(color = SharedJourneyColors.InkMuted.copy(alpha = 0.25f))
+                HorizontalDivider(color = JourneySemanticColors.inkMuted().copy(alpha = 0.25f))
                 Text(
                     text = stringResource(Res.string.household_gate_create_divider),
                     style = MaterialTheme.typography.labelLarge,
-                    color = SharedJourneyColors.InkMuted,
+                    color = JourneySemanticColors.inkMuted(),
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                 )
@@ -561,7 +567,7 @@ fun HomeOnboardingContent(
         Text(
             text = stringResource(Res.string.home_onboarding_name_hint),
             style = MaterialTheme.typography.bodySmall,
-            color = SharedJourneyColors.InkMuted,
+            color = JourneySemanticColors.inkMuted(),
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -583,7 +589,7 @@ fun HomeOnboardingContent(
         Text(
             text = stringResource(Res.string.home_onboarding_create_invite_hint),
             style = MaterialTheme.typography.bodySmall,
-            color = SharedJourneyColors.InkMuted,
+            color = JourneySemanticColors.inkMuted(),
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag(HomeTestTags.ONBOARDING_CREATE_INVITE_HINT),
@@ -606,9 +612,10 @@ fun HomeWelcomeContent(
     firstWinChecklist: HomeFirstWinChecklistUiState = HomeFirstWinChecklistUiState(),
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
-    onOpenNutrition: () -> Unit,
+    onOpenMealPlan: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
     onDismissFirstWinChecklist: () -> Unit = {},
+    embeddedInMainTabs: Boolean = false,
     greetingHour: Int? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -643,8 +650,13 @@ fun HomeWelcomeContent(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .navigationBarsPadding()
-                .imePadding(),
+                .then(
+                    if (embeddedInMainTabs) {
+                        Modifier.imePadding()
+                    } else {
+                        Modifier.navigationBarsPadding().imePadding()
+                    },
+                ),
             contentPadding = screenListPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -666,13 +678,15 @@ fun HomeWelcomeContent(
                 item {
                     HomeFirstWinChecklistCard(
                         title = stringResource(Res.string.home_first_win_title),
-                        inviteLabel = stringResource(Res.string.home_first_win_invite),
-                        nutritionLabel = stringResource(Res.string.home_first_win_nutrition),
+                        planTitle = stringResource(Res.string.home_first_win_plan_title),
+                        planActionLabel = stringResource(Res.string.home_first_win_plan_action),
+                        inviteTitle = stringResource(Res.string.home_first_win_invite_title),
+                        inviteActionLabel = stringResource(Res.string.home_first_win_invite_action),
                         dismissLabel = stringResource(Res.string.home_first_win_dismiss),
                         inviteComplete = firstWinChecklist.inviteComplete,
                         nutritionComplete = firstWinChecklist.nutritionComplete,
                         onInviteClick = onOpenHouseholdMembers,
-                        onNutritionClick = onOpenNutrition,
+                        onNutritionClick = onOpenMealPlan,
                         onDismiss = onDismissFirstWinChecklist,
                     )
                 }
@@ -697,15 +711,15 @@ fun HomeWelcomeContent(
                             text = stringResource(Res.string.home_logistics_nutrition_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = SharedJourneyColors.InkDeep,
+                            color = JourneySemanticColors.inkDeep(),
                         )
                         Text(
                             text = thisWeekStatusLine,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = SharedJourneyColors.InkMuted,
+                            color = JourneySemanticColors.inkMuted(),
                         )
                         JourneyPrimaryButton(
-                            onClick = onOpenNutrition,
+                            onClick = onOpenMealPlan,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .testTag(HomeTestTags.NUTRITION_CTA),
@@ -782,7 +796,7 @@ private fun householdNameAvailabilitySupportingText(
             text = message,
             color = when (availability) {
                 HouseholdNameAvailability.Available -> SharedJourneyColors.MediterraneanTeal
-                HouseholdNameAvailability.Checking -> SharedJourneyColors.InkMuted
+                HouseholdNameAvailability.Checking -> JourneySemanticColors.inkMuted()
                 else -> SharedJourneyColors.TerracottaOrange
             },
         )

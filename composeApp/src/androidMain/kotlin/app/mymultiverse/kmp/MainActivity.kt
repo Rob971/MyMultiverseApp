@@ -3,6 +3,7 @@ package app.mymultiverse.kmp
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.LaunchedEffect
 import app.mymultiverse.kmp.data.observability.FirebaseBuildFlags
@@ -18,6 +19,7 @@ import org.koin.compose.KoinApplication
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         if (FirebaseBuildFlags.PUSH_ENABLED) {
             AndroidNotificationChannels.ensureCreated(this)

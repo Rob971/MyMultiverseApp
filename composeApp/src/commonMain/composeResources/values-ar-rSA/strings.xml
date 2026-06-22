@@ -328,6 +328,13 @@
     <string name="home_first_win_title">ابدأوا معًا</string>
     <string name="home_first_win_invite">ادعُ شخصًا للتخطيط معك</string>
     <string name="home_first_win_nutrition">خطط لوجبة أو أضف البقالة</string>
+    <string name="home_first_win_plan_title">خطط لوجبتك الأولى</string>
+    <string name="home_first_win_plan_action">أضف وجبة</string>
+    <string name="home_first_win_invite_title">ادعُ شخصًا للتعاون</string>
+    <string name="home_first_win_invite_action">دعوة</string>
+    <string name="nav_tab_home">اليوم</string>
+    <string name="nav_tab_meal_plan">الخطة</string>
+    <string name="nav_tab_grocery">البقالة</string>
     <string name="home_first_win_dismiss">ليس الآن</string>
     <string name="home_onboarding_join_title">هل تمت دعوتك؟</string>
     <string name="home_onboarding_wait_for_invite_title">في انتظار دعوة؟</string>

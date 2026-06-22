@@ -8,30 +8,62 @@ import kotlin.test.assertNull
 class AuthUserPresentationTest {
 
     @Test
-    fun resolvedDisplayName_prefersDisplayName() {
-        val user = AuthUser(id = "1", email = "a@b.c", displayName = "  Roberto  ")
+    fun resolvedDisplayName_stripsWrappingQuotes() {
+        val user = AuthUser(
+            id = "user-1",
+            email = "roberto@example.com",
+            displayName = "\"Roberto Cornano\"",
+        )
+
+        assertEquals("Roberto Cornano", user.resolvedDisplayName())
+    }
+
+    @Test
+    fun resolvedDisplayName_stripsSingleQuotes() {
+        val user = AuthUser(
+            id = "user-1",
+            email = "roberto@example.com",
+            displayName = "'Roberto'",
+        )
 
         assertEquals("Roberto", user.resolvedDisplayName())
     }
 
     @Test
     fun resolvedDisplayName_fallsBackToEmailLocalPart() {
-        val user = AuthUser(id = "1", email = "roberto@example.com", displayName = null)
+        val user = AuthUser(
+            id = "user-1",
+            email = "roberto@example.com",
+            displayName = null,
+        )
 
         assertEquals("roberto", user.resolvedDisplayName())
     }
 
     @Test
-    fun resolvedDisplayName_ignoresBlankDisplayNameAndUsesEmail() {
-        val user = AuthUser(id = "1", email = "maria@example.com", displayName = "   ")
+    fun resolvedDisplayName_blankDisplayNameUsesEmail() {
+        val user = AuthUser(
+            id = "user-1",
+            email = "roberto@example.com",
+            displayName = "   ",
+        )
 
-        assertEquals("maria", user.resolvedDisplayName())
+        assertEquals("roberto", user.resolvedDisplayName())
     }
 
     @Test
-    fun resolvedDisplayName_returnsNullWhenNoUsableName() {
-        val user = AuthUser(id = "1", email = null, displayName = null)
+    fun avatarInitials_usesFirstLettersOfTwoWordName() {
+        val user = AuthUser(
+            id = "user-1",
+            email = "roberto@example.com",
+            displayName = "Roberto Cornano",
+        )
 
-        assertNull(user.resolvedDisplayName())
+        assertEquals("RC", user.avatarInitials())
+    }
+
+    @Test
+    fun sanitizeDisplayName_nullForBlank() {
+        assertNull(sanitizeDisplayName("   "))
     }
 }

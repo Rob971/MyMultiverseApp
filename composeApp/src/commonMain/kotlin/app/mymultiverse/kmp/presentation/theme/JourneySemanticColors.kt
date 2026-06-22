@@ -20,4 +20,19 @@ object JourneySemanticColors {
     @Composable
     fun elevatedSurface(): Color =
         if (isSystemInDarkTheme()) SharedJourneyColors.SunDrenchedWhiteDark else SharedJourneyColors.SunDrenchedWhite
+
+    @Composable
+    fun inkSecondary(): Color =
+        if (isSystemInDarkTheme()) SharedJourneyColors.InkMutedOnDark else SharedJourneyColors.InkSecondary
+
+    /** Elevated greeting banner — stays light in both themes for brand warmth. */
+    @Composable
+    fun bannerSurface(): Color = SharedJourneyColors.GlassWhite
+
+    @Composable
+    fun onBannerHeadline(): Color = SharedJourneyColors.MediterraneanTeal
+
+    @Composable
+    fun onBannerDescription(): Color =
+        if (isSystemInDarkTheme()) SharedJourneyColors.InkSecondary else SharedJourneyColors.InkSecondary
 }
