@@ -6,6 +6,8 @@ alwaysApply: true
 
 # Clean architecture (KMP)
 
+> **Compliance:** Mandatory (`agents-mandatory.mdc`). Applies to all `composeApp/src/**` changes.
+
 ## Layers
 
 | Layer | Package | Responsibility |

@@ -5,6 +5,8 @@ alwaysApply: true
 
 # KMP coding standards
 
+> **Compliance:** Mandatory (`agents-mandatory.mdc`). Applies to all Kotlin changes.
+
 ## Stack (pin in `gradle/libs.versions.toml`)
 
 | Area | Version / library |

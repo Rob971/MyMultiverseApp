@@ -1,7 +1,6 @@
 ---
-description: QA pyramid, unit/instrumented tests, Firebase manual checklist
-globs: "**/*{Test,test}*/**/*.{kt,yaml,yml},firebase-appdistribution-testcases.yaml"
-alwaysApply: false
+description: QA pyramid, unit/instrumented tests, Firebase manual checklist (MANDATORY)
+alwaysApply: true
 ---
 
 # QA & testing

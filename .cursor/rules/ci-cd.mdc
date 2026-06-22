@@ -1,10 +1,12 @@
 ---
-description: GitHub Actions, release workflow, Firebase App Distribution
+description: CI/CD and Firebase — MANDATORY when editing workflows or releasing
 globs: "**/.github/**/*.{yml,yaml},**/firebase*.yaml,gradle/app-version.properties"
 alwaysApply: false
 ---
 
 # CI/CD
+
+> **Compliance:** Required when changing `.github/**`, Firebase YAML, or running release. See `agents-mandatory.mdc`.
 
 ## Workflows
 

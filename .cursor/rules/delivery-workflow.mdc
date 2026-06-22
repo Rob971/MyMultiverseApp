@@ -5,7 +5,9 @@ alwaysApply: true
 
 # Delivery workflow (always follow)
 
-Every task—planning, review, fix, test, or implementation—must follow this sequence. Do not skip steps unless the user explicitly asks for docs-only or question-only work.
+> **Compliance:** `agents-mandatory.mdc` is binding. All `.cursor/rules/` apply; do not skip steps.
+
+Every task—planning, review, fix, test, or implementation—must follow this sequence.
 
 ## 1. Plan
 

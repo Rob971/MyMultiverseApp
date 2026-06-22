@@ -1,12 +1,12 @@
 ---
-description: Supabase migrations, RLS, edge functions, and client integration
-globs: "**/{supabase/**,**/data/supabase/**,**/supabase/**}/*"
+description: Supabase migrations, RLS, edge functions — MANDATORY when editing supabase/**
+globs: "**/{supabase/**,**/data/supabase/**}/*"
 alwaysApply: false
 ---
 
 # Supabase backend
 
-Use `.agents/skills/supabase/SKILL.md` and `supabase-postgres-best-practices/SKILL.md` for migrations, RLS, and query review.
+> **Compliance:** Required when changing `supabase/**` or `data/supabase/**`. Read `.agents/skills/supabase/SKILL.md` and `supabase-postgres-best-practices/SKILL.md`. See `agents-mandatory.mdc`.
 
 ## Repo layout
 

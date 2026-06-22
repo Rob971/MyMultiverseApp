@@ -5,6 +5,8 @@ alwaysApply: true
 
 # Review & commit standards
 
+> **Compliance:** Part of mandatory agent rules (`agents-mandatory.mdc`). Apply on every implementation, review, commit, and PR.
+
 Apply on every implementation task, code review, and when the user asks for a commit or PR.
 
 ## Before claiming done (self-review)

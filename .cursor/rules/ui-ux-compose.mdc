@@ -1,7 +1,6 @@
 ---
-description: Compose UI/UX standards — shipped Journey design system, dark/wide layouts
-globs: "**/presentation/**/*.kt"
-alwaysApply: false
+description: Compose UI/UX standards — shipped Journey design system, dark/wide layouts (MANDATORY)
+alwaysApply: true
 ---
 
 # UI & UX (Compose Multiplatform)

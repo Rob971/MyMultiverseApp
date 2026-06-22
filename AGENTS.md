@@ -1,6 +1,12 @@
 # Agent guidelines (MyMultiverse KMP)
 
-Cursor rules in `.cursor/rules/` define how to plan, implement, test, review, commit, and ship. **Always-apply** rules run on every task; others activate when matching files are open.
+> ## MANDATORY FOR ALL AGENTS
+>
+> **Every Cursor agent session MUST follow `.cursor/rules/agents-mandatory.mdc` and all rules it references.**  
+> Do not implement, review, test, commit, or release without the task-start and task-end checklists in that file.  
+> Rules are binding — not suggestions.
+
+Cursor rules in `.cursor/rules/` define how to plan, implement, test, review, commit, and ship. Rules with `alwaysApply: true` are injected into every session; scoped rules must be **read** before editing matching paths (see `agents-mandatory.mdc`).
 
 ## Product context
 
@@ -8,20 +14,28 @@ Cursor rules in `.cursor/rules/` define how to plan, implement, test, review, co
 
 ## Rule index
 
-| Rule | Scope | Topics |
-|------|--------|--------|
-| `delivery-workflow.mdc` | Always | Plan → implement → test → review → CI/release |
-| `review-commit.mdc` | Always | Self-review, PR/commit gates, merge & release policy |
-| `architecture-clean.mdc` | Always | Domain / data / presentation, DI, screen models |
-| `kmp-core.mdc` | Always | Stack versions, AppNavigator, Koin, Compose, coroutines |
-| `i18n-multilingual.mdc` | Always | 8 locales, string keys, parity tests, RTL |
-| `official-docs-urls.mdc` | Always | Indexed docs + repo skills for fast-moving APIs |
-| `ui-ux-compose.mdc` | `presentation/**` | Journey design system, dark/wide UX, testTags |
-| `qa-testing.mdc` | Tests + Firebase YAML | Unit, instrumented, manual QA v31 |
-| `ci-cd.mdc` | `.github/`, Firebase YAML | Actions, manual release, secrets |
-| `backend-data.mdc` | `data/**` | Repositories, sync, codecs, services |
-| `supabase-backend.mdc` | `supabase/**`, `data/supabase/**` | Migrations, RLS, edge functions |
-| `ios-platform.mdc` | `iosMain/**` | UIKit, interop, iOS compile |
+### Always apply (every session)
+
+| Rule | Topics |
+|------|--------|
+| **`agents-mandatory.mdc`** | **Compliance gate — read first** |
+| `delivery-workflow.mdc` | Plan → implement → test → review → CI/release |
+| `review-commit.mdc` | Self-review, PR/commit policy, merge blockers |
+| `architecture-clean.mdc` | Domain / data / presentation, DI, screen models |
+| `kmp-core.mdc` | Stack versions, AppNavigator, Koin, Compose, coroutines |
+| `i18n-multilingual.mdc` | 8 locales, string keys, parity tests, RTL |
+| `official-docs-urls.mdc` | Indexed docs + repo skills |
+| `ui-ux-compose.mdc` | Journey design system, dark/wide UX, testTags |
+| `qa-testing.mdc` | Unit, instrumented, Firebase YAML |
+
+### Read before editing matching paths
+
+| Rule | When to read |
+|------|----------------|
+| `backend-data.mdc` | `data/**` changes |
+| `supabase-backend.mdc` | `supabase/**`, `data/supabase/**` |
+| `ci-cd.mdc` | `.github/**`, Firebase YAML, release |
+| `ios-platform.mdc` | `iosMain/**`, `iosApp/**` |
 
 ## Tech stack (current)
 
@@ -73,9 +87,10 @@ PR/push runs Android CI + instrumented + Supabase migration validation. **No aut
 
 ## Definition of done (summary)
 
-1. Plan + minimal scope  
-2. Clean architecture + Journey UI + 8-locale i18n  
-3. Unit tests green; instrumented compile if UI touched  
-4. `firebase-appdistribution-testcases.yaml` updated if flows changed  
-5. `review-commit.mdc` self-review passed  
-6. Commit/PR only when user asks; release manual after merge  
+1. `agents-mandatory.mdc` task-start + task-end checklists satisfied  
+2. Plan + minimal scope (`delivery-workflow.mdc`)  
+3. Clean architecture + Journey UI + 8-locale i18n  
+4. Unit tests green; instrumented compile if UI touched (`qa-testing.mdc`)  
+5. `firebase-appdistribution-testcases.yaml` updated if flows changed  
+6. `review-commit.mdc` self-review passed  
+7. Commit/PR only when user asks; release manual after merge  

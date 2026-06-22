@@ -5,6 +5,8 @@ alwaysApply: true
 
 # Multilingual support (i18n)
 
+> **Compliance:** Mandatory (`agents-mandatory.mdc`). Merge blocker for any user-facing copy.
+
 User-facing text must be **fully localized** across every supported locale. i18n is a merge blocker.
 
 ## Supported locales (all required for new keys)

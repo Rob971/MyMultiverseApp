@@ -1,10 +1,12 @@
 ---
-description: iOS-specific implementations, Swift interop, and platform gaps
-globs: "**/iosMain/**/*.{kt,swift}"
+description: iOS platform — MANDATORY when editing iosMain/** or iosApp/**
+globs: "**/{iosMain/**,iosApp/**}/*.{kt,swift}"
 alwaysApply: false
 ---
 
 # iOS platform
+
+> **Compliance:** Required when changing `iosMain/**` or `iosApp/**`. See `agents-mandatory.mdc`.
 
 ## Source set
 
