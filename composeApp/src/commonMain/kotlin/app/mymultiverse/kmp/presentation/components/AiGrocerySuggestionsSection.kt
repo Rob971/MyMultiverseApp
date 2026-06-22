@@ -76,7 +76,7 @@ private fun ColumnSection(
                 Text(
                     text = adoptAllLabel,
                     style = MaterialTheme.typography.labelLarge,
-                    color = SharedJourneyColors.MediterraneanTeal,
+                    color = SharedJourneyColors.AiReadOnlyAccent,
                 )
             }
         }

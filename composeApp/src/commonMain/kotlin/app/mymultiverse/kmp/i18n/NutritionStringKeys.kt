@@ -34,6 +34,10 @@ object NutritionStringKeys {
         "nutrition_meal_lunch",
         "nutrition_meal_dinner",
         "nutrition_meal_generate_grocery",
+        "nutrition_meal_suggest_quick_ai",
+        "nutrition_ai_criteria_quick_meal",
+        "nutrition_grocery_build_from_meals",
+        "nutrition_ai_criteria_from_meals",
         "nutrition_meal_grocery_added",
         "nutrition_meal_grocery_none_new",
         "nutrition_meal_grocery_error",
@@ -83,6 +87,8 @@ object NutritionStringKeys {
         "nutrition_grocery_expand_completed",
         "nutrition_grocery_collapse_completed",
         "nutrition_grocery_clear_checked",
+        "nutrition_grocery_hide_checked",
+        "nutrition_grocery_show_checked",
         "nutrition_grocery_edit_item",
         "nutrition_grocery_edit_hint",
         "nutrition_grocery_save_edit",
@@ -103,6 +109,7 @@ object NutritionStringKeys {
         "nutrition_ai_mode_meal_plan",
         "nutrition_ai_criteria_hint",
         "nutrition_ai_generate_button",
+        "nutrition_ai_more_options",
         "nutrition_ai_scope_full_week",
         "nutrition_ai_scope_today",
         "nutrition_ai_grocery_result_title",
@@ -124,6 +131,7 @@ object NutritionStringKeys {
         "nutrition_sync_status_syncing",
         "nutrition_sync_status_pending",
         "nutrition_sync_status_offline",
+        "nutrition_sync_status_synced",
     )
 
     val localeDirectories: List<String> = listOf(

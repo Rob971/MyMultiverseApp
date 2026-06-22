@@ -565,6 +565,20 @@ class HomeScreenModelTest {
     }
 
     @Test
+    fun nutritionHouseholdContext_emitsActiveHouseholdFromMembership() = runTest(testDispatcher) {
+        val householdRepository = FakeHouseholdRepository()
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            householdRepository = householdRepository,
+        )
+        advanceUntilIdle()
+
+        val context = screenModel.nutritionHouseholdContext.value
+        assertEquals("household-1", context?.id)
+        assertEquals("Our household", context?.name)
+    }
+
+    @Test
     fun createHousehold_ignoredWhenNameBlank() = runTest(testDispatcher) {
         val householdRepository = FakeHouseholdRepository(
             initialMembershipStatus = HouseholdMembershipStatus.None,

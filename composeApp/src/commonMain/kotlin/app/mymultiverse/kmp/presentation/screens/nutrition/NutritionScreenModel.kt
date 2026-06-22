@@ -16,6 +16,8 @@ import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.domain.sharing.canWriteHouseholdData
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.CoroutineScope
@@ -51,6 +53,7 @@ class NutritionScreenModel(
 ) {
     companion object {
         const val MAX_WEEK_OFFSET = 1
+        private const val SYNCED_PULSE_MS = 2_500L
     }
 
     private val repository: NutritionRepository
@@ -84,8 +87,38 @@ class NutritionScreenModel(
             WeeklyMealPlan(weekKey = WeekCalendar.currentWeekKey()),
         )
 
-    val syncStatus: StateFlow<NutritionSyncStatus> = session.observeSyncStatus()
-        .stateIn(scope, SharingStarted.Eagerly, NutritionSyncStatus.Idle)
+    private val _displaySyncStatus = MutableStateFlow<NutritionSyncStatus>(NutritionSyncStatus.Idle)
+    private var syncPulseJob: Job? = null
+
+    val syncStatus: StateFlow<NutritionSyncStatus> = _displaySyncStatus.asStateFlow()
+
+    init {
+        scope.launch {
+            session.observeSyncStatus().collect { raw ->
+                when {
+                    raw == NutritionSyncStatus.Idle &&
+                        (_displaySyncStatus.value == NutritionSyncStatus.Syncing ||
+                            _displaySyncStatus.value is NutritionSyncStatus.PendingPush) -> {
+                        _displaySyncStatus.value = NutritionSyncStatus.Synced
+                        syncPulseJob?.cancel()
+                        syncPulseJob = launch {
+                            delay(SYNCED_PULSE_MS)
+                            if (_displaySyncStatus.value == NutritionSyncStatus.Synced) {
+                                _displaySyncStatus.value = NutritionSyncStatus.Idle
+                            }
+                        }
+                    }
+                    raw != NutritionSyncStatus.Idle -> {
+                        syncPulseJob?.cancel()
+                        _displaySyncStatus.value = raw
+                    }
+                    _displaySyncStatus.value != NutritionSyncStatus.Synced -> {
+                        _displaySyncStatus.value = raw
+                    }
+                }
+            }
+        }
+    }
 
     val canWriteHouseholdData: StateFlow<Boolean> = householdRepository
         .observeMembershipStatus()

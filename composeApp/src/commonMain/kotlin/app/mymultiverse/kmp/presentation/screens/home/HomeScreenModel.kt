@@ -2,6 +2,7 @@ package app.mymultiverse.kmp.presentation.screens.home
 
 import app.mymultiverse.kmp.data.home.HomeFirstWinChecklistStore
 import app.mymultiverse.kmp.domain.home.HomeFirstWinChecklist
+import app.mymultiverse.kmp.domain.home.HomeTonightDinner
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
@@ -24,6 +25,8 @@ import app.mymultiverse.kmp.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.kmp.domain.sharing.HouseholdDefaultName
 import app.mymultiverse.kmp.domain.sharing.HouseholdNameRules
 import app.mymultiverse.kmp.domain.sharing.canRenameHousehold
+import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
+import app.mymultiverse.kmp.presentation.navigation.toNavigationContext
 import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
 import app.mymultiverse.kmp.presentation.screens.household.SwitchHouseholdPrompt
 import kotlinx.coroutines.CoroutineScope
@@ -35,7 +38,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -77,6 +79,15 @@ class HomeScreenModel(
         .map { it is HouseholdMembershipStatus.Active }
         .stateIn(scope, SharingStarted.WhileSubscribed(5_000), false)
 
+    /** Household for nutrition tabs — uses membership when home cache is still loading. */
+    val nutritionHouseholdContext: StateFlow<HouseholdContext?> = combine(
+        householdRepository.observeMembershipStatus(),
+        _household,
+    ) { status, cached ->
+        val household = cached ?: (status as? HouseholdMembershipStatus.Active)?.household
+        household?.toNavigationContext()
+    }.stateIn(scope, SharingStarted.Eagerly, null)
+
     private val _onboardingUiState = MutableStateFlow(HomeOnboardingUiState())
     val onboardingUiState: StateFlow<HomeOnboardingUiState> = _onboardingUiState.asStateFlow()
 
@@ -104,6 +115,13 @@ class HomeScreenModel(
     private val _postCreateInvitePrompt = MutableStateFlow<PostCreateInvitePrompt?>(null)
     val postCreateInvitePrompt: StateFlow<PostCreateInvitePrompt?> = _postCreateInvitePrompt.asStateFlow()
 
+    private val _postCreateFocus = MutableStateFlow<PostCreateFocusTarget?>(null)
+    val postCreateFocus: StateFlow<PostCreateFocusTarget?> = _postCreateFocus.asStateFlow()
+
+    fun consumePostCreateFocus() {
+        _postCreateFocus.value = null
+    }
+
     private val _switchHouseholdPrompt = MutableStateFlow<SwitchHouseholdPrompt?>(null)
     val switchHouseholdPrompt: StateFlow<SwitchHouseholdPrompt?> = _switchHouseholdPrompt.asStateFlow()
 
@@ -121,6 +139,7 @@ class HomeScreenModel(
                     weekKey = repository.weekKey,
                     groceryProgress = NutritionHubSummary.groceryProgress(groceryItems),
                     plannedMealSlots = NutritionHubSummary.plannedSlotsCount(mealPlan.days),
+                    tonightsDinner = HomeTonightDinner.resolve(mealPlan, weekKey = repository.weekKey),
                 )
             }
         }
@@ -371,7 +390,27 @@ class HomeScreenModel(
         ) {
             return
         }
+        performCreateHousehold(name)
+    }
 
+    fun quickCreateHousehold() {
+        if (_onboardingUiState.value.isCreating) return
+        val name = _onboardingUiState.value.householdNameInput.trim()
+            .ifBlank { suggestedDefaultHouseholdName() }
+            ?: return
+        if (HouseholdNameRules.validationError(name) != null) return
+        performCreateHousehold(name)
+    }
+
+    fun suggestedDefaultHouseholdName(): String? {
+        val auth = authRepository.authState.value as? AuthState.Authenticated ?: return null
+        return HouseholdDefaultName.suggest(
+            displayName = auth.user.resolvedDisplayName(),
+            email = auth.user.email,
+        ).takeIf { it.isNotBlank() }
+    }
+
+    private fun performCreateHousehold(name: String) {
         scope.launch {
             _onboardingUiState.value = _onboardingUiState.value.copy(isCreating = true)
             householdRepository.createHousehold(name)
@@ -392,6 +431,7 @@ class HomeScreenModel(
                                     ?: created.id,
                             )
                             _postCreateInvitePrompt.value = PostCreateInvitePrompt(created.name)
+                            _postCreateFocus.value = PostCreateFocusTarget.Grocery
                             runCatching { collaborationRepository.refreshPendingInvites() }
                         }
                         .onFailure { throwable ->

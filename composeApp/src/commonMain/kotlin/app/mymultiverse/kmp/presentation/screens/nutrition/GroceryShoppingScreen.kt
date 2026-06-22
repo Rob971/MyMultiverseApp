@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_criteria_from_meals
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_none
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_summary
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_suggestions_title
@@ -40,6 +41,7 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_previous
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_delete_item
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_add_hint
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_build_from_meals
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_cancel_edit
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_clear_checked
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_clear_checked_undo
@@ -51,6 +53,8 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_groc
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty_active
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty_cta
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_hide_checked
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_show_checked
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_progress
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_save_edit
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_section_completed_count
@@ -63,9 +67,13 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
+import app.mymultiverse.kmp.domain.nutrition.MealPlanPresentation
+import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionsSection
+import app.mymultiverse.kmp.presentation.components.AiInlineTriggerButton
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
+import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.kmp.presentation.components.WeekSelectorBanner
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.GroceryDashboardCard
@@ -75,6 +83,7 @@ import app.mymultiverse.kmp.presentation.components.GroceryItemRow
 import app.mymultiverse.kmp.presentation.components.GroceryItemRowTestTags
 import app.mymultiverse.kmp.presentation.components.JourneySnackbarHost
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
+import app.mymultiverse.kmp.presentation.platform.KeepScreenOn
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.theme.AppIcons
@@ -91,6 +100,8 @@ object GroceryListTestTags {
     const val SCROLL_LIST = "grocery_scroll_list"
     const val EMPTY_STATE = "grocery_empty_state"
     const val COMPLETED_SECTION_HEADER = "grocery_completed_section_header"
+    const val SHOPPING_HIDE_CHECKED_TOGGLE = "grocery_shopping_hide_checked_toggle"
+    const val BUILD_FROM_MEALS = "grocery_build_from_meals"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,9 +109,11 @@ object GroceryListTestTags {
 fun GroceryShoppingScreen(
     onBack: () -> Unit,
     embeddedInTabs: Boolean = false,
+    onOpenAiSheet: ((AiHelperLaunchContext) -> Unit)? = null,
     screenModel: NutritionScreenModel = koinInject(),
 ) {
     val items by screenModel.groceryItems.collectAsState()
+    val mealPlan by screenModel.mealPlan.collectAsState()
     val aiGroceryItems by screenModel.aiGroceryItems.collectAsState()
     val adoptAllResult by screenModel.adoptAllGroceryResult.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
@@ -112,6 +125,7 @@ fun GroceryShoppingScreen(
     var pendingScrollLabel by rememberSaveable { mutableStateOf<String?>(null) }
     var completedExpanded by rememberSaveable { mutableStateOf(false) }
     var completedExpandUserSet by rememberSaveable { mutableStateOf(false) }
+    var hideCheckedItems by rememberSaveable { mutableStateOf(false) }
     val listState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -126,9 +140,14 @@ fun GroceryShoppingScreen(
     val aiSuggestionsTitle = stringResource(Res.string.nutrition_ai_grocery_suggestions_title)
     val adoptAllLabel = stringResource(Res.string.nutrition_ai_adopt_all_grocery)
     val sections = remember(items) { GroceryListPresentation.partition(items) }
+    val displaySections = remember(sections, hideCheckedItems) {
+        GroceryListPresentation.forShoppingDisplay(sections, hideCheckedItems)
+    }
     val checkedCount = sections.completed.size
     val totalCount = items.size
     val accentColor = SharedJourneyColors.SageSoft
+
+    KeepScreenOn(enabled = true)
 
     val addHint = stringResource(Res.string.nutrition_grocery_add_hint)
     val duplicateMessage = stringResource(Res.string.nutrition_grocery_duplicate)
@@ -146,6 +165,11 @@ fun GroceryShoppingScreen(
         sections.completed.size,
     )
     val clearCheckedLabel = stringResource(Res.string.nutrition_grocery_clear_checked)
+    val hideCheckedLabel = stringResource(Res.string.nutrition_grocery_hide_checked)
+    val showCheckedLabel = stringResource(
+        Res.string.nutrition_grocery_show_checked,
+        sections.completed.size,
+    )
     val clearCheckedMessage = stringResource(Res.string.nutrition_grocery_clear_checked_undo)
     val adoptAllNoneMessage = stringResource(Res.string.nutrition_ai_adopt_all_grocery_none)
     val adoptAllSummaryMessage = adoptAllResult?.let { count ->
@@ -155,6 +179,16 @@ fun GroceryShoppingScreen(
             stringResource(Res.string.nutrition_ai_adopt_all_grocery_summary, count)
         }
     }
+    val mealsCriteriaSeed = remember(mealPlan.days) {
+        MealPlanPresentation.groceryAiCriteriaSeed(mealPlan.days)
+    }
+    val buildFromMealsLabel = stringResource(Res.string.nutrition_grocery_build_from_meals)
+    val buildFromMealsCriteria = if (mealsCriteriaSeed.isNotBlank()) {
+        stringResource(Res.string.nutrition_ai_criteria_from_meals, mealsCriteriaSeed)
+    } else {
+        ""
+    }
+    val showBuildFromMealsChip = canWrite && mealsCriteriaSeed.isNotBlank() && onOpenAiSheet != null
 
     LaunchedEffect(adoptAllSummaryMessage) {
         val message = adoptAllSummaryMessage ?: return@LaunchedEffect
@@ -278,7 +312,12 @@ fun GroceryShoppingScreen(
                 aiGroceryItems = aiGroceryItems,
                 aiSuggestionsTitle = aiSuggestionsTitle,
                 adoptAllLabel = adoptAllLabel,
-                sections = sections,
+                sections = displaySections,
+                rawSections = sections,
+                hideCheckedItems = hideCheckedItems,
+                onHideCheckedToggle = { hideCheckedItems = !hideCheckedItems },
+                hideCheckedLabel = hideCheckedLabel,
+                showCheckedLabel = showCheckedLabel,
                 items = items,
                 editingItemId = editingItemId,
                 editLabel = editLabel,
@@ -311,6 +350,16 @@ fun GroceryShoppingScreen(
                 onToggle = { screenModel.toggleGroceryItem(it) },
                 onDelete = { item, index -> deleteWithUndo(item, index) },
                 onClearChecked = { clearCheckedWithUndo() },
+                showBuildFromMealsChip = showBuildFromMealsChip,
+                buildFromMealsLabel = buildFromMealsLabel,
+                onBuildFromMeals = {
+                    onOpenAiSheet?.invoke(
+                        AiHelperLaunchContext(
+                            mode = NutritionAiMode.GroceryList,
+                            initialCriteria = buildFromMealsCriteria,
+                        ),
+                    )
+                },
             )
         }
 
@@ -385,6 +434,11 @@ private fun LazyListScope.groceryShoppingListItems(
     aiSuggestionsTitle: String,
     adoptAllLabel: String,
     sections: GroceryListPresentation.Sections,
+    rawSections: GroceryListPresentation.Sections,
+    hideCheckedItems: Boolean,
+    onHideCheckedToggle: () -> Unit,
+    hideCheckedLabel: String,
+    showCheckedLabel: String,
     items: List<GroceryItem>,
     editingItemId: String?,
     editLabel: String,
@@ -407,6 +461,9 @@ private fun LazyListScope.groceryShoppingListItems(
     onToggle: (String) -> Unit,
     onDelete: (GroceryItem, Int) -> Unit,
     onClearChecked: () -> Unit,
+    showBuildFromMealsChip: Boolean = false,
+    buildFromMealsLabel: String = "",
+    onBuildFromMeals: () -> Unit = {},
 ) {
     item(key = "week-selector") {
         WeekSelectorBanner(
@@ -419,6 +476,13 @@ private fun LazyListScope.groceryShoppingListItems(
             onNextWeek = { screenModel.selectWeekOffset(weekOffset + 1) },
         )
     }
+
+    if (!canWrite) {
+        item(key = "viewer-notice") {
+            HouseholdViewerReadOnlyNotice()
+        }
+    }
+
     item(key = "dashboard") {
         GroceryDashboardCard(
             description = stringResource(Res.string.nutrition_grocery_description),
@@ -436,9 +500,23 @@ private fun LazyListScope.groceryShoppingListItems(
         )
     }
 
-    if (!canWrite) {
-        item(key = "viewer-notice") {
-            HouseholdViewerReadOnlyNotice()
+    if (showBuildFromMealsChip) {
+        item(key = "build-from-meals") {
+            AiInlineTriggerButton(
+                label = buildFromMealsLabel,
+                onClick = onBuildFromMeals,
+                testTag = GroceryListTestTags.BUILD_FROM_MEALS,
+            )
+        }
+    }
+
+    if (rawSections.completed.isNotEmpty() && totalCount > 0) {
+        item(key = "shopping-mode-toggle") {
+            JourneyTertiaryButton(
+                onClick = onHideCheckedToggle,
+                label = if (hideCheckedItems) showCheckedLabel else hideCheckedLabel,
+                modifier = Modifier.testTag(GroceryListTestTags.SHOPPING_HIDE_CHECKED_TOGGLE),
+            )
         }
     }
 

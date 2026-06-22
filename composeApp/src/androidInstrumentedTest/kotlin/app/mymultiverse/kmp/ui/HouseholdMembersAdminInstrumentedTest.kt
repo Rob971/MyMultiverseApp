@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.model.auth.AuthUser
@@ -94,10 +95,12 @@ class HouseholdMembersAdminInstrumentedTest {
                 .fetchSemanticsNodes().isNotEmpty()
         }
 
+        composeRule.onNodeWithTag("${HouseholdMembersTestTags.MEMBER_ROW}_$editorMemberId")
+            .performScrollTo()
         composeRule.onNodeWithText("Change role").performClick()
-        composeRule.onNodeWithText("Household admin").performClick()
+        composeRule.onNodeWithText("Family admin").performClick()
         composeRule.onNodeWithTag(HouseholdMembersTestTags.ROLE_CHANGE_CONFIRM_BUTTON).performClick()
-        composeRule.onNodeWithText("Make household admin?").assertIsDisplayed()
+        composeRule.onNodeWithText("Make family admin?").assertIsDisplayed()
         composeRule.onNodeWithTag(HouseholdMembersTestTags.PROMOTE_ADMIN_CONFIRM_BUTTON).performClick()
 
         composeRule.waitFor(timeoutMillis = 5_000) {
@@ -151,7 +154,7 @@ class HouseholdMembersAdminInstrumentedTest {
         }
 
         composeRule.waitFor(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithText("Only the household owner can invite or remove members.")
+            composeRule.onAllNodesWithText("Only the family owner can invite or remove members.")
                 .fetchSemanticsNodes().isNotEmpty()
         }
 

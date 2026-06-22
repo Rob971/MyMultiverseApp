@@ -12,6 +12,7 @@ import app.mymultiverse.kmp.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyTestTags
 import app.mymultiverse.kmp.presentation.screens.nutrition.GroceryShoppingScreen
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionScreenModel
+import app.mymultiverse.kmp.presentation.screens.nutrition.WeeklyMealPlanScreen
 import app.mymultiverse.kmp.presentation.theme.AppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,5 +56,31 @@ class HouseholdCollaborationInstrumentedTest {
             composeRule.onAllNodesWithTag(GroceryInputBarTestTags.ADD_BUTTON)
                 .fetchSemanticsNodes().isEmpty(),
         )
+    }
+
+    @Test
+    fun viewerRole_showsReadOnlyBannerOnMealPlan() {
+        val weekKey = WeekCalendar.currentWeekKey()
+        val repository = InstrumentedNutritionRepository(weekKey)
+        val screenModel = NutritionScreenModel(
+            session = InstrumentedNutritionSessionCoordinator(repository),
+            householdRepository = InstrumentedHouseholdRepository(
+                role = HouseholdMemberRole.Viewer,
+            ),
+            aiAssistant = InstrumentedNutritionAdviceService(),
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+        )
+
+        composeRule.setContent {
+            AppTheme {
+                WeeklyMealPlanScreen(
+                    onBack = {},
+                    onOpenSection = { _, _ -> },
+                    screenModel = screenModel,
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(HouseholdViewerReadOnlyTestTags.BANNER).assertIsDisplayed()
     }
 }

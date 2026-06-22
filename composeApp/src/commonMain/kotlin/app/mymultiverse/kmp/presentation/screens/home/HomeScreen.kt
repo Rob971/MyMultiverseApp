@@ -9,6 +9,7 @@ import app.mymultiverse.kmp.presentation.components.JourneyErrorContent
 import app.mymultiverse.kmp.presentation.components.JourneyIconButton
 import app.mymultiverse.kmp.presentation.components.JourneyLoadingContent
 import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
+import app.mymultiverse.kmp.presentation.components.JourneySecondaryButton
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -47,6 +48,7 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
+import app.mymultiverse.kmp.domain.home.HomeTonightDinner
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +76,10 @@ import org.koin.compose.koinInject
 object HomeTestTags {
     const val NUTRITION_CARD = "home_nutrition_card"
     const val NUTRITION_CTA = "home_nutrition_cta"
+    const val TONIGHT_DINNER_CARD = "home_tonight_dinner_card"
+    const val TONIGHT_DINNER_MEAL = "home_tonight_dinner_meal"
+    const val ONBOARDING_QUICK_CREATE = "home_onboarding_quick_create"
+    const val GROCERY_EMPTY_CTA = "home_grocery_empty_cta"
     const val THIS_WEEK_SECTION = "home_this_week_section"
     const val HOUSEHOLD_CARD = "home_household_card"
     const val SIGN_OUT_BUTTON = "home_sign_out_button"
@@ -100,6 +106,7 @@ object HomeTestTags {
 @Composable
 fun HomeScreen(
     onOpenMealPlan: () -> Unit,
+    onOpenGrocery: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
     embeddedInMainTabs: Boolean = false,
     modifier: Modifier = Modifier,
@@ -246,7 +253,9 @@ fun HomeScreen(
                     onboardingUiState = onboardingUiState,
                     pendingInvites = pendingInvites,
                     sessionEmail = sessionEmail,
+                    suggestedQuickCreateName = screenModel.suggestedDefaultHouseholdName(),
                     onNameChange = screenModel::onHouseholdNameChange,
+                    onQuickCreate = screenModel::quickCreateHousehold,
                     onCreate = screenModel::createHousehold,
                     onAcceptInvite = { inviteId ->
                         pendingInvites.find { it.id == inviteId }?.let { invite ->
@@ -298,6 +307,7 @@ fun HomeScreen(
                     nutritionSummary = nutritionSummary,
                     firstWinChecklist = firstWinChecklist,
                     onOpenMealPlan = onOpenMealPlan,
+                    onOpenGrocery = onOpenGrocery,
                     onOpenHouseholdMembers = onOpenHouseholdMembers,
                     onDismissFirstWinChecklist = screenModel::dismissFirstWinChecklist,
                     isRefreshing = isRefreshing,
@@ -465,7 +475,9 @@ fun HomeOnboardingContent(
     onboardingUiState: HomeOnboardingUiState,
     pendingInvites: List<app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite>,
     sessionEmail: String,
+    suggestedQuickCreateName: String?,
     onNameChange: (String) -> Unit,
+    onQuickCreate: () -> Unit,
     onCreate: () -> Unit,
     onAcceptInvite: (String) -> Unit,
     onDeclineInvite: (String) -> Unit,
@@ -496,6 +508,24 @@ fun HomeOnboardingContent(
                 supportingLine = stringResource(Res.string.household_gate_subtitle),
                 description = "",
             )
+
+            if (!suggestedQuickCreateName.isNullOrBlank()) {
+                JourneyPrimaryButton(
+                    onClick = onQuickCreate,
+                    enabled = !onboardingUiState.isCreating,
+                    isLoading = onboardingUiState.isCreating,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(HomeTestTags.ONBOARDING_QUICK_CREATE),
+                ) {
+                    Text(
+                        stringResource(
+                            Res.string.home_onboarding_quick_create,
+                            suggestedQuickCreateName,
+                        ),
+                    )
+                }
+            }
 
             FamilyLogisticsSectionHeader(
                 title = stringResource(Res.string.home_onboarding_join_title),
@@ -613,6 +643,7 @@ fun HomeWelcomeContent(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onOpenMealPlan: () -> Unit,
+    onOpenGrocery: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
     onDismissFirstWinChecklist: () -> Unit = {},
     embeddedInMainTabs: Boolean = false,
@@ -638,6 +669,7 @@ fun HomeWelcomeContent(
     } else {
         stringResource(Res.string.home_nutrition_get_started)
     }
+    val isGroceryEmpty = nutritionSummary?.groceryProgress?.total?.let { it > 0 } != true
 
     val pullRefreshState = rememberPullToRefreshState()
 
@@ -692,6 +724,52 @@ fun HomeWelcomeContent(
                 }
             }
 
+            val tonightsDinner = nutritionSummary?.tonightsDinner
+            if (tonightsDinner != null && tonightsDinner != HomeTonightDinner.State.Hidden) {
+                item {
+                    FamilyLogisticsCardSurface(
+                        accentColor = SharedJourneyColors.MediterraneanTeal,
+                        modifier = Modifier.testTag(HomeTestTags.TONIGHT_DINNER_CARD),
+                        onClick = onOpenMealPlan,
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.home_tonight_dinner_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = JourneySemanticColors.inkDeep(),
+                            )
+                            when (tonightsDinner) {
+                                is HomeTonightDinner.State.Planned -> {
+                                    Text(
+                                        text = tonightsDinner.title,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = JourneySemanticColors.inkDeep(),
+                                        modifier = Modifier.testTag(HomeTestTags.TONIGHT_DINNER_MEAL),
+                                    )
+                                }
+                                HomeTonightDinner.State.Unplanned -> {
+                                    Text(
+                                        text = stringResource(Res.string.home_tonight_dinner_empty),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = JourneySemanticColors.inkMuted(),
+                                    )
+                                    Text(
+                                        text = stringResource(Res.string.home_tonight_dinner_cta),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = SharedJourneyColors.MediterraneanTeal,
+                                    )
+                                }
+                                HomeTonightDinner.State.Hidden -> Unit
+                            }
+                        }
+                    }
+                }
+            }
+
             item {
                 FamilyLogisticsSectionHeader(
                     title = stringResource(Res.string.home_section_this_week),
@@ -702,6 +780,7 @@ fun HomeWelcomeContent(
             item {
                 FamilyLogisticsCardSurface(
                     accentColor = SharedJourneyColors.SageSoft,
+                    modifier = Modifier.testTag(HomeTestTags.NUTRITION_CARD),
                 ) {
                     Column(
                         modifier = Modifier.padding(20.dp),
@@ -725,6 +804,16 @@ fun HomeWelcomeContent(
                                 .testTag(HomeTestTags.NUTRITION_CTA),
                         ) {
                             Text(nutritionCtaLabel)
+                        }
+                        if (isGroceryEmpty) {
+                            JourneySecondaryButton(
+                                onClick = onOpenGrocery,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag(HomeTestTags.GROCERY_EMPTY_CTA),
+                            ) {
+                                Text(stringResource(Res.string.home_grocery_empty_cta))
+                            }
                         }
                     }
                 }

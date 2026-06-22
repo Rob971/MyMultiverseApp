@@ -28,13 +28,13 @@ import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
 import app.mymultiverse.kmp.presentation.navigation.MainTabShell
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.navigation.rememberAppNavigator
-import app.mymultiverse.kmp.presentation.navigation.toNavigationContext
 import app.mymultiverse.kmp.presentation.platform.ConfigureSystemBars
 import app.mymultiverse.kmp.presentation.PlatformPushSetup
 import app.mymultiverse.kmp.presentation.screens.auth.LoginScreen
 import app.mymultiverse.kmp.presentation.screens.home.HomePhase
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreen
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
+import app.mymultiverse.kmp.presentation.screens.home.PostCreateFocusTarget
 import app.mymultiverse.kmp.presentation.screens.household.HouseholdMembersFlow
 import app.mymultiverse.kmp.presentation.invite.InviteJoinAcceptError
 import app.mymultiverse.kmp.presentation.invite.InviteJoinAcceptState
@@ -164,15 +164,15 @@ private fun AuthenticatedMainApp() {
     val route = navigator.current
     val homeScreenModel = koinInject<HomeScreenModel>()
     val homePhase by homeScreenModel.homePhase.collectAsState()
-    val homeHousehold by homeScreenModel.household.collectAsState()
     var selectedTab by rememberSaveable { mutableStateOf(AppMainTab.Home) }
     var nutritionHousehold by remember { mutableStateOf<HouseholdContext?>(null) }
 
-    val resolvedHousehold = nutritionHousehold ?: homeHousehold?.toNavigationContext()
+    val nutritionContext by homeScreenModel.nutritionHouseholdContext.collectAsState()
+    val resolvedHousehold = nutritionHousehold ?: nutritionContext
 
-    LaunchedEffect(homeHousehold?.id) {
-        if (homeHousehold != null) {
-            nutritionHousehold = homeHousehold?.toNavigationContext()
+    LaunchedEffect(nutritionContext?.id) {
+        if (nutritionContext != null) {
+            nutritionHousehold = nutritionContext
         }
     }
 
@@ -227,6 +227,17 @@ private fun AuthenticatedMainApp() {
         else -> true
     }
 
+    val postCreateFocus by homeScreenModel.postCreateFocus.collectAsState()
+    LaunchedEffect(postCreateFocus) {
+        when (postCreateFocus) {
+            PostCreateFocusTarget.Grocery -> {
+                selectedTab = AppMainTab.Grocery
+                homeScreenModel.consumePostCreateFocus()
+            }
+            null -> Unit
+        }
+    }
+
     MainTabShell(
         selectedTab = selectedTab,
         onTabSelected = { selectedTab = it },
@@ -236,6 +247,7 @@ private fun AuthenticatedMainApp() {
         when (selectedTab) {
             AppMainTab.Home -> HomeScreen(
                 onOpenMealPlan = { selectedTab = AppMainTab.MealPlan },
+                onOpenGrocery = { selectedTab = AppMainTab.Grocery },
                 onOpenHouseholdMembers = {
                     navigator.navigateTo(AppRoute.HouseholdMembers(household = resolvedHousehold))
                 },

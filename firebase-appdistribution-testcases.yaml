@@ -1,16 +1,17 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 32
+version: 38
 updated: 2026-06-22
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
   CRUD on shared week data, sync status, Crashlytics on tester builds, and sign-out.
-  Welcome Home: time-based greeting, localized week tip, This week section with nutrition progress
-  and a primary Continue planning / Start planning CTA, plus household section.
+  Welcome Home: time-based greeting, localized week tip, Tonight's dinner card (tap opens Plan tab),
+  This week section with nutrition progress and a primary Continue planning / Start planning CTA, plus family section.
+  Plain-language copy: family (not household) and friendly sync messages with status icons.
   Viewers are read-only: they cannot edit any shared nutrition entry. Invites require auth email to match.
-  Home onboarding: accept invites or create a named household (default last name) and invite members;
+  Home onboarding: one-tap Start with [family name] or accept invites; optional customize name below.
   Welcome content stays hidden until setup completes.
   Empty states: grocery list and solo-household members use guided CTAs (add item / invite someone).
   Post-create: snackbar on Welcome Home offers Invite action to open Household members.
@@ -23,6 +24,10 @@ summary: |
   Wave C platform breadth: system dark theme with Napolitan dark palette; grocery side-panel input and two-column meal plan (today vs rest of week) on width >= 600dp; terracotta AI read-only grocery accent.
   Wave C QA (v31): dedicated manual cases for dark theme, wide grocery/meal plan layouts, and AI terracotta accent.
   Home navigation (v32): bottom tabs (Today / Plan / Groceries), profile avatar for account settings, first-win card action buttons, dark-mode readable card text on Welcome Home.
+  Phase 1 UX (v34–v35): swipe-to-check, hide checked, viewer banner on Plan, skip entry gate, empty grocery CTA on Today.
+  Phase 2 UX (v36): AiHelperSheet bottom sheet on Plan tab; output-first AI copy (no chatbot tone).
+  Phase 2 UX (v37): inline AI triggers — empty meal slot “Suggest 20-min meal”, grocery “Build list from this week’s meals” chip, terracotta AI suggestion chips.
+  Phase 2 UX (v38): chip-first AI sheet (quick picks generate on tap; criteria behind More options); mode locked from context; plan empty-state AI chips; full-screen AI adviser demoted to deep link only.
 
 testcases:
   - id: auth-sign-in
@@ -338,8 +343,156 @@ testcases:
     title: Shared nutrition sync indicator
     steps:
       - Open the nutrition hub while online, then toggle airplane mode and edit grocery.
+      - Reconnect and wait for changes to upload.
     expected:
-      - Hub shows syncing, pending, or offline status when shared sync is not idle.
+      - Hub shows a banner with icon and plain-language message when shared sync is not idle (updating, waiting, or offline).
+      - After reconnect, a brief checkmark confirmation may appear before the banner hides.
+
+  - id: home-tonight-dinner
+    title: Tonight's dinner on Today tab
+    steps:
+      - Sign in with an active family and open the Today tab.
+      - Plan dinner for today on the Plan tab, then return to Today.
+      - Tap the Tonight's dinner card.
+    expected:
+      - Today shows tonight's meal when planned, or an empty state with tap-to-plan hint.
+      - Tapping the card switches to the Plan tab with today expanded.
+
+  - id: home-onboarding-quick-create
+    title: One-tap family create on onboarding
+    steps:
+      - Sign in as a user with no family yet.
+      - On Home onboarding, tap Start with [suggested family name] without editing the name field.
+    expected:
+      - Family is created in one tap; bottom tabs appear on Welcome Home.
+      - App switches to the Groceries tab so you can add the first item.
+      - Optional name customize and invite cards remain available below.
+
+  - id: grocery-keep-screen-on
+    title: Screen stays awake on Groceries tab
+    steps:
+      - Open the Groceries tab and leave the list visible for 30+ seconds without touching the screen.
+    expected:
+      - Screen does not dim or lock while the grocery list is open.
+      - Leaving Groceries (another tab) allows normal screen timeout again.
+
+  - id: meal-plan-add-to-grocery-hero
+    title: Hero Add to grocery list per meal
+    steps:
+      - Open Plan tab and expand a day with a planned lunch or dinner.
+    expected:
+      - Each planned meal shows a primary Add to grocery list button (not a small text link).
+      - Tapping it generates AI grocery suggestions for that meal.
+
+  - id: grocery-swipe-to-check
+    title: Swipe to check grocery items
+    steps:
+      - Open Groceries with at least one unchecked item.
+      - Swipe a row to the right to check it off; swipe left on another row to delete (confirm undo if shown).
+      - Tap a row or checkbox to toggle as before.
+    expected:
+      - Right swipe checks/unchecks with haptic feedback; left swipe still deletes.
+      - Row tap and checkbox remain available.
+
+  - id: grocery-shopping-hide-checked
+    title: Shopping mode hide checked items
+    steps:
+      - Check off one or more grocery items.
+      - Tap Hide checked items below the progress card.
+    expected:
+      - Unchecked items stay visible at the top; checked section disappears.
+      - Show checked items restores the completed section.
+
+  - id: viewer-readonly-grocery-plan
+    title: Viewer read-only banner on Groceries and Plan
+    steps:
+      - Sign in as a household viewer (read-only role).
+      - Open Groceries tab, then Plan tab.
+    expected:
+      - Read-only banner appears near the top of each tab.
+      - Input fields and edit actions are disabled; lists remain readable.
+
+  - id: home-grocery-empty-cta
+    title: Empty grocery CTA on Today tab
+    steps:
+      - Sign in with an active family and an empty grocery list.
+      - Open the Today tab and scroll to This week.
+    expected:
+      - Add your first grocery item button is visible below the meal plan CTA.
+      - Tapping it opens the Groceries tab.
+
+  - id: nutrition-tabs-skip-entry-gate
+    title: Plan and Groceries tabs skip entry gate when family is active
+    steps:
+      - Complete family setup and land on Welcome Home with bottom tabs.
+      - Switch to Plan, then Groceries, without opening nutrition from a deep link.
+    expected:
+      - No household setup gate or ensure-household loading screen on tab switch.
+      - Meal plan or grocery list appears directly.
+
+  - id: ai-helper-sheet-meal-plan
+    title: AI helper sheet from Plan tab
+    steps:
+      - Sign in with write access and open the Plan tab.
+      - Tap Plan with AI (header or empty-week CTA).
+      - Pick a quick pick, tap Generate, review preview, tap Apply to plan.
+    expected:
+      - Bottom sheet opens over the meal plan (~60% height); list stays visible behind.
+      - Sheet dismisses after Apply to plan; meals appear on the plan.
+      - AI copy is brief and output-first (Suggestions, Quick picks, Generate).
+
+  - id: ai-suggest-quick-meal-slot
+    title: Suggest 20-min meal on empty meal slot
+    steps:
+      - Sign in with write access and open the Plan tab.
+      - Expand a day card with an empty lunch or dinner slot.
+      - Tap Suggest 20-min meal (sparkles, terracotta tertiary button).
+      - Generate preview in the AI helper sheet and apply to the plan.
+    expected:
+      - AI helper sheet opens in meal-plan mode scoped to that day with quick-meal criteria pre-filled.
+      - Apply fills the empty slot; sheet dismisses; meal text appears in the slot.
+
+  - id: ai-grocery-build-from-meals-chip
+    title: Build grocery list from this week's meals chip
+    steps:
+      - Sign in with write access; add at least one lunch or dinner on the Plan tab.
+      - Open the Groceries tab with an empty or partial list.
+      - Tap Build list from this week's meals (terracotta chip below the dashboard).
+      - Generate and adopt suggestions in the AI helper sheet.
+    expected:
+      - AI helper sheet opens in grocery mode with criteria seeded from planned meals.
+      - Adopted items appear on the editable grocery list (separate from read-only AI cards).
+
+  - id: ai-suggestion-chips-terracotta
+    title: Terracotta AI suggestion chips (not teal)
+    steps:
+      - Open Plan or Groceries with AI suggestion chips visible (meal name chips or grocery + chips).
+      - Compare chip colors with primary teal buttons (Generate, Add to grocery list).
+    expected:
+      - AI-origin chips use terracotta accent (sparkles + chip border/text), not Mediterranean teal.
+      - Add all link in AI read-only grocery section uses terracotta, not teal.
+
+  - id: ai-helper-sheet-chip-first
+    title: Chip-first AI helper sheet (no mode switcher)
+    steps:
+      - Open Plan or Groceries and launch the AI helper sheet (Plan with AI, empty-state chip, or build-from-meals).
+      - Note quick picks are visible; Advice/Grocery/Meal plan mode switcher is hidden.
+      - Tap a quick pick and confirm generation starts without typing.
+      - Tap More options and confirm the criteria field and Generate button appear.
+    expected:
+      - Sheet opens in the mode implied by where you launched (meal plan vs grocery).
+      - No mode switcher chips in the default sheet flow.
+      - Quick pick tap generates; More options reveals custom criteria field.
+
+  - id: meal-plan-empty-ai-chips
+    title: Plan empty state contextual AI chips
+    steps:
+      - Sign in with write access; open Plan on an empty week.
+      - Scroll to the empty-state card below the header.
+      - Tap a contextual chip (e.g. high-protein or budget meal plan).
+    expected:
+      - Terracotta chips appear below the primary Plan with AI button.
+      - Tapping a chip opens the AI helper sheet with that criteria and starts generation.
 
   - id: home-nutrition-card
     title: Open nutrition from home

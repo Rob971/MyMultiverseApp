@@ -22,7 +22,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
+import app.mymultiverse.kmp.presentation.components.AiInlineTriggerButton
+import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +47,8 @@ object MealPlanTestTags {
     const val GENERATE_ALL_GROCERY = "meal_plan_generate_all_grocery"
     const val CLEAR_WEEK = "meal_plan_clear_week"
     const val PLAN_WITH_AI = "meal_plan_plan_with_ai"
+    fun suggestAiButton(dayIndex: Int, slot: MealSlot) =
+        "meal_plan_suggest_ai_${slot.name.lowercase()}_$dayIndex"
     fun lunchField(dayIndex: Int) = "meal_plan_lunch_$dayIndex"
     fun dinnerField(dayIndex: Int) = "meal_plan_dinner_$dayIndex"
     fun dayHeader(dayIndex: Int) = "meal_plan_day_header_$dayIndex"
@@ -77,6 +81,8 @@ fun MealPlanDayCard(
     onCopyToTomorrowLunch: (() -> Unit)? = null,
     onClearLunch: (() -> Unit)? = null,
     onClearDinner: (() -> Unit)? = null,
+    suggestQuickMealLabel: String? = null,
+    onSuggestQuickMeal: ((MealSlot) -> Unit)? = null,
     loadingMeal: MealSlot? = null,
     readOnly: Boolean = false,
     modifier: Modifier = Modifier,
@@ -162,6 +168,8 @@ fun MealPlanDayCard(
                         readOnly = readOnly,
                         clearFieldLabel = clearFieldLabel,
                         onClear = onClearLunch,
+                        suggestQuickMealLabel = suggestQuickMealLabel,
+                        onSuggestQuickMeal = onSuggestQuickMeal,
                         modifier = Modifier.fillMaxWidth(),
                         fieldTestTag = MealPlanTestTags.lunchField(dayIndex),
                         generateGroceryTestTag = MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch),
@@ -182,6 +190,8 @@ fun MealPlanDayCard(
                         onClear = onClearDinner,
                         copyToTomorrowLabel = copyToTomorrowLabel,
                         onCopyToTomorrow = onCopyToTomorrowLunch,
+                        suggestQuickMealLabel = suggestQuickMealLabel,
+                        onSuggestQuickMeal = onSuggestQuickMeal,
                         modifier = Modifier.fillMaxWidth(),
                         fieldTestTag = MealPlanTestTags.dinnerField(dayIndex),
                         generateGroceryTestTag = MealPlanTestTags.groceryButton(dayIndex, MealSlot.Dinner),
@@ -207,6 +217,8 @@ private fun MealPlanMealField(
     readOnly: Boolean = false,
     clearFieldLabel: String,
     onClear: (() -> Unit)? = null,
+    suggestQuickMealLabel: String? = null,
+    onSuggestQuickMeal: ((MealSlot) -> Unit)? = null,
     copyToTomorrowLabel: String? = null,
     onCopyToTomorrow: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -247,6 +259,13 @@ private fun MealPlanMealField(
             },
             focusAccentColor = accentColor,
         )
+        if (value.isBlank() && !readOnly && suggestQuickMealLabel != null && onSuggestQuickMeal != null) {
+            AiInlineTriggerButton(
+                label = suggestQuickMealLabel,
+                onClick = { onSuggestQuickMeal(slot) },
+                testTag = MealPlanTestTags.suggestAiButton(dayIndex, slot),
+            )
+        }
         if (suggestions.isNotEmpty()) {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -273,47 +292,34 @@ private fun MealPlanMealField(
             }
         }
         if (value.isNotBlank() && !readOnly) {
-            val linkColor = JourneySemanticColors.brandTeal()
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                TextButton(
+                JourneyPrimaryButton(
                     onClick = onGenerateGrocery,
                     enabled = !isGeneratingGrocery,
-                    modifier = Modifier.testTag(generateGroceryTestTag),
+                    isLoading = isGeneratingGrocery,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(generateGroceryTestTag),
                 ) {
-                    if (isGeneratingGrocery) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            strokeWidth = 2.dp,
-                            color = linkColor,
-                        )
-                        Spacer(Modifier.width(8.dp))
-                    } else {
+                    if (!isGeneratingGrocery) {
                         Icon(
                             imageVector = AppIcons.Sparkles,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
-                            tint = linkColor,
                         )
-                        Spacer(Modifier.width(6.dp))
+                        Spacer(Modifier.width(8.dp))
                     }
-                    Text(
-                        text = generateGroceryLabel,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = linkColor,
-                    )
+                    Text(generateGroceryLabel)
                 }
                 if (onCopyToTomorrow != null && copyToTomorrowLabel != null) {
-                    TextButton(onClick = onCopyToTomorrow) {
-                        Text(
-                            text = copyToTomorrowLabel,
-                            style = MaterialTheme.typography.labelLarge,
-                            color = JourneySemanticColors.inkMuted(),
-                        )
-                    }
+                    JourneyTertiaryButton(
+                        onClick = onCopyToTomorrow,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = copyToTomorrowLabel,
+                    )
                 }
             }
         }

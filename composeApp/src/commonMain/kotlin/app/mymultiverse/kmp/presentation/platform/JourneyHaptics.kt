@@ -23,6 +23,9 @@ fun performJourneyHaptic(feedback: JourneyHapticFeedback, haptic: HapticFeedback
 fun rememberJourneyHapticFeedback(): (JourneyHapticFeedback) -> Unit {
     val haptic = LocalHapticFeedback.current
     return remember(haptic) {
-        { feedback -> performJourneyHaptic(feedback, haptic) }
+        { feedback ->
+            performJourneyHaptic(feedback, haptic)
+            performJourneyHaptic(feedback)
+        }
     }
 }

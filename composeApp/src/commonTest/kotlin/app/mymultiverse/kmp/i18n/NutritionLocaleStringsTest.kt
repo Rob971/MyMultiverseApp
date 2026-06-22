@@ -43,6 +43,8 @@ class NutritionLocaleStringsTest {
             "nutrition_meal_grocery_added" to listOf("%1\$d", "%2\$s", "%3\$s"),
             "nutrition_ai_grocery_summary" to listOf("%1\$d"),
             "nutrition_ai_meal_plan_summary_single_day" to listOf("%1\$s"),
+            "nutrition_ai_criteria_quick_meal" to listOf("%1\$s"),
+            "nutrition_ai_criteria_from_meals" to listOf("%1\$s"),
             "nutrition_meal_plan_preview_line" to listOf("%1\$s", "%2\$s"),
             "nutrition_sync_status_pending" to listOf("%1\$d"),
         )
