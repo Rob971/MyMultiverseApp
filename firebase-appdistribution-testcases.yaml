@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 40
+version: 41
 updated: 2026-06-22
 
 summary: |
@@ -562,7 +562,7 @@ testcases:
       - Edit an item label inline.
       - Swipe-delete an item and use Undo if shown.
     expected:
-      - Duplicate entry shows a clear snackbar and does not create another row.
+      - Duplicate entry scrolls to the existing row with no error snackbar; list still has one row.
       - Items appear under To buy / Checked off as appropriate.
       - Clear checked removes completed items and Undo restores them in order.
       - Changes persist after leaving and returning to the screen.
@@ -786,6 +786,26 @@ testcases:
     expected:
       - A non-blocking snackbar names the remote member and item (e.g. Maria added milk) or batches multiple updates.
       - No snackbar for the user's own edits; no chat UI.
+
+  - id: s10-meal-suggest-ingredients-sheet
+    title: Inline meal suggest → apply → optional ingredients in one sheet
+    steps:
+      - On Weekly meal plan, tap Suggest with AI on an empty lunch or dinner slot.
+      - Wait for preview, tap Apply to plan.
+      - Review suggested ingredients; tap Add all to list or Skip for now.
+    expected:
+      - Sheet stays open after apply with an ingredients step (terracotta read-only list).
+      - Add all moves items to editable grocery list; Skip dismisses without adding.
+      - Meal text is saved on the plan before the ingredients step.
+
+  - id: s10-font-scaling-grocery-meal-plan
+    title: System font scaling on grocery and meal plan
+    steps:
+      - In device Settings, increase Display font size (or largest accessibility text).
+      - Open Grocery list with a long item name and Meal plan with collapsed day summaries.
+    expected:
+      - Grocery rows and text fields grow with font scale; labels are not clipped at default row height.
+      - Collapsed day summaries wrap on meal plan cards.
 
   - id: language-picker
     title: App language from Home settings

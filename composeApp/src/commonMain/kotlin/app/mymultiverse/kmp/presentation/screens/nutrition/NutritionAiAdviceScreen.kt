@@ -29,6 +29,9 @@ object NutritionAiTestTags {
     const val MORE_OPTIONS_TOGGLE = "nutrition_ai_more_options"
     const val IDLE_EMPTY = "nutrition_ai_idle_empty"
     const val MEAL_PLAN_PREVIEW_ROW_PREFIX = "nutrition_ai_meal_preview_"
+    const val INGREDIENTS_STEP = "nutrition_ai_ingredients_step"
+    const val INGREDIENTS_ADD_ALL = "nutrition_ai_ingredients_add_all"
+    const val INGREDIENTS_SKIP = "nutrition_ai_ingredients_skip"
 }
 
 @Composable

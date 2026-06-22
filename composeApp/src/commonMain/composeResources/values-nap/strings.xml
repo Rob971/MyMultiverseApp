@@ -147,6 +147,10 @@
     <string name="nutrition_ai_meal_plan_result_title">Anteprima</string>
     <string name="nutrition_meal_plan_preview_line">%1$s: %2$s</string>
     <string name="nutrition_ai_apply_meal_plan">Applica 'o piano</string>
+    <string name="nutrition_ai_ingredients_step_title">Azzeccà 'ngredienti?</string>
+    <string name="nutrition_ai_ingredients_step_body">L'IA s' 'a fatta ccà spesa pe' stu pasto. Azzeccala 'a lista o lassa perz'.</string>
+    <string name="nutrition_ai_ingredients_step_loading">Stammo sugerenno 'ngredienti…</string>
+    <string name="nutrition_ai_ingredients_step_skip">Lassa perz'</string>
     <string name="nutrition_ai_suggestion_veggie_grocery">Spesa vegetariana</string>
     <string name="nutrition_ai_suggestion_budget_grocery">Lista economica</string>
     <string name="nutrition_ai_suggestion_protein_plan">Pasti proteici</string>

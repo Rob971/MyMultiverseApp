@@ -31,6 +31,15 @@ class GroceryListPresentationTest {
     }
 
     @Test
+    fun findItemByNormalizedLabel_returnsMatchingItem() {
+        val milk = GroceryItem("1", "Milk", isChecked = false)
+        val items = listOf(milk)
+
+        assertEquals(milk, GroceryListPresentation.findItemByNormalizedLabel(items, "  milk "))
+        assertEquals(null, GroceryListPresentation.findItemByNormalizedLabel(items, "Bread"))
+    }
+
+    @Test
     fun forShoppingDisplay_hidesCompletedWhenRequested() {
         val sections = GroceryListPresentation.Sections(
             active = listOf(GroceryItem("1", "Milk")),

@@ -147,6 +147,10 @@
     <string name="nutrition_ai_meal_plan_result_title">Vista previa</string>
     <string name="nutrition_meal_plan_preview_line">%1$s: %2$s</string>
     <string name="nutrition_ai_apply_meal_plan">Aplicar al plan</string>
+    <string name="nutrition_ai_ingredients_step_title">¿Añadir ingredientes?</string>
+    <string name="nutrition_ai_ingredients_step_body">La IA sugirió compras para esta comida. Añádelas a tu lista o omítelas por ahora.</string>
+    <string name="nutrition_ai_ingredients_step_loading">Sugiriendo ingredientes…</string>
+    <string name="nutrition_ai_ingredients_step_skip">Omitir por ahora</string>
     <string name="nutrition_ai_suggestion_veggie_grocery">Compras vegetarianas</string>
     <string name="nutrition_ai_suggestion_budget_grocery">Lista económica</string>
     <string name="nutrition_ai_suggestion_protein_plan">Comidas altas en proteína</string>

@@ -26,10 +26,17 @@ object GroceryListPresentation {
             sections
         }
 
-    fun isDuplicateLabel(items: List<GroceryItem>, label: String, excludingId: String? = null): Boolean {
+    fun isDuplicateLabel(items: List<GroceryItem>, label: String, excludingId: String? = null): Boolean =
+        findItemByNormalizedLabel(items, label, excludingId) != null
+
+    fun findItemByNormalizedLabel(
+        items: List<GroceryItem>,
+        label: String,
+        excludingId: String? = null,
+    ): GroceryItem? {
         val normalized = label.trim().lowercase()
-        if (normalized.isEmpty()) return false
-        return items.any { item ->
+        if (normalized.isEmpty()) return null
+        return items.firstOrNull { item ->
             item.id != excludingId && item.label.trim().lowercase() == normalized
         }
     }

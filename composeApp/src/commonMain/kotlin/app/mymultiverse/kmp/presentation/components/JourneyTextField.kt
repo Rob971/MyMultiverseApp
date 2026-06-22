@@ -10,6 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
@@ -50,10 +52,21 @@ fun JourneyTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     focusAccentColor: Color = SharedJourneyColors.MediterraneanTeal,
 ) {
+    val fontScale = maxOf(1f, LocalDensity.current.fontScale)
+    val scaledMinHeight: Dp? = if (singleLine && minLines <= 1) {
+        (JourneyTextFieldDefaults.minHeight.value * fontScale).dp
+    } else {
+        null
+    }
+    val fieldModifier = if (scaledMinHeight != null) {
+        modifier.heightIn(min = scaledMinHeight)
+    } else {
+        modifier
+    }
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier.heightIn(min = JourneyTextFieldDefaults.minHeight),
+        modifier = fieldModifier,
         enabled = enabled,
         readOnly = readOnly,
         label = label,

@@ -233,7 +233,9 @@ class NutritionScreenModel(
         if (!canWriteHouseholdData.value) return false
         val trimmed = label.trim()
         if (trimmed.isEmpty()) return false
-        if (GroceryListPresentation.isDuplicateLabel(groceryItems.value, trimmed)) return false
+        if (GroceryListPresentation.findItemByNormalizedLabel(groceryItems.value, trimmed) != null) {
+            return true
+        }
         scope.launch {
             val updated = listOf(
                 GroceryItem(id = newId(), label = trimmed),
@@ -393,12 +395,14 @@ class NutritionScreenModel(
     }
 
     fun applyPreviewedMealPlan() {
+        scope.launch { applyPreviewedMealPlanAndAwait() }
+    }
+
+    suspend fun applyPreviewedMealPlanAndAwait() {
         if (!canWriteHouseholdData.value) return
         val preview = _aiState.value as? NutritionAiState.MealPlanPreview ?: return
-        scope.launch {
-            repository.saveMealPlan(preview.plan)
-            _aiState.value = NutritionAiState.Idle
-        }
+        repository.saveMealPlan(preview.plan)
+        _aiState.value = NutritionAiState.Idle
     }
 
     /**
@@ -461,6 +465,26 @@ class NutritionScreenModel(
         scope.launch {
             val restoredIds = items.map { it.id }.toSet()
             repository.saveAiGroceryItems(items + aiGroceryItems.value.filterNot { it.id in restoredIds })
+        }
+    }
+
+    suspend fun generateGroceryForMealSilent(dayIndex: Int, slot: MealSlot): Int {
+        if (!canWriteHouseholdData.value) return 0
+        if (dayIndex !in 0 until WeeklyMealPlan.DAYS_IN_WEEK) return 0
+        val day = mealPlan.value.days[dayIndex]
+        val mealText = when (slot) {
+            MealSlot.Lunch -> day.lunch
+            MealSlot.Dinner -> day.dinner
+        }
+        if (mealText.isBlank()) return 0
+
+        _mealGroceryLoading.value = MealGroceryRequest(dayIndex, slot)
+        return try {
+            aiAssistant.generateGroceryForMeal(mealText)
+                .getOrElse { return 0 }
+                .let { labels -> appendAiGrocery(labels) }
+        } finally {
+            _mealGroceryLoading.value = null
         }
     }
 

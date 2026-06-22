@@ -236,13 +236,12 @@ fun GroceryShoppingScreen(
 
     fun submitNewItem() {
         if (newItemText.isBlank()) return
-        if (screenModel.addGroceryItem(newItemText)) {
-            pendingScrollLabel = newItemText.trim()
+        val trimmed = newItemText.trim()
+        if (screenModel.addGroceryItem(trimmed)) {
+            pendingScrollLabel = trimmed
             newItemText = ""
             editingItemId = null
             refocusInput = true
-        } else {
-            showMessage(duplicateMessage)
         }
     }
 
