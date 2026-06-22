@@ -203,14 +203,14 @@ fun HouseholdMembersScreen(
                 item {
                     Text(
                         text = stringResource(Res.string.sharing_members_subtitle),
-                        color = SharedJourneyColors.InkDeep.copy(alpha = 0.75f),
+                        color = SharedJourneyColors.InkSecondary,
                     )
                 }
                 if (!uiState.canManageMembers) {
                     item {
                         Text(
                             text = stringResource(Res.string.sharing_members_read_only_hint),
-                            color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
+                            color = SharedJourneyColors.InkSecondary,
                         )
                     }
                 }
@@ -238,7 +238,7 @@ fun HouseholdMembersScreen(
                     item {
                         Text(
                             text = stringResource(Res.string.sharing_members_dependent_hint),
-                            color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
+                            color = SharedJourneyColors.InkSecondary,
                         )
                     }
                 }
@@ -280,7 +280,7 @@ fun HouseholdMembersScreen(
                     item {
                         Text(
                             text = stringResource(Res.string.sharing_members_owner_transfer_required),
-                            color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
+                            color = SharedJourneyColors.InkSecondary,
                         )
                     }
                 }
@@ -694,7 +694,7 @@ private fun MemberRow(
             Text(text = member.displayName)
             Text(
                 text = stringResource(Res.string.sharing_members_role_label, roleLabel),
-                color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
+                color = SharedJourneyColors.InkSecondary,
             )
         }
         if (canManage && member.role != HouseholdMemberRole.Owner) {
@@ -730,7 +730,7 @@ private fun PendingInviteRow(invite: HouseholdInvite) {
         Text(text = invite.email)
         Text(
             text = stringResource(Res.string.sharing_members_pending_invite_label, roleLabel),
-            color = SharedJourneyColors.InkDeep.copy(alpha = 0.65f),
+            color = SharedJourneyColors.InkSecondary,
         )
     }
 }

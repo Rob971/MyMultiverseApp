@@ -21,10 +21,6 @@
     <string name="household_gate_error_already_active">Sià faje parte 'e 'na famiglia.</string>
     <string name="household_gate_retry">Prova arreto</string>
     <string name="home_logistics_nutrition_description">Pasti, spesa e pianificazione p' 'a famiglia.</string>
-    <string name="home_logistics_adventures_title">Avventure</string>
-    <string name="home_logistics_adventures_description">Viaggi, gite e esperienze ca planificammo insieme.</string>
-    <string name="home_logistics_budget_title">Budget</string>
-    <string name="home_logistics_budget_description">Spese, risparmio e finanza 'e famiglia.</string>
     <string name="nutrition_hub_title">Nutrizione</string>
     <string name="nutrition_entry_loading">Sto aprènno 'a nutrizione d' 'o fuosso...</string>
     <string name="nutrition_entry_error_generic">Nun se pò aprire a nutrizione. Próva arreto.</string>
@@ -71,6 +67,8 @@
     <string name="nutrition_ai_loading">Sto cercanno 'e consiglie nutrizione...</string>
     <string name="nutrition_ai_error">Nun aggio potuto fà 'o consiglio. Prova arreto.</string>
     <string name="nutrition_ai_empty_question">Miette na domanda ncopp' a nutrizione.</string>
+    <string name="nutrition_ai_idle_title">Descrive ce che te serve</string>
+    <string name="nutrition_ai_idle_body">Scegli 'na modalità, 'nu suggerimento o scrivi 'e criteria toje — po' piglia Genera.</string>
     <string name="home_logistics_coming_soon">Presto</string>
     <string name="nutrition_week_dates">%1$s – %2$s</string>
     <string name="nutrition_grocery_progress">%1$d 'e %2$d spuntate</string>

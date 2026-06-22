@@ -21,10 +21,6 @@
     <string name="household_gate_error_already_active">Vous appartenez déjà à un foyer.</string>
     <string name="household_gate_retry">Réessayer</string>
     <string name="home_logistics_nutrition_description">Repas, courses et planification hebdomadaire pour la famille.</string>
-    <string name="home_logistics_adventures_title">Aventures</string>
-    <string name="home_logistics_adventures_description">Voyages, sorties et expériences que nous planifions ensemble.</string>
-    <string name="home_logistics_budget_title">Budget</string>
-    <string name="home_logistics_budget_description">Dépenses, épargne et finances familiales partagées.</string>
     <string name="nutrition_hub_title">Nutrition</string>
     <string name="nutrition_entry_loading">Ouverture de la nutrition du foyer...</string>
     <string name="nutrition_entry_error_generic">Impossible d'ouvrir la nutrition. Réessayez.</string>
@@ -71,6 +67,8 @@
     <string name="nutrition_ai_loading">Recherche de conseils nutritionnels...</string>
     <string name="nutrition_ai_error">Impossible de générer un conseil. Réessayez.</string>
     <string name="nutrition_ai_empty_question">Veuillez saisir une question nutritionnelle.</string>
+    <string name="nutrition_ai_idle_title">Décrivez ce dont vous avez besoin</string>
+    <string name="nutrition_ai_idle_body">Choisissez un mode, une suggestion ou saisissez vos critères — puis appuyez sur Générer.</string>
     <string name="home_logistics_coming_soon">Bientôt disponible</string>
     <string name="nutrition_week_dates">%1$s – %2$s</string>
     <string name="nutrition_grocery_progress">%1$d sur %2$d cochés</string>

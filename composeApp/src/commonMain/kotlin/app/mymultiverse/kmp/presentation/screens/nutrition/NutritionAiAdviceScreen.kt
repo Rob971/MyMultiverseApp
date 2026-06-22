@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
+import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
 import app.mymultiverse.kmp.presentation.components.JourneyTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -43,6 +44,8 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_d
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_empty_question
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_error
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_generate_button
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_idle_body
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_idle_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_cleared
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_result_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_saved_readonly_note
@@ -102,6 +105,7 @@ object NutritionAiTestTags {
     const val MODE_MEAL_PLAN = "nutrition_ai_mode_meal_plan"
     const val SCOPE_FULL_WEEK = "nutrition_ai_scope_full_week"
     const val SCOPE_TODAY = "nutrition_ai_scope_today"
+    const val IDLE_EMPTY = "nutrition_ai_idle_empty"
     const val MEAL_PLAN_PREVIEW_ROW_PREFIX = "nutrition_ai_meal_preview_"
 }
 
@@ -335,7 +339,16 @@ fun NutritionAiAdviceScreen(
             }
 
             when (val state = aiState) {
-                NutritionAiState.Idle -> Unit
+                NutritionAiState.Idle -> {
+                    item {
+                        JourneyEmptyState(
+                            title = stringResource(Res.string.nutrition_ai_idle_title),
+                            body = stringResource(Res.string.nutrition_ai_idle_body),
+                            icon = AppIcons.Sparkles,
+                            testTag = NutritionAiTestTags.IDLE_EMPTY,
+                        )
+                    }
+                }
                 NutritionAiState.Loading -> {
                     item {
                         Text(

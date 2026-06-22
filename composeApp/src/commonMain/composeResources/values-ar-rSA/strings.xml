@@ -21,10 +21,6 @@
     <string name="household_gate_error_already_active">أنت بالفعل ضمن أسرة.</string>
     <string name="household_gate_retry">حاول مرة أخرى</string>
     <string name="home_logistics_nutrition_description">الوجبات والتسوق والتخطيط الأسبوعي للعائلة.</string>
-    <string name="home_logistics_adventures_title">المغامرات</string>
-    <string name="home_logistics_adventures_description">الرحلات والخروج والتجارب التي نخطط لها معًا.</string>
-    <string name="home_logistics_budget_title">الميزانية</string>
-    <string name="home_logistics_budget_description">الإنفاق والادخار والمالية العائلية المشتركة.</string>
     <string name="nutrition_hub_title">التغذية</string>
     <string name="nutrition_entry_loading">جارٍ فتح تغذية الأسرة...</string>
     <string name="nutrition_entry_error_generic">تعذر فتح التغذية. حاول مرة أخرى.</string>
@@ -71,6 +67,8 @@
     <string name="nutrition_ai_loading">جارٍ البحث عن إرشادات غذائية...</string>
     <string name="nutrition_ai_error">تعذر إنشاء النصيحة. حاول مرة أخرى.</string>
     <string name="nutrition_ai_empty_question">يرجى إدخال سؤال عن التغذية.</string>
+    <string name="nutrition_ai_idle_title">صف ما تحتاجه</string>
+    <string name="nutrition_ai_idle_body">اختر وضعًا أو اقتراحًا أو اكتب معاييرك — ثم اضغط على إنشاء.</string>
     <string name="home_logistics_coming_soon">قريبًا</string>
     <string name="nutrition_week_dates">%1$s – %2$s</string>
     <string name="nutrition_grocery_progress">تم تحديد %1$d من %2$d</string>
