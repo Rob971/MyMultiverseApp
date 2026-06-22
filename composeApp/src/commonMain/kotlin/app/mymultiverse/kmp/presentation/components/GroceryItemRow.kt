@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -32,6 +33,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
+import app.mymultiverse.kmp.presentation.platform.JourneyHapticFeedback
+import app.mymultiverse.kmp.presentation.platform.rememberJourneyHapticFeedback
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
@@ -162,21 +165,29 @@ private fun GroceryFlatRowContent(
     var editText by remember(item.id, isEditing) {
         mutableStateOf(item.label)
     }
+    val performHaptic = rememberJourneyHapticFeedback()
 
     Box(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = 56.dp)
                 .clickable(
                     enabled = !isEditing && !readOnly,
-                    onClick = onToggle,
+                    onClick = {
+                        performHaptic(JourneyHapticFeedback.LightClick)
+                        onToggle()
+                    },
                 )
                 .padding(horizontal = 4.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             JourneyIconButton(
-                onClick = onToggle,
+                onClick = {
+                    performHaptic(JourneyHapticFeedback.LightClick)
+                    onToggle()
+                },
                 enabled = !isEditing && !readOnly,
                 modifier = Modifier.testTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}"),
             ) {

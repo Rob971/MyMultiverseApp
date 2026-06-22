@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 28
+version: 29
 updated: 2026-06-22
 
 summary: |
@@ -19,6 +19,7 @@ summary: |
   Home membership loading and error states use shared Journey loading/error components (teal spinner, terracotta retry).
   Form fields: join household, household member dialogs, grocery inline edit, nutrition AI criteria, and meal plan lunch/dinner use JourneyTextField branding.
   Foundation polish: InkSecondary subtitles, complete typography scale, nutrition AI idle empty state, removed orphaned adventures/budget home strings.
+  Wave B mobile polish: snackbars above grocery input bar, inline login/join field validation, pull-to-refresh on grocery and meal plan, route transitions, grocery row min height, animated collapsible chevrons, light haptics on grocery toggle.
 
 testcases:
   - id: auth-sign-in

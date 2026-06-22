@@ -19,8 +19,11 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -239,10 +242,16 @@ fun CollapsibleSectionChevron(
     contentDescription: String?,
     modifier: Modifier = Modifier,
 ) {
+    val rotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        label = "collapsible_chevron_rotation",
+    )
     Icon(
-        imageVector = if (expanded) AppIcons.KeyboardArrowUp else AppIcons.KeyboardArrowDown,
+        imageVector = AppIcons.KeyboardArrowDown,
         contentDescription = contentDescription,
         tint = SharedJourneyColors.InkMuted,
-        modifier = modifier.size(24.dp),
+        modifier = modifier
+            .size(24.dp)
+            .rotate(rotation),
     )
 }

@@ -78,17 +78,31 @@ fun LoginScreen(
         showConfigMissing -> stringResource(Res.string.auth_error_config_missing) to false
         uiState.message is LoginMessage.EmailConfirmationSent ->
             stringResource(Res.string.auth_success_email_confirmation) to true
-        uiState.message is LoginMessage.Error -> when ((uiState.message as LoginMessage.Error).type) {
-            LoginError.ConfigMissing -> stringResource(Res.string.auth_error_config_missing) to false
-            LoginError.ProviderComingSoon -> stringResource(Res.string.auth_provider_coming_soon) to false
-            LoginError.InvalidCredentials -> stringResource(Res.string.auth_error_invalid_credentials) to false
-            LoginError.InvalidEmail -> stringResource(Res.string.auth_error_invalid_email) to false
-            LoginError.WeakPassword -> stringResource(Res.string.auth_error_weak_password) to false
-            LoginError.UserAlreadyExists -> stringResource(Res.string.auth_error_user_already_exists) to false
-            LoginError.EmailNotConfirmed -> stringResource(Res.string.auth_error_email_unconfirmed) to false
-            LoginError.SignUpDisabled -> stringResource(Res.string.auth_error_signup_disabled) to false
-            LoginError.Generic -> stringResource(Res.string.auth_error_generic) to false
+        uiState.message is LoginMessage.Error -> {
+            val error = (uiState.message as LoginMessage.Error).type
+            if (error.isScreenLevelOnly()) {
+                when (error) {
+                    LoginError.ConfigMissing -> stringResource(Res.string.auth_error_config_missing) to false
+                    LoginError.ProviderComingSoon -> stringResource(Res.string.auth_provider_coming_soon) to false
+                    LoginError.SignUpDisabled -> stringResource(Res.string.auth_error_signup_disabled) to false
+                    else -> stringResource(Res.string.auth_error_generic) to false
+                }
+            } else {
+                null
+            }
         }
+        else -> null
+    }
+    val fieldError = (uiState.message as? LoginMessage.Error)?.type
+    val emailFieldErrorText = when (fieldError) {
+        LoginError.InvalidEmail -> stringResource(Res.string.auth_error_invalid_email)
+        LoginError.UserAlreadyExists -> stringResource(Res.string.auth_error_user_already_exists)
+        LoginError.EmailNotConfirmed -> stringResource(Res.string.auth_error_email_unconfirmed)
+        else -> null
+    }
+    val passwordFieldErrorText = when (fieldError) {
+        LoginError.WeakPassword -> stringResource(Res.string.auth_error_weak_password)
+        LoginError.InvalidCredentials -> stringResource(Res.string.auth_error_invalid_credentials)
         else -> null
     }
 
@@ -152,6 +166,8 @@ fun LoginScreen(
                 onValueChange = screenModel::onEmailChange,
                 label = { Text(stringResource(Res.string.auth_email_label)) },
                 enabled = !uiState.isLoading && !showConfigMissing,
+                isError = emailFieldErrorText != null,
+                supportingText = emailFieldErrorText?.let { error -> { Text(error) } },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next,
@@ -166,6 +182,8 @@ fun LoginScreen(
                 onValueChange = screenModel::onPasswordChange,
                 label = { Text(stringResource(Res.string.auth_password_label)) },
                 enabled = !uiState.isLoading && !showConfigMissing,
+                isError = passwordFieldErrorText != null,
+                supportingText = passwordFieldErrorText?.let { error -> { Text(error) } },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
