@@ -14,7 +14,8 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import app.mymultiverse.kmp.presentation.components.JourneyTextField
+import app.mymultiverse.kmp.presentation.components.JourneyTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -588,18 +589,20 @@ fun HomeOnboardingContent(
                 title = stringResource(Res.string.household_gate_create_title),
             )
 
-            OutlinedTextField(
-            value = onboardingUiState.householdNameInput,
-            onValueChange = onNameChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag(HomeTestTags.ONBOARDING_CREATE_NAME_FIELD),
-            label = { Text(stringResource(Res.string.household_gate_name_label)) },
-            singleLine = true,
-            enabled = !onboardingUiState.isCreating,
-        )
-
-        HouseholdNameAvailabilityLabel(onboardingUiState.nameAvailability)
+            JourneyTextField(
+                value = onboardingUiState.householdNameInput,
+                onValueChange = onNameChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(HomeTestTags.ONBOARDING_CREATE_NAME_FIELD),
+                label = { Text(stringResource(Res.string.household_gate_name_label)) },
+                enabled = !onboardingUiState.isCreating,
+                isError = onboardingUiState.nameAvailability == HouseholdNameAvailability.Taken ||
+                    onboardingUiState.nameAvailability == HouseholdNameAvailability.Invalid,
+                supportingText = householdNameAvailabilitySupportingText(
+                    onboardingUiState.nameAvailability,
+                ),
+            )
 
         Text(
             text = stringResource(Res.string.home_onboarding_name_hint),
@@ -810,24 +813,24 @@ private fun homeThisWeekStatusLine(nutritionSummary: HomeNutritionSummary?): Str
 }
 
 @Composable
-private fun HouseholdNameAvailabilityLabel(availability: HouseholdNameAvailability) {
+private fun householdNameAvailabilitySupportingText(
+    availability: HouseholdNameAvailability,
+): (@Composable () -> Unit)? {
     val message = when (availability) {
-        HouseholdNameAvailability.Unknown -> null
         HouseholdNameAvailability.Checking -> stringResource(Res.string.household_name_checking)
         HouseholdNameAvailability.Available -> stringResource(Res.string.household_name_available)
         HouseholdNameAvailability.Taken -> stringResource(Res.string.household_name_taken)
         HouseholdNameAvailability.Invalid -> stringResource(Res.string.household_name_invalid)
-    }
-    if (message != null) {
+        HouseholdNameAvailability.Unknown -> null
+    } ?: return null
+    return {
         Text(
             text = message,
-            style = MaterialTheme.typography.bodySmall,
             color = when (availability) {
                 HouseholdNameAvailability.Available -> SharedJourneyColors.MediterraneanTeal
                 HouseholdNameAvailability.Checking -> SharedJourneyColors.InkMuted
                 else -> SharedJourneyColors.TerracottaOrange
             },
-            modifier = Modifier.fillMaxWidth(),
         )
     }
 }
@@ -843,16 +846,17 @@ private fun HomeRenameHouseholdDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.home_rename_household_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
+            Column(verticalArrangement = Arrangement.spacedBy(JourneyTextFieldDefaults.fieldSpacing)) {
+                JourneyTextField(
                     value = uiState.nameInput,
                     onValueChange = onNameChange,
                     label = { Text(stringResource(Res.string.household_gate_name_label)) },
-                    singleLine = true,
                     enabled = !uiState.isSaving,
                     modifier = Modifier.fillMaxWidth(),
+                    isError = uiState.nameAvailability == HouseholdNameAvailability.Taken ||
+                        uiState.nameAvailability == HouseholdNameAvailability.Invalid,
+                    supportingText = householdNameAvailabilitySupportingText(uiState.nameAvailability),
                 )
-                HouseholdNameAvailabilityLabel(uiState.nameAvailability)
             }
         },
         confirmButton = {

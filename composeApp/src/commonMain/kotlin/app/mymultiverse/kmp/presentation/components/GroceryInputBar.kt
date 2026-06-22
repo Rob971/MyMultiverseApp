@@ -11,8 +11,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -76,7 +74,7 @@ fun GroceryInputBar(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            OutlinedTextField(
+            JourneyTextField(
                 value = value,
                 onValueChange = onValueChange,
                 modifier = Modifier
@@ -84,15 +82,9 @@ fun GroceryInputBar(
                     .focusRequester(focusRequester)
                     .testTag(GroceryInputBarTestTags.INPUT_FIELD),
                 placeholder = { Text(placeholder) },
-                singleLine = true,
-                shape = FamilyLogisticsDesign.fieldShape,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onSubmit() }),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = accentColor,
-                    focusedLabelColor = accentColor,
-                    cursorColor = accentColor,
-                ),
+                focusAccentColor = accentColor,
             )
             FeatureAccentIconButton(
                 onClick = onSubmit,

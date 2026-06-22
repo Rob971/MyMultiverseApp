@@ -12,9 +12,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import app.mymultiverse.kmp.presentation.components.JourneyTextField
+import app.mymultiverse.kmp.presentation.components.JourneyTextFieldDefaults
 import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.kmp.presentation.components.JourneySecondaryButton
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
@@ -146,11 +147,10 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier.height(20.dp))
 
-            OutlinedTextField(
+            JourneyTextField(
                 value = uiState.email,
                 onValueChange = screenModel::onEmailChange,
                 label = { Text(stringResource(Res.string.auth_email_label)) },
-                singleLine = true,
                 enabled = !uiState.isLoading && !showConfigMissing,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
@@ -160,12 +160,11 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .testTag(LoginTestTags.EMAIL_FIELD),
             )
-            Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
+            Spacer(modifier = Modifier.height(JourneyTextFieldDefaults.fieldSpacing))
+            JourneyTextField(
                 value = uiState.password,
                 onValueChange = screenModel::onPasswordChange,
                 label = { Text(stringResource(Res.string.auth_password_label)) },
-                singleLine = true,
                 enabled = !uiState.isLoading && !showConfigMissing,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
