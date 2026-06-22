@@ -10,8 +10,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import app.mymultiverse.kmp.presentation.components.JourneyIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
@@ -299,7 +299,7 @@ fun WeeklyMealPlanScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         actions = {
             if (canWrite) {
-                IconButton(onClick = { showOverflowMenu = true }) {
+                JourneyIconButton(onClick = { showOverflowMenu = true }) {
                     Icon(
                         imageVector = AppIcons.MoreVert,
                         contentDescription = stringResource(Res.string.nutrition_meal_clear_week),

@@ -236,7 +236,7 @@ private fun MealPlanMealField(
             keyboardActions = KeyboardActions(onNext = { /* focus moves naturally */ }),
             trailingIcon = if (value.isNotBlank() && !readOnly && onClear != null) {
                 {
-                    androidx.compose.material3.IconButton(onClick = onClear) {
+                    JourneyIconButton(onClick = onClear) {
                         androidx.compose.material3.Icon(
                             imageVector = AppIcons.Delete,
                             contentDescription = clearFieldLabel,

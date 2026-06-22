@@ -1,7 +1,9 @@
 package app.mymultiverse.kmp.ui
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -19,6 +21,7 @@ import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionChipsTestTags
 import app.mymultiverse.kmp.presentation.components.GroceryInputBarTestTags
+import app.mymultiverse.kmp.presentation.components.GroceryItemRowTestTags
 import app.mymultiverse.kmp.presentation.components.MealPlanTestTags
 import app.mymultiverse.kmp.presentation.screens.nutrition.GroceryListTestTags
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
@@ -43,6 +46,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import androidx.compose.ui.unit.dp
 
 /**
  * Compose + AppCompat integration smoke tests for nutrition flows.
@@ -160,6 +164,29 @@ class NutritionUxInstrumentedTest {
                 .fetchSemanticsNodes()
                 .isEmpty(),
         )
+    }
+
+    @Test
+    fun grocery_editButton_meetsMinimumTouchTarget() {
+        val itemId = "instrumented-item-1"
+        val screenModel = nutritionScreenModel(itemId = itemId)
+
+        composeRule.setContent {
+            AppTheme {
+                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+            }
+        }
+
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.INPUT_FIELD)
+            .performTextInput("Milk")
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
+        composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
+
+        val editButtonTag = "${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}$itemId"
+        composeRule.onNodeWithTag(editButtonTag)
+            .performScrollTo()
+            .assertHeightIsAtLeast(48.dp)
+            .assertWidthIsAtLeast(48.dp)
     }
 
     @Test

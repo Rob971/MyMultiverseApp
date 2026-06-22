@@ -12,7 +12,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -177,7 +176,7 @@ private fun GroceryFlatRowContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            IconButton(
+            JourneyIconButton(
                 onClick = onToggle,
                 enabled = !isEditing && !readOnly,
                 modifier = Modifier.testTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}"),
@@ -217,7 +216,7 @@ private fun GroceryFlatRowContent(
                         color = SharedJourneyColors.InkMuted,
                     )
                 }
-                IconButton(
+                JourneyIconButton(
                     onClick = {
                         if (onSaveEdit(editText)) onCancelEdit()
                     },
@@ -245,7 +244,7 @@ private fun GroceryFlatRowContent(
                     textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
                 )
                 AnimatedVisibility(visible = !item.isChecked && !readOnly) {
-                    IconButton(
+                    JourneyIconButton(
                         onClick = onStartEdit,
                         modifier = Modifier.testTag("${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}${item.id}"),
                         colors = IconButtonDefaults.iconButtonColors(
