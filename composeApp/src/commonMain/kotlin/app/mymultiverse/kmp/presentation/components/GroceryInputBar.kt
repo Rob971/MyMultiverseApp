@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object GroceryInputBarTestTags {
@@ -44,6 +45,7 @@ fun GroceryInputBar(
     modifier: Modifier = Modifier,
     requestFocus: Boolean = false,
     onFocusRequested: () -> Unit = {},
+    embeddedInSidePanel: Boolean = false,
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -58,15 +60,20 @@ fun GroceryInputBar(
         modifier = modifier
             .fillMaxWidth()
             .testTag(GroceryInputBarTestTags.STICKY_BAR),
-        color = SharedJourneyColors.SunDrenchedWhite,
+        color = JourneySemanticColors.elevatedSurface(),
         shadowElevation = 8.dp,
         tonalElevation = 2.dp,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding()
-                .imePadding()
+                .then(
+                    if (embeddedInSidePanel) {
+                        Modifier.imePadding()
+                    } else {
+                        Modifier.navigationBarsPadding().imePadding()
+                    },
+                )
                 .padding(
                     horizontal = ScreenLayout.inputBarHorizontalPadding,
                     vertical = ScreenLayout.inputBarVerticalPadding,

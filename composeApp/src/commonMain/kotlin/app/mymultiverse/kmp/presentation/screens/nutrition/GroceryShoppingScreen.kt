@@ -1,9 +1,14 @@
 package app.mymultiverse.kmp.presentation.screens.nutrition
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,6 +28,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
@@ -72,6 +78,7 @@ import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -222,17 +229,20 @@ fun GroceryShoppingScreen(
         pendingScrollLabel = null
     }
 
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val isWideLayout = maxWidth >= ScreenLayout.expandedMinWidth
+
     NutritionScaffold(
         title = stringResource(Res.string.nutrition_grocery_title),
         onBack = onBack,
         snackbarHost = {
             JourneySnackbarHost(
                 hostState = snackbarHostState,
-                aboveBottomBar = canWrite,
+                aboveBottomBar = canWrite && !isWideLayout,
             )
         },
         bottomBar = {
-            if (canWrite) {
+            if (canWrite && !isWideLayout) {
                 GroceryInputBar(
                     value = newItemText,
                     onValueChange = { newItemText = it },
@@ -246,187 +256,298 @@ fun GroceryShoppingScreen(
             }
         },
     ) { padding ->
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = screenModel::refresh,
-            state = pullRefreshState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-        ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = ScreenLayout.horizontalPadding)
-                .testTag(GroceryListTestTags.SCROLL_LIST),
-            state = listState,
-            contentPadding = screenListPadding(extraBottom = ScreenLayout.listItemSpacing),
-            verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
-        ) {
-            item(key = "week-selector") {
-                WeekSelectorBanner(
-                    weekLabel = weekLabel,
-                    canGoToPreviousWeek = screenModel.canGoToPreviousWeek,
-                    canGoToNextWeek = screenModel.canGoToNextWeek,
-                    previousWeekLabel = previousWeekLabel,
-                    nextWeekLabel = nextWeekLabel,
-                    onPreviousWeek = { screenModel.selectWeekOffset(weekOffset - 1) },
-                    onNextWeek = { screenModel.selectWeekOffset(weekOffset + 1) },
-                )
-            }
-            item(key = "dashboard") {
-                GroceryDashboardCard(
-                    description = stringResource(Res.string.nutrition_grocery_description),
-                    progressLabel = if (totalCount > 0) {
-                        stringResource(
-                            Res.string.nutrition_grocery_progress,
-                            checkedCount,
-                            totalCount,
-                        )
-                    } else {
-                        stringResource(Res.string.nutrition_grocery_empty_title)
-                    },
-                    progress = if (totalCount == 0) 0f else checkedCount.toFloat() / totalCount,
-                    accentColor = accentColor,
-                )
-            }
+        val listModifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = ScreenLayout.horizontalPadding)
+            .testTag(GroceryListTestTags.SCROLL_LIST)
 
-            if (!canWrite) {
-                item(key = "viewer-notice") {
-                    HouseholdViewerReadOnlyNotice()
-                }
-            }
+        val groceryListContent: LazyListScope.() -> Unit = {
+            groceryShoppingListItems(
+                weekLabel = weekLabel,
+                previousWeekLabel = previousWeekLabel,
+                nextWeekLabel = nextWeekLabel,
+                weekOffset = weekOffset,
+                screenModel = screenModel,
+                accentColor = accentColor,
+                totalCount = totalCount,
+                checkedCount = checkedCount,
+                canWrite = canWrite,
+                aiGroceryItems = aiGroceryItems,
+                aiSuggestionsTitle = aiSuggestionsTitle,
+                adoptAllLabel = adoptAllLabel,
+                sections = sections,
+                items = items,
+                editingItemId = editingItemId,
+                editLabel = editLabel,
+                editContentDescription = editContentDescription,
+                saveContentDescription = saveContentDescription,
+                cancelEditLabel = cancelEditLabel,
+                toggleContentDescription = toggleContentDescription,
+                deleteContentDescription = deleteContentDescription,
+                sectionToBuy = sectionToBuy,
+                sectionCompletedCount = sectionCompletedCount,
+                clearCheckedLabel = clearCheckedLabel,
+                completedExpanded = completedExpanded,
+                onCompletedExpandToggle = {
+                    completedExpandUserSet = true
+                    completedExpanded = !completedExpanded
+                },
+                onAdoptAll = { screenModel.adoptAllAiGrocerySuggestions() },
+                onAdoptSuggestion = { suggestion ->
+                    screenModel.adoptAiGrocerySuggestion(suggestion.id)
+                    pendingScrollLabel = suggestion.label
+                },
+                onRefocusInput = { refocusInput = true },
+                onStartEdit = { editingItemId = it },
+                onCancelEdit = { if (editingItemId == it) editingItemId = null },
+                onSaveEdit = { id, label ->
+                    val saved = screenModel.updateGroceryItemLabel(id, label)
+                    if (!saved) showMessage(duplicateMessage)
+                    saved
+                },
+                onToggle = { screenModel.toggleGroceryItem(it) },
+                onDelete = { item, index -> deleteWithUndo(item, index) },
+                onClearChecked = { clearCheckedWithUndo() },
+            )
+        }
 
-            if (aiGroceryItems.isNotEmpty()) {
-                item(key = "ai-suggestions") {
-                    AiGrocerySuggestionsSection(
-                        title = aiSuggestionsTitle,
-                        items = aiGroceryItems,
-                        adoptAllLabel = adoptAllLabel,
-                        onAdoptAll = { screenModel.adoptAllAiGrocerySuggestions() },
-                        onAdopt = { suggestion ->
-                            screenModel.adoptAiGrocerySuggestion(suggestion.id)
-                            pendingScrollLabel = suggestion.label
-                        },
-                        enabled = canWrite,
+        if (isWideLayout && canWrite) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+            ) {
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = screenModel::refresh,
+                    state = pullRefreshState,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    LazyColumn(
+                        modifier = listModifier,
+                        state = listState,
+                        contentPadding = screenListPadding(extraBottom = ScreenLayout.listItemSpacing),
+                        verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
+                        content = groceryListContent,
                     )
                 }
+                GroceryInputBar(
+                    modifier = Modifier
+                        .width(ScreenLayout.expandedSidePanelWidth)
+                        .fillMaxHeight(),
+                    value = newItemText,
+                    onValueChange = { newItemText = it },
+                    placeholder = addHint,
+                    addContentDescription = addHint,
+                    onSubmit = { submitNewItem() },
+                    accentColor = SharedJourneyColors.MediterraneanTeal,
+                    requestFocus = refocusInput,
+                    onFocusRequested = { refocusInput = false },
+                    embeddedInSidePanel = true,
+                )
             }
-
-            if (totalCount == 0 && aiGroceryItems.isEmpty()) {
-                item(key = "empty-state") {
-                    JourneyEmptyState(
-                        title = stringResource(Res.string.nutrition_grocery_empty_title),
-                        body = stringResource(Res.string.nutrition_grocery_empty),
-                        icon = AppIcons.ShoppingCart,
-                        primaryActionLabel = if (canWrite) {
-                            stringResource(Res.string.nutrition_grocery_empty_cta)
-                        } else {
-                            null
-                        },
-                        onPrimaryAction = if (canWrite) {
-                            { refocusInput = true }
-                        } else {
-                            null
-                        },
-                        testTag = GroceryListTestTags.EMPTY_STATE,
-                    )
-                }
-            } else if (totalCount > 0) {
-                if (sections.active.isNotEmpty()) {
-                    item(key = "section-to-buy") {
-                        FamilyLogisticsSectionHeader(title = sectionToBuy)
-                    }
-                    items(
-                        items = sections.active,
-                        key = { it.id },
-                    ) { item ->
-                        val index = items.indexOfFirst { it.id == item.id }
-                        val isLastActive = item.id == sections.active.last().id
-                        GroceryListItem(
-                            item = item,
-                            index = index,
-                            editingItemId = editingItemId,
-                            editLabel = editLabel,
-                            editContentDescription = editContentDescription,
-                            saveContentDescription = saveContentDescription,
-                            cancelEditLabel = cancelEditLabel,
-                            toggleContentDescription = toggleContentDescription,
-                            deleteContentDescription = deleteContentDescription,
-                            onStartEdit = { editingItemId = item.id },
-                            onCancelEdit = { if (editingItemId == item.id) editingItemId = null },
-                            onSaveEdit = { label ->
-                                val saved = screenModel.updateGroceryItemLabel(item.id, label)
-                                if (!saved) showMessage(duplicateMessage)
-                                saved
-                            },
-                            onToggle = { screenModel.toggleGroceryItem(item.id) },
-                            onDelete = { deleteWithUndo(item, index) },
-                            readOnly = !canWrite,
-                            showDivider = !isLastActive || sections.completed.isNotEmpty(),
-                            modifier = Modifier.animateItem(),
-                        )
-                    }
-                } else {
-                    item(key = "empty-active") {
-                        Text(
-                            text = stringResource(Res.string.nutrition_grocery_empty_active),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = SharedJourneyColors.InkMuted,
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
-                        )
-                    }
-                }
-
-                if (sections.completed.isNotEmpty()) {
-                    item(key = "section-completed") {
-                        FamilyLogisticsSectionHeader(
-                            title = sectionCompletedCount,
-                            titleModifier = Modifier.testTag(GroceryListTestTags.COMPLETED_SECTION_HEADER),
-                            onTitleClick = {
-                                completedExpandUserSet = true
-                                completedExpanded = !completedExpanded
-                            },
-                            actionLabel = if (canWrite) clearCheckedLabel else null,
-                            actionModifier = Modifier.testTag(GroceryListTestTags.CLEAR_CHECKED_ACTION),
-                            onAction = if (canWrite) ({ clearCheckedWithUndo() }) else null,
-                        )
-                    }
-                    if (completedExpanded) {
-                        items(
-                            items = sections.completed,
-                            key = { "done-${it.id}" },
-                        ) { item ->
-                            val index = items.indexOfFirst { it.id == item.id }
-                            val isLastCompleted = item.id == sections.completed.last().id
-                            GroceryListItem(
-                            item = item,
-                            index = index,
-                            editingItemId = editingItemId,
-                            editLabel = editLabel,
-                            editContentDescription = editContentDescription,
-                            saveContentDescription = saveContentDescription,
-                            cancelEditLabel = cancelEditLabel,
-                            toggleContentDescription = toggleContentDescription,
-                            deleteContentDescription = deleteContentDescription,
-                            onStartEdit = { editingItemId = item.id },
-                            onCancelEdit = { if (editingItemId == item.id) editingItemId = null },
-                            onSaveEdit = { label ->
-                                val saved = screenModel.updateGroceryItemLabel(item.id, label)
-                                if (!saved) showMessage(duplicateMessage)
-                                saved
-                            },
-                            onToggle = { screenModel.toggleGroceryItem(item.id) },
-                            onDelete = { deleteWithUndo(item, index) },
-                            readOnly = !canWrite,
-                            showDivider = !isLastCompleted,
-                            modifier = Modifier.animateItem(),
-                            )
-                        }
-                    }
-                }
+        } else {
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = screenModel::refresh,
+                state = pullRefreshState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+            ) {
+                LazyColumn(
+                    modifier = listModifier,
+                    state = listState,
+                    contentPadding = screenListPadding(extraBottom = ScreenLayout.listItemSpacing),
+                    verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
+                    content = groceryListContent,
+                )
             }
         }
+    }
+    }
+}
+
+private fun LazyListScope.groceryShoppingListItems(
+    weekLabel: String,
+    previousWeekLabel: String,
+    nextWeekLabel: String,
+    weekOffset: Int,
+    screenModel: NutritionScreenModel,
+    accentColor: Color,
+    totalCount: Int,
+    checkedCount: Int,
+    canWrite: Boolean,
+    aiGroceryItems: List<GroceryItem>,
+    aiSuggestionsTitle: String,
+    adoptAllLabel: String,
+    sections: GroceryListPresentation.Sections,
+    items: List<GroceryItem>,
+    editingItemId: String?,
+    editLabel: String,
+    editContentDescription: String,
+    saveContentDescription: String,
+    cancelEditLabel: String,
+    toggleContentDescription: String,
+    deleteContentDescription: String,
+    sectionToBuy: String,
+    sectionCompletedCount: String,
+    clearCheckedLabel: String,
+    completedExpanded: Boolean,
+    onCompletedExpandToggle: () -> Unit,
+    onAdoptAll: () -> Unit,
+    onAdoptSuggestion: (GroceryItem) -> Unit,
+    onRefocusInput: () -> Unit,
+    onStartEdit: (String) -> Unit,
+    onCancelEdit: (String) -> Unit,
+    onSaveEdit: (String, String) -> Boolean,
+    onToggle: (String) -> Unit,
+    onDelete: (GroceryItem, Int) -> Unit,
+    onClearChecked: () -> Unit,
+) {
+    item(key = "week-selector") {
+        WeekSelectorBanner(
+            weekLabel = weekLabel,
+            canGoToPreviousWeek = screenModel.canGoToPreviousWeek,
+            canGoToNextWeek = screenModel.canGoToNextWeek,
+            previousWeekLabel = previousWeekLabel,
+            nextWeekLabel = nextWeekLabel,
+            onPreviousWeek = { screenModel.selectWeekOffset(weekOffset - 1) },
+            onNextWeek = { screenModel.selectWeekOffset(weekOffset + 1) },
+        )
+    }
+    item(key = "dashboard") {
+        GroceryDashboardCard(
+            description = stringResource(Res.string.nutrition_grocery_description),
+            progressLabel = if (totalCount > 0) {
+                stringResource(
+                    Res.string.nutrition_grocery_progress,
+                    checkedCount,
+                    totalCount,
+                )
+            } else {
+                stringResource(Res.string.nutrition_grocery_empty_title)
+            },
+            progress = if (totalCount == 0) 0f else checkedCount.toFloat() / totalCount,
+            accentColor = accentColor,
+        )
+    }
+
+    if (!canWrite) {
+        item(key = "viewer-notice") {
+            HouseholdViewerReadOnlyNotice()
+        }
+    }
+
+    if (aiGroceryItems.isNotEmpty()) {
+        item(key = "ai-suggestions") {
+            AiGrocerySuggestionsSection(
+                title = aiSuggestionsTitle,
+                items = aiGroceryItems,
+                adoptAllLabel = adoptAllLabel,
+                onAdoptAll = onAdoptAll,
+                onAdopt = onAdoptSuggestion,
+                enabled = canWrite,
+            )
+        }
+    }
+
+    if (totalCount == 0 && aiGroceryItems.isEmpty()) {
+        item(key = "empty-state") {
+            JourneyEmptyState(
+                title = stringResource(Res.string.nutrition_grocery_empty_title),
+                body = stringResource(Res.string.nutrition_grocery_empty),
+                icon = AppIcons.ShoppingCart,
+                primaryActionLabel = if (canWrite) {
+                    stringResource(Res.string.nutrition_grocery_empty_cta)
+                } else {
+                    null
+                },
+                onPrimaryAction = if (canWrite) onRefocusInput else null,
+                testTag = GroceryListTestTags.EMPTY_STATE,
+            )
+        }
+    } else if (totalCount > 0) {
+        if (sections.active.isNotEmpty()) {
+            item(key = "section-to-buy") {
+                FamilyLogisticsSectionHeader(title = sectionToBuy)
+            }
+            items(
+                items = sections.active,
+                key = { it.id },
+            ) { item ->
+                val index = items.indexOfFirst { it.id == item.id }
+                val isLastActive = item.id == sections.active.last().id
+                GroceryListItem(
+                    item = item,
+                    index = index,
+                    editingItemId = editingItemId,
+                    editLabel = editLabel,
+                    editContentDescription = editContentDescription,
+                    saveContentDescription = saveContentDescription,
+                    cancelEditLabel = cancelEditLabel,
+                    toggleContentDescription = toggleContentDescription,
+                    deleteContentDescription = deleteContentDescription,
+                    onStartEdit = { onStartEdit(item.id) },
+                    onCancelEdit = { onCancelEdit(item.id) },
+                    onSaveEdit = { label -> onSaveEdit(item.id, label) },
+                    onToggle = { onToggle(item.id) },
+                    onDelete = { onDelete(item, index) },
+                    readOnly = !canWrite,
+                    showDivider = !isLastActive || sections.completed.isNotEmpty(),
+                    modifier = Modifier.animateItem(),
+                )
+            }
+        } else {
+            item(key = "empty-active") {
+                Text(
+                    text = stringResource(Res.string.nutrition_grocery_empty_active),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = JourneySemanticColors.inkMuted(),
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
+                )
+            }
+        }
+
+        if (sections.completed.isNotEmpty()) {
+            item(key = "section-completed") {
+                FamilyLogisticsSectionHeader(
+                    title = sectionCompletedCount,
+                    titleModifier = Modifier.testTag(GroceryListTestTags.COMPLETED_SECTION_HEADER),
+                    onTitleClick = onCompletedExpandToggle,
+                    actionLabel = if (canWrite) clearCheckedLabel else null,
+                    actionModifier = Modifier.testTag(GroceryListTestTags.CLEAR_CHECKED_ACTION),
+                    onAction = if (canWrite) onClearChecked else null,
+                )
+            }
+            if (completedExpanded) {
+                items(
+                    items = sections.completed,
+                    key = { "done-${it.id}" },
+                ) { item ->
+                    val index = items.indexOfFirst { it.id == item.id }
+                    val isLastCompleted = item.id == sections.completed.last().id
+                    GroceryListItem(
+                        item = item,
+                        index = index,
+                        editingItemId = editingItemId,
+                        editLabel = editLabel,
+                        editContentDescription = editContentDescription,
+                        saveContentDescription = saveContentDescription,
+                        cancelEditLabel = cancelEditLabel,
+                        toggleContentDescription = toggleContentDescription,
+                        deleteContentDescription = deleteContentDescription,
+                        onStartEdit = { onStartEdit(item.id) },
+                        onCancelEdit = { onCancelEdit(item.id) },
+                        onSaveEdit = { label -> onSaveEdit(item.id, label) },
+                        onToggle = { onToggle(item.id) },
+                        onDelete = { onDelete(item, index) },
+                        readOnly = !canWrite,
+                        showDivider = !isLastCompleted,
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+            }
         }
     }
 }

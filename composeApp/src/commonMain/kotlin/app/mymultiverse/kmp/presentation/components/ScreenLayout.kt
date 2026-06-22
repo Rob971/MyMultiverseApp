@@ -18,6 +18,8 @@ object ScreenLayout {
     val sectionSpacing = 16.dp
     val inputBarVerticalPadding = 12.dp
     val inputBarHorizontalPadding = 16.dp
+    val expandedMinWidth = 600.dp
+    val expandedSidePanelWidth = 340.dp
 }
 
 @Composable

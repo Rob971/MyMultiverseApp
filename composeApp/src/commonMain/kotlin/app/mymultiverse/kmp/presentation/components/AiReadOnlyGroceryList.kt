@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 @Composable
@@ -27,6 +28,8 @@ fun AiReadOnlyGroceryList(
 ) {
     if (items.isEmpty()) return
 
+    val aiAccent = SharedJourneyColors.AiReadOnlyAccent
+
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
@@ -35,11 +38,11 @@ fun AiReadOnlyGroceryList(
         Text(
             text = subtitle,
             style = MaterialTheme.typography.bodySmall,
-            color = SharedJourneyColors.InkMuted,
+            color = JourneySemanticColors.inkMuted(),
             modifier = Modifier.padding(bottom = 4.dp),
         )
         items.forEach { item ->
-            FamilyLogisticsCardSurface(accentColor = SharedJourneyColors.MediterraneanTeal) {
+            FamilyLogisticsCardSurface(accentColor = aiAccent) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -50,14 +53,14 @@ fun AiReadOnlyGroceryList(
                     Icon(
                         imageVector = AppIcons.Sparkles,
                         contentDescription = null,
-                        tint = SharedJourneyColors.MediterraneanTeal,
+                        tint = aiAccent,
                         modifier = Modifier.size(20.dp),
                     )
                     Text(
                         text = item.label,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
-                        color = SharedJourneyColors.InkDeep,
+                        color = JourneySemanticColors.inkDeep(),
                         modifier = Modifier.weight(1f),
                     )
                 }

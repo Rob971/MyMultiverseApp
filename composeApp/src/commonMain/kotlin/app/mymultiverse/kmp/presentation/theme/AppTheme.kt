@@ -2,7 +2,7 @@ package app.mymultiverse.kmp.presentation.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -79,15 +79,13 @@ private val SharedJourneyTypography = Typography(
     ),
 )
 
-private val DarkColors = darkColorScheme()
-
 @Composable
 fun AppTheme(
-    darkTheme: Boolean = false,
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(
-        colorScheme = if (darkTheme) DarkColors else sharedJourneyLightScheme(),
+        colorScheme = if (darkTheme) sharedJourneyDarkScheme() else sharedJourneyLightScheme(),
         typography = SharedJourneyTypography,
         content = content,
     )
