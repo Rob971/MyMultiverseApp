@@ -5,6 +5,7 @@ import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.repository.NutritionRepository
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
+import app.mymultiverse.kmp.presentation.di.FakeHouseholdCollaborationRepository
 import app.mymultiverse.kmp.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.kmp.presentation.di.FakeNutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
