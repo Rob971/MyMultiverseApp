@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 41
+version: 42
 updated: 2026-06-22
 
 summary: |
@@ -806,6 +806,23 @@ testcases:
     expected:
       - Grocery rows and text fields grow with font scale; labels are not clipped at default row height.
       - Collapsed day summaries wrap on meal plan cards.
+
+  - id: s11-home-week-context-banner
+    title: Week context banner on Today
+    steps:
+      - Open the Today tab with an active household and synced nutrition week.
+    expected:
+      - Teal week banner shows the current week range (same week key as Plan and Groceries).
+      - Banner appears below the greeting and above This week content.
+
+  - id: s11-tab-bar-ai-accessibility
+    title: Tab bar and AI entry accessibility
+    steps:
+      - Enable TalkBack (or VoiceOver on iOS when available).
+      - Navigate bottom tabs and an inline AI trigger (Suggest with AI on Plan, or Build from meals on Groceries).
+    expected:
+      - Each tab announces Today, Plan, and Groceries.
+      - AI inline triggers announce their full label as one control.
 
   - id: language-picker
     title: App language from Home settings
