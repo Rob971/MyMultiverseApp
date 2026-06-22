@@ -1,8 +1,10 @@
 package app.mymultiverse.kmp.presentation.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,8 +31,13 @@ fun NapolitanBackground(
 private fun NapolitanBackgroundLayer(
     content: @Composable () -> Unit,
 ) {
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val illustrationAlpha = if (isSystemInDarkTheme()) 0.12f else 1f
+
     Box(modifier = Modifier.fillMaxSize()) {
         Canvas(modifier = Modifier.fillMaxSize()) {
+            drawRect(backgroundColor)
+
             val w = size.width
             val h = size.height
 
@@ -43,7 +50,7 @@ private fun NapolitanBackgroundLayer(
                 lineTo(0f, h)
                 close()
             }
-            drawPath(seaPath, SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.05f))
+            drawPath(seaPath, SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.05f * illustrationAlpha))
 
             // Stylized Mount Vesuvius Silhouette
             val vesuviusPath = Path().apply {
@@ -54,7 +61,7 @@ private fun NapolitanBackgroundLayer(
                 lineTo(w * 1.2f, h * 0.88f)
                 close()
             }
-            drawPath(vesuviusPath, SharedJourneyColors.TerracottaOrange.copy(alpha = 0.08f))
+            drawPath(vesuviusPath, SharedJourneyColors.TerracottaOrange.copy(alpha = 0.08f * illustrationAlpha))
         }
         content()
     }

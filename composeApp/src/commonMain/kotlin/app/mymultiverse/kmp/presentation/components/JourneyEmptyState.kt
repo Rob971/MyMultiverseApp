@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object JourneyEmptyStateTestTags {
@@ -44,7 +45,7 @@ fun JourneyEmptyState(
             .fillMaxWidth()
             .then(testTag?.let { Modifier.testTag(it) } ?: Modifier),
         shape = FamilyLogisticsDesign.cardShape,
-        color = SharedJourneyColors.GlassWhite,
+        color = JourneySemanticColors.cardSurface(),
     ) {
         Column(
             modifier = Modifier
@@ -63,14 +64,14 @@ fun JourneyEmptyState(
                 text = title,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
-                color = SharedJourneyColors.InkDeep,
+                color = JourneySemanticColors.inkDeep(),
                 textAlign = TextAlign.Center,
             )
             if (!body.isNullOrBlank()) {
                 Text(
                     text = body,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = SharedJourneyColors.InkMuted,
+                    color = JourneySemanticColors.inkMuted(),
                     textAlign = TextAlign.Center,
                 )
             }

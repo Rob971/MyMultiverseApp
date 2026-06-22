@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 /** Shared visual language for home dashboard and nutrition flows. */
@@ -65,7 +66,7 @@ fun FamilyLogisticsCardSurface(
             .fillMaxWidth()
             .then(clickModifier),
         shape = FamilyLogisticsDesign.cardShape,
-        color = SharedJourneyColors.GlassWhite,
+        color = JourneySemanticColors.cardSurface(),
         border = border,
     ) {
         content()
@@ -100,7 +101,7 @@ fun FamilyLogisticsSectionHeader(
             modifier = clickableTitleModifier,
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Black,
-            color = SharedJourneyColors.InkDeep,
+            color = JourneySemanticColors.inkDeep(),
         )
         if (actionLabel != null && onAction != null) {
             Text(

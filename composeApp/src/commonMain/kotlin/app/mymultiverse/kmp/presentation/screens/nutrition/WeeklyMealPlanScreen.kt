@@ -1,6 +1,9 @@
 package app.mymultiverse.kmp.presentation.screens.nutrition
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -327,11 +330,14 @@ fun WeeklyMealPlanScreen(
             }
         },
     ) { padding ->
+        BoxWithConstraints(modifier = Modifier.screenContentArea(padding)) {
+            val isWideLayout = maxWidth >= ScreenLayout.expandedMinWidth
+
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = screenModel::refresh,
             state = pullRefreshState,
-            modifier = Modifier.screenContentArea(padding),
+            modifier = Modifier.fillMaxWidth(),
         ) {
         LazyColumn(
             modifier = Modifier
@@ -418,25 +424,54 @@ fun WeeklyMealPlanScreen(
                 }
             }
 
-            if (todayEntry != null) {
-                item {
-                    FamilyLogisticsSectionHeader(
-                        title = stringResource(Res.string.nutrition_meal_plan_section_today),
-                    )
+            if (isWideLayout && todayEntry != null && upcomingEntries.isNotEmpty()) {
+                item(key = "wide-days") {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(ScreenLayout.horizontalPadding),
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
+                        ) {
+                            FamilyLogisticsSectionHeader(
+                                title = stringResource(Res.string.nutrition_meal_plan_section_today),
+                            )
+                            dayCard(todayEntry, isToday = true, initiallyExpanded = true)
+                        }
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
+                        ) {
+                            FamilyLogisticsSectionHeader(title = daysSectionTitle)
+                            upcomingEntries.forEach { entry ->
+                                dayCard(entry, isToday = false, initiallyExpanded = false)
+                            }
+                        }
+                    }
                 }
-                item {
-                    dayCard(todayEntry, isToday = true, initiallyExpanded = true)
+            } else {
+                if (todayEntry != null) {
+                    item {
+                        FamilyLogisticsSectionHeader(
+                            title = stringResource(Res.string.nutrition_meal_plan_section_today),
+                        )
+                    }
+                    item {
+                        dayCard(todayEntry, isToday = true, initiallyExpanded = true)
+                    }
                 }
-            }
 
-            if (upcomingEntries.isNotEmpty()) {
-                item {
-                    FamilyLogisticsSectionHeader(title = daysSectionTitle)
-                }
-                items(upcomingEntries, key = { it.index }) { entry ->
-                    dayCard(entry, isToday = false, initiallyExpanded = false)
+                if (upcomingEntries.isNotEmpty()) {
+                    item {
+                        FamilyLogisticsSectionHeader(title = daysSectionTitle)
+                    }
+                    items(upcomingEntries, key = { it.index }) { entry ->
+                        dayCard(entry, isToday = false, initiallyExpanded = false)
+                    }
                 }
             }
+        }
         }
         }
     }
