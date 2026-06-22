@@ -58,7 +58,8 @@ testcases:
       - Sign in with an active household and land on Welcome Home.
       - Tap your profile avatar in the top-right corner.
     expected:
-      - Bottom sheet opens with language picker, Export my data, Delete account, Sign out, and app version.
+      - Bottom sheet opens with Appearance (System / Light / Dark), language picker, Export my data, Delete account, Sign out, and app version.
+      - Switching Light or Dark updates the app immediately; System follows device setting.
       - Dismiss by swiping down or tapping outside; Home content remains unchanged.
 
   - id: home-pull-to-refresh

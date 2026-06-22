@@ -1,7 +1,7 @@
 package app.mymultiverse.kmp.presentation.components
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.isSystemInDarkTheme
+import app.mymultiverse.kmp.presentation.theme.isAppInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -32,7 +32,7 @@ private fun NapolitanBackgroundLayer(
     content: @Composable () -> Unit,
 ) {
     val backgroundColor = MaterialTheme.colorScheme.background
-    val illustrationAlpha = if (isSystemInDarkTheme()) 0.12f else 1f
+    val illustrationAlpha = if (isAppInDarkTheme()) 0.12f else 1f
 
     Box(modifier = Modifier.fillMaxSize()) {
         Canvas(modifier = Modifier.fillMaxSize()) {

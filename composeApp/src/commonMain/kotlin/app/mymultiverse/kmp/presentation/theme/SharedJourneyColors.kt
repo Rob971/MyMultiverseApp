@@ -24,8 +24,14 @@ object SharedJourneyColors {
     val InkSecondary = Color(0xFF4F4F4F)
     val InkMuted = Color(0xFF5C5C5C)
     val InkOnDark = Color(0xFFF5F0EB)
-    val InkMutedOnDark = Color(0xFFB8B0A8)
+    val InkMutedOnDark = Color(0xFFD0C8C0)
+    val InkSecondaryOnDark = Color(0xFFE8E2DC)
     val SageSoft = Color(0xFF8DAA91)
+
+    /** Brighter teal for outlines, nav, and links on dark surfaces (WCAG-friendly on #1A1816). */
+    val MediterraneanTealOnDark = Color(0xFF6ECFD6)
+    val CardElevatedDark = Color(0xFF2C2C2C)
+    val NavBarDark = Color(0xFF1E1E1E)
 
     // Glassmorphism Bases
     val GlassWhite = Color(0xCCFFFFFF)
@@ -50,12 +56,12 @@ fun sharedJourneyLightScheme() = lightColorScheme(
 fun sharedJourneyDarkScheme() = darkColorScheme(
     primary = SharedJourneyColors.TerracottaOrange,
     onPrimary = Color.White,
-    secondary = SharedJourneyColors.MediterraneanTeal,
+    secondary = SharedJourneyColors.MediterraneanTealOnDark,
     onSecondary = Color.White,
     tertiary = SharedJourneyColors.LemonZestYellow,
     onTertiary = SharedJourneyColors.InkOnDark,
     background = SharedJourneyColors.ParchmentWarmDark,
-    surface = SharedJourneyColors.SunDrenchedWhiteDark,
+    surface = SharedJourneyColors.CardElevatedDark,
     onBackground = SharedJourneyColors.InkOnDark,
     onSurface = SharedJourneyColors.InkOnDark,
 )

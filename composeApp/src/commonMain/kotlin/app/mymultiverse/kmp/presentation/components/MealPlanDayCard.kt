@@ -38,7 +38,7 @@ import app.mymultiverse.kmp.domain.model.nutrition.DayMeals
 import app.mymultiverse.kmp.domain.nutrition.MealPlanPresentation
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.presentation.theme.AppIcons
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 
 object MealPlanTestTags {
     const val SCROLL_LIST = "meal_plan_scroll_list"
@@ -84,7 +84,7 @@ fun MealPlanDayCard(
 ) {
     var expanded by rememberSaveable(dayIndex) { mutableStateOf(initiallyExpanded) }
     val isPlanned = MealPlanPresentation.isPlanned(day)
-    val accentColor = SharedJourneyColors.TerracottaOrange
+    val accentColor = JourneySemanticColors.brandTerracotta()
 
     FamilyLogisticsCardSurface(
         modifier = modifier,
@@ -113,7 +113,7 @@ fun MealPlanDayCard(
                         text = dayLabel,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = SharedJourneyColors.InkDeep,
+                        color = JourneySemanticColors.inkDeep(),
                     )
                     if (isToday) {
                         TodayBadge(label = todayLabel)
@@ -137,7 +137,7 @@ fun MealPlanDayCard(
                         dinnerLabel = dinnerLabel,
                     ),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (isPlanned) SharedJourneyColors.InkDeep else SharedJourneyColors.InkMuted,
+                    color = if (isPlanned) JourneySemanticColors.inkDeep() else JourneySemanticColors.inkMuted(),
                     fontWeight = if (isPlanned) FontWeight.Medium else FontWeight.Normal,
                 )
             }
@@ -173,7 +173,7 @@ fun MealPlanDayCard(
                         slot = MealSlot.Dinner,
                         dayIndex = dayIndex,
                         weekDays = weekDays,
-                        accentColor = SharedJourneyColors.MediterraneanTeal,
+                        accentColor = JourneySemanticColors.brandTeal(),
                         generateGroceryLabel = generateGroceryLabel,
                         onGenerateGrocery = { onGenerateGroceryForMeal(MealSlot.Dinner) },
                         isGeneratingGrocery = loadingMeal == MealSlot.Dinner,
@@ -273,6 +273,7 @@ private fun MealPlanMealField(
             }
         }
         if (value.isNotBlank() && !readOnly) {
+            val linkColor = JourneySemanticColors.brandTeal()
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -287,7 +288,7 @@ private fun MealPlanMealField(
                         CircularProgressIndicator(
                             modifier = Modifier.size(16.dp),
                             strokeWidth = 2.dp,
-                            color = SharedJourneyColors.MediterraneanTeal,
+                            color = linkColor,
                         )
                         Spacer(Modifier.width(8.dp))
                     } else {
@@ -295,14 +296,14 @@ private fun MealPlanMealField(
                             imageVector = AppIcons.Sparkles,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
-                            tint = SharedJourneyColors.MediterraneanTeal,
+                            tint = linkColor,
                         )
                         Spacer(Modifier.width(6.dp))
                     }
                     Text(
                         text = generateGroceryLabel,
                         style = MaterialTheme.typography.labelLarge,
-                        color = SharedJourneyColors.MediterraneanTeal,
+                        color = linkColor,
                     )
                 }
                 if (onCopyToTomorrow != null && copyToTomorrowLabel != null) {
@@ -310,7 +311,7 @@ private fun MealPlanMealField(
                         Text(
                             text = copyToTomorrowLabel,
                             style = MaterialTheme.typography.labelLarge,
-                            color = SharedJourneyColors.InkMuted,
+                            color = JourneySemanticColors.inkMuted(),
                         )
                     }
                 }

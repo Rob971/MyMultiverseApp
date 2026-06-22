@@ -23,7 +23,6 @@ import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.presentation.navigation.NavigationTestTags
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +76,7 @@ fun NutritionScaffold(
                             Icon(
                                 imageVector = AppIcons.ArrowBack,
                                 contentDescription = backLabel,
-                                tint = SharedJourneyColors.MediterraneanTeal,
+                                tint = JourneySemanticColors.brandTeal(),
                             )
                         }
                     }

@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 @Composable
@@ -24,14 +25,15 @@ fun JourneyPrimaryButton(
     isLoading: Boolean = false,
     content: @Composable RowScope.() -> Unit,
 ) {
+    val brandTeal = JourneySemanticColors.brandTeal()
     Button(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled && !isLoading,
         colors = ButtonDefaults.buttonColors(
-            containerColor = SharedJourneyColors.MediterraneanTeal,
+            containerColor = brandTeal,
             contentColor = Color.White,
-            disabledContainerColor = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.4f),
+            disabledContainerColor = brandTeal.copy(alpha = 0.4f),
             disabledContentColor = Color.White.copy(alpha = 0.7f),
         ),
         content = {
@@ -55,13 +57,14 @@ fun JourneySecondaryButton(
     enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit,
 ) {
+    val brandTeal = JourneySemanticColors.brandTeal()
     OutlinedButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
-        border = BorderStroke(1.dp, SharedJourneyColors.MediterraneanTeal),
+        border = BorderStroke(1.dp, brandTeal),
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = SharedJourneyColors.MediterraneanTeal,
+            contentColor = brandTeal,
         ),
         content = content,
     )
@@ -82,7 +85,7 @@ fun JourneyTertiaryButton(
         Text(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
-            color = SharedJourneyColors.MediterraneanTeal,
+            color = JourneySemanticColors.brandTeal(),
         )
     }
 }
@@ -94,13 +97,14 @@ fun JourneyDestructiveOutlinedButton(
     enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit,
 ) {
+    val accent = JourneySemanticColors.brandTerracotta()
     OutlinedButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
-        border = BorderStroke(1.dp, SharedJourneyColors.TerracottaOrange),
+        border = BorderStroke(1.dp, accent),
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = SharedJourneyColors.TerracottaOrange,
+            contentColor = accent,
         ),
         content = content,
     )

@@ -323,6 +323,10 @@
     <string name="home_section_more">Altro</string>
     <string name="home_settings_title">Account e impostazioni</string>
     <string name="home_settings_button">Apri account e impostazioni</string>
+    <string name="home_settings_appearance">Aspetto</string>
+    <string name="home_theme_system">Sistema</string>
+    <string name="home_theme_light">Chiaro</string>
+    <string name="home_theme_dark">Scuro</string>
     <string name="home_nutrition_get_started">Inizia a pianificare pasti e spesa</string>
     <string name="home_nutrition_continue_planning">Continua a pianificare</string>
     <string name="home_first_win_title">Iniziate insieme</string>

@@ -22,7 +22,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIcons
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 
 object WeekSelectorTestTags {
     const val PREVIOUS = "nutrition_week_previous"
@@ -40,11 +40,12 @@ fun WeekSelectorBanner(
     onNextWeek: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val brandTeal = JourneySemanticColors.brandTeal()
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.08f),
-        border = BorderStroke(1.dp, SharedJourneyColors.InkMuted.copy(alpha = 0.12f)),
+        color = JourneySemanticColors.brandTealContainer(),
+        border = BorderStroke(1.dp, JourneySemanticColors.subtleBorder()),
     ) {
         Row(
             modifier = Modifier
@@ -62,9 +63,9 @@ fun WeekSelectorBanner(
                     imageVector = AppIcons.ChevronLeft,
                     contentDescription = previousWeekLabel,
                     tint = if (canGoToPreviousWeek) {
-                        SharedJourneyColors.MediterraneanTeal
+                        brandTeal
                     } else {
-                        SharedJourneyColors.InkMuted.copy(alpha = 0.4f)
+                        JourneySemanticColors.inkMuted().copy(alpha = 0.4f)
                     },
                 )
             }
@@ -74,7 +75,7 @@ fun WeekSelectorBanner(
                     .weight(1f)
                     .padding(horizontal = 8.dp),
                 style = MaterialTheme.typography.labelLarge,
-                color = SharedJourneyColors.InkDeep,
+                color = JourneySemanticColors.inkDeep(),
                 fontWeight = FontWeight.SemiBold,
             )
             JourneyIconButton(
@@ -86,9 +87,9 @@ fun WeekSelectorBanner(
                     imageVector = AppIcons.ChevronRight,
                     contentDescription = nextWeekLabel,
                     tint = if (canGoToNextWeek) {
-                        SharedJourneyColors.MediterraneanTeal
+                        brandTeal
                     } else {
-                        SharedJourneyColors.InkMuted.copy(alpha = 0.4f)
+                        JourneySemanticColors.inkMuted().copy(alpha = 0.4f)
                     },
                 )
             }
@@ -104,14 +105,14 @@ fun WeekContextBanner(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.08f),
-        border = BorderStroke(1.dp, SharedJourneyColors.InkMuted.copy(alpha = 0.12f)),
+        color = JourneySemanticColors.brandTealContainer(),
+        border = BorderStroke(1.dp, JourneySemanticColors.subtleBorder()),
     ) {
         Text(
             text = weekLabel,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
             style = MaterialTheme.typography.labelLarge,
-            color = SharedJourneyColors.InkDeep,
+            color = JourneySemanticColors.inkDeep(),
             fontWeight = FontWeight.SemiBold,
         )
     }
@@ -129,7 +130,7 @@ fun GroceryDashboardCard(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = FamilyLogisticsDesign.cardShape,
-        color = SharedJourneyColors.SunDrenchedWhite,
+        color = JourneySemanticColors.cardSurface(),
         shadowElevation = 2.dp,
         tonalElevation = 1.dp,
     ) {
@@ -143,14 +144,14 @@ fun GroceryDashboardCard(
                 Text(
                     text = weekLabel,
                     style = MaterialTheme.typography.titleSmall,
-                    color = SharedJourneyColors.InkDeep,
+                    color = JourneySemanticColors.inkDeep(),
                     fontWeight = FontWeight.Bold,
                 )
             }
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
-                color = SharedJourneyColors.InkMuted,
+                color = JourneySemanticColors.inkSecondary(),
             )
             LinearProgressIndicator(
                 progress = { progress.coerceIn(0f, 1f) },
@@ -164,7 +165,7 @@ fun GroceryDashboardCard(
             Text(
                 text = progressLabel,
                 style = MaterialTheme.typography.labelMedium,
-                color = SharedJourneyColors.InkMuted,
+                color = JourneySemanticColors.inkMuted(),
                 fontWeight = FontWeight.Medium,
             )
         }
@@ -185,7 +186,7 @@ fun NutritionProgressChip(
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,
-            color = SharedJourneyColors.InkMuted,
+            color = JourneySemanticColors.inkMuted(),
             fontWeight = FontWeight.Medium,
         )
         LinearProgressIndicator(
@@ -215,16 +216,17 @@ fun TodayBadge(
     label: String,
     modifier: Modifier = Modifier,
 ) {
+    val accent = JourneySemanticColors.brandTerracotta()
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(8.dp),
-        color = SharedJourneyColors.TerracottaOrange.copy(alpha = 0.15f),
+        color = accent.copy(alpha = 0.22f),
     ) {
         Text(
             text = label,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelSmall,
-            color = SharedJourneyColors.TerracottaOrange,
+            color = accent,
             fontWeight = FontWeight.Bold,
         )
     }

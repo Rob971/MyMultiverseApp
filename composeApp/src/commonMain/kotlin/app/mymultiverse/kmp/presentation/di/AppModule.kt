@@ -5,6 +5,7 @@ import app.mymultiverse.kmp.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.kmp.data.remote.nutrition.NutritionRemoteApi
 import app.mymultiverse.kmp.data.repository.GreetingRepositoryImpl
 import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
+import app.mymultiverse.kmp.data.manager.SettingsThemeManager
 import app.mymultiverse.kmp.data.home.HomeFirstWinChecklistStore
 import app.mymultiverse.kmp.data.invite.InviteSessionStore
 import app.mymultiverse.kmp.data.repository.SettingsNutritionHouseholdSelectionStore
@@ -27,6 +28,7 @@ import app.mymultiverse.kmp.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.kmp.domain.repository.NutritionHouseholdSelectionStore
 import app.mymultiverse.kmp.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
+import app.mymultiverse.kmp.domain.manager.ThemeManager
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
 import app.mymultiverse.kmp.presentation.screens.auth.LoginScreenModel
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
@@ -82,6 +84,7 @@ private val dataModule = module {
     single<NutritionHouseholdSelectionStore> { SettingsNutritionHouseholdSelectionStore(get()) }
     single { InviteSessionStore(get()) }
     single { HomeFirstWinChecklistStore(get()) }
+    single<ThemeManager> { SettingsThemeManager(get()) }
     single<GreetingRepository> { GreetingRepositoryImpl(get()) }
     single<NutritionRepository> { NutritionRepositoryImpl(get()) }
     single { NutritionSyncOutbox(get()) }

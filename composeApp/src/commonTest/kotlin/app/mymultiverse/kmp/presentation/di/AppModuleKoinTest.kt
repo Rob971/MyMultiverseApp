@@ -4,6 +4,7 @@ import app.mymultiverse.kmp.data.supabase.SupabaseRuntimeFlags
 import app.mymultiverse.kmp.data.observability.NoOpCrashReporter
 import app.mymultiverse.kmp.domain.observability.CrashReporter
 import app.mymultiverse.kmp.domain.manager.LanguageManager
+import app.mymultiverse.kmp.domain.manager.ThemeManager
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.model.auth.AuthUser
 import app.mymultiverse.kmp.domain.platform.PersonalDataExporter
@@ -53,6 +54,7 @@ class AppModuleKoinTest : KoinTest {
     private val testPlatformModule = module {
         single<Settings> { MapSettings() }
         single<LanguageManager> { FakeLanguageManager() }
+        single<ThemeManager> { FakeThemeManager() }
         single<CrashReporter> { NoOpCrashReporter() }
         single<AuthRepository> {
             FakeAuthRepository(

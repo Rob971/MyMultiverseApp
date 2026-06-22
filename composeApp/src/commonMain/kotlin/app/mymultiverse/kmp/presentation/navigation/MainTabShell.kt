@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nav_tab_grocery
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nav_tab_home
@@ -99,9 +98,9 @@ fun MainTabShell(
 
 @Composable
 private fun navigationBarItemColors() = NavigationBarItemDefaults.colors(
-    selectedIconColor = SharedJourneyColors.MediterraneanTeal,
-    selectedTextColor = SharedJourneyColors.MediterraneanTeal,
-    indicatorColor = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.12f),
+    selectedIconColor = JourneySemanticColors.brandTeal(),
+    selectedTextColor = JourneySemanticColors.brandTeal(),
+    indicatorColor = JourneySemanticColors.navIndicator(),
     unselectedIconColor = JourneySemanticColors.inkMuted(),
     unselectedTextColor = JourneySemanticColors.inkMuted(),
 )

@@ -3,6 +3,8 @@ package app.mymultiverse.kmp.ui
 import androidx.compose.runtime.Composable
 import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.domain.manager.SupportedAppLanguages
+import app.mymultiverse.kmp.domain.manager.ThemeManager
+import app.mymultiverse.kmp.presentation.di.FakeThemeManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,6 +24,7 @@ private class InstrumentedLanguageManager(
 
 private val instrumentedKoinModule = module {
     single<LanguageManager> { InstrumentedLanguageManager() }
+    single<ThemeManager> { FakeThemeManager() }
 }
 
 /** Minimal Koin graph for composables that use `koinInject` (e.g. [LanguagePicker] on home). */

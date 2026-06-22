@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.presentation.navigation.LocalMainTabBarVisible
 
 object ScreenLayout {
     val horizontalPadding = 24.dp
@@ -23,13 +24,16 @@ object ScreenLayout {
 }
 
 @Composable
-fun Modifier.screenContentArea(scaffoldPadding: PaddingValues): Modifier =
-    fillMaxSize()
+fun Modifier.screenContentArea(scaffoldPadding: PaddingValues): Modifier {
+    val inMainTabs = LocalMainTabBarVisible.current
+    return fillMaxSize()
         .padding(scaffoldPadding)
         .padding(horizontal = ScreenLayout.horizontalPadding)
-        .navigationBarsPadding()
+        .then(if (!inMainTabs) Modifier.navigationBarsPadding() else Modifier)
         .imePadding()
+}
 
+@Composable
 fun screenListPadding(extraBottom: Dp = ScreenLayout.contentBottomPadding): PaddingValues =
     PaddingValues(
         top = ScreenLayout.contentTopPadding,

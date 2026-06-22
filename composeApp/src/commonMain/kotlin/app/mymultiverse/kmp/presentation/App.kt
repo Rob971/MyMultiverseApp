@@ -18,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import app.mymultiverse.kmp.data.observability.AppLogger
 import app.mymultiverse.kmp.domain.model.auth.AuthState
+import app.mymultiverse.kmp.domain.manager.AppThemePreferences
+import app.mymultiverse.kmp.domain.manager.ThemeManager
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
 import app.mymultiverse.kmp.presentation.navigation.AppMainTab
@@ -41,14 +43,20 @@ import app.mymultiverse.kmp.presentation.screens.invite.InviteEmailMismatchScree
 import app.mymultiverse.kmp.presentation.screens.invite.JoinHouseholdScreen
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionFlow
 import app.mymultiverse.kmp.presentation.theme.AppTheme
+import app.mymultiverse.kmp.presentation.theme.ProvideAppDarkTheme
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun App() {
-    val darkTheme = isSystemInDarkTheme()
-    AppTheme {
-        ConfigureSystemBars(darkTheme = darkTheme)
+    val themeManager = koinInject<ThemeManager>()
+    val themePreference by themeManager.currentPreference.collectAsState()
+    val systemDark = isSystemInDarkTheme()
+    val darkTheme = AppThemePreferences.resolveDarkTheme(themePreference, systemDark)
+
+    ProvideAppDarkTheme(darkTheme) {
+        AppTheme(darkTheme = darkTheme) {
+            ConfigureSystemBars(darkTheme = darkTheme)
         val authRepository = koinInject<AuthRepository>()
         val inviteFlow = koinInject<InviteJoinFlowCoordinator>()
         val logger = koinInject<AppLogger>()
@@ -101,6 +109,7 @@ fun App() {
                     AuthenticatedApp()
                 }
             }
+        }
         }
     }
 }

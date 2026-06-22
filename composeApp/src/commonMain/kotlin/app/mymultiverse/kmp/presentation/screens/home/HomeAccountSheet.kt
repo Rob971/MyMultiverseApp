@@ -21,7 +21,8 @@ import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.AppBuildInfo
 import app.mymultiverse.kmp.presentation.components.JourneyDestructiveTextButton
 import app.mymultiverse.kmp.presentation.components.LanguagePicker
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import app.mymultiverse.kmp.presentation.components.ThemePicker
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_sign_out
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_app_version
@@ -54,7 +55,7 @@ fun HomeAccountSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = SharedJourneyColors.GlassWhite,
+        containerColor = JourneySemanticColors.cardSurface(),
     ) {
         Column(
             modifier = Modifier
@@ -68,15 +69,17 @@ fun HomeAccountSheet(
                 text = stringResource(Res.string.home_settings_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = SharedJourneyColors.InkDeep,
+                color = JourneySemanticColors.inkDeep(),
                 modifier = Modifier.padding(bottom = 8.dp),
             )
+
+            ThemePicker(modifier = Modifier.padding(bottom = 12.dp))
 
             LanguagePicker()
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 12.dp),
-                color = SharedJourneyColors.InkMuted.copy(alpha = 0.25f),
+                color = JourneySemanticColors.inkMuted().copy(alpha = 0.25f),
             )
 
             TextButton(
@@ -91,7 +94,7 @@ fun HomeAccountSheet(
                 Text(
                     stringResource(Res.string.home_export_personal_data),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = SharedJourneyColors.InkDeep,
+                    color = JourneySemanticColors.inkDeep(),
                 )
             }
 
@@ -118,7 +121,7 @@ fun HomeAccountSheet(
                 Text(
                     stringResource(Res.string.auth_sign_out),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = SharedJourneyColors.InkDeep,
+                    color = JourneySemanticColors.inkDeep(),
                 )
             }
 
@@ -131,7 +134,7 @@ fun HomeAccountSheet(
             Text(
                 text = versionLabel,
                 style = MaterialTheme.typography.labelSmall,
-                color = SharedJourneyColors.InkMuted,
+                color = JourneySemanticColors.inkMuted(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp, bottom = 16.dp)

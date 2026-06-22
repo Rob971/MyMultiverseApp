@@ -14,7 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import app.mymultiverse.kmp.presentation.theme.AppIcons
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -33,14 +33,14 @@ fun UserAvatarButton(
             Icon(
                 imageVector = AppIcons.Person,
                 contentDescription = contentDescription,
-                tint = SharedJourneyColors.MediterraneanTeal,
+                tint = JourneySemanticColors.brandTeal(),
             )
         } else {
             Box(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
-                    .background(SharedJourneyColors.MediterraneanTeal),
+                    .background(JourneySemanticColors.brandTeal()),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

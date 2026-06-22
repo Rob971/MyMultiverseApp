@@ -19,7 +19,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.domain.manager.SupportedAppLanguages
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,13 +39,13 @@ fun LanguagePicker(modifier: Modifier = Modifier) {
             Text(
                 text = currentLanguage.uppercase(),
                 fontWeight = FontWeight.Bold,
-                color = SharedJourneyColors.MediterraneanTeal,
+                color = JourneySemanticColors.brandTeal(),
             )
         }
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.background(SharedJourneyColors.SunDrenchedWhite),
+            modifier = Modifier.background(JourneySemanticColors.cardSurface()),
         ) {
             SupportedAppLanguages.options.forEach { (code, name) ->
                 DropdownMenuItem(
@@ -53,9 +53,9 @@ fun LanguagePicker(modifier: Modifier = Modifier) {
                         Text(
                             text = name,
                             color = if (code == currentLanguage) {
-                                SharedJourneyColors.MediterraneanTeal
+                                JourneySemanticColors.brandTeal()
                             } else {
-                                SharedJourneyColors.InkDeep
+                                JourneySemanticColors.inkDeep()
                             },
                         )
                     },

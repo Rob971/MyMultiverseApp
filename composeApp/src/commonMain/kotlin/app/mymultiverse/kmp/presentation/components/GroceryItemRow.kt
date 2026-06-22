@@ -36,6 +36,7 @@ import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.presentation.platform.JourneyHapticFeedback
 import app.mymultiverse.kmp.presentation.platform.rememberJourneyHapticFeedback
 import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object GroceryItemRowTestTags {
@@ -197,7 +198,7 @@ private fun GroceryFlatRowContent(
                     tint = if (item.isChecked) {
                         SharedJourneyColors.SageSoft
                     } else {
-                        SharedJourneyColors.InkMuted
+                        JourneySemanticColors.inkMuted()
                     },
                 )
             }
@@ -221,7 +222,7 @@ private fun GroceryFlatRowContent(
                     Text(
                         text = cancelEditLabel,
                         style = MaterialTheme.typography.labelLarge,
-                        color = SharedJourneyColors.InkMuted,
+                        color = JourneySemanticColors.inkMuted(),
                     )
                 }
                 JourneyIconButton(
@@ -231,7 +232,7 @@ private fun GroceryFlatRowContent(
                     enabled = editText.isNotBlank(),
                     modifier = Modifier.testTag("${GroceryItemRowTestTags.SAVE_BUTTON_PREFIX}${item.id}"),
                     colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = SharedJourneyColors.MediterraneanTeal,
+                        contentColor = JourneySemanticColors.brandTeal(),
                     ),
                 ) {
                     Icon(
@@ -245,9 +246,9 @@ private fun GroceryFlatRowContent(
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodyLarge,
                     color = if (item.isChecked) {
-                        SharedJourneyColors.InkMuted
+                        JourneySemanticColors.inkMuted()
                     } else {
-                        SharedJourneyColors.InkDeep
+                        JourneySemanticColors.inkDeep()
                     },
                     textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
                 )
@@ -256,7 +257,7 @@ private fun GroceryFlatRowContent(
                         onClick = onStartEdit,
                         modifier = Modifier.testTag("${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}${item.id}"),
                         colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = SharedJourneyColors.MediterraneanTeal,
+                            contentColor = JourneySemanticColors.brandTeal(),
                         ),
                     ) {
                         Icon(
@@ -271,7 +272,7 @@ private fun GroceryFlatRowContent(
         if (showDivider) {
             HorizontalDivider(
                 modifier = Modifier.align(Alignment.BottomCenter),
-                color = SharedJourneyColors.InkMuted.copy(alpha = 0.12f),
+                color = JourneySemanticColors.inkMuted().copy(alpha = 0.12f),
             )
         }
     }

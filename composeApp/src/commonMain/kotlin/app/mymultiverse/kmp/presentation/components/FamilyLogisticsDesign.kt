@@ -15,7 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -108,7 +107,7 @@ fun FamilyLogisticsSectionHeader(
                 text = actionLabel,
                 modifier = actionModifier.clickable(onClick = onAction),
                 style = MaterialTheme.typography.labelLarge,
-                color = SharedJourneyColors.TerracottaOrange,
+                color = JourneySemanticColors.brandTerracotta(),
                 fontWeight = FontWeight.Bold,
             )
         }
@@ -184,7 +183,7 @@ fun NutritionFeatureHeader(
                     text = description,
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = SharedJourneyColors.InkMuted,
+                    color = JourneySemanticColors.inkSecondary(),
                 )
             }
         }
@@ -196,7 +195,7 @@ fun NutritionFeatureHeader(
         )
 
         if (showPlanWithAi && planWithAiLabel != null && onPlanWithAi != null) {
-            OutlinedButton(
+            JourneySecondaryButton(
                 onClick = onPlanWithAi,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -250,7 +249,7 @@ fun CollapsibleSectionChevron(
     Icon(
         imageVector = AppIcons.KeyboardArrowDown,
         contentDescription = contentDescription,
-        tint = SharedJourneyColors.InkMuted,
+        tint = JourneySemanticColors.inkMuted(),
         modifier = modifier
             .size(24.dp)
             .rotate(rotation),

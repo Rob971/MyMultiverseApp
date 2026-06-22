@@ -19,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,6 +44,7 @@ import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionsSection
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.kmp.presentation.components.JourneySnackbarHost
+import app.mymultiverse.kmp.presentation.components.JourneySecondaryButton
 import app.mymultiverse.kmp.presentation.components.MealPlanDayCard
 import app.mymultiverse.kmp.presentation.components.MealPlanEmptyState
 import app.mymultiverse.kmp.presentation.components.MealPlanTestTags
@@ -56,7 +56,7 @@ import app.mymultiverse.kmp.presentation.components.screenContentArea
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.theme.AppIcons
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_none
@@ -354,7 +354,7 @@ fun WeeklyMealPlanScreen(
                     weekLabel = weekLabel,
                     description = stringResource(Res.string.nutrition_meal_plan_description),
                     icon = AppIcons.DateRange,
-                    accentColor = SharedJourneyColors.TerracottaOrange,
+                    accentColor = JourneySemanticColors.brandTerracotta(),
                     progressLabel = stringResource(
                         Res.string.nutrition_meal_plan_progress,
                         mealProgress.plannedSlots,
@@ -395,7 +395,7 @@ fun WeeklyMealPlanScreen(
 
             if (hasPlannedMeals && canWrite) {
                 item {
-                    OutlinedButton(
+                    JourneySecondaryButton(
                         onClick = { screenModel.generateGroceryForAllPlannedMeals() },
                         enabled = !bulkGroceryLoading,
                         modifier = Modifier

@@ -57,7 +57,7 @@ fun JourneyEmptyState(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = SharedJourneyColors.InkMuted.copy(alpha = 0.7f),
+                tint = JourneySemanticColors.inkMuted().copy(alpha = 0.7f),
                 modifier = Modifier.size(40.dp),
             )
             Text(

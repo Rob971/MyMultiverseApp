@@ -18,7 +18,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object HomeFirstWinChecklistTestTags {
     const val ROOT = "home_first_win_checklist"
@@ -44,7 +43,7 @@ fun HomeFirstWinChecklistCard(
 ) {
     FamilyLogisticsCardSurface(
         modifier = modifier.testTag(HomeFirstWinChecklistTestTags.ROOT),
-        accentColor = SharedJourneyColors.MediterraneanTeal,
+        accentColor = JourneySemanticColors.brandTeal(),
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -123,7 +122,7 @@ private fun HomeFirstWinActionRow(
                 Icon(
                     imageVector = AppIcons.CheckCircle,
                     contentDescription = null,
-                    tint = SharedJourneyColors.MediterraneanTeal,
+                    tint = JourneySemanticColors.brandTeal(),
                 )
             }
             Text(
