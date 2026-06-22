@@ -1,23 +1,16 @@
 package app.mymultiverse.kmp.presentation.screens.nutrition
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.presentation.components.JourneyErrorContent
+import app.mymultiverse.kmp.presentation.components.JourneyLoadingContent
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_entry_error_generic
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_entry_error_not_configured
@@ -57,20 +50,13 @@ fun NutritionEntryGate(
     ) { padding ->
         when (val current = state) {
             NutritionEntryState.Loading -> {
-                Column(
+                JourneyLoadingContent(
+                    message = stringResource(Res.string.nutrition_entry_loading),
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding)
-                        .testTag(NutritionEntryTestTags.LOADING),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    CircularProgressIndicator()
-                    Text(
-                        text = stringResource(Res.string.nutrition_entry_loading),
-                        modifier = Modifier.padding(top = 12.dp),
-                    )
-                }
+                        .padding(padding),
+                    containerTestTag = NutritionEntryTestTags.LOADING,
+                )
             }
 
             is NutritionEntryState.Error -> {
@@ -78,27 +64,16 @@ fun NutritionEntryGate(
                     NutritionEntryError.Generic -> stringResource(Res.string.nutrition_entry_error_generic)
                     NutritionEntryError.NotConfigured -> stringResource(Res.string.nutrition_entry_error_not_configured)
                 }
-                Column(
+                JourneyErrorContent(
+                    message = message,
+                    retryLabel = stringResource(Res.string.nutrition_entry_retry),
+                    onRetry = screenModel::ensureHousehold,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding)
-                        .testTag(NutritionEntryTestTags.ERROR),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        text = message,
-                        color = SharedJourneyColors.TerracottaOrange,
-                    )
-                    Button(
-                        onClick = screenModel::ensureHousehold,
-                        modifier = Modifier
-                            .padding(top = 16.dp)
-                            .testTag(NutritionEntryTestTags.RETRY_BUTTON),
-                    ) {
-                        Text(stringResource(Res.string.nutrition_entry_retry))
-                    }
-                }
+                        .padding(padding),
+                    containerTestTag = NutritionEntryTestTags.ERROR,
+                    retryButtonTestTag = NutritionEntryTestTags.RETRY_BUTTON,
+                )
             }
 
             is NutritionEntryState.Ready -> Unit
