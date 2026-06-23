@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 46
+version: 47
 updated: 2026-06-23
 
 summary: |
@@ -33,6 +33,7 @@ summary: |
   Phase 3 UX (v39): invite share sheet after sending (SMS/WhatsApp with deep link); Sunday empty-week plan nudge on Today (dismissible).
   Dark mode accessibility (v45): household members card rows with role chips and overflow (⋮) menus; semantic ink tokens on auth, invite, join, loading, coming-soon, viewer banner, and AI grocery subtitles for WCAG-readable text in system dark theme.
   Onboarding completion (v46): email/password fallback on auth screen; HTTPS invite App Links (mymultiverse.app/invite); instrumented smoke for auth + household creation screens.
+  App Links hosting (v47): deploy web/.well-known + /invite fallback; verify with scripts/verify-app-links-hosting.sh after DNS is live.
 
 testcases:
   - id: auth-sign-in
@@ -327,6 +328,19 @@ testcases:
       - Auth screen shows "You're invited to join {household}" when the deep link is active.
       - After SSO, family setup is skipped; user lands on Today with “You joined {household}” snackbar.
       - OAuth with a different email shows the email-mismatch recovery screen with sign-out retry.
+
+  - id: app-links-hosting
+    title: Verify mymultiverse.app App Links hosting
+    steps:
+      - Maintainer: run scripts/generate-app-links-well-known.sh with ANDROID_SHA256_FINGERPRINT (from release CI log) and IOS_TEAM_ID, then deploy web/ to mymultiverse.app.
+      - Run scripts/verify-app-links-hosting.sh from a machine with network access.
+      - On Android, tap https://mymultiverse.app/invite?token=… from Gmail or Messages (use a real pending invite token).
+      - On iOS, repeat with the same HTTPS link after Universal Links are configured.
+    expected:
+      - verify-app-links-hosting.sh passes (assetlinks.json, apple-app-site-association, /invite fallback page).
+      - Android opens the app directly when App Links are verified (no browser chooser).
+      - iOS opens the app via Universal Link when entitlements and AASA match the installed build.
+      - Invalid or missing token shows the invalid-link message on /invite.
 
   - id: household-onboarding-create-with-invite
     title: Home onboarding layout when pending invite exists

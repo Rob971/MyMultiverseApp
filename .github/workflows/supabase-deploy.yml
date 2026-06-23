@@ -167,12 +167,14 @@ jobs:
       - name: Set edge function secrets
         run: |
           invite_from="${INVITE_FROM_EMAIL:-invites@mymultiverse.app}"
+          invite_open_base="${INVITE_OPEN_LINK_BASE:-https://mymultiverse.app/invite}"
           apns_bundle="${APNS_BUNDLE_ID:-app.mymultiverse.kmp}"
           apns_sandbox="${APNS_USE_SANDBOX:-true}"
           supabase secrets set \
             "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}" \
             "RESEND_API_KEY=${RESEND_API_KEY:-}" \
             "INVITE_FROM_EMAIL=${invite_from}" \
+            "INVITE_OPEN_LINK_BASE=${invite_open_base}" \
             "FCM_SERVICE_ACCOUNT_JSON=${FCM_SERVICE_ACCOUNT_JSON:-}" \
             "APNS_KEY_ID=${APNS_KEY_ID:-}" \
             "APNS_TEAM_ID=${APNS_TEAM_ID:-}" \

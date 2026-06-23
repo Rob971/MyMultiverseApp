@@ -429,6 +429,13 @@ jobs:
       - name: Build debug APK for release
         run: ./gradlew :composeApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
 
+      - name: Print Android App Links fingerprint (debug APK)
+        run: |
+          chmod +x ./scripts/print-android-apk-fingerprint.sh
+          FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)"
+          echo "ANDROID_SHA256_FINGERPRINT=${FINGERPRINT}"
+          echo "Use this value with scripts/generate-app-links-well-known.sh for Firebase tester builds."
+
       - name: Distribute to Firebase App Distribution
         uses: ./.github/actions/firebase-distribute
         with:

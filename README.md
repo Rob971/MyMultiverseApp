@@ -207,6 +207,7 @@ After migrations deploy, CI runs `scripts/configure-household-notification-deliv
 | `APNS_KEY_ID` / `APNS_TEAM_ID` / `APNS_PRIVATE_KEY` | APNs HTTP/2 push for iOS device tokens (`.p8` key contents) | Optional (iOS push skipped when unset) |
 | `APNS_BUNDLE_ID` | APNs topic (defaults to `app.mymultiverse.kmp`) | Optional |
 | `APNS_USE_SANDBOX` | `true` for debug/simulator tokens, `false` for TestFlight/App Store | Optional (defaults to `true`) |
+| `INVITE_OPEN_LINK_BASE` | HTTPS base for invite email CTAs (defaults to `https://mymultiverse.app/invite`) | Optional |
 
 **Android push (client):** copy `composeApp/google-services.json.example` → `google-services.json` (same file as Crashlytics). When present, the app registers a real FCM token on Home refresh and requests `POST_NOTIFICATIONS` on API 33+.
 
@@ -225,7 +226,8 @@ supabase secrets set \
   APNS_TEAM_ID="$APNS_TEAM_ID" \
   APNS_PRIVATE_KEY="$APNS_PRIVATE_KEY" \
   APNS_BUNDLE_ID="app.mymultiverse.kmp" \
-  APNS_USE_SANDBOX="true"
+  APNS_USE_SANDBOX="true" \
+  INVITE_OPEN_LINK_BASE="https://mymultiverse.app/invite"
 supabase functions deploy notify-household-invite --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
 ```
@@ -238,6 +240,16 @@ supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
 | **Redirect URLs** | `app.mymultiverse.kmp://auth/callback` |
 
 Enable Google/Apple providers for OAuth. Ensure **Realtime** is enabled (Database → Replication).
+
+### App Links / Universal Links (`mymultiverse.app`)
+
+1. Build or download the APK you distribute (Firebase release uses **debug** signing).
+2. `chmod +x scripts/print-android-apk-fingerprint.sh scripts/generate-app-links-well-known.sh scripts/verify-app-links-hosting.sh`
+3. `ANDROID_SHA256_FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)" IOS_TEAM_ID="$APNS_TEAM_ID" ./scripts/generate-app-links-well-known.sh`
+4. Deploy the `web/` directory to `https://mymultiverse.app` (must serve `/.well-known/*` and `/invite/index.html`).
+5. `./scripts/verify-app-links-hosting.sh` — fails until hosting is live.
+
+Release CI prints `ANDROID_SHA256_FINGERPRINT` after each Firebase distribute build.
 
 ---
 
