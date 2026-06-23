@@ -243,13 +243,15 @@ Enable Google/Apple providers for OAuth. Ensure **Realtime** is enabled (Databas
 
 ### App Links / Universal Links (`mymultiverse.app`)
 
-1. Build or download the APK you distribute (Firebase release uses **debug** signing).
-2. `chmod +x scripts/print-android-apk-fingerprint.sh scripts/generate-app-links-well-known.sh scripts/verify-app-links-hosting.sh`
-3. `ANDROID_SHA256_FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)" IOS_TEAM_ID="$APNS_TEAM_ID" ./scripts/generate-app-links-well-known.sh`
-4. Deploy the `web/` directory to `https://mymultiverse.app` (must serve `/.well-known/*` and `/invite/index.html`).
-5. `./scripts/verify-app-links-hosting.sh` — fails until hosting is live.
+**DNS:** `mymultiverse.app` must point to **Firebase Hosting** (project `mymultiverseapp`), not Squarespace. In Firebase Console → Hosting → Add custom domain → follow DNS instructions at your registrar (remove Squarespace A/CNAME records first).
 
-Release CI prints `ANDROID_SHA256_FINGERPRINT` after each Firebase distribute build.
+1. Build or download the APK you distribute (Firebase release uses **debug** signing).
+2. `chmod +x scripts/print-android-apk-fingerprint.sh scripts/generate-app-links-well-known.sh scripts/deploy-app-links-hosting.sh scripts/verify-app-links-hosting.sh`
+3. **CI (recommended):** Actions → **App Links hosting** → Run workflow (builds debug APK, generates `web/.well-known/*`, deploys `web/`). Use **Skip verify** until DNS is live.
+4. **Local:** `ANDROID_SHA256_FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)" IOS_TEAM_ID="$APNS_TEAM_ID" GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json ./scripts/deploy-app-links-hosting.sh`
+5. `./scripts/verify-app-links-hosting.sh` — passes when `assetlinks.json`, AASA, and `/invite` return HTTP 200 on the apex domain.
+
+Release CI prints `ANDROID_SHA256_FINGERPRINT` and attempts a hosting deploy (skips verify; does not block release if DNS is not ready).
 
 ---
 

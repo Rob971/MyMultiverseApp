@@ -332,7 +332,8 @@ testcases:
   - id: app-links-hosting
     title: Verify mymultiverse.app App Links hosting
     steps:
-      - Maintainer: run scripts/generate-app-links-well-known.sh with ANDROID_SHA256_FINGERPRINT (from release CI log) and IOS_TEAM_ID, then deploy web/ to mymultiverse.app.
+      - Maintainer: connect `mymultiverse.app` to Firebase Hosting (DNS away from Squarespace).
+      - Run GitHub Actions workflow **App Links hosting** (or scripts/deploy-app-links-hosting.sh locally).
       - Run scripts/verify-app-links-hosting.sh from a machine with network access.
       - On Android, tap https://mymultiverse.app/invite?token=… from Gmail or Messages (use a real pending invite token).
       - On iOS, repeat with the same HTTPS link after Universal Links are configured.

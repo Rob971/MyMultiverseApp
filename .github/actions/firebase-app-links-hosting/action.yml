@@ -1,0 +1,54 @@
+name: Firebase App Links hosting
+description: Generate well-known files and deploy web/ to Firebase Hosting for mymultiverse.app
+inputs:
+  android-sha256-fingerprint:
+    description: Colon-free uppercase SHA-256 from the distributed APK
+    required: true
+  ios-team-id:
+    description: Apple Team ID (APNS_TEAM_ID secret)
+    required: true
+  firebase-project-id:
+    description: Firebase project id
+    required: true
+  firebase-service-account-json:
+    description: Firebase service account JSON
+    required: true
+  firebase-tools-version:
+    description: firebase-tools npm version
+    required: false
+    default: "13.29.1"
+  skip-verify:
+    description: Skip post-deploy curl verification (e.g. DNS not live yet)
+    required: false
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js for Firebase CLI
+      uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+
+    - name: Deploy App Links hosting
+      shell: bash
+      env:
+        ANDROID_SHA256_FINGERPRINT: ${{ inputs.android-sha256-fingerprint }}
+        IOS_TEAM_ID: ${{ inputs.ios-team-id }}
+        FIREBASE_PROJECT_ID: ${{ inputs.firebase-project-id }}
+        FIREBASE_TOOLS_VERSION: ${{ inputs.firebase-tools-version }}
+        FIREBASE_SERVICE_ACCOUNT_JSON: ${{ inputs.firebase-service-account-json }}
+        SKIP_VERIFY: ${{ inputs.skip-verify == 'true' && '1' || '0' }}
+      run: |
+        chmod +x ./scripts/deploy-app-links-hosting.sh
+        ./scripts/deploy-app-links-hosting.sh
+
+    - name: Publish App Links hosting status
+      if: always()
+      shell: bash
+      run: |
+        {
+          echo "## App Links hosting"
+          echo
+          echo "- Custom domain: \`https://mymultiverse.app\` (DNS must point to Firebase Hosting, not Squarespace)"
+          echo "- Verify locally: \`./scripts/verify-app-links-hosting.sh\`"
+        } >> "$GITHUB_STEP_SUMMARY"

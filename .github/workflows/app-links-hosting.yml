@@ -1,0 +1,93 @@
+name: App Links hosting
+
+on:
+  workflow_dispatch:
+    inputs:
+      android_sha256_fingerprint:
+        description: "SHA-256 fingerprint (colon-free). Leave empty to build debug APK on the runner."
+        required: false
+        type: string
+      skip_verify:
+        description: "Skip post-deploy curl verification (use when DNS is not yet live)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  FIREBASE_PROJECT_ID: "mymultiverseapp"
+  FIREBASE_TOOLS_VERSION: "13.29.1"
+  GRADLE_BUILD_ARGS: --build-cache --parallel
+
+jobs:
+  deploy:
+    name: Deploy App Links to Firebase Hosting
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up JDK 17
+        if: ${{ inputs.android_sha256_fingerprint == '' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        if: ${{ inputs.android_sha256_fingerprint == '' }}
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+          gradle-home-cache-cleanup: true
+
+      - name: Android CI setup
+        if: ${{ inputs.android_sha256_fingerprint == '' }}
+        uses: ./.github/actions/android-ci-setup
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
+
+      - name: Build debug APK for fingerprint
+        if: ${{ inputs.android_sha256_fingerprint == '' }}
+        run: ./gradlew :composeApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
+
+      - name: Resolve Android SHA-256 fingerprint
+        id: fingerprint
+        run: |
+          chmod +x ./scripts/print-android-apk-fingerprint.sh
+          if [[ -n "${{ inputs.android_sha256_fingerprint }}" ]]; then
+            FINGERPRINT="${{ inputs.android_sha256_fingerprint }}"
+          else
+            FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)"
+          fi
+          echo "sha256=${FINGERPRINT}" >> "$GITHUB_OUTPUT"
+          echo "ANDROID_SHA256_FINGERPRINT=${FINGERPRINT}"
+
+      - name: Require hosting secrets
+        run: |
+          if [[ -z "${{ secrets.APNS_TEAM_ID }}" ]]; then
+            echo "APNS_TEAM_ID secret is required for apple-app-site-association." >&2
+            exit 1
+          fi
+          if [[ -z "${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}" ]]; then
+            echo "FIREBASE_SERVICE_ACCOUNT_JSON secret is required for Firebase Hosting deploy." >&2
+            exit 1
+          fi
+
+      - name: Deploy App Links hosting
+        uses: ./.github/actions/firebase-app-links-hosting
+        with:
+          android-sha256-fingerprint: ${{ steps.fingerprint.outputs.sha256 }}
+          ios-team-id: ${{ secrets.APNS_TEAM_ID }}
+          firebase-project-id: ${{ env.FIREBASE_PROJECT_ID }}
+          firebase-service-account-json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          firebase-tools-version: ${{ env.FIREBASE_TOOLS_VERSION }}
+          skip-verify: ${{ inputs.skip_verify && 'true' || 'false' }}

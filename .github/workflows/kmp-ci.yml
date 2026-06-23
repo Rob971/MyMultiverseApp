@@ -430,11 +430,33 @@ jobs:
         run: ./gradlew :composeApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
 
       - name: Print Android App Links fingerprint (debug APK)
+        id: app_links_fingerprint
         run: |
           chmod +x ./scripts/print-android-apk-fingerprint.sh
           FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)"
+          echo "sha256=${FINGERPRINT}" >> "$GITHUB_OUTPUT"
           echo "ANDROID_SHA256_FINGERPRINT=${FINGERPRINT}"
           echo "Use this value with scripts/generate-app-links-well-known.sh for Firebase tester builds."
+
+      - name: Deploy App Links hosting
+        continue-on-error: true
+        env:
+          ANDROID_SHA256_FINGERPRINT: ${{ steps.app_links_fingerprint.outputs.sha256 }}
+          IOS_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          FIREBASE_PROJECT_ID: ${{ env.FIREBASE_PROJECT_ID }}
+          FIREBASE_TOOLS_VERSION: ${{ env.FIREBASE_TOOLS_VERSION }}
+          SKIP_VERIFY: "1"
+        run: |
+          if [[ -z "${IOS_TEAM_ID}" || -z "${FIREBASE_SERVICE_ACCOUNT_JSON}" ]]; then
+            echo "::notice::Skipping App Links hosting deploy (set APNS_TEAM_ID and FIREBASE_SERVICE_ACCOUNT_JSON)."
+            exit 0
+          fi
+          chmod +x ./scripts/deploy-app-links-hosting.sh
+          ./scripts/deploy-app-links-hosting.sh || {
+            echo "::warning::App Links hosting deploy failed — connect mymultiverse.app to Firebase Hosting (DNS) then re-run the App Links hosting workflow."
+            exit 0
+          }
 
       - name: Distribute to Firebase App Distribution
         uses: ./.github/actions/firebase-distribute
