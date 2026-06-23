@@ -195,7 +195,7 @@ fun HouseholdMembersScreen(
         stringResource(
             Res.string.sharing_members_invite_share_message,
             payload.householdName,
-            InviteRedirectUrls.build(payload.inviteToken),
+            InviteRedirectUrls.buildHttps(payload.inviteToken),
         )
     }
 
@@ -325,7 +325,7 @@ fun HouseholdMembersScreen(
                             stringResource(
                                 Res.string.sharing_members_invite_share_message,
                                 household.name,
-                                InviteRedirectUrls.build(token),
+                                InviteRedirectUrls.buildHttps(token),
                             )
                         }
                         PendingInviteRow(

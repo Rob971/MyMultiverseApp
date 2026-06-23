@@ -25,10 +25,13 @@ class InstrumentedHouseholdRepository(
         app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole.Owner,
     private val ensureFailure: Throwable? = null,
     private val refreshFailure: Throwable? = null,
+    initialMembershipStatus: HouseholdMembershipStatus? = null,
 ) : HouseholdRepository {
-    private val state = MutableStateFlow<Household?>(household)
+    private val state = MutableStateFlow<Household?>(
+        if (initialMembershipStatus is HouseholdMembershipStatus.Active) household else null,
+    )
     private val membership = MutableStateFlow<HouseholdMembershipStatus>(
-        HouseholdMembershipStatus.Active(
+        initialMembershipStatus ?: HouseholdMembershipStatus.Active(
             app.mymultiverse.kmp.domain.model.sharing.HouseholdMembership(
                 household = household,
                 role = role,

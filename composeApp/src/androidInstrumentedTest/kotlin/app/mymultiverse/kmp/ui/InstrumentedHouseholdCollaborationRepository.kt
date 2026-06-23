@@ -46,7 +46,9 @@ class InstrumentedHouseholdCollaborationRepository : HouseholdCollaborationRepos
     override suspend fun refreshPendingInvites() = Unit
 
     override suspend fun previewInvite(token: String): Result<app.mymultiverse.kmp.domain.model.sharing.HouseholdInvitePreview> =
-        Result.failure(UnsupportedOperationException())
+        previewInviteResult ?: Result.failure(UnsupportedOperationException())
+
+    var previewInviteResult: Result<app.mymultiverse.kmp.domain.model.sharing.HouseholdInvitePreview>? = null
 
     override suspend fun refreshOutboundInvites(householdId: String) = Unit
 

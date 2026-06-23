@@ -734,6 +734,8 @@
     <string name="auth_switch_to_sign_in">Already have an account? Sign in</string>
     <string name="auth_continue_google">Continue with Google</string>
     <string name="auth_continue_apple">Continue with Apple</string>
+    <string name="auth_continue_with_email">Continue with email</string>
+    <string name="auth_back_to_sso">Back to Google or Apple</string>
     <string name="auth_provider_coming_soon">This sign-in option will be available soon.</string>
     <string name="auth_error_generic">Could not sign in. Check your details and try again.</string>
     <string name="auth_error_config_missing">Sign-in isn't available in this version. Try again later.</string>

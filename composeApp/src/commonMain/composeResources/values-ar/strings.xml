@@ -733,6 +733,8 @@
     <string name="auth_switch_to_sign_in">لديك حساب بالفعل؟ سجّل الدخول</string>
     <string name="auth_continue_google">المتابعة مع Google</string>
     <string name="auth_continue_apple">المتابعة مع Apple</string>
+    <string name="auth_continue_with_email">المتابعة بالبريد الإلكتروني</string>
+    <string name="auth_back_to_sso">العودة إلى Google أو Apple</string>
     <string name="auth_provider_coming_soon">خيار تسجيل الدخول هذا سيكون متاحًا قريبًا.</string>
     <string name="auth_error_generic">تعذر تسجيل الدخول. تحقق من بياناتك وحاول مرة أخرى.</string>
     <string name="auth_error_config_missing">تسجيل الدخول غير متاح في هذا الإصدار. حاول مرة أخرى لاحقًا.</string>

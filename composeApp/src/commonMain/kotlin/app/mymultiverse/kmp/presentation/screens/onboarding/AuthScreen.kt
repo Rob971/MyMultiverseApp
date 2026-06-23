@@ -26,16 +26,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
+import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
 import app.mymultiverse.kmp.presentation.screens.auth.LoginError
 import app.mymultiverse.kmp.presentation.screens.auth.LoginMessage
 import app.mymultiverse.kmp.presentation.screens.auth.isScreenLevelOnly
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_apple
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_google
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_with_email
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_error_config_missing
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_error_generic
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_provider_coming_soon
@@ -50,6 +51,7 @@ object AuthTestTags {
     const val INVITE_BANNER = "auth_invite_banner"
     const val GOOGLE_BUTTON = "auth_google_button"
     const val APPLE_BUTTON = "auth_apple_button"
+    const val EMAIL_BUTTON = "auth_email_button"
     const val ERROR = "auth_error"
 }
 
@@ -57,6 +59,7 @@ object AuthTestTags {
 fun AuthScreen(
     pendingInviteToken: String?,
     showConfigMissing: Boolean,
+    onContinueWithEmail: () -> Unit,
     screenModel: OnboardingScreenModel = koinInject(),
 ) {
     val uiState by screenModel.uiState.collectAsState()
@@ -122,7 +125,7 @@ fun AuthScreen(
             } else if (uiState.invitePreviewState is InvitePreviewState.Loading && !pendingInviteToken.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(20.dp))
                 CircularProgressIndicator(
-                    color = SharedJourneyColors.MediterraneanTeal,
+                    color = JourneySemanticColors.brandTeal(),
                     modifier = Modifier.height(28.dp),
                 )
             }
@@ -146,6 +149,16 @@ fun AuthScreen(
                     modifier = Modifier.testTag(AuthTestTags.APPLE_BUTTON),
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            JourneyTertiaryButton(
+                onClick = onContinueWithEmail,
+                enabled = !uiState.isLoading && !showConfigMissing,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(AuthTestTags.EMAIL_BUTTON),
+                label = stringResource(Res.string.auth_continue_with_email),
+            )
 
             if (feedbackMessage != null) {
                 Spacer(modifier = Modifier.height(16.dp))

@@ -721,7 +721,7 @@ private fun ModeChip(
     val colors = if (selected) {
         accentColor to SharedJourneyColors.SunDrenchedWhite
     } else {
-        SharedJourneyColors.GlassWhite to accentColor
+        JourneySemanticColors.cardSurface() to accentColor
     }
     Surface(
         modifier = modifier

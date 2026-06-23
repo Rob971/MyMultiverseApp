@@ -733,6 +733,8 @@
     <string name="auth_switch_to_sign_in">¿Ya tienes cuenta? Inicia sesión</string>
     <string name="auth_continue_google">Continuar con Google</string>
     <string name="auth_continue_apple">Continuar con Apple</string>
+    <string name="auth_continue_with_email">Continuar con correo</string>
+    <string name="auth_back_to_sso">Volver a Google o Apple</string>
     <string name="auth_provider_coming_soon">Esta opción de inicio de sesión estará disponible pronto.</string>
     <string name="auth_error_generic">No se pudo iniciar sesión. Revisa tus datos e inténtalo de nuevo.</string>
     <string name="auth_error_config_missing">El inicio de sesión no está disponible en esta versión. Inténtalo más tarde.</string>

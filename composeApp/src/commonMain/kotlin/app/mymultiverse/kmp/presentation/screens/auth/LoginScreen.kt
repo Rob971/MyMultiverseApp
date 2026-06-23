@@ -36,6 +36,7 @@ import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_back_to_sso
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_apple
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_google
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_email_label
@@ -62,16 +63,20 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 object LoginTestTags {
+    const val SCREEN = "login_screen"
     const val EMAIL_FIELD = "login_email_field"
     const val PASSWORD_FIELD = "login_password_field"
     const val SUBMIT_BUTTON = "login_submit_button"
     const val GOOGLE_BUTTON = "login_google_button"
     const val APPLE_BUTTON = "login_apple_button"
+    const val BACK_TO_SSO = "login_back_to_sso"
 }
 
 @Composable
 fun LoginScreen(
     showConfigMissing: Boolean,
+    showBackToSso: Boolean = false,
+    onBackToSso: () -> Unit = {},
     screenModel: LoginScreenModel = koinInject(),
 ) {
     val uiState by screenModel.uiState.collectAsState()
@@ -113,7 +118,8 @@ fun LoginScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = ScreenLayout.horizontalPadding)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .testTag(LoginTestTags.SCREEN),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
@@ -141,26 +147,38 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(28.dp))
 
-            JourneySecondaryButton(
-                onClick = screenModel::signInWithGoogle,
-                enabled = !uiState.isLoading && !showConfigMissing,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag(LoginTestTags.GOOGLE_BUTTON),
-            ) {
-                Text(stringResource(Res.string.auth_continue_google))
+            if (showBackToSso) {
+                JourneyTertiaryButton(
+                    onClick = onBackToSso,
+                    enabled = !uiState.isLoading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(LoginTestTags.BACK_TO_SSO),
+                    label = stringResource(Res.string.auth_back_to_sso),
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+            } else {
+                JourneySecondaryButton(
+                    onClick = screenModel::signInWithGoogle,
+                    enabled = !uiState.isLoading && !showConfigMissing,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(LoginTestTags.GOOGLE_BUTTON),
+                ) {
+                    Text(stringResource(Res.string.auth_continue_google))
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                JourneySecondaryButton(
+                    onClick = screenModel::signInWithApple,
+                    enabled = !uiState.isLoading && !showConfigMissing,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(LoginTestTags.APPLE_BUTTON),
+                ) {
+                    Text(stringResource(Res.string.auth_continue_apple))
+                }
+                Spacer(modifier = Modifier.height(20.dp))
             }
-            Spacer(modifier = Modifier.height(12.dp))
-            JourneySecondaryButton(
-                onClick = screenModel::signInWithApple,
-                enabled = !uiState.isLoading && !showConfigMissing,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag(LoginTestTags.APPLE_BUTTON),
-            ) {
-                Text(stringResource(Res.string.auth_continue_apple))
-            }
-            Spacer(modifier = Modifier.height(20.dp))
 
             JourneyTextField(
                 value = uiState.email,

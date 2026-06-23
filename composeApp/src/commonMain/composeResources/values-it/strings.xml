@@ -733,6 +733,8 @@
     <string name="auth_switch_to_sign_in">Hai già un account? Accedi</string>
     <string name="auth_continue_google">Continua con Google</string>
     <string name="auth_continue_apple">Continua con Apple</string>
+    <string name="auth_continue_with_email">Continua con email</string>
+    <string name="auth_back_to_sso">Torna a Google o Apple</string>
     <string name="auth_provider_coming_soon">Questa opzione di accesso sarà disponibile a breve.</string>
     <string name="auth_error_generic">Accesso non riuscito. Controlla i dati e riprova.</string>
     <string name="auth_error_config_missing">L'accesso non è disponibile in questa versione. Riprova più tardi.</string>

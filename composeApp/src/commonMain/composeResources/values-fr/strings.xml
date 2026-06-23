@@ -733,6 +733,8 @@
     <string name="auth_switch_to_sign_in">Déjà un compte ? Connectez-vous</string>
     <string name="auth_continue_google">Continuer avec Google</string>
     <string name="auth_continue_apple">Continuer avec Apple</string>
+    <string name="auth_continue_with_email">Continuer avec l'e-mail</string>
+    <string name="auth_back_to_sso">Retour à Google ou Apple</string>
     <string name="auth_provider_coming_soon">Cette option de connexion sera bientôt disponible.</string>
     <string name="auth_error_generic">Connexion impossible. Vérifiez vos informations et réessayez.</string>
     <string name="auth_error_config_missing">La connexion n'est pas disponible dans cette version. Réessayez plus tard.</string>

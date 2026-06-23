@@ -733,6 +733,8 @@
     <string name="auth_switch_to_sign_in">Schon ein Konto? Anmelden</string>
     <string name="auth_continue_google">Mit Google fortfahren</string>
     <string name="auth_continue_apple">Mit Apple fortfahren</string>
+    <string name="auth_continue_with_email">Mit E-Mail fortfahren</string>
+    <string name="auth_back_to_sso">Zurück zu Google oder Apple</string>
     <string name="auth_provider_coming_soon">Diese Anmeldeoption ist bald verfügbar.</string>
     <string name="auth_error_generic">Anmeldung fehlgeschlagen. Prüfe deine Angaben und versuche es erneut.</string>
     <string name="auth_error_config_missing">Anmeldung ist in dieser Version nicht verfügbar. Versuche es später erneut.</string>

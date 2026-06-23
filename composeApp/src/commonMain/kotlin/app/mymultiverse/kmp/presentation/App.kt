@@ -36,6 +36,7 @@ import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.kmp.presentation.navigation.resolvePostAuthRoute
 import app.mymultiverse.kmp.presentation.navigation.shouldBlockAuthenticatedShell
 import app.mymultiverse.kmp.presentation.screens.onboarding.AuthScreen
+import app.mymultiverse.kmp.presentation.screens.auth.LoginScreen
 import app.mymultiverse.kmp.presentation.screens.householdsetup.HouseholdCreationScreen
 import app.mymultiverse.kmp.presentation.screens.home.HomePhase
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreen
@@ -100,13 +101,24 @@ fun App() {
                 AuthState.Unauthenticated,
                 AuthState.ConfigurationMissing,
                 -> {
+                    var showEmailAuth by rememberSaveable { mutableStateOf(false) }
                     LaunchedEffect(state) {
+                        showEmailAuth = false
                         navigator.replaceCurrent(AppRoute.Onboarding)
                     }
-                    AuthScreen(
-                        pendingInviteToken = pendingInviteToken,
-                        showConfigMissing = state is AuthState.ConfigurationMissing,
-                    )
+                    if (showEmailAuth) {
+                        LoginScreen(
+                            showConfigMissing = state is AuthState.ConfigurationMissing,
+                            showBackToSso = true,
+                            onBackToSso = { showEmailAuth = false },
+                        )
+                    } else {
+                        AuthScreen(
+                            pendingInviteToken = pendingInviteToken,
+                            showConfigMissing = state is AuthState.ConfigurationMissing,
+                            onContinueWithEmail = { showEmailAuth = true },
+                        )
+                    }
                 }
 
                 is AuthState.Authenticated -> {

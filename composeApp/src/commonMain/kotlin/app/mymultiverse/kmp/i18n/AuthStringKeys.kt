@@ -16,6 +16,8 @@ object AuthStringKeys {
         "auth_switch_to_sign_in",
         "auth_continue_google",
         "auth_continue_apple",
+        "auth_continue_with_email",
+        "auth_back_to_sso",
         "auth_provider_coming_soon",
         "auth_error_generic",
         "auth_error_config_missing",

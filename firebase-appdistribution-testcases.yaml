@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 45
+version: 46
 updated: 2026-06-23
 
 summary: |
@@ -32,16 +32,20 @@ summary: |
   Phase 2 UX (v38): chip-first AI sheet (quick picks generate on tap; criteria behind More options); mode locked from context; plan empty-state AI chips; full-screen AI adviser demoted to deep link only.
   Phase 3 UX (v39): invite share sheet after sending (SMS/WhatsApp with deep link); Sunday empty-week plan nudge on Today (dismissible).
   Dark mode accessibility (v45): household members card rows with role chips and overflow (⋮) menus; semantic ink tokens on auth, invite, join, loading, coming-soon, viewer banner, and AI grocery subtitles for WCAG-readable text in system dark theme.
+  Onboarding completion (v46): email/password fallback on auth screen; HTTPS invite App Links (mymultiverse.app/invite); instrumented smoke for auth + household creation screens.
 
 testcases:
   - id: auth-sign-in
     title: Email sign-in and sign-up
     steps:
       - Launch the app with Supabase configured.
-      - On Login, note the subtitle changes between Sign in and Sign up modes.
+      - From the auth screen, tap Continue with email.
+      - Note the subtitle changes between Sign in and Sign up modes.
       - Sign up with a new email and password (at least 6 characters), or sign in with an existing account.
+      - Tap Back to Google or Apple and confirm SSO buttons return.
       - If email confirmation is enabled, verify the success message appears and confirm via email before signing in.
     expected:
+      - Email form opens from the auth screen without losing invite context.
       - Home screen appears after successful authentication.
       - Invalid credentials, weak passwords, and duplicate accounts show clear on-screen messages.
 
@@ -319,6 +323,7 @@ testcases:
       - Complete Google or Apple sign-in with the invited email.
     expected:
       - Landing page offers Open MyMultiverse; app opens with invite token preserved.
+      - On Android with verified App Links, https://mymultiverse.app/invite?token=… may open the app directly.
       - Auth screen shows "You're invited to join {household}" when the deep link is active.
       - After SSO, family setup is skipped; user lands on Today with “You joined {household}” snackbar.
       - OAuth with a different email shows the email-mismatch recovery screen with sign-out retry.
@@ -765,7 +770,7 @@ testcases:
       - When the invite is sent, confirm the system share sheet opens (or tap Share on the pending invite row).
       - Share via Messages or copy the text.
     expected:
-      - Share message includes the household name and an invite deep link (app.mymultiverse.kmp://invite?token=…).
+      - Share message includes the household name and an HTTPS invite link (https://mymultiverse.app/invite?token=…).
       - Pending invite row shows a Share button for resending.
       - Snackbar confirms invite sent.
 

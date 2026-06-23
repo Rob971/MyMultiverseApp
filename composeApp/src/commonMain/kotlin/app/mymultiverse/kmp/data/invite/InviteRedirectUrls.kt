@@ -5,11 +5,51 @@ object InviteRedirectUrls {
     const val HOST = "invite"
     const val TOKEN_QUERY = "token"
 
+    /** Primary marketing domain for verified App Links / Universal Links. */
+    const val HTTPS_HOST_PRIMARY = "mymultiverse.app"
+    const val HTTPS_INVITE_PATH = "/invite"
+    const val HTTPS_INVITE_OPEN_PATH_SUFFIX = "/functions/v1/invite-open"
+
     fun build(token: String): String =
         "$SCHEME://$HOST?$TOKEN_QUERY=${encodeQueryComponent(token.trim())}"
 
+    fun buildHttps(token: String, host: String = HTTPS_HOST_PRIMARY): String =
+        "https://$host$HTTPS_INVITE_PATH?$TOKEN_QUERY=${encodeQueryComponent(token.trim())}"
+
     fun parseToken(url: String): String? {
-        if (!isInviteRedirect(url)) return null
+        if (isInviteRedirect(url)) {
+            return parseTokenFromQuery(url)
+        }
+        return null
+    }
+
+    fun isInviteRedirect(url: String): Boolean =
+        url.startsWith("$SCHEME://$HOST") || isHttpsInviteRedirect(url)
+
+    private fun isHttpsInviteRedirect(url: String): Boolean {
+        if (!url.startsWith("https://", ignoreCase = true)) return false
+        val pathStart = url.indexOf('/', startIndex = "https://".length)
+        if (pathStart < 0) return false
+        val hostEnd = url.indexOfAny(charArrayOf('/', '?', '#'), startIndex = "https://".length)
+        val host = if (hostEnd < 0) {
+            url.substring("https://".length)
+        } else {
+            url.substring("https://".length, hostEnd)
+        }
+        if (!isAllowedHttpsHost(host)) return false
+        val path = url.substring(pathStart).substringBefore('?').substringBefore('#')
+        return isAllowedHttpsInvitePath(path)
+    }
+
+    private fun isAllowedHttpsHost(host: String): Boolean =
+        host.equals(HTTPS_HOST_PRIMARY, ignoreCase = true) ||
+            host.endsWith(".supabase.co", ignoreCase = true)
+
+    private fun isAllowedHttpsInvitePath(path: String): Boolean =
+        path.equals(HTTPS_INVITE_PATH, ignoreCase = true) ||
+            path.endsWith(HTTPS_INVITE_OPEN_PATH_SUFFIX, ignoreCase = true)
+
+    private fun parseTokenFromQuery(url: String): String? {
         val queryStart = url.indexOf('?')
         if (queryStart < 0) return null
         return url.substring(queryStart + 1)
@@ -21,9 +61,6 @@ object InviteRedirectUrls {
             ?.let(::decodeQueryComponent)
             ?.takeIf { it.isNotBlank() }
     }
-
-    fun isInviteRedirect(url: String): Boolean =
-        url.startsWith("$SCHEME://$HOST")
 
     private fun encodeQueryComponent(value: String): String = buildString(value.length) {
         value.forEach { ch ->

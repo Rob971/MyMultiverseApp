@@ -206,6 +206,7 @@ kotlin {
                 implementation(libs.androidx.compose.ui.test.junit4)
                 implementation(libs.androidx.compose.ui.test.manifest)
                 implementation(libs.koin.compose)
+                implementation(libs.multiplatform.settings.test)
             }
         }
     }
