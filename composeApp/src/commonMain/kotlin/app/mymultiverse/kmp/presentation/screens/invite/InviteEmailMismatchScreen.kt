@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.components.JourneyDestructiveOutlinedButton
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_pending_invites_email_mismatch
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.invite_join_email_mismatch_title
@@ -54,7 +54,7 @@ fun InviteEmailMismatchScreen(
                 text = stringResource(Res.string.invite_join_email_mismatch_title),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = SharedJourneyColors.InkDeep,
+                color = JourneySemanticColors.inkDeep(),
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -65,7 +65,7 @@ fun InviteEmailMismatchScreen(
                     sessionEmail,
                 ),
                 style = MaterialTheme.typography.bodyLarge,
-                color = SharedJourneyColors.InkSecondary,
+                color = JourneySemanticColors.inkSecondary(),
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(24.dp))

@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 44
+version: 45
 updated: 2026-06-23
 
 summary: |
@@ -31,6 +31,7 @@ summary: |
   Phase 2 UX (v37): inline AI triggers — empty meal slot “Suggest 20-min meal”, grocery “Build list from this week’s meals” chip, terracotta AI suggestion chips.
   Phase 2 UX (v38): chip-first AI sheet (quick picks generate on tap; criteria behind More options); mode locked from context; plan empty-state AI chips; full-screen AI adviser demoted to deep link only.
   Phase 3 UX (v39): invite share sheet after sending (SMS/WhatsApp with deep link); Sunday empty-week plan nudge on Today (dismissible).
+  Dark mode accessibility (v45): household members card rows with role chips and overflow (⋮) menus; semantic ink tokens on auth, invite, join, loading, coming-soon, viewer banner, and AI grocery subtitles for WCAG-readable text in system dark theme.
 
 testcases:
   - id: auth-sign-in
@@ -232,9 +233,10 @@ testcases:
     title: Owner promotes member to household admin
     steps:
       - Sign in as owner; open Household members.
-      - On an editor member, tap Change role → Household admin → confirm promotion.
+      - On an editor member row, tap ⋮ (more actions) → Change role → Household admin → confirm promotion.
       - Sign in as the promoted admin on another device or account.
     expected:
+      - Member rows show name, email, and a role chip (Owner terracotta, others muted).
       - Admin can invite members and change editor/viewer roles; cannot transfer ownership or dissolve.
       - Admin cannot promote others to admin or change another admin's role.
       - Role updated snackbar appears after save.
@@ -261,8 +263,8 @@ testcases:
     title: Owner transfers ownership then leaves
     steps:
       - Sign in as household owner with at least one editor member (two accounts).
-      - Open Household members → Transfer ownership → pick the editor → confirm.
-      - Sign in as the former owner (now editor) → Leave household.
+      - Open Household members → tap ⋮ in the household actions area → Transfer ownership → pick the editor → confirm.
+      - Sign in as the former owner (now editor) → ⋮ → Leave household.
     expected:
       - New owner appears on the members list; former owner is editor.
       - Former owner reaches Home onboarding after leaving; shared data is no longer accessible.
@@ -531,8 +533,10 @@ testcases:
     title: Open household members from Home
     steps:
       - From Home, tap the Household card.
+      - Scan member rows for role chips and ⋮ overflow on editable members.
     expected:
-      - Members screen lists the owner, active members, and pending invites.
+      - Members screen lists the owner, active members, and pending invites in card rows.
+      - Owner role chip is terracotta; subtitles and emails remain readable in light and dark mode.
 
   - id: nutrition-section-back
     title: Back from nutrition section to hub
@@ -706,11 +710,13 @@ testcases:
     steps:
       - Sign in with an active household.
       - Enable system dark mode (Settings → Display → Dark theme, or quick settings).
-      - Visit Welcome Home, Nutrition hub, Grocery shopping, and Weekly meal plan.
+      - Visit Welcome Home, Nutrition hub, Grocery shopping, Weekly meal plan, and Household members.
+      - Sign out and spot-check the auth screen subtitle and any invite/join screens you can reach.
       - Toggle back to light mode and spot-check the same screens.
     expected:
       - Dark mode uses warm charcoal backgrounds (not pure black); body text stays readable on cards and glass surfaces.
-      - Welcome Home first-win card, nutrition status line, and household subtitle are legible (no dark-on-dark gray text).
+      - Welcome Home first-win card, nutrition status line, household subtitle, member emails, and role chips are legible (no dark-on-dark gray text).
+      - Auth, invite join, loading spinners, coming-soon rows, and viewer read-only banner use light primary/muted ink on dark surfaces.
       - Napolitan background illustration is subdued (low alpha); primary terracotta and teal accents remain visible.
       - No hardcoded light-only gray text; subtitles and empty states remain legible.
       - Switching light ↔ dark updates visible screens without stale colors after navigation.

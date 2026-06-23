@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_apple
@@ -122,7 +123,7 @@ fun LoginScreen(
                 text = stringResource(Res.string.auth_title),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = SharedJourneyColors.InkDeep,
+                color = JourneySemanticColors.inkDeep(),
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -135,7 +136,7 @@ fun LoginScreen(
                     },
                 ),
                 style = MaterialTheme.typography.bodyLarge,
-                color = SharedJourneyColors.InkSecondary,
+                color = JourneySemanticColors.inkSecondary(),
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(28.dp))

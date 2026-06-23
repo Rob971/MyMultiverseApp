@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object HomeComingSoonTestTags {
@@ -37,7 +38,7 @@ fun HomeComingSoonRow(
             .alpha(0.85f)
             .testTag(HomeComingSoonTestTags.ROW),
         shape = FamilyLogisticsDesign.cardShape,
-        color = SharedJourneyColors.GlassWhite,
+        color = JourneySemanticColors.cardSurface(),
     ) {
         Column(
             modifier = Modifier
@@ -66,18 +67,18 @@ fun HomeComingSoonRow(
                     text = label,
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = SharedJourneyColors.InkMuted,
+                    color = JourneySemanticColors.inkMuted(),
                     fontWeight = FontWeight.Medium,
                 )
                 Surface(
                     shape = MaterialTheme.shapes.small,
-                    color = SharedJourneyColors.InkMuted.copy(alpha = 0.12f),
+                    color = JourneySemanticColors.inkMuted().copy(alpha = 0.12f),
                 ) {
                     Text(
                         text = badge,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                         style = MaterialTheme.typography.labelSmall,
-                        color = SharedJourneyColors.InkMuted,
+                        color = JourneySemanticColors.inkMuted(),
                         fontWeight = FontWeight.SemiBold,
                     )
                 }
@@ -86,7 +87,7 @@ fun HomeComingSoonRow(
                 Text(
                     text = hint,
                     style = MaterialTheme.typography.bodySmall,
-                    color = SharedJourneyColors.InkMuted,
+                    color = JourneySemanticColors.inkMuted(),
                 )
             }
         }

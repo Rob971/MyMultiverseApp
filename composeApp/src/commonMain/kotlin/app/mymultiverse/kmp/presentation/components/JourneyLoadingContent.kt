@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 
 @Composable
 fun JourneyLoadingContent(
@@ -27,11 +27,11 @@ fun JourneyLoadingContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        CircularProgressIndicator(color = SharedJourneyColors.MediterraneanTeal)
+        CircularProgressIndicator(color = JourneySemanticColors.brandTeal())
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
-            color = SharedJourneyColors.InkMuted,
+            color = JourneySemanticColors.inkMuted(),
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 12.dp),
         )

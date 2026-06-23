@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object AiGrocerySuggestionsSectionTestTags {
@@ -66,7 +67,7 @@ private fun ColumnSection(
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelLarge,
-                color = SharedJourneyColors.InkMuted,
+                color = JourneySemanticColors.inkMuted(),
             )
             TextButton(
                 onClick = onAdoptAll,

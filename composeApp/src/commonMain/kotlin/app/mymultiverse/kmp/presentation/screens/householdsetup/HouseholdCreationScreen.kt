@@ -117,7 +117,7 @@ fun HouseholdCreationScreen(
             Text(
                 text = stringResource(Res.string.household_gate_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
-                color = SharedJourneyColors.InkSecondary,
+                color = JourneySemanticColors.inkSecondary(),
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(28.dp))

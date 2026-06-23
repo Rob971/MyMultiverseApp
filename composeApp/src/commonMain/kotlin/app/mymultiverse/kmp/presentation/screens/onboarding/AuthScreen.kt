@@ -108,7 +108,7 @@ fun AuthScreen(
             Text(
                 text = stringResource(Res.string.auth_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
-                color = SharedJourneyColors.InkSecondary,
+                color = JourneySemanticColors.inkSecondary(),
                 textAlign = TextAlign.Center,
             )
 

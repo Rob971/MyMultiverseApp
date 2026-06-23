@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_apple
@@ -122,11 +123,11 @@ private fun JoinHouseholdLoading(padding: androidx.compose.foundation.layout.Pad
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        CircularProgressIndicator(color = SharedJourneyColors.MediterraneanTeal)
+        CircularProgressIndicator(color = JourneySemanticColors.brandTeal())
         Text(
             text = stringResource(Res.string.invite_join_loading_preview),
             modifier = Modifier.padding(top = 12.dp),
-            color = SharedJourneyColors.InkMuted,
+            color = JourneySemanticColors.inkMuted(),
         )
     }
 }
@@ -205,14 +206,14 @@ private fun JoinHouseholdContent(
             text = stringResource(Res.string.invite_join_title, preview.householdName),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = SharedJourneyColors.InkDeep,
+            color = JourneySemanticColors.inkDeep(),
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = stringResource(Res.string.invite_join_subtitle, preview.inviterName),
             style = MaterialTheme.typography.bodyLarge,
-            color = SharedJourneyColors.InkSecondary,
+            color = JourneySemanticColors.inkSecondary(),
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(24.dp))
@@ -332,14 +333,14 @@ private fun JoinHouseholdOtpStep(
         text = stringResource(Res.string.invite_join_otp_title),
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.SemiBold,
-        color = SharedJourneyColors.InkDeep,
+        color = JourneySemanticColors.inkDeep(),
         modifier = Modifier.fillMaxWidth(),
     )
     Spacer(modifier = Modifier.height(4.dp))
     Text(
         text = stringResource(Res.string.invite_join_otp_subtitle, uiState.email),
         style = MaterialTheme.typography.bodyMedium,
-        color = SharedJourneyColors.InkMuted,
+        color = JourneySemanticColors.inkMuted(),
         modifier = Modifier.fillMaxWidth(),
     )
     Spacer(modifier = Modifier.height(16.dp))
@@ -406,7 +407,7 @@ private fun JoinHouseholdSocialSignIn(
     Text(
         text = stringResource(Res.string.invite_join_or_divider),
         style = MaterialTheme.typography.labelLarge,
-        color = SharedJourneyColors.InkMuted,
+        color = JourneySemanticColors.inkMuted(),
     )
     Spacer(modifier = Modifier.height(12.dp))
 
@@ -435,7 +436,7 @@ private fun JoinHouseholdSocialSignIn(
         Text(
             text = stringResource(Res.string.invite_join_apple_email_hint),
             style = MaterialTheme.typography.bodySmall,
-            color = SharedJourneyColors.InkMuted,
+            color = JourneySemanticColors.inkMuted(),
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )

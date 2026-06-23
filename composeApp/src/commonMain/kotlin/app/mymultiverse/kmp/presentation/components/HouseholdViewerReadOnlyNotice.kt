@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_household_viewer_readonly_note
@@ -32,7 +33,7 @@ fun HouseholdViewerReadOnlyNotice(
         Text(
             text = stringResource(Res.string.nutrition_household_viewer_readonly_note),
             style = MaterialTheme.typography.bodyMedium,
-            color = SharedJourneyColors.InkDeep,
+            color = JourneySemanticColors.inkDeep(),
             modifier = Modifier.padding(12.dp),
         )
     }
