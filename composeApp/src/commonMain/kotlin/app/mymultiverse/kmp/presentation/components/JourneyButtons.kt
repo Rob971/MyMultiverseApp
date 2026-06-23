@@ -57,14 +57,14 @@ fun JourneySecondaryButton(
     enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val brandTeal = JourneySemanticColors.brandTeal()
+    val accent = JourneySemanticColors.brandSecondaryAccent()
     OutlinedButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
-        border = BorderStroke(1.dp, brandTeal),
+        border = BorderStroke(1.dp, accent),
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = brandTeal,
+            contentColor = accent,
         ),
         content = content,
     )

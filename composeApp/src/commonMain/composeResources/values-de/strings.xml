@@ -362,6 +362,10 @@
     <string name="home_hero_plan_meals">Mahlzeiten planen</string>
     <string name="home_hero_grocery_list">Einkaufsliste</string>
     <string name="home_hero_family">Familie</string>
+    <string name="home_dashboard_plan_lunch">MITTAGESSEN PLANEN</string>
+    <string name="home_dashboard_shopping_list">EINKAUFSLISTE</string>
+    <string name="home_daily_meal_plan_title">TAGESMAHLZEITENPLAN</string>
+    <string name="home_update_list">Liste aktualisieren</string>
     <string name="language_picker_current">Sprache: %1$s</string>
     <string name="language_napulitano_subtitle">Neapolitanischer Dialekt</string>
     <string name="home_theme_system">System</string>

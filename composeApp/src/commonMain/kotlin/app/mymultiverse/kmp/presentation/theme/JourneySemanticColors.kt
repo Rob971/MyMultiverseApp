@@ -27,10 +27,15 @@ object JourneySemanticColors {
     fun elevatedSurface(): Color =
         if (isDark()) SharedJourneyColors.DarkSurfaceElevated else SharedJourneyColors.SunDrenchedWhite
 
-    /** Primary brand teal — dark surfaces need a lighter variant for contrast. */
+    /** Primary brand teal — mint accent on dark slate surfaces. */
     @Composable
     fun brandTeal(): Color =
-        if (isDark()) SharedJourneyColors.MediterraneanTealOnDark else SharedJourneyColors.MediterraneanTeal
+        if (isDark()) SharedJourneyColors.AccentMintTeal else SharedJourneyColors.MediterraneanTeal
+
+    /** Secondary accent — warm gold rings on dark; teal outline in light. */
+    @Composable
+    fun brandSecondaryAccent(): Color =
+        if (isDark()) SharedJourneyColors.AccentWarmGold else SharedJourneyColors.MediterraneanTeal
 
     @Composable
     fun brandTerracotta(): Color = SharedJourneyColors.TerracottaOrange

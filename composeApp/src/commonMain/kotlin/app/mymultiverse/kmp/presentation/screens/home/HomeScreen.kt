@@ -1,7 +1,6 @@
 package app.mymultiverse.kmp.presentation.screens.home
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -47,19 +46,13 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.*
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
-import app.mymultiverse.kmp.domain.home.HomeTonightDinner
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import app.mymultiverse.kmp.presentation.components.FamilyLogisticsCardSurface
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
-import app.mymultiverse.kmp.presentation.components.HomePrimaryActions
-import app.mymultiverse.kmp.presentation.components.HomeSundayPlanNudgeCard
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
-import app.mymultiverse.kmp.presentation.components.WeekContextBanner
-import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.domain.repository.AuthRepository
@@ -90,6 +83,12 @@ object HomeTestTags {
     const val LOADING_INDICATOR = "home_loading_indicator"
     const val GREETING_LINE = "home_greeting_line"
     const val INSPIRATION_LINE = "home_inspiration_line"
+    const val DAILY_MEAL_PLAN_BLOCK = "home_daily_meal_plan_block"
+    const val DAILY_TAB_TODAY = "home_daily_tab_today"
+    const val DAILY_TAB_THIS_WEEK = "home_daily_tab_this_week"
+    const val UPDATE_LIST_ROW = "home_update_list_row"
+    const val WEEK_MEAL_PROGRESS_LINE = "home_week_meal_progress_line"
+    const val WEEK_GROCERY_PROGRESS_LINE = "home_week_grocery_progress_line"
     const val WEEK_CONTEXT_BANNER = "home_week_context_banner"
     const val SETTINGS_BUTTON = "home_settings_button"
     const val ONBOARDING_LOADING = "home_onboarding_loading"
@@ -302,6 +301,7 @@ fun HomeScreen(
                         avatarInitials = avatarInitials,
                     )
                 },
+                // Transparent so NapolitanBackground / MaterialTheme.background shows through on Android.
                 containerColor = Color.Transparent,
             ) { padding ->
                 HomeWelcomeContent(
@@ -655,11 +655,8 @@ fun HomeWelcomeContent(
         hour = greetingHour ?: currentLocalHour(),
     )
     val greetingLine = homeGreetingSupportingLine(greetingSelection)
-    val inspirationLine = when (val line = HomeInspirationLine.select(greeting)) {
-        HomeInspirationLine.Loading -> stringResource(Res.string.home_greeting_loading)
-        is HomeInspirationLine.Ready -> line.text
-    }
-    val showInspirationLoading = greeting == null
+    val showGreetingLoading = greeting == null
+    val loadingLine = stringResource(Res.string.home_greeting_loading)
 
     val pullRefreshState = rememberPullToRefreshState()
 
@@ -669,111 +666,48 @@ fun HomeWelcomeContent(
         state = pullRefreshState,
         modifier = modifier.fillMaxSize(),
     ) {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .then(
                     if (embeddedInMainTabs) {
                         Modifier.imePadding()
                     } else {
                         Modifier.navigationBarsPadding().imePadding()
                     },
-                ),
-            contentPadding = screenListPadding(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                )
+                .padding(screenListPadding()),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            item {
-                JourneyBanner(
-                    headline = greetingLine,
-                    supportingLine = null,
-                    description = inspirationLine,
-                    headlineTestTag = HomeTestTags.GREETING_LINE,
-                    descriptionTestTag = if (showInspirationLoading) {
-                        HomeTestTags.LOADING_INDICATOR
-                    } else {
-                        HomeTestTags.INSPIRATION_LINE
-                    },
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = greetingLine,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = JourneySemanticColors.inkDeep(),
+                    modifier = Modifier.testTag(HomeTestTags.GREETING_LINE),
                 )
-            }
-
-            nutritionSummary?.weekKey?.takeIf { it.isNotBlank() }?.let { weekKey ->
-                item {
-                    WeekContextBanner(
-                        weekLabel = stringResource(
-                            Res.string.nutrition_week_label,
-                            WeekCalendar.formatWeekRange(weekKey),
-                        ),
-                        modifier = Modifier.testTag(HomeTestTags.WEEK_CONTEXT_BANNER),
+                if (showGreetingLoading) {
+                    Text(
+                        text = loadingLine,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = JourneySemanticColors.inkMuted(),
+                        modifier = Modifier.testTag(HomeTestTags.LOADING_INDICATOR),
                     )
                 }
             }
 
-            item {
-                HomePrimaryActions(
-                    onOpenMealPlan = onOpenMealPlan,
-                    onOpenGrocery = onOpenGrocery,
-                    onOpenFamily = onOpenHouseholdMembers,
-                )
-            }
+            HomeDailyHubCircularActions(
+                onOpenMealPlan = onOpenMealPlan,
+                onOpenGrocery = onOpenGrocery,
+            )
 
-            if (weekPlanNudge.visible) {
-                item {
-                    HomeSundayPlanNudgeCard(
-                        title = stringResource(Res.string.home_sunday_plan_nudge_title),
-                        body = stringResource(Res.string.home_sunday_plan_nudge_body),
-                        actionLabel = stringResource(Res.string.home_sunday_plan_nudge_action),
-                        dismissLabel = stringResource(Res.string.home_sunday_plan_nudge_dismiss),
-                        onOpenMealPlan = onOpenMealPlan,
-                        onDismiss = onDismissWeekPlanNudge,
-                    )
-                }
-            }
-
-            val tonightsDinner = nutritionSummary?.tonightsDinner
-            if (tonightsDinner != null && tonightsDinner != HomeTonightDinner.State.Hidden) {
-                item {
-                    FamilyLogisticsCardSurface(
-                        accentColor = SharedJourneyColors.MediterraneanTeal,
-                        modifier = Modifier.testTag(HomeTestTags.TONIGHT_DINNER_CARD),
-                        onClick = onOpenMealPlan,
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Text(
-                                text = stringResource(Res.string.home_tonight_dinner_title),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = JourneySemanticColors.inkDeep(),
-                            )
-                            when (tonightsDinner) {
-                                is HomeTonightDinner.State.Planned -> {
-                                    Text(
-                                        text = tonightsDinner.title,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = JourneySemanticColors.inkDeep(),
-                                        modifier = Modifier.testTag(HomeTestTags.TONIGHT_DINNER_MEAL),
-                                    )
-                                }
-                                HomeTonightDinner.State.Unplanned -> {
-                                    Text(
-                                        text = stringResource(Res.string.home_tonight_dinner_empty),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = JourneySemanticColors.inkMuted(),
-                                    )
-                                    Text(
-                                        text = stringResource(Res.string.home_tonight_dinner_cta),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = SharedJourneyColors.MediterraneanTeal,
-                                    )
-                                }
-                                HomeTonightDinner.State.Hidden -> Unit
-                            }
-                        }
-                    }
-                }
-            }
+            HomeDailyMealPlanBlock(
+                nutritionSummary = nutritionSummary,
+                onOpenMealPlan = onOpenMealPlan,
+                onOpenGrocery = onOpenGrocery,
+            )
         }
     }
 }

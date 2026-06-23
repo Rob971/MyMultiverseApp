@@ -478,35 +478,6 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun homeContent_tapFamilyHero_invokesCallback() {
-        var openedHousehold = false
-
-        composeRule.setContent {
-            AppTheme {
-                InstrumentedKoinHost {
-                    HomeWelcomeContent(
-                        greeting = Greeting("Hello"),
-                        userDisplayName = "Test User",
-                        nutritionSummary = null,
-                        isRefreshing = false,
-                        onRefresh = {},
-                        onOpenMealPlan = {},
-                        onOpenGrocery = {},
-                        onOpenHouseholdMembers = { openedHousehold = true },
-                        greetingHour = 9,
-                    )
-                }
-            }
-        }
-
-        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.FAMILY)
-            .performScrollTo()
-            .performClick()
-
-        assertTrue(openedHousehold)
-    }
-
-    @Test
     fun homeContent_showsWeekContextBanner_whenWeekKeyPresent() {
         composeRule.setContent {
             AppTheme {
@@ -530,6 +501,9 @@ class NutritionUxInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag(HomeTestTags.DAILY_TAB_THIS_WEEK)
+            .performScrollTo()
+            .performClick()
         composeRule.onNodeWithTag(HomeTestTags.WEEK_CONTEXT_BANNER)
             .performScrollTo()
             .assertIsDisplayed()
@@ -709,7 +683,7 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun homeContent_withGreeting_showsInspirationText() {
+    fun homeContent_withGreeting_omitsInspirationLineFromDashboard() {
         composeRule.setContent {
             AppTheme {
                 InstrumentedKoinHost {
@@ -728,8 +702,14 @@ class NutritionUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(HomeTestTags.INSPIRATION_LINE).assertIsDisplayed()
-        composeRule.onNodeWithText("Small steps keep the week calm.").assertIsDisplayed()
+        composeRule.onNodeWithTag(HomeTestTags.GREETING_LINE).assertIsDisplayed()
+        composeRule.onNodeWithTag(HomeTestTags.DAILY_MEAL_PLAN_BLOCK)
+            .performScrollTo()
+            .assertIsDisplayed()
+        assertTrue(
+            composeRule.onAllNodesWithTag(HomeTestTags.INSPIRATION_LINE)
+                .fetchSemanticsNodes().isEmpty(),
+        )
     }
 
     @Test
@@ -756,8 +736,10 @@ class NutritionUxInstrumentedTest {
             composeRule.onAllNodesWithTag(HomeTestTags.LOADING_INDICATOR)
                 .fetchSemanticsNodes().isEmpty(),
         )
-        composeRule.onNodeWithTag(HomeTestTags.INSPIRATION_LINE).assertIsDisplayed()
         composeRule.onNodeWithTag(HomePrimaryActionsTestTags.PLAN)
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithTag(HomeTestTags.DAILY_MEAL_PLAN_BLOCK)
             .performScrollTo()
             .assertIsDisplayed()
     }

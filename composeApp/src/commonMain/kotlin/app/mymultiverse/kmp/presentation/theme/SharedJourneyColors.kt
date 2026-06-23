@@ -1,6 +1,5 @@
 package app.mymultiverse.kmp.presentation.theme
 
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
@@ -17,21 +16,29 @@ object SharedJourneyColors {
     val ParchmentWarm = Color(0xFFFFF9F2)
     val SunDrenchedWhite = Color(0xFFFFFBFA)
 
-    // Dark mode tokens (WCAG AA: ≥4.5:1 body text on surfaces)
-    /** Primary app background in dark theme (#121212). */
-    val DarkBackground = Color(0xFF121212)
-    /** Elevated shell / nav chrome (#1A1A1A). */
-    val DarkSurfaceElevated = Color(0xFF1A1A1A)
-    /** Card and list row surfaces (#1E1E1E). */
-    val DarkSurfaceCard = Color(0xFF1E1E1E)
-    /** Primary readable text on dark surfaces (#F5F5F5). */
-    val DarkTextPrimary = Color(0xFFF5F5F5)
-    /** Secondary labels — owner names, metadata (#B3B3B3, ~5.8:1 on #1E1E1E). */
-    val DarkTextSecondary = Color(0xFFB3B3B3)
-    /** Muted captions and role chips (#9E9E9E, ~4.6:1 on #1E1E1E). */
-    val DarkTextMuted = Color(0xFF9E9E9E)
-    /** Subtle borders and dividers on dark surfaces. */
-    val DarkOutline = Color(0xFF5C5C5C)
+    // Dark mode tokens — Option 1 deep slate palette (WCAG AA on slate surfaces)
+    /** Primary app background — deep slate charcoal. */
+    val DarkBackground = Color(0xFF12161A)
+    /** Elevated shell / nav chrome — step above background. */
+    val DarkSurfaceElevated = Color(0xFF252B33)
+    /** Card and list row surfaces — elevated container slate. */
+    val DarkSurfaceCard = Color(0xFF1E232A)
+    /** Primary readable text on dark surfaces — soft off-white. */
+    val DarkTextPrimary = Color(0xFFE2E8F0)
+    /** Secondary labels — owner names, metadata. */
+    val DarkTextSecondary = Color(0xFFB8C5D0)
+    /** Muted captions and role chips. */
+    val DarkTextMuted = Color(0xFF8B9AAB)
+    /** Subtle borders, dividers, and muted accent rings on dark surfaces. */
+    val DarkOutline = Color(0xFF4A5568)
+    /** Mint/teal accent — Plan Lunch primary actions in dark mode. */
+    val AccentMintTeal = Color(0xFF76C79C)
+    /** Warm gold accent — Shopping List secondary rings in dark mode. */
+    val AccentWarmGold = Color(0xFFE5C478)
+    /** Muted mint container / ring fill behind primary accents. */
+    val AccentMintContainer = Color(0xFF2A3D34)
+    /** Muted gold container / ring fill behind secondary accents. */
+    val AccentWarmGoldContainer = Color(0xFF3D3528)
 
     @Deprecated("Use DarkBackground", ReplaceWith("DarkBackground"))
     val ParchmentWarmDark = DarkBackground
@@ -51,8 +58,8 @@ object SharedJourneyColors {
     val InkSecondaryOnDark = DarkTextSecondary
     val SageSoft = Color(0xFF8DAA91)
 
-    /** Brighter teal for outlines, nav, and links on dark surfaces (WCAG-friendly on #121212). */
-    val MediterraneanTealOnDark = Color(0xFF6ECFD6)
+    /** Brighter teal for outlines, nav, and links on dark surfaces. */
+    val MediterraneanTealOnDark = AccentMintTeal
     @Deprecated("Use DarkSurfaceCard", ReplaceWith("DarkSurfaceCard"))
     val CardElevatedDark = DarkSurfaceCard
     @Deprecated("Use DarkSurfaceElevated", ReplaceWith("DarkSurfaceElevated"))
@@ -78,20 +85,4 @@ fun sharedJourneyLightScheme() = lightColorScheme(
     onSurface = SharedJourneyColors.InkDeep,
 )
 
-fun sharedJourneyDarkScheme() = darkColorScheme(
-    primary = SharedJourneyColors.TerracottaOrange,
-    onPrimary = Color.White,
-    secondary = SharedJourneyColors.MediterraneanTealOnDark,
-    onSecondary = SharedJourneyColors.DarkBackground,
-    tertiary = SharedJourneyColors.LemonZestYellow,
-    onTertiary = SharedJourneyColors.DarkBackground,
-    background = SharedJourneyColors.DarkBackground,
-    onBackground = SharedJourneyColors.DarkTextPrimary,
-    surface = SharedJourneyColors.DarkSurfaceCard,
-    onSurface = SharedJourneyColors.DarkTextPrimary,
-    surfaceContainer = SharedJourneyColors.DarkSurfaceElevated,
-    onSurfaceVariant = SharedJourneyColors.DarkTextMuted,
-    outline = SharedJourneyColors.DarkOutline,
-    error = SharedJourneyColors.TerracottaOrange,
-    onError = Color.White,
-)
+fun sharedJourneyDarkScheme() = appDarkColorScheme()

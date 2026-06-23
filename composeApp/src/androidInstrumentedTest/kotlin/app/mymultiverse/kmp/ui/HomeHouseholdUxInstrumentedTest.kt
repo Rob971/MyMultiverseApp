@@ -11,13 +11,11 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.presentation.components.HomeHouseholdButtonTestTags
-import app.mymultiverse.kmp.presentation.components.HomePrimaryActionsTestTags
 import app.mymultiverse.kmp.presentation.screens.home.HomeAccountSheet
 import app.mymultiverse.kmp.presentation.screens.home.HomeAccountSheetTestTags
 import app.mymultiverse.kmp.presentation.screens.home.HomeOnboardingContent
 import app.mymultiverse.kmp.presentation.screens.home.HomeOnboardingUiState
 import app.mymultiverse.kmp.presentation.screens.home.HomeTestTags
-import app.mymultiverse.kmp.presentation.screens.home.HomeWelcomeContent
 import app.mymultiverse.kmp.presentation.screens.home.HouseholdNameAvailability
 import app.mymultiverse.kmp.presentation.theme.AppTheme
 import org.junit.Assert.assertTrue
@@ -218,31 +216,4 @@ class HomeHouseholdUxInstrumentedTest {
         )
     }
 
-    @Test
-    fun welcome_familyHero_opensMembers() {
-        var membersOpened = false
-
-        composeRule.setContent {
-            AppTheme {
-                InstrumentedKoinHost {
-                    HomeWelcomeContent(
-                        greeting = Greeting("ready"),
-                        userDisplayName = "Roberto",
-                        nutritionSummary = null,
-                        isRefreshing = false,
-                        onRefresh = {},
-                        onOpenMealPlan = {},
-                        onOpenGrocery = {},
-                        onOpenHouseholdMembers = { membersOpened = true },
-                        greetingHour = 9,
-                    )
-                }
-            }
-        }
-
-        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.FAMILY)
-            .performScrollTo()
-            .performClick()
-        assertTrue(membersOpened)
-    }
 }

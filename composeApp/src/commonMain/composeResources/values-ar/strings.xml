@@ -362,6 +362,10 @@
     <string name="home_hero_plan_meals">تخطيط الوجبات</string>
     <string name="home_hero_grocery_list">قائمة البقالة</string>
     <string name="home_hero_family">العائلة</string>
+    <string name="home_dashboard_plan_lunch">خطط الغداء</string>
+    <string name="home_dashboard_shopping_list">قائمة التسوق</string>
+    <string name="home_daily_meal_plan_title">خطة الوجبات اليومية</string>
+    <string name="home_update_list">تحديث القائمة</string>
     <string name="language_picker_current">اللغة: %1$s</string>
     <string name="language_napulitano_subtitle">اللهجة النابولية</string>
     <string name="home_theme_system">النظام</string>

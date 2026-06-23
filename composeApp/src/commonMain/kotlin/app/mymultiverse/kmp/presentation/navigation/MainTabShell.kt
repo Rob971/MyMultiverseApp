@@ -40,6 +40,7 @@ fun MainTabShell(
     CompositionLocalProvider(LocalMainTabBarVisible provides showBottomBar) {
         Scaffold(
             modifier = modifier,
+            // Transparent shell — theme background from NapolitanBackground must bleed through.
             containerColor = Color.Transparent,
             contentWindowInsets = WindowInsets(0),
             bottomBar = {

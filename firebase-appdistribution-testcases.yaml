@@ -1,14 +1,15 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 50
+version: 51
 updated: 2026-06-23
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
   CRUD on shared week data, sync status, Crashlytics on tester builds, and sign-out.
-  Welcome Home (Today tab): time-based greeting, week banner, three hero actions (Plan meals / Grocery list / Family),
-  Tonight's dinner card (tap opens Plan tab), and optional Sunday plan nudge. Family management lives in profile account sheet.
+  Welcome Home (Today tab): headline greeting, two circular hero actions (Plan lunch / Shopping list),
+  Daily meal plan block with Today vs This week toggle (tonight timeline + update list row), and optional Sunday plan nudge in deep states only.
+  Family management lives in profile account sheet (no Family hero on Today).
   Plain-language copy: family (not household) and friendly sync messages with status icons.
   Viewers are read-only: they cannot edit any shared nutrition entry. Invites require auth email to match.
   Seamless onboarding (v44): SSO-only auth screen (terracotta buttons); invite deep link shows "You're invited to join {name}" banner;
@@ -160,15 +161,17 @@ testcases:
       - Greeting and inspiration persist while signed in and when navigating back to Home.
 
   - id: home-nutrition-status
-    title: Today tab hero actions and week context
+    title: Today tab dashboard hub and week context
     steps:
       - With an active household, open the Today tab.
-      - Confirm three hero buttons below the greeting: Plan meals, Grocery list, Family (testTags home_hero_plan, home_hero_grocery, home_hero_family).
+      - Confirm two circular hero actions below the greeting: Plan lunch and Shopping list (testTags home_hero_plan, home_hero_grocery).
+      - In Daily meal plan, switch to This week and confirm week banner.
       - Add grocery items or meal-plan entries on Plan/Groceries tabs; return to Today.
     expected:
-      - Week context banner shows when nutrition week data is loaded.
-      - Hero Plan meals opens Plan tab; Grocery list opens Groceries tab; Family opens Household members.
-      - No duplicate This week nutrition card or first-win checklist on Today scroll.
+      - Week context banner shows under This week when nutrition week data is loaded.
+      - Hero Plan lunch opens Plan tab; Shopping list opens Groceries tab.
+      - Today tab shows timeline rows for tonight's dinner and Update list (grocery progress).
+      - No duplicate This week nutrition card, first-win checklist, or Family hero on Today.
 
   - id: home-onboarding-create-household
     title: Home onboarding blocks modules until setup
@@ -395,14 +398,14 @@ testcases:
       - After reconnect, a brief checkmark confirmation may appear before the banner hides.
 
   - id: home-tonight-dinner
-    title: Tonight's dinner on Today tab
+    title: Tonight's dinner in Daily meal plan timeline
     steps:
       - Sign in with an active family and open the Today tab.
       - Plan dinner for today on the Plan tab, then return to Today.
-      - Tap the Tonight's dinner card.
+      - In Daily meal plan (Today tab selected), tap the tonight row or Plan lunch hero.
     expected:
-      - Today shows tonight's meal when planned, or an empty state with tap-to-plan hint.
-      - Tapping the card switches to the Plan tab with today expanded.
+      - Today timeline shows tonight's meal when planned, or empty-state copy with mint marker.
+      - Tapping the row or Plan lunch hero switches to the Plan tab.
 
   - id: home-onboarding-quick-create
     title: One-tap family create on onboarding
@@ -568,10 +571,9 @@ testcases:
       - Days can expand to edit lunch and dinner.
 
   - id: hub-members-navigation
-    title: Open household members from account sheet or Family hero
+    title: Open household members from account sheet
     steps:
       - From Today, tap profile avatar to open account settings, then tap the Family row (testTag home_account_family_hub).
-      - Alternatively tap Family hero on Today (testTag home_hero_family).
       - Scan member rows for role chips and ⋮ overflow on editable members.
     expected:
       - Members screen lists the owner, active members, and pending invites in card rows.

@@ -3,11 +3,11 @@ package app.mymultiverse.kmp.presentation.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.Text
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_hero_family
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_hero_grocery_list
@@ -21,6 +21,8 @@ object HomePrimaryActionsTestTags {
     const val FAMILY = "home_hero_family"
 }
 
+/** @deprecated Replaced by [app.mymultiverse.kmp.presentation.screens.home.HomeDailyHubCircularActions]. */
+@Deprecated("Use HomeDailyHubCircularActions on Today dashboard")
 @Composable
 fun HomePrimaryActions(
     onOpenMealPlan: () -> Unit,
