@@ -68,6 +68,10 @@ jobs:
           else
             FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)"
           fi
+          if [[ -z "${FINGERPRINT}" ]]; then
+            echo "Could not resolve APK SHA-256 fingerprint." >&2
+            exit 1
+          fi
           echo "sha256=${FINGERPRINT}" >> "$GITHUB_OUTPUT"
           echo "ANDROID_SHA256_FINGERPRINT=${FINGERPRINT}"
 
