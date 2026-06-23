@@ -41,6 +41,7 @@ import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
+import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionContextualChipsResolver
 import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionsSection
 import app.mymultiverse.kmp.presentation.components.PantryCheckSection
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
@@ -94,6 +95,8 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_expand_day
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_not_planned
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_plan_with_ai
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_chip_use_up
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_criteria_use_up
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestion_budget_plan
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestion_protein_plan
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestion_veggies
@@ -123,6 +126,7 @@ fun WeeklyMealPlanScreen(
     screenModel: NutritionScreenModel = koinInject(),
 ) {
     val mealPlan by screenModel.mealPlan.collectAsState()
+    val groceryItems by screenModel.groceryItems.collectAsState()
     val aiGrocery by screenModel.aiGroceryItems.collectAsState()
     val shoppingAi = remember(aiGrocery) { aiGrocery.filterNot { it.isPantryCheck } }
     val pantryCheckItems = remember(aiGrocery) { aiGrocery.filter { it.isPantryCheck } }
@@ -161,6 +165,9 @@ fun WeeklyMealPlanScreen(
     val proteinPlanChipLabel = stringResource(Res.string.nutrition_ai_suggestion_protein_plan)
     val budgetPlanChipLabel = stringResource(Res.string.nutrition_ai_suggestion_budget_plan)
     val veggiePlanChipLabel = stringResource(Res.string.nutrition_ai_suggestion_veggies)
+    val contextualMatches = remember(mealPlan, groceryItems) {
+        NutritionContextualChipsResolver.ingredientMatches(mealPlan, groceryItems)
+    }
     val groceryNoneNew = stringResource(Res.string.nutrition_meal_grocery_none_new)
     val groceryError = stringResource(Res.string.nutrition_meal_grocery_error)
     val adoptAllSummary = adoptAllResult?.let { count ->
@@ -245,6 +252,33 @@ fun WeeklyMealPlanScreen(
             ),
         )
     }
+
+    val defaultEmptyAiChips = listOf(
+        MealPlanEmptyAiChip(
+            label = proteinPlanChipLabel,
+            testTag = MealPlanEmptyStateTestTags.CHIP_PROTEIN,
+            onClick = { openAiMealPlan(proteinPlanChipLabel) },
+        ),
+        MealPlanEmptyAiChip(
+            label = budgetPlanChipLabel,
+            testTag = MealPlanEmptyStateTestTags.CHIP_BUDGET,
+            onClick = { openAiMealPlan(budgetPlanChipLabel) },
+        ),
+        MealPlanEmptyAiChip(
+            label = veggiePlanChipLabel,
+            testTag = MealPlanEmptyStateTestTags.CHIP_VEGGIES,
+            onClick = { openAiMealPlan(veggiePlanChipLabel) },
+        ),
+    )
+    val contextualEmptyAiChips = contextualMatches.map { match ->
+        val criteria = stringResource(Res.string.nutrition_ai_criteria_use_up, match.displayName)
+        MealPlanEmptyAiChip(
+            label = stringResource(Res.string.nutrition_ai_chip_use_up, match.displayName),
+            testTag = MealPlanEmptyStateTestTags.contextualChip(match.id),
+            onClick = { openAiMealPlan(criteria) },
+        )
+    }
+    val emptyWeekAiChips = contextualEmptyAiChips.ifEmpty { defaultEmptyAiChips }
 
     fun openSuggestQuickMeal(dayIndex: Int, criteria: String, slot: MealSlot) {
         onOpenAiSheet(
@@ -445,23 +479,7 @@ fun WeeklyMealPlanScreen(
                         addManuallyLabel = stringResource(Res.string.nutrition_meal_plan_empty_cta_manual),
                         onPlanWithAi = { openAiMealPlan() },
                         onAddManually = ::scrollToDays,
-                        aiChips = listOf(
-                            MealPlanEmptyAiChip(
-                                label = proteinPlanChipLabel,
-                                testTag = MealPlanEmptyStateTestTags.CHIP_PROTEIN,
-                                onClick = { openAiMealPlan(proteinPlanChipLabel) },
-                            ),
-                            MealPlanEmptyAiChip(
-                                label = budgetPlanChipLabel,
-                                testTag = MealPlanEmptyStateTestTags.CHIP_BUDGET,
-                                onClick = { openAiMealPlan(budgetPlanChipLabel) },
-                            ),
-                            MealPlanEmptyAiChip(
-                                label = veggiePlanChipLabel,
-                                testTag = MealPlanEmptyStateTestTags.CHIP_VEGGIES,
-                                onClick = { openAiMealPlan(veggiePlanChipLabel) },
-                            ),
-                        ),
+                        aiChips = emptyWeekAiChips,
                     )
                 }
             }

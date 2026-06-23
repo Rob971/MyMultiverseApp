@@ -1,8 +1,8 @@
 # Product UX backlog — nutrition logistics & silent-butler AI
 
-**Status:** S13 shipped · **Updated:** 2026-06-23  
-**App:** MyMultiverse (KMP) · **QA YAML baseline:** v50 · **Release:** 1.0.36  
-**Current sprint:** S12 wrap-up — E4-11 contextual chips (optional)
+**Status:** S12 shipped · **Updated:** 2026-06-23  
+**App:** MyMultiverse (KMP) · **QA YAML baseline:** v52 · **Release:** 1.0.36  
+**Current sprint:** S12 complete — E3-9 DNS go-live (ops)
 
 This backlog synthesizes product thesis, UX roadmap, and AI interaction model for household grocery + meal planning. Use it as the scope razor before building anything new.
 
@@ -18,12 +18,12 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **Phase 1** — Paper at the store | S3, S4 | **Done** |
 | **Phase 2** — Silent butler | S5–S7 | **Done** |
 | **Phase 3** — Family in the loop | S8–S10 | **Done** |
-| **Phase 4** — Ghost magic | S11–S12 | **In progress** |
+| **Phase 4** — Ghost magic | S11–S12 | **Done** |
 | **Phase 5** — UX audit clarity | S13 | **Done** |
 
-**Phases remaining:** Phase 4 (optional AI polish) + Phase 5 (dashboard/i18n). Phases 0–3 are complete.
+**Phases remaining:** Phase 5 maintenance + ops (E3-9 DNS). Phases 0–4 are complete.
 
-**Open stories (non-deferred):** E4-11 · E3-9 (App Links DNS live).
+**Open stories (non-deferred):** E3-9 (App Links DNS live).
 
 ### Shipped stories (28 unique IDs + E6-3 ongoing)
 
@@ -40,10 +40,10 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **S9** | E3-3, E3-4 (+ member-joined push, foreground FCM, grocery collaboration snackbar) |
 | **S10** | E3-7, E5-2, E6-1 (+ silent duplicate merge, suggest→ingredients sheet, font scaling) |
 | **S11** | E1-6, E6-2 (+ week banner on Today, tab + AI a11y) |
-| **S12** | E4-9 (+ ghost pairing banner on Groceries), E4-10 (+ pantry check on meal→grocery) |
+| **S12** | E4-9 (+ ghost pairing banner on Groceries), E4-10 (+ pantry check on meal→grocery), E4-11 (+ contextual Use up chips from meal/grocery history) |
 | **Post-S11 releases** | Onboarding v1.0.33–36, App Links tooling, Firebase QA v48 (see below) |
 
-**Next up:** E4-11 contextual chips · E3-9 DNS go-live
+**Next up:** E3-9 DNS go-live · E4-9 (#52) close when verified on testers
 
 ---
 
@@ -209,7 +209,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | E4-8 | Terracotta AI chips in read-only zones (fix teal on `AiGrocerySuggestionChips` where AI-origin) | P1 | ✅ S6 | `ui-ux-compose.mdc` |
 | E4-9 | Ghost pairing banner (“+ Add salsa and cheese?”) | P2 | ✅ S12 | `GroceryGhostPairingBanner` + `GroceryGhostPairing` |
 | E4-10 | Pantry check section: “Check if you have these” on meal→grocery | P2 | ✅ S12 | `PantryCheckSection`, `MealGroceryPartition` |
-| E4-11 | Contextual chips from history (“Use up chicken”) | P2 | ⏳ S12 | Domain signals from meals/list |
+| E4-11 | Contextual chips from history (“Use up chicken”) | P2 | ✅ S12 | `NutritionContextualChips`, `MealPlanEmptyState`, `NutritionAiAssistantContent` |
 
 ---
 
@@ -291,7 +291,7 @@ Only if Phases 0–2 metrics are green.
 |--------|----------------|--------|
 | **S12** | E4-9 ghost pairing | ✅ shipped (v48) |
 | **S12** | E4-10 pantry check | ✅ shipped (v50) |
-| **S12+** | E4-11 + one spike (E3-8 presence **or** E2-5 aisle) | ⏳ |
+| **S12+** | E3-9 DNS go-live · optional spike (E3-8 presence **or** E2-5 aisle) | ⏳ |
 
 ### Phase 5 — “UX audit clarity” (S13)
 
@@ -352,13 +352,13 @@ E3-9 App Links DNS ──► HTTPS invite opens Android app (E3-2 share links)
 3. ~~**S3** — swipe-to-check + E5-1 meal CTA~~ ✅  
 4. ~~**S8** — invite share sheet + Sunday plan nudge~~ ✅ · ~~**S9** — push + activity snackbar~~ ✅ · ~~**S10** — household polish~~ ✅ · ~~**S11** — week banner + a11y~~ ✅  
 5. ~~**S13** — Today hero CTAs + family in account sheet + Napulitano label (UX audit)~~ ✅  
-6. ~~**S12** — E4-10 pantry check~~ ✅ · **E3-9** App Links DNS live · **E4-11** when capacity allows
+6. ~~**S12** — E4-10 pantry check · E4-11 contextual chips~~ ✅ · **E3-9** App Links DNS live (manual DNS)
 
 ## GitHub tracking
 
 **Shipped story issues (S1–S11 polish):** #26–#31, #32–#43, #44–#51, #55–#59 — **closed** on GitHub.
 
-**Open / next:** E4-11 (#54) · E3-9 · E4-9 (#52) close when verified on testers.
+**Open / next:** E3-9 · E4-9 (#52) close when verified on testers.
 
 | Kind | Issue |
 |------|-------|
@@ -410,7 +410,7 @@ E3-9 App Links DNS ──► HTTPS invite opens Android app (E3-2 share links)
 | E4-8 | [#51](https://github.com/Rob971/MyMultiverseApp/issues/51) | 2 | P1 | ✅ S6 |
 | E4-9 | [#52](https://github.com/Rob971/MyMultiverseApp/issues/52) | 4 | P2 | ✅ S12 |
 | E4-10 | [#53](https://github.com/Rob971/MyMultiverseApp/issues/53) | 4 | P2 | ✅ S12 |
-| E4-11 | [#54](https://github.com/Rob971/MyMultiverseApp/issues/54) | 4 | P2 | ⏳ S12 |
+| E4-11 | [#54](https://github.com/Rob971/MyMultiverseApp/issues/54) | 4 | P2 | ✅ S12 |
 | E5-1 | [#55](https://github.com/Rob971/MyMultiverseApp/issues/55) | 0 | P0 | ✅ S2 |
 | E5-2 | [#56](https://github.com/Rob971/MyMultiverseApp/issues/56) | 3 | P1 | ✅ S10 |
 | E5-3 | [#57](https://github.com/Rob971/MyMultiverseApp/issues/57) | 2 | P1 | ✅ S7 |

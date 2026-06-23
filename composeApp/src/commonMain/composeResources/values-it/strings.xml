@@ -174,6 +174,8 @@
     <string name="nutrition_ai_suggestion_budget_grocery">Lista economica</string>
     <string name="nutrition_ai_suggestion_protein_plan">Pasti proteici settimanali</string>
     <string name="nutrition_ai_suggestion_budget_plan">Piano pasti economico</string>
+    <string name="nutrition_ai_chip_use_up">Usa %1$s</string>
+    <string name="nutrition_ai_criteria_use_up">Pasti in famiglia con %1$s già in lista</string>
     <string name="home_refresh_inspirations">Aggiorna Ispirazioni</string>
     <string name="home_app_version">Versione %1$s</string>
     <string name="home_app_version_rc">Versione %1$s (RC)</string>

@@ -174,6 +174,8 @@
     <string name="nutrition_ai_suggestion_budget_grocery">Budget-friendly shopping list</string>
     <string name="nutrition_ai_suggestion_protein_plan">High-protein weekly meals</string>
     <string name="nutrition_ai_suggestion_budget_plan">Budget meal plan for the family</string>
+    <string name="nutrition_ai_chip_use_up">Use up %1$s</string>
+    <string name="nutrition_ai_criteria_use_up">Family meals using %1$s already on our list</string>
     <string name="home_refresh_inspirations">Refresh Inspirations</string>
     <string name="home_app_version">Version %1$s</string>
     <string name="home_app_version_rc">Version %1$s (RC)</string>

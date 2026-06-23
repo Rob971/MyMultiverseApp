@@ -86,6 +86,8 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_m
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_more_options
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_scope_full_week
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_scope_today
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_chip_use_up
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_criteria_use_up
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestion_allergy
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestion_budget_grocery
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestion_budget_plan
@@ -104,6 +106,12 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
+private data class AiQuickPick(
+    val label: String,
+    val criteria: String,
+    val testTag: String? = null,
+)
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NutritionAiAssistantContent(
@@ -118,6 +126,8 @@ fun NutritionAiAssistantContent(
 ) {
     val aiState by screenModel.aiState.collectAsState()
     val aiGrocery by screenModel.aiGroceryItems.collectAsState()
+    val mealPlan by screenModel.mealPlan.collectAsState()
+    val groceryItems by screenModel.groceryItems.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val mealGroceryLoading by screenModel.mealGroceryLoading.collectAsState()
     val adoptAllResult by screenModel.adoptAllGroceryResult.collectAsState()
@@ -182,23 +192,61 @@ fun NutritionAiAssistantContent(
         WeekCalendar.formatWeekRange(screenModel.weekKey),
     )
 
-    val suggestions = when (mode) {
-        NutritionAiMode.Advice -> listOf(
-            stringResource(Res.string.nutrition_ai_suggestion_protein),
-            stringResource(Res.string.nutrition_ai_suggestion_veggies),
-            stringResource(Res.string.nutrition_ai_suggestion_allergy),
-        )
-        NutritionAiMode.GroceryList -> listOf(
-            stringResource(Res.string.nutrition_ai_suggestion_protein),
-            stringResource(Res.string.nutrition_ai_suggestion_veggie_grocery),
-            stringResource(Res.string.nutrition_ai_suggestion_budget_grocery),
-        )
-        NutritionAiMode.MealPlan -> listOf(
-            stringResource(Res.string.nutrition_ai_suggestion_protein_plan),
-            stringResource(Res.string.nutrition_ai_suggestion_budget_plan),
-            stringResource(Res.string.nutrition_ai_suggestion_allergy),
+    val contextualMatches = remember(mealPlan, groceryItems) {
+        NutritionContextualChipsResolver.ingredientMatches(mealPlan, groceryItems)
+    }
+    val contextualQuickPicks = contextualMatches.map { match ->
+        AiQuickPick(
+            label = stringResource(Res.string.nutrition_ai_chip_use_up, match.displayName),
+            criteria = stringResource(Res.string.nutrition_ai_criteria_use_up, match.displayName),
+            testTag = NutritionAiTestTags.contextualChip(match.id),
         )
     }
+    val staticQuickPicks = when (mode) {
+        NutritionAiMode.Advice -> listOf(
+            AiQuickPick(
+                stringResource(Res.string.nutrition_ai_suggestion_protein),
+                stringResource(Res.string.nutrition_ai_suggestion_protein),
+            ),
+            AiQuickPick(
+                stringResource(Res.string.nutrition_ai_suggestion_veggies),
+                stringResource(Res.string.nutrition_ai_suggestion_veggies),
+            ),
+            AiQuickPick(
+                stringResource(Res.string.nutrition_ai_suggestion_allergy),
+                stringResource(Res.string.nutrition_ai_suggestion_allergy),
+            ),
+        )
+        NutritionAiMode.GroceryList -> listOf(
+            AiQuickPick(
+                stringResource(Res.string.nutrition_ai_suggestion_protein),
+                stringResource(Res.string.nutrition_ai_suggestion_protein),
+            ),
+            AiQuickPick(
+                stringResource(Res.string.nutrition_ai_suggestion_veggie_grocery),
+                stringResource(Res.string.nutrition_ai_suggestion_veggie_grocery),
+            ),
+            AiQuickPick(
+                stringResource(Res.string.nutrition_ai_suggestion_budget_grocery),
+                stringResource(Res.string.nutrition_ai_suggestion_budget_grocery),
+            ),
+        )
+        NutritionAiMode.MealPlan -> listOf(
+            AiQuickPick(
+                stringResource(Res.string.nutrition_ai_suggestion_protein_plan),
+                stringResource(Res.string.nutrition_ai_suggestion_protein_plan),
+            ),
+            AiQuickPick(
+                stringResource(Res.string.nutrition_ai_suggestion_budget_plan),
+                stringResource(Res.string.nutrition_ai_suggestion_budget_plan),
+            ),
+            AiQuickPick(
+                stringResource(Res.string.nutrition_ai_suggestion_allergy),
+                stringResource(Res.string.nutrition_ai_suggestion_allergy),
+            ),
+        )
+    }
+    val quickPicks = contextualQuickPicks + staticQuickPicks
 
     fun generate() {
         screenModel.runAiAssistant(
@@ -357,12 +405,13 @@ fun NutritionAiAssistantContent(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                suggestions.forEach { suggestion ->
+                quickPicks.forEach { pick ->
                     SuggestionChip(
-                        label = suggestion,
+                        label = pick.label,
                         enabled = inputsEnabled,
+                        modifier = pick.testTag?.let { Modifier.testTag(it) } ?: Modifier,
                         onClick = {
-                            criteria = suggestion
+                            criteria = pick.criteria
                             if (chipFirstSheet) {
                                 generate()
                             }
@@ -752,9 +801,10 @@ private fun SuggestionChip(
     label: String,
     enabled: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = Modifier.clickable(
+        modifier = modifier.clickable(
             enabled = enabled,
             role = Role.Button,
         ) { onClick() },

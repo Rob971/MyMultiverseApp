@@ -155,6 +155,8 @@ object NutritionStringKeys {
         "nutrition_ai_suggestion_budget_grocery",
         "nutrition_ai_suggestion_protein_plan",
         "nutrition_ai_suggestion_budget_plan",
+        "nutrition_ai_chip_use_up",
+        "nutrition_ai_criteria_use_up",
         "nutrition_sync_status_syncing",
         "nutrition_sync_status_pending",
         "nutrition_sync_status_offline",

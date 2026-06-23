@@ -174,6 +174,8 @@
     <string name="nutrition_ai_suggestion_budget_grocery">Lista económica</string>
     <string name="nutrition_ai_suggestion_protein_plan">Comidas altas en proteína</string>
     <string name="nutrition_ai_suggestion_budget_plan">Plan de comidas económico</string>
+    <string name="nutrition_ai_chip_use_up">Usar %1$s</string>
+    <string name="nutrition_ai_criteria_use_up">Comidas familiares con %1$s que ya tenemos en la lista</string>
     <string name="home_refresh_inspirations">Actualizar Inspiraciones</string>
     <string name="home_app_version">Versión %1$s</string>
     <string name="home_app_version_rc">Versión %1$s (RC)</string>

@@ -32,6 +32,8 @@ object MealPlanEmptyStateTestTags {
     const val CHIP_PROTEIN = "meal_plan_empty_chip_protein"
     const val CHIP_BUDGET = "meal_plan_empty_chip_budget"
     const val CHIP_VEGGIES = "meal_plan_empty_chip_veggies"
+
+    fun contextualChip(ingredientId: String) = "meal_plan_contextual_chip_$ingredientId"
 }
 
 @OptIn(ExperimentalLayoutApi::class)

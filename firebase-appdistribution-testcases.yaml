@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 51
+version: 52
 updated: 2026-06-23
 
 summary: |
@@ -38,6 +38,7 @@ summary: |
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
+  Contextual AI chips E4-11 (v52): Plan empty state and AI helper sheet prepend Use up {ingredient} chips from unchecked grocery + meal history (fallback to protein/budget/veggies when no signals).
 
 testcases:
   - id: auth-sign-in
@@ -536,14 +537,17 @@ testcases:
       - Quick pick tap generates; More options reveals custom criteria field.
 
   - id: meal-plan-empty-ai-chips
-    title: Plan empty state contextual AI chips
+    title: Plan empty state contextual AI chips (E4-11)
     steps:
-      - Sign in with write access; open Plan on an empty week.
+      - Sign in with write access; add chicken or tomatoes to the grocery list (unchecked) or plan a meal mentioning an ingredient.
+      - Clear the week or open Plan on an empty week.
       - Scroll to the empty-state card below the header.
-      - Tap a contextual chip (e.g. high-protein or budget meal plan).
+      - Note chips: Use up {ingredient} when history exists, else high-protein / budget / veggie defaults.
+      - Tap a contextual Use up chip.
     expected:
       - Terracotta chips appear below the primary Plan with AI button.
-      - Tapping a chip opens the AI helper sheet with that criteria and starts generation.
+      - Use up chip opens the AI helper sheet with criteria referencing that ingredient and starts generation.
+      - When no ingredient signals exist, default protein/budget/veggie chips still appear.
 
   - id: home-nutrition-card
     title: Plan meals hero on Today tab
