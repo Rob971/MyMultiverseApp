@@ -9,23 +9,23 @@ object JourneySemanticColors {
 
     @Composable
     fun inkDeep(): Color =
-        if (isDark()) SharedJourneyColors.InkOnDark else SharedJourneyColors.InkDeep
+        if (isDark()) SharedJourneyColors.DarkTextPrimary else SharedJourneyColors.InkDeep
 
     @Composable
     fun inkMuted(): Color =
-        if (isDark()) SharedJourneyColors.InkMutedOnDark else SharedJourneyColors.InkMuted
+        if (isDark()) SharedJourneyColors.DarkTextMuted else SharedJourneyColors.InkMuted
 
     @Composable
     fun inkSecondary(): Color =
-        if (isDark()) SharedJourneyColors.InkSecondaryOnDark else SharedJourneyColors.InkSecondary
+        if (isDark()) SharedJourneyColors.DarkTextSecondary else SharedJourneyColors.InkSecondary
 
     @Composable
     fun cardSurface(): Color =
-        if (isDark()) SharedJourneyColors.CardElevatedDark else SharedJourneyColors.GlassWhite
+        if (isDark()) SharedJourneyColors.DarkSurfaceCard else SharedJourneyColors.GlassWhite
 
     @Composable
     fun elevatedSurface(): Color =
-        if (isDark()) SharedJourneyColors.NavBarDark else SharedJourneyColors.SunDrenchedWhite
+        if (isDark()) SharedJourneyColors.DarkSurfaceElevated else SharedJourneyColors.SunDrenchedWhite
 
     /** Primary brand teal — dark surfaces need a lighter variant for contrast. */
     @Composable

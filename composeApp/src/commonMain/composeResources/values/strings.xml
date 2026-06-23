@@ -760,6 +760,7 @@
     <string name="sharing_members_confirm_add">Add</string>
     <string name="sharing_members_cancel">Cancel</string>
     <string name="sharing_members_remove">Remove</string>
+    <string name="sharing_members_more_actions">More family actions</string>
     <string name="sharing_members_person_label">Person</string>
     <string name="sharing_members_group_label">Group</string>
     <string name="sharing_members_group_pick_title">Choose a group</string>

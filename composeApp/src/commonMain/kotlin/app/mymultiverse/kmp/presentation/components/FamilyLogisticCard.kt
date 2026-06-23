@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 @Composable
@@ -67,7 +68,7 @@ fun FamilyLogisticCard(
     Surface(
         modifier = semanticsModifier,
         shape = RoundedCornerShape(24.dp),
-        color = SharedJourneyColors.GlassWhite,
+        color = JourneySemanticColors.cardSurface(),
         shadowElevation = 0.dp,
     ) {
         Row(
@@ -104,18 +105,18 @@ fun FamilyLogisticCard(
                         text = title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = SharedJourneyColors.InkDeep,
+                        color = JourneySemanticColors.inkDeep(),
                     )
                     if (badge != null) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = SharedJourneyColors.InkMuted.copy(alpha = 0.12f),
+                            color = JourneySemanticColors.inkMuted().copy(alpha = 0.14f),
                         ) {
                             Text(
                                 text = badge,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = SharedJourneyColors.InkMuted,
+                                color = JourneySemanticColors.inkSecondary(),
                                 fontWeight = FontWeight.SemiBold,
                             )
                         }
@@ -124,7 +125,7 @@ fun FamilyLogisticCard(
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = SharedJourneyColors.InkMuted,
+                    color = JourneySemanticColors.inkMuted(),
                 )
                 if (statusLine != null) {
                     Text(
@@ -140,7 +141,7 @@ fun FamilyLogisticCard(
                 Icon(
                     imageVector = AppIcons.ChevronRight,
                     contentDescription = null,
-                    tint = SharedJourneyColors.InkMuted.copy(alpha = 0.6f),
+                    tint = JourneySemanticColors.inkMuted().copy(alpha = 0.7f),
                     modifier = Modifier.size(24.dp),
                 )
             }

@@ -15,6 +15,7 @@ object SharingStringKeys {
         "sharing_members_confirm_add",
         "sharing_members_cancel",
         "sharing_members_remove",
+        "sharing_members_more_actions",
         "sharing_members_error_generic",
         "sharing_members_error_email_required",
         "sharing_members_error_email_not_found",

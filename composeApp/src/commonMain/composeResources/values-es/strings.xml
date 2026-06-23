@@ -759,6 +759,7 @@
     <string name="sharing_members_confirm_add">Añadir</string>
     <string name="sharing_members_cancel">Cancelar</string>
     <string name="sharing_members_remove">Quitar</string>
+    <string name="sharing_members_more_actions">Más acciones de familia</string>
     <string name="sharing_members_person_label">Persona</string>
     <string name="sharing_members_group_label">Grupo</string>
     <string name="sharing_members_group_pick_title">Elegir un grupo</string>

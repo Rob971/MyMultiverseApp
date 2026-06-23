@@ -9,15 +9,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -28,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.model.auth.AuthState
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
@@ -40,8 +45,10 @@ import app.mymultiverse.kmp.domain.sharing.canRemoveMember
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.data.invite.InviteRedirectUrls
 import app.mymultiverse.kmp.domain.platform.PersonalDataExporter
+import app.mymultiverse.kmp.presentation.components.FamilyLogisticsCardSurface
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
-import app.mymultiverse.kmp.presentation.components.JourneySecondaryButton
+import app.mymultiverse.kmp.presentation.components.JourneyIconButton
+import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.kmp.presentation.components.JourneyTextField
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
@@ -49,8 +56,10 @@ import app.mymultiverse.kmp.presentation.components.screenContentArea
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
 import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.content_more_options
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_add_dependent
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_add_person
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_cancel
@@ -96,6 +105,7 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_member
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_kind_dependent
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_loading
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_member_added
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_more_actions
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_owner_fallback
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_pending_invite_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_pending_invites_title
@@ -129,6 +139,16 @@ object HouseholdMembersTestTags {
     const val ROLE_CHANGE_CONFIRM_BUTTON = "household_members_role_change_confirm"
     const val PROMOTE_ADMIN_CONFIRM_BUTTON = "household_members_promote_admin_confirm"
     const val PENDING_INVITE_SHARE = "household_members_pending_invite_share"
+    const val MEMBER_ROW_OVERFLOW = "household_members_row_overflow"
+    const val MEMBER_CHANGE_ROLE_MENU = "household_members_change_role_menu"
+    const val MEMBER_REMOVE_MENU = "household_members_remove_menu"
+    const val ADD_ACTIONS_OVERFLOW = "household_members_add_actions_overflow"
+    const val ADD_DEPENDENT_MENU = "household_members_add_dependent_menu"
+    const val HOUSEHOLD_ACTIONS_OVERFLOW = "household_members_household_actions_overflow"
+    const val HOUSEHOLD_TRANSFER_MENU = "household_members_transfer_menu"
+    const val HOUSEHOLD_LEAVE_MENU = "household_members_leave_menu"
+    const val HOUSEHOLD_DISSOLVE_MENU = "household_members_dissolve_menu"
+    const val PENDING_INVITE_OVERFLOW = "household_members_pending_invite_overflow"
 }
 
 @Composable
@@ -213,10 +233,11 @@ fun HouseholdMembersScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = JourneySemanticColors.brandTeal())
                 Text(
                     text = stringResource(Res.string.sharing_members_loading),
                     modifier = Modifier.padding(top = 12.dp),
+                    color = JourneySemanticColors.inkMuted(),
                 )
             }
         } else {
@@ -228,42 +249,65 @@ fun HouseholdMembersScreen(
                 item {
                     Text(
                         text = stringResource(Res.string.sharing_members_subtitle),
-                        color = SharedJourneyColors.InkSecondary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = JourneySemanticColors.inkSecondary(),
                     )
                 }
                 if (!uiState.canManageMembers) {
                     item {
                         Text(
                             text = stringResource(Res.string.sharing_members_read_only_hint),
-                            color = SharedJourneyColors.InkSecondary,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = JourneySemanticColors.inkMuted(),
                         )
                     }
                 }
                 if (uiState.canManageMembers) {
                     item {
-                        Button(
-                            onClick = screenModel::openAddPersonDialog,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag(HouseholdMembersTestTags.ADD_PERSON_BUTTON),
+                        var addMenuExpanded by remember { mutableStateOf(false) }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(stringResource(Res.string.sharing_members_add_person))
-                        }
-                    }
-                    item {
-                        OutlinedButton(
-                            onClick = screenModel::openAddDependantDialog,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag(HouseholdMembersTestTags.ADD_DEPENDANT_BUTTON),
-                        ) {
-                            Text(stringResource(Res.string.sharing_members_add_dependent))
+                            JourneyPrimaryButton(
+                                onClick = screenModel::openAddPersonDialog,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag(HouseholdMembersTestTags.ADD_PERSON_BUTTON),
+                            ) {
+                                Text(stringResource(Res.string.sharing_members_add_person))
+                            }
+                            JourneyIconButton(
+                                onClick = { addMenuExpanded = true },
+                                modifier = Modifier.testTag(HouseholdMembersTestTags.ADD_ACTIONS_OVERFLOW),
+                            ) {
+                                Icon(
+                                    imageVector = AppIcons.MoreVert,
+                                    contentDescription = stringResource(Res.string.content_more_options),
+                                    tint = JourneySemanticColors.inkSecondary(),
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = addMenuExpanded,
+                                onDismissRequest = { addMenuExpanded = false },
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(Res.string.sharing_members_add_dependent)) },
+                                    onClick = {
+                                        addMenuExpanded = false
+                                        screenModel.openAddDependantDialog()
+                                    },
+                                    modifier = Modifier.testTag(HouseholdMembersTestTags.ADD_DEPENDENT_MENU),
+                                )
+                            }
                         }
                     }
                     item {
                         Text(
                             text = stringResource(Res.string.sharing_members_dependent_hint),
-                            color = SharedJourneyColors.InkSecondary,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = JourneySemanticColors.inkMuted(),
                         )
                     }
                 }
@@ -271,7 +315,9 @@ fun HouseholdMembersScreen(
                     item {
                         Text(
                             text = stringResource(Res.string.sharing_members_pending_invites_title),
-                            color = SharedJourneyColors.InkDeep,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = JourneySemanticColors.inkDeep(),
                         )
                     }
                     items(uiState.outboundInvites, key = { it.id }) { invite ->
@@ -318,42 +364,68 @@ fun HouseholdMembersScreen(
                     item {
                         Text(
                             text = stringResource(Res.string.sharing_members_owner_transfer_required),
-                            color = SharedJourneyColors.InkSecondary,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = JourneySemanticColors.inkMuted(),
                         )
                     }
                 }
-                if (uiState.canTransferOwnership) {
+                if (uiState.canTransferOwnership || uiState.canLeave || uiState.canDissolve) {
                     item {
-                        Button(
-                            onClick = screenModel::openTransferDialog,
-                            enabled = !uiState.isTransferring,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag(HouseholdMembersTestTags.TRANSFER_OWNERSHIP_BUTTON),
-                        ) {
-                            Text(stringResource(Res.string.sharing_members_transfer_ownership))
-                        }
-                    }
-                }
-                if (uiState.canLeave) {
-                    item {
-                        OutlinedButton(
-                            onClick = screenModel::requestLeave,
-                            enabled = !uiState.isLeaving,
+                        var householdMenuExpanded by remember { mutableStateOf(false) }
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
                         ) {
-                            Text(stringResource(Res.string.sharing_members_leave))
-                        }
-                    }
-                }
-                if (uiState.canDissolve) {
-                    item {
-                        OutlinedButton(
-                            onClick = screenModel::requestDissolve,
-                            enabled = !uiState.isLeaving,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(Res.string.sharing_members_dissolve))
+                            JourneyIconButton(
+                                onClick = { householdMenuExpanded = true },
+                                modifier = Modifier.testTag(HouseholdMembersTestTags.HOUSEHOLD_ACTIONS_OVERFLOW),
+                            ) {
+                                Icon(
+                                    imageVector = AppIcons.MoreVert,
+                                    contentDescription = stringResource(Res.string.sharing_members_more_actions),
+                                    tint = JourneySemanticColors.inkSecondary(),
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = householdMenuExpanded,
+                                onDismissRequest = { householdMenuExpanded = false },
+                            ) {
+                                if (uiState.canTransferOwnership) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(stringResource(Res.string.sharing_members_transfer_ownership))
+                                        },
+                                        onClick = {
+                                            householdMenuExpanded = false
+                                            screenModel.openTransferDialog()
+                                        },
+                                        enabled = !uiState.isTransferring,
+                                        modifier = Modifier.testTag(HouseholdMembersTestTags.HOUSEHOLD_TRANSFER_MENU),
+                                    )
+                                }
+                                if (uiState.canLeave) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(Res.string.sharing_members_leave)) },
+                                        onClick = {
+                                            householdMenuExpanded = false
+                                            screenModel.requestLeave()
+                                        },
+                                        enabled = !uiState.isLeaving,
+                                        modifier = Modifier.testTag(HouseholdMembersTestTags.HOUSEHOLD_LEAVE_MENU),
+                                    )
+                                }
+                                if (uiState.canDissolve) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(Res.string.sharing_members_dissolve)) },
+                                        onClick = {
+                                            householdMenuExpanded = false
+                                            screenModel.requestDissolve()
+                                        },
+                                        enabled = !uiState.isLeaving,
+                                        modifier = Modifier.testTag(HouseholdMembersTestTags.HOUSEHOLD_DISSOLVE_MENU),
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -414,17 +486,12 @@ fun HouseholdMembersScreen(
                 }
             },
             confirmButton = {
-                Button(
+                JourneyPrimaryButton(
                     onClick = { screenModel.submitAddPerson(household.id) },
                     enabled = !uiState.isSaving,
+                    isLoading = uiState.isSaving,
                     modifier = Modifier.testTag(HouseholdMembersTestTags.ADD_PERSON_CONFIRM_BUTTON),
                 ) {
-                    if (uiState.isSaving) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.padding(end = 8.dp),
-                            strokeWidth = 2.dp,
-                        )
-                    }
                     Text(stringResource(Res.string.sharing_members_confirm_add))
                 }
             },
@@ -468,9 +535,10 @@ fun HouseholdMembersScreen(
                 }
             },
             confirmButton = {
-                Button(
+                JourneyPrimaryButton(
                     onClick = screenModel::confirmLeaveOrDissolve,
                     enabled = !uiState.isLeaving,
+                    isLoading = uiState.isLeaving,
                 ) {
                     Text(confirmLabel)
                 }
@@ -507,9 +575,10 @@ fun HouseholdMembersScreen(
                 }
             },
             confirmButton = {
-                Button(
+                JourneyPrimaryButton(
                     onClick = { screenModel.submitAddDependant(household.id) },
                     enabled = !uiState.isSaving,
+                    isLoading = uiState.isSaving,
                 ) {
                     Text(stringResource(Res.string.sharing_members_dependent_confirm))
                 }
@@ -530,7 +599,10 @@ fun HouseholdMembersScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (target != null) {
-                        Text(target.displayName)
+                        Text(
+                            text = target.displayName,
+                            color = JourneySemanticColors.inkDeep(),
+                        )
                     }
                     Text(stringResource(Res.string.sharing_members_select_role))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -561,7 +633,7 @@ fun HouseholdMembersScreen(
                 }
             },
             confirmButton = {
-                Button(
+                JourneyPrimaryButton(
                     onClick = {
                         val needsPromoteConfirm = uiState.selectedMemberRole == HouseholdMemberRole.Admin &&
                             target?.role != HouseholdMemberRole.Admin
@@ -572,14 +644,9 @@ fun HouseholdMembersScreen(
                         }
                     },
                     enabled = !uiState.isUpdatingRole && target != null,
+                    isLoading = uiState.isUpdatingRole,
                     modifier = Modifier.testTag(HouseholdMembersTestTags.ROLE_CHANGE_CONFIRM_BUTTON),
                 ) {
-                    if (uiState.isUpdatingRole) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.padding(end = 8.dp),
-                            strokeWidth = 2.dp,
-                        )
-                    }
                     Text(stringResource(Res.string.sharing_members_confirm_add))
                 }
             },
@@ -608,12 +675,13 @@ fun HouseholdMembersScreen(
                 )
             },
             confirmButton = {
-                Button(
+                JourneyPrimaryButton(
                     onClick = {
                         pendingPromoteAdminConfirm = false
                         screenModel.confirmRoleChange(household.id)
                     },
                     enabled = !uiState.isUpdatingRole,
+                    isLoading = uiState.isUpdatingRole,
                     modifier = Modifier.testTag(HouseholdMembersTestTags.PROMOTE_ADMIN_CONFIRM_BUTTON),
                 ) {
                     Text(stringResource(Res.string.sharing_members_confirm_add))
@@ -649,6 +717,7 @@ fun HouseholdMembersScreen(
                             Text(
                                 text = member.displayName,
                                 modifier = Modifier.padding(start = 8.dp),
+                                color = JourneySemanticColors.inkDeep(),
                             )
                         }
                     }
@@ -663,9 +732,10 @@ fun HouseholdMembersScreen(
                 }
             },
             confirmButton = {
-                Button(
+                JourneyPrimaryButton(
                     onClick = { screenModel.confirmTransferOwnership(household.id) },
                     enabled = !uiState.isTransferring && selectedId != null,
+                    isLoading = uiState.isTransferring,
                 ) {
                     Text(stringResource(Res.string.sharing_members_transfer_confirm))
                 }
@@ -720,31 +790,98 @@ private fun MemberRow(
             HouseholdMemberRole.Viewer -> stringResource(Res.string.sharing_members_role_viewer)
         }
     }
+    val canChangeRole = canManage &&
+        member.role != HouseholdMemberRole.Owner &&
+        actorRole?.canChangeRoleOf(member.role) == true
+    val canRemove = canManage &&
+        member.role != HouseholdMemberRole.Owner &&
+        actorRole?.canRemoveMember(member.role) == true
+    val showOverflow = canChangeRole || canRemove
+    var menuExpanded by remember { mutableStateOf(false) }
+    val roleChipColor = when (member.role) {
+        HouseholdMemberRole.Owner -> JourneySemanticColors.brandTerracotta().copy(alpha = 0.18f)
+        else -> JourneySemanticColors.brandTealContainer()
+    }
+    val roleTextColor = when (member.role) {
+        HouseholdMemberRole.Owner -> JourneySemanticColors.brandTerracotta()
+        else -> JourneySemanticColors.inkSecondary()
+    }
 
-    Row(
+    FamilyLogisticsCardSurface(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("${HouseholdMembersTestTags.MEMBER_ROW}_${member.id}"),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = member.displayName)
-            Text(
-                text = stringResource(Res.string.sharing_members_role_label, roleLabel),
-                color = SharedJourneyColors.InkSecondary,
-            )
-        }
-        if (canManage && member.role != HouseholdMemberRole.Owner) {
-            val canActOnMember = actorRole?.canChangeRoleOf(member.role) == true
-            if (canActOnMember) {
-                TextButton(onClick = onChangeRole) {
-                    Text(stringResource(Res.string.sharing_members_change_role))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text(
+                    text = member.displayName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = JourneySemanticColors.inkDeep(),
+                )
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = roleChipColor,
+                ) {
+                    Text(
+                        text = roleLabel,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = roleTextColor,
+                        fontWeight = FontWeight.Medium,
+                    )
                 }
             }
-            if (actorRole?.canRemoveMember(member.role) == true) {
-                TextButton(onClick = onRemove) {
-                    Text(stringResource(Res.string.sharing_members_remove))
+            if (showOverflow) {
+                JourneyIconButton(
+                    onClick = { menuExpanded = true },
+                    modifier = Modifier.testTag("${HouseholdMembersTestTags.MEMBER_ROW_OVERFLOW}_${member.id}"),
+                ) {
+                    Icon(
+                        imageVector = AppIcons.MoreVert,
+                        contentDescription = stringResource(Res.string.content_more_options),
+                        tint = JourneySemanticColors.inkSecondary(),
+                    )
+                }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false },
+                ) {
+                    if (canChangeRole) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(Res.string.sharing_members_change_role)) },
+                            onClick = {
+                                menuExpanded = false
+                                onChangeRole()
+                            },
+                            modifier = Modifier.testTag(HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_MENU),
+                        )
+                    }
+                    if (canRemove) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    stringResource(Res.string.sharing_members_remove),
+                                    color = JourneySemanticColors.brandTerracotta(),
+                                )
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onRemove()
+                            },
+                            modifier = Modifier.testTag(HouseholdMembersTestTags.MEMBER_REMOVE_MENU),
+                        )
+                    }
                 }
             }
         }
@@ -763,26 +900,59 @@ private fun PendingInviteRow(
         HouseholdMemberRole.Editor -> stringResource(Res.string.sharing_members_role_editor)
         HouseholdMemberRole.Viewer -> stringResource(Res.string.sharing_members_role_viewer)
     }
+    var menuExpanded by remember { mutableStateOf(false) }
 
-    Column(
+    FamilyLogisticsCardSurface(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("${HouseholdMembersTestTags.PENDING_INVITE_ROW}_${invite.id}"),
     ) {
-        Text(text = invite.email)
-        Text(
-            text = stringResource(Res.string.sharing_members_pending_invite_label, roleLabel),
-            color = SharedJourneyColors.InkSecondary,
-        )
-        if (onShare != null) {
-            JourneySecondaryButton(
-                onClick = onShare,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-                    .testTag("${HouseholdMembersTestTags.PENDING_INVITE_SHARE}_${invite.id}"),
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Text(shareActionLabel)
+                Text(
+                    text = invite.email,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = JourneySemanticColors.inkDeep(),
+                )
+                Text(
+                    text = stringResource(Res.string.sharing_members_pending_invite_label, roleLabel),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = JourneySemanticColors.inkMuted(),
+                )
+            }
+            if (onShare != null) {
+                JourneyIconButton(
+                    onClick = { menuExpanded = true },
+                    modifier = Modifier.testTag("${HouseholdMembersTestTags.PENDING_INVITE_OVERFLOW}_${invite.id}"),
+                ) {
+                    Icon(
+                        imageVector = AppIcons.MoreVert,
+                        contentDescription = stringResource(Res.string.content_more_options),
+                        tint = JourneySemanticColors.inkSecondary(),
+                    )
+                }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false },
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(shareActionLabel) },
+                        onClick = {
+                            menuExpanded = false
+                            onShare()
+                        },
+                        modifier = Modifier.testTag("${HouseholdMembersTestTags.PENDING_INVITE_SHARE}_${invite.id}"),
+                    )
+                }
             }
         }
     }
