@@ -3,9 +3,9 @@
 #
 # Required env:
 #   ANDROID_SHA256_FINGERPRINT — colon-free uppercase SHA-256 from print-android-apk-fingerprint.sh
-#   IOS_TEAM_ID — Apple Team ID (same as APNS_TEAM_ID)
 #
 # Optional:
+#   IOS_TEAM_ID — Apple Team ID for iOS Universal Links (apple-app-site-association); omit for Android-only
 #   ANDROID_PACKAGE_NAME (default app.mymultiverse.kmp)
 #   IOS_BUNDLE_ID (default app.mymultiverse.kmp)
 
@@ -15,16 +15,12 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="${ROOT_DIR}/web/.well-known"
 
 ANDROID_SHA256="${ANDROID_SHA256_FINGERPRINT:-${ANDROID_RELEASE_SHA256:-}}"
-IOS_TEAM_ID="${IOS_TEAM_ID:-${APNS_TEAM_ID:-}}"
+IOS_TEAM_ID="${IOS_TEAM_ID:-}"
 ANDROID_PACKAGE="${ANDROID_PACKAGE_NAME:-app.mymultiverse.kmp}"
 IOS_BUNDLE="${IOS_BUNDLE_ID:-app.mymultiverse.kmp}"
 
 if [[ -z "${ANDROID_SHA256}" ]]; then
   echo "ERROR: set ANDROID_SHA256_FINGERPRINT (run scripts/print-android-apk-fingerprint.sh on your APK)" >&2
-  exit 1
-fi
-if [[ -z "${IOS_TEAM_ID}" ]]; then
-  echo "ERROR: set IOS_TEAM_ID or APNS_TEAM_ID" >&2
   exit 1
 fi
 
@@ -48,7 +44,10 @@ cat > "${OUT_DIR}/assetlinks.json" <<EOF
 ]
 EOF
 
-cat > "${OUT_DIR}/apple-app-site-association" <<EOF
+echo "Wrote ${OUT_DIR}/assetlinks.json"
+
+if [[ -n "${IOS_TEAM_ID}" ]]; then
+  cat > "${OUT_DIR}/apple-app-site-association" <<EOF
 {
   "applinks": {
     "apps": [],
@@ -61,7 +60,10 @@ cat > "${OUT_DIR}/apple-app-site-association" <<EOF
   }
 }
 EOF
+  echo "Wrote ${OUT_DIR}/apple-app-site-association"
+else
+  rm -f "${OUT_DIR}/apple-app-site-association"
+  echo "Skipped apple-app-site-association (Android-only; set IOS_TEAM_ID for iOS Universal Links)"
+fi
 
-echo "Wrote ${OUT_DIR}/assetlinks.json"
-echo "Wrote ${OUT_DIR}/apple-app-site-association"
 echo "Deploy web/ to https://mymultiverse.app (see scripts/verify-app-links-hosting.sh)"

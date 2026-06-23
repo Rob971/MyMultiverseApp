@@ -1,9 +1,12 @@
 package app.mymultiverse.kmp.presentation.screens.nutrition
 
+import app.mymultiverse.kmp.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.kmp.domain.model.nutrition.DayMeals
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
+import app.mymultiverse.kmp.domain.nutrition.GroceryGhostPairing
 import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
+import app.mymultiverse.kmp.domain.nutrition.MealGroceryPartition
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.MealPlanPresentation
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
@@ -54,6 +57,7 @@ class NutritionScreenModel(
     private val householdRepository: HouseholdRepository,
     private val collaborationRepository: HouseholdCollaborationRepository,
     private val aiAssistant: NutritionAiAssistantService,
+    private val ghostPairingDismissStore: GroceryGhostPairingDismissStore,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
     private val newItemId: () -> String = { "${Random.nextLong()}_${Random.nextInt()}" },
 ) {
@@ -111,6 +115,9 @@ class NutritionScreenModel(
 
     private val _collaborationSnackbar = MutableStateFlow<CollaborationSnackbarEvent?>(null)
     val collaborationSnackbar: StateFlow<CollaborationSnackbarEvent?> = _collaborationSnackbar.asStateFlow()
+
+    private val _ghostPairingOffer = MutableStateFlow<GroceryGhostPairing.Offer?>(null)
+    val ghostPairingOffer: StateFlow<GroceryGhostPairing.Offer?> = _ghostPairingOffer.asStateFlow()
 
     init {
         scope.launch {
@@ -229,7 +236,7 @@ class NutritionScreenModel(
     private val _adoptAllGroceryResult = MutableStateFlow<Int?>(null)
     val adoptAllGroceryResult: StateFlow<Int?> = _adoptAllGroceryResult.asStateFlow()
 
-    fun addGroceryItem(label: String): Boolean {
+    fun addGroceryItem(label: String, skipPairingPrompt: Boolean = false): Boolean {
         if (!canWriteHouseholdData.value) return false
         val trimmed = label.trim()
         if (trimmed.isEmpty()) return false
@@ -241,8 +248,48 @@ class NutritionScreenModel(
                 GroceryItem(id = newId(), label = trimmed),
             ) + groceryItems.value
             repository.saveGroceryItems(updated)
+            if (!skipPairingPrompt) {
+                maybeShowGhostPairing(trimmed, updated)
+            }
         }
         return true
+    }
+
+    fun dismissGhostPairing() {
+        val offer = _ghostPairingOffer.value ?: return
+        repository.householdId?.let { householdId ->
+            ghostPairingDismissStore.dismiss(householdId, offer.id)
+        }
+        _ghostPairingOffer.value = null
+    }
+
+    fun acceptGhostPairing(localizedLabels: List<String>) {
+        if (!canWriteHouseholdData.value) return
+        if (_ghostPairingOffer.value == null) return
+        _ghostPairingOffer.value = null
+        scope.launch {
+            var current = groceryItems.value
+            localizedLabels.forEach { label ->
+                val trimmed = label.trim()
+                if (trimmed.isEmpty()) return@forEach
+                if (GroceryListPresentation.findItemByNormalizedLabel(current, trimmed) == null) {
+                    current = listOf(GroceryItem(id = newId(), label = trimmed)) + current
+                }
+            }
+            if (current != groceryItems.value) {
+                repository.saveGroceryItems(current)
+            }
+        }
+    }
+
+    private fun maybeShowGhostPairing(triggerLabel: String, itemsAfterAdd: List<GroceryItem>) {
+        val householdId = repository.householdId ?: return
+        val dismissed = ghostPairingDismissStore.dismissedIds(householdId)
+        _ghostPairingOffer.value = GroceryGhostPairing.findOffer(
+            triggerLabel = triggerLabel,
+            existingItems = itemsAfterAdd,
+            dismissedPairingIds = dismissed,
+        )
     }
 
     fun updateGroceryItemLabel(id: String, label: String): Boolean {
@@ -427,7 +474,7 @@ class NutritionScreenModel(
 
     fun adoptAllAiGrocerySuggestions() {
         if (!canWriteHouseholdData.value) return
-        val suggestions = aiGroceryItems.value
+        val suggestions = aiGroceryItems.value.filterNot { it.isPantryCheck }
         if (suggestions.isEmpty()) return
         scope.launch {
             var adoptedCount = 0
@@ -441,8 +488,33 @@ class NutritionScreenModel(
                 }
             }
             repository.saveGroceryItems(grocery)
-            repository.saveAiGroceryItems(emptyList())
+            val remainingPantry = aiGroceryItems.value.filter { it.isPantryCheck }
+            repository.saveAiGroceryItems(remainingPantry)
             _adoptAllGroceryResult.value = adoptedCount
+        }
+    }
+
+    fun dismissPantryCheckItem(itemId: String) {
+        if (!canWriteHouseholdData.value) return
+        scope.launch {
+            repository.saveAiGroceryItems(aiGroceryItems.value.filterNot { it.id == itemId })
+        }
+    }
+
+    fun adoptRemainingPantryItems() {
+        if (!canWriteHouseholdData.value) return
+        val pantry = aiGroceryItems.value.filter { it.isPantryCheck }
+        if (pantry.isEmpty()) return
+        scope.launch {
+            var grocery = groceryItems.value
+            pantry.forEach { item ->
+                val trimmed = item.label.trim()
+                if (trimmed.isNotEmpty() && !GroceryListPresentation.isDuplicateLabel(grocery, trimmed)) {
+                    grocery = listOf(GroceryItem(id = newId(), label = trimmed)) + grocery
+                }
+            }
+            repository.saveGroceryItems(grocery)
+            repository.saveAiGroceryItems(aiGroceryItems.value.filterNot { it.isPantryCheck })
         }
     }
 
@@ -482,7 +554,7 @@ class NutritionScreenModel(
         return try {
             aiAssistant.generateGroceryForMeal(mealText)
                 .getOrElse { return 0 }
-                .let { labels -> appendAiGrocery(labels) }
+                .let { labels -> appendMealGroceryLabels(labels) }
         } finally {
             _mealGroceryLoading.value = null
         }
@@ -502,7 +574,7 @@ class NutritionScreenModel(
             _mealGroceryLoading.value = MealGroceryRequest(dayIndex, slot)
             aiAssistant.generateGroceryForMeal(mealText)
                 .onSuccess { labels ->
-                    val addedCount = appendAiGrocery(labels)
+                    val addedCount = appendMealGroceryLabels(labels)
                     _mealGroceryResult.value = MealGroceryResult(
                         itemCount = addedCount,
                         dayLabel = dayLabel,
@@ -533,7 +605,7 @@ class NutritionScreenModel(
             plannedMeals.forEach { plannedMeal ->
                 _mealGroceryLoading.value = MealGroceryRequest(plannedMeal.dayIndex, plannedMeal.slot)
                 aiAssistant.generateGroceryForMeal(plannedMeal.text)
-                    .onSuccess { labels -> totalAdded += appendAiGrocery(labels) }
+                    .onSuccess { labels -> totalAdded += appendMealGroceryLabels(labels) }
                     .onFailure { hadError = true }
             }
             _mealGroceryLoading.value = null
@@ -565,14 +637,35 @@ class NutritionScreenModel(
 
     private suspend fun appendAiGrocery(labels: List<String>): Int {
         if (!canWriteHouseholdData.value) return 0
-        val seen = aiGroceryItems.value.map { it.label.trim().lowercase() }.toMutableSet()
+        return appendAiGroceryItems(labels, isPantryCheck = false)
+    }
+
+    private suspend fun appendMealGroceryLabels(labels: List<String>): Int {
+        if (!canWriteHouseholdData.value) return 0
+        val partitioned = MealGroceryPartition.partition(labels)
+        val labeled = buildList {
+            partitioned.shopping.forEach { add(it to false) }
+            partitioned.pantryStaples.forEach { add(it to true) }
+        }
+        return appendLabeledAiGroceryItems(labeled)
+    }
+
+    private suspend fun appendAiGroceryItems(labels: List<String>, isPantryCheck: Boolean): Int {
+        return appendLabeledAiGroceryItems(labels.map { it to isPantryCheck })
+    }
+
+    private suspend fun appendLabeledAiGroceryItems(labels: List<Pair<String, Boolean>>): Int {
+        if (!canWriteHouseholdData.value) return 0
+        val seen = aiGroceryItems.value
+            .map { it.label.trim().lowercase() }
+            .toMutableSet()
         val newItems = buildList {
-            labels.forEach { raw ->
+            labels.forEach { (raw, isPantryCheck) ->
                 val label = raw.trim()
                 val key = label.lowercase()
                 if (label.isNotEmpty() && key !in seen) {
                     seen += key
-                    add(GroceryItem(id = newId(), label = label))
+                    add(GroceryItem(id = newId(), label = label, isPantryCheck = isPantryCheck))
                 }
             }
         }

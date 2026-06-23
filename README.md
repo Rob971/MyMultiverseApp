@@ -243,13 +243,17 @@ Enable Google/Apple providers for OAuth. Ensure **Realtime** is enabled (Databas
 
 ### App Links / Universal Links (`mymultiverse.app`)
 
-**DNS:** `mymultiverse.app` must point to **Firebase Hosting** (project `mymultiverseapp`), not Squarespace. In Firebase Console → Hosting → Add custom domain → follow DNS instructions at your registrar (remove Squarespace A/CNAME records first).
+**DNS:** `mymultiverse.app` must point to **Firebase Hosting** (project `mymultiverseapp`), not Squarespace. Step-by-step: [`docs/app-links-custom-dns.md`](docs/app-links-custom-dns.md). Quick check: `./scripts/check-app-links-dns.sh`.
+
+1. Firebase Console → [Hosting](https://console.firebase.google.com/project/mymultiverseapp/hosting) → **Add custom domain** `mymultiverse.app` → update DNS at [Squarespace Domains](https://domains.squarespace.com) (remove Squarespace A/CNAME on `@` and `www`; add Firebase TXT + A from the wizard).
 
 1. Build or download the APK you distribute (Firebase release uses **debug** signing).
-2. `chmod +x scripts/print-android-apk-fingerprint.sh scripts/generate-app-links-well-known.sh scripts/deploy-app-links-hosting.sh scripts/verify-app-links-hosting.sh`
-3. **CI (recommended):** Actions → **App Links hosting** → Run workflow (builds debug APK, generates `web/.well-known/*`, deploys `web/`). Use **Skip verify** until DNS is live.
-4. **Local:** `ANDROID_SHA256_FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)" IOS_TEAM_ID="$APNS_TEAM_ID" GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json ./scripts/deploy-app-links-hosting.sh`
-5. `./scripts/verify-app-links-hosting.sh` — passes when `assetlinks.json`, AASA, and `/invite` return HTTP 200 on the apex domain.
+2. `chmod +x scripts/print-android-apk-fingerprint.sh scripts/generate-app-links-well-known.sh scripts/deploy-app-links-hosting.sh scripts/verify-app-links-hosting.sh scripts/check-app-links-dns.sh`
+3. `./scripts/check-app-links-dns.sh` — confirms apex is off Squarespace before you verify hosting.
+4. **CI (recommended):** Actions → **App Links hosting** → Run workflow (builds debug APK, generates `web/.well-known/*`, deploys `web/`). Use **Skip verify** until DNS is live.
+5. **Local:** `ANDROID_SHA256_FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)" GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json ./scripts/deploy-app-links-hosting.sh`  
+   Optional iOS Universal Links: add `IOS_TEAM_ID=YOUR_APPLE_TEAM_ID` to the same command.
+6. `./scripts/verify-app-links-hosting.sh` — passes when `assetlinks.json`, AASA, and `/invite` return HTTP 200 on the apex domain.
 
 Release CI prints `ANDROID_SHA256_FINGERPRINT` and attempts a hosting deploy (skips verify; does not block release if DNS is not ready).
 

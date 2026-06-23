@@ -8,6 +8,7 @@ import app.mymultiverse.kmp.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.kmp.data.manager.SettingsThemeManager
 import app.mymultiverse.kmp.data.home.HomeFirstWinChecklistStore
 import app.mymultiverse.kmp.data.home.HomeWeekPlanNudgeStore
+import app.mymultiverse.kmp.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.kmp.data.invite.InviteSessionStore
 import app.mymultiverse.kmp.data.repository.SettingsNutritionHouseholdSelectionStore
 import app.mymultiverse.kmp.data.service.LocalNutritionAiAssistantService
@@ -88,6 +89,7 @@ private val dataModule = module {
     single { InviteSessionStore(get()) }
     single { HomeFirstWinChecklistStore(get()) }
     single { HomeWeekPlanNudgeStore(get()) }
+    single { GroceryGhostPairingDismissStore(get()) }
     single<ThemeManager> { SettingsThemeManager(get()) }
     single<GreetingRepository> { GreetingRepositoryImpl(get()) }
     single<NutritionRepository> { NutritionRepositoryImpl(get()) }
@@ -123,6 +125,7 @@ private val presentationModule = module {
             householdRepository = get(),
             collaborationRepository = get(),
             aiAssistant = get(),
+            ghostPairingDismissStore = get(),
         )
     }
 }

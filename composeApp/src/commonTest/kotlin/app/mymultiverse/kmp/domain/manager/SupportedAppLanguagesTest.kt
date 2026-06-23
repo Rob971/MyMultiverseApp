@@ -24,4 +24,15 @@ class SupportedAppLanguagesTest {
         assertEquals(SupportedAppLanguages.codes.size, SupportedAppLanguages.options.size)
         assertTrue(SupportedAppLanguages.options.all { (code, label) -> code.isNotBlank() && label.isNotBlank() })
     }
+
+    @Test
+    fun labelFor_returnsDisplayNameForKnownCode() {
+        assertEquals("Napulitano", SupportedAppLanguages.labelFor("nap"))
+        assertEquals("English", SupportedAppLanguages.labelFor("en"))
+    }
+
+    @Test
+    fun labelFor_unknownCodeFallsBackToDefaultDisplayName() {
+        assertEquals("Napulitano", SupportedAppLanguages.labelFor("xx"))
+    }
 }

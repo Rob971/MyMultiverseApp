@@ -9,7 +9,6 @@ import app.mymultiverse.kmp.presentation.components.JourneyErrorContent
 import app.mymultiverse.kmp.presentation.components.JourneyIconButton
 import app.mymultiverse.kmp.presentation.components.JourneyLoadingContent
 import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
-import app.mymultiverse.kmp.presentation.components.JourneySecondaryButton
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -49,7 +48,6 @@ import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdGateError
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.kmp.domain.home.HomeTonightDinner
-import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -57,9 +55,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsCardSurface
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
-import app.mymultiverse.kmp.presentation.components.HomeFirstWinChecklistCard
+import app.mymultiverse.kmp.presentation.components.HomePrimaryActions
 import app.mymultiverse.kmp.presentation.components.HomeSundayPlanNudgeCard
-import app.mymultiverse.kmp.presentation.components.HomeHouseholdButton
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.WeekContextBanner
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
@@ -77,14 +74,15 @@ import app.mymultiverse.kmp.presentation.screens.household.InviteActionMessage
 import org.koin.compose.koinInject
 
 object HomeTestTags {
-    const val NUTRITION_CARD = "home_nutrition_card"
-    const val NUTRITION_CTA = "home_nutrition_cta"
     const val TONIGHT_DINNER_CARD = "home_tonight_dinner_card"
     const val TONIGHT_DINNER_MEAL = "home_tonight_dinner_meal"
     const val ONBOARDING_QUICK_CREATE = "home_onboarding_quick_create"
-    const val GROCERY_EMPTY_CTA = "home_grocery_empty_cta"
-    const val THIS_WEEK_SECTION = "home_this_week_section"
-    const val HOUSEHOLD_CARD = "home_household_card"
+    /** @deprecated Today hero actions — use [HomePrimaryActionsTestTags.PLAN] */
+    const val NUTRITION_CTA = "home_hero_plan"
+    /** @deprecated Today hero actions — use [HomePrimaryActionsTestTags.GROCERY] */
+    const val GROCERY_EMPTY_CTA = "home_hero_grocery"
+    /** @deprecated Family hub moved to account sheet — use [HomeAccountSheetTestTags.FAMILY_HUB] */
+    const val HOUSEHOLD_CARD = "home_account_family_hub"
     const val SIGN_OUT_BUTTON = "home_sign_out_button"
     const val EXPORT_DATA_BUTTON = "home_export_personal_data_button"
     const val DELETE_ACCOUNT_BUTTON = "home_delete_account_button"
@@ -128,7 +126,6 @@ fun HomeScreen(
     val canRenameHousehold by screenModel.canRenameHousehold.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val nutritionSummary by screenModel.nutritionSummary.collectAsState()
-    val firstWinChecklist by screenModel.firstWinChecklist.collectAsState()
     val weekPlanNudge by screenModel.weekPlanNudge.collectAsState()
     val pendingInvites by screenModel.pendingInvites.collectAsState()
     val inviteActionMessage by screenModel.inviteActionMessage.collectAsState()
@@ -287,7 +284,11 @@ fun HomeScreen(
             }
             HomeAccountSheet(
                 visible = showAccountSheet,
+                householdName = household?.name,
+                canRenameHousehold = canRenameHousehold,
                 onDismiss = { showAccountSheet = false },
+                onOpenHouseholdMembers = onOpenHouseholdMembers,
+                onRenameHousehold = screenModel::openRenameHouseholdDialog,
                 onSignOut = screenModel::signOut,
                 onExportPersonalData = screenModel::exportPersonalData,
                 onDeleteAccount = screenModel::requestDeleteAccount,
@@ -306,16 +307,11 @@ fun HomeScreen(
                 HomeWelcomeContent(
                     greeting = greeting,
                     userDisplayName = userDisplayName,
-                    householdName = household?.name,
-                    canRenameHousehold = canRenameHousehold,
-                    onRenameHousehold = screenModel::openRenameHouseholdDialog,
                     nutritionSummary = nutritionSummary,
-                    firstWinChecklist = firstWinChecklist,
                     weekPlanNudge = weekPlanNudge,
                     onOpenMealPlan = onOpenMealPlan,
                     onOpenGrocery = onOpenGrocery,
                     onOpenHouseholdMembers = onOpenHouseholdMembers,
-                    onDismissFirstWinChecklist = screenModel::dismissFirstWinChecklist,
                     onDismissWeekPlanNudge = screenModel::dismissWeekPlanNudge,
                     isRefreshing = isRefreshing,
                     onRefresh = screenModel::refresh,
@@ -642,18 +638,13 @@ fun HomeOnboardingContent(
 fun HomeWelcomeContent(
     greeting: Greeting?,
     userDisplayName: String?,
-    householdName: String?,
-    canRenameHousehold: Boolean,
-    onRenameHousehold: () -> Unit,
     nutritionSummary: HomeNutritionSummary?,
-    firstWinChecklist: HomeFirstWinChecklistUiState = HomeFirstWinChecklistUiState(),
     weekPlanNudge: HomeWeekPlanNudgeUiState = HomeWeekPlanNudgeUiState(),
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onOpenMealPlan: () -> Unit,
     onOpenGrocery: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
-    onDismissFirstWinChecklist: () -> Unit = {},
     onDismissWeekPlanNudge: () -> Unit = {},
     embeddedInMainTabs: Boolean = false,
     greetingHour: Int? = null,
@@ -669,16 +660,6 @@ fun HomeWelcomeContent(
         is HomeInspirationLine.Ready -> line.text
     }
     val showInspirationLoading = greeting == null
-    val thisWeekStatusLine = homeThisWeekStatusLine(nutritionSummary)
-    val hasNutritionProgress = nutritionSummary?.let { summary ->
-        summary.plannedMealSlots > 0 || summary.groceryProgress?.total?.let { it > 0 } == true
-    } == true
-    val nutritionCtaLabel = if (hasNutritionProgress) {
-        stringResource(Res.string.home_nutrition_continue_planning)
-    } else {
-        stringResource(Res.string.home_nutrition_get_started)
-    }
-    val isGroceryEmpty = nutritionSummary?.groceryProgress?.total?.let { it > 0 } != true
 
     val pullRefreshState = rememberPullToRefreshState()
 
@@ -727,22 +708,12 @@ fun HomeWelcomeContent(
                 }
             }
 
-            if (firstWinChecklist.visible) {
-                item {
-                    HomeFirstWinChecklistCard(
-                        title = stringResource(Res.string.home_first_win_title),
-                        planTitle = stringResource(Res.string.home_first_win_plan_title),
-                        planActionLabel = stringResource(Res.string.home_first_win_plan_action),
-                        inviteTitle = stringResource(Res.string.home_first_win_invite_title),
-                        inviteActionLabel = stringResource(Res.string.home_first_win_invite_action),
-                        dismissLabel = stringResource(Res.string.home_first_win_dismiss),
-                        inviteComplete = firstWinChecklist.inviteComplete,
-                        nutritionComplete = firstWinChecklist.nutritionComplete,
-                        onInviteClick = onOpenHouseholdMembers,
-                        onNutritionClick = onOpenMealPlan,
-                        onDismiss = onDismissFirstWinChecklist,
-                    )
-                }
+            item {
+                HomePrimaryActions(
+                    onOpenMealPlan = onOpenMealPlan,
+                    onOpenGrocery = onOpenGrocery,
+                    onOpenFamily = onOpenHouseholdMembers,
+                )
             }
 
             if (weekPlanNudge.visible) {
@@ -803,104 +774,8 @@ fun HomeWelcomeContent(
                     }
                 }
             }
-
-            item {
-                FamilyLogisticsSectionHeader(
-                    title = stringResource(Res.string.home_section_this_week),
-                    titleModifier = Modifier.testTag(HomeTestTags.THIS_WEEK_SECTION),
-                )
-            }
-
-            item {
-                FamilyLogisticsCardSurface(
-                    accentColor = SharedJourneyColors.SageSoft,
-                    modifier = Modifier.testTag(HomeTestTags.NUTRITION_CARD),
-                ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.home_logistics_nutrition_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = JourneySemanticColors.inkDeep(),
-                        )
-                        Text(
-                            text = thisWeekStatusLine,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = JourneySemanticColors.inkMuted(),
-                        )
-                        JourneyPrimaryButton(
-                            onClick = onOpenMealPlan,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag(HomeTestTags.NUTRITION_CTA),
-                        ) {
-                            Text(nutritionCtaLabel)
-                        }
-                        if (isGroceryEmpty) {
-                            JourneySecondaryButton(
-                                onClick = onOpenGrocery,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .testTag(HomeTestTags.GROCERY_EMPTY_CTA),
-                            ) {
-                                Text(stringResource(Res.string.home_grocery_empty_cta))
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!householdName.isNullOrBlank()) {
-                item {
-                    FamilyLogisticsSectionHeader(
-                        title = stringResource(Res.string.home_section_household),
-                    )
-                }
-                item {
-                    HomeHouseholdButton(
-                        householdName = householdName,
-                        canManage = canRenameHousehold,
-                        onOpenHousehold = onOpenHouseholdMembers,
-                        onRenameHousehold = onRenameHousehold,
-                        modifier = Modifier.testTag(HomeTestTags.HOUSEHOLD_CARD),
-                    )
-                }
-            }
         }
     }
-}
-
-@Composable
-private fun homeThisWeekStatusLine(nutritionSummary: HomeNutritionSummary?): String {
-    val emptyLabel = stringResource(Res.string.home_nutrition_get_started)
-    if (nutritionSummary == null) {
-        return emptyLabel
-    }
-    val groceryProgress = nutritionSummary.groceryProgress
-    if (groceryProgress == null && nutritionSummary.plannedMealSlots == 0) {
-        return emptyLabel
-    }
-    return buildList {
-        groceryProgress?.let { progress ->
-            add(
-                stringResource(
-                    Res.string.nutrition_grocery_progress,
-                    progress.checked,
-                    progress.total,
-                ),
-            )
-        }
-        add(
-            stringResource(
-                Res.string.nutrition_meal_plan_progress,
-                nutritionSummary.plannedMealSlots,
-                NutritionHubSummary.MEAL_SLOTS_PER_WEEK,
-            ),
-        )
-    }.joinToString(" · ")
 }
 
 @Composable

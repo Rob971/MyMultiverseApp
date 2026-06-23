@@ -6,7 +6,9 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.mymultiverse.kmp.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.kmp.domain.model.sharing.HouseholdMemberRole
+import com.russhwolf.settings.MapSettings
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyTestTags
@@ -39,6 +41,7 @@ class HouseholdCollaborationInstrumentedTest {
             ),
             collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(),
+            ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
         )
 
@@ -70,6 +73,7 @@ class HouseholdCollaborationInstrumentedTest {
             ),
             collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(),
+            ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
         )
 

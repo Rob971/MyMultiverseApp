@@ -279,6 +279,14 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 - `household-invite-notification` — invite email/push (manual; requires Resend + FCM/APNs secrets).
 - `household-gate-create-with-invite` — **deprecated id**; use `household-onboarding-create-with-invite`.
 
+**Onboarding & App Links (v1.0.33+, QA v43–v48):**
+
+- `auth-sign-in` / `auth-oauth-redirect` — SSO auth screen; email/password fallback via Continue with email (v46).
+- `home-onboarding-create-household` — new user creates household; modules gated until setup complete.
+- `household-invite-deeplink` — HTTPS invite link from email opens app (App Links when DNS live).
+- `grocery-ghost-pairing` — terracotta “Often bought together” banner; one-tap add (E4-9, v48).
+- `app-links-hosting` — `/.well-known/assetlinks.json` on `mymultiverse.app` (manual; after DNS migration).
+
 **Remote Supabase migrations required for field tests:**  
 `20250617130000`, `20250617140000`, `20250618120000`, `20250618140000`, `20250618150000`, `20250618160000`, `20250618161000`, `20250618170000`, `20250618180000`.
 
@@ -296,6 +304,7 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 | 2025-06-19 | Architecture section updated post-`households` rename; table names aligned in FAQ |
 | 2026-06-17 | v1 merged to `main` (PR #7); post-merge status and P2 backlog documented |
 | 2026-06-18 | P2 A–D shipped on `main` (PR #8); closeout ops/platform/docs in PR #9 (`feature/p2-closeout`) |
+| 2026-06-23 | QA YAML v48: SSO onboarding, App Links tooling, ghost pairing banner; backlog S12/S13 |
 
 ---
 

@@ -10,8 +10,12 @@ object NutritionStorageCodec {
 
     fun encodeGrocery(items: List<GroceryItem>): String =
         items.joinToString(RECORD.toString()) { item ->
-            listOf(item.id, item.label.replace(FIELD.toString(), " "), item.isChecked.toString())
-                .joinToString(FIELD.toString())
+            listOf(
+                item.id,
+                item.label.replace(FIELD.toString(), " "),
+                item.isChecked.toString(),
+                item.isPantryCheck.toString(),
+            ).joinToString(FIELD.toString())
         }
 
     fun decodeGrocery(raw: String?): List<GroceryItem> {
@@ -23,6 +27,7 @@ object NutritionStorageCodec {
                 id = parts[0],
                 label = parts[1],
                 isChecked = parts[2].toBooleanStrictOrNull() ?: false,
+                isPantryCheck = parts.getOrNull(3)?.toBooleanStrictOrNull() ?: false,
             )
         }
     }

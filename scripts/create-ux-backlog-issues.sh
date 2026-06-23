@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Creates GitHub issues from docs/product-backlog.md
-# Progress tracker: see docs/product-backlog.md (Phases 0–2 done; Phase 3 S10 current; 2 phases left)
+# Progress tracker: see docs/product-backlog.md (Phases 0–3 done; S12 E4-9 shipped; S13 UX audit next; QA v48)
 # Run from repo root: ./scripts/create-ux-backlog-issues.sh
 set -euo pipefail
 
@@ -37,7 +37,8 @@ Families plan dinner and shop groceries with less effort than paper and texting 
 - **Phase 1** — Paper at the store (weeks 3–4)
 - **Phase 2** — Silent butler AI (weeks 5–7)
 - **Phase 3** — Family in the loop (weeks 8–10)
-- **Phase 4+** — Ghost magic / bigger bets (optional)
+- **Phase 4** — Ghost magic (optional)
+- **Phase 5** — UX audit clarity (Today hero CTAs, family in account sheet, Napulitano label)
 
 Child issues use labels \`epic-e*\` and \`phase-*\`. Search: \`label:ux-backlog\`.
 
@@ -133,6 +134,19 @@ issue "E1-7" "Sunday empty-week nudge on Today" "epic-e1" "phase-3" "P1" "M" \
   "- [ ] When new week has no meal plan, Today shows gentle plan-week nudge
 - [ ] Dismissible; not blocking"
 
+issue "E1-8" "Today tab: three hero actions (Plan · Grocery · Family)" "epic-e1" "phase-5" "P1" "M" \
+  "\`HomeWelcomeContent\`, \`HomePrimaryActions\`, \`MainTabShell\`" \
+  "- [ ] Today shows three primary hero buttons above scroll content
+- [ ] Bottom tabs remain (Today / Plan / Groceries)
+- [ ] Demote or remove duplicate CTAs on This week card and first-win checklist
+- [ ] Instrumented smoke for hero taps"
+
+issue "E1-9" "Family hub in account sheet; remove Family section from Today" "epic-e1" "phase-5" "P1" "M" \
+  "\`HomeAccountSheet\`, \`AppRoute.HouseholdMembers\`" \
+  "- [ ] Profile avatar opens account sheet with Family / Members entry
+- [ ] Today scroll no longer shows inline Family household card
+- [ ] Invite + rename flows still reachable from account sheet"
+
 # E2
 issue "E2-1" "Wakelock: Keep screen on while shopping" "epic-e2" "phase-0" "P0" "S" \
   "Platform \`expect/actual\`; Groceries screen or settings" \
@@ -195,6 +209,12 @@ issue "E3-7" "Silent duplicate grocery merge" "epic-e3" "phase-3" "P2" "M" \
   "Domain + \`GroceryShoppingScreen\`" \
   "- [ ] Adding duplicate label merges or increments instead of error-only path
 - [ ] Unit tests for merge rules"
+
+issue "E3-9" "HTTPS App Links hosting on mymultiverse.app" "epic-e3" "phase-3" "P1" "M" \
+  "\`web/\`, \`scripts/deploy-app-links-hosting.sh\`, Firebase Hosting" \
+  "- [ ] \`assetlinks.json\` served at \`https://mymultiverse.app/.well-known/\`
+- [ ] Custom DNS migrated from Squarespace to Firebase Hosting
+- [ ] \`scripts/check-app-links-dns.sh\` passes; invite HTTPS links open Android app"
 
 # E4
 issue "E4-1" "AiHelperSheet bottom sheet (~60% height)" "epic-e4" "phase-2" "P0" "L" \
@@ -290,6 +310,11 @@ issue "E6-3" "Firebase QA YAML for Phase 0–2 flows" "epic-e6" "phase-0" "P0" "
   "\`firebase-appdistribution-testcases.yaml\`" \
   "- [ ] Bump YAML version
 - [ ] Manual cases for tonight's dinner, wakelock, AI sheet when shipped"
+
+issue "E6-4" "Napulitano explicit language label + dialect subtitle in picker" "epic-e6" "phase-5" "P2" "S" \
+  "\`SupportedAppLanguages\`, \`LanguagePicker\`, 8 locales" \
+  "- [ ] Picker shows Napulitano (not NAP code) with localized dialect subtitle
+- [ ] All 8 locale files updated; locale parity tests green"
 
 # E7 deferred
 issue "E2-5" "[Deferred] Auto-aisle grocery categorization" "epic-e7" "phase-4" "P3" "L" \

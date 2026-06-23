@@ -6,12 +6,14 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.presentation.components.HomeHouseholdButtonTestTags
+import app.mymultiverse.kmp.presentation.components.HomePrimaryActionsTestTags
+import app.mymultiverse.kmp.presentation.screens.home.HomeAccountSheet
+import app.mymultiverse.kmp.presentation.screens.home.HomeAccountSheetTestTags
 import app.mymultiverse.kmp.presentation.screens.home.HomeOnboardingContent
 import app.mymultiverse.kmp.presentation.screens.home.HomeOnboardingUiState
 import app.mymultiverse.kmp.presentation.screens.home.HomeTestTags
@@ -138,9 +140,87 @@ class HomeHouseholdUxInstrumentedTest {
     }
 
     @Test
-    fun welcome_owner_tapHouseholdButtonOpensMembersAndEditRenames() {
+    fun accountSheet_familyHub_opensMembers() {
         var membersOpened = false
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeAccountSheet(
+                        visible = true,
+                        householdName = "Our Household",
+                        canRenameHousehold = true,
+                        onDismiss = {},
+                        onOpenHouseholdMembers = { membersOpened = true },
+                        onRenameHousehold = {},
+                        onSignOut = {},
+                        onExportPersonalData = {},
+                        onDeleteAccount = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeAccountSheetTestTags.FAMILY_HUB).performClick()
+        assertTrue(membersOpened)
+    }
+
+    @Test
+    fun accountSheet_owner_editRenamesHousehold() {
         var renameOpened = false
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeAccountSheet(
+                        visible = true,
+                        householdName = "Our Household",
+                        canRenameHousehold = true,
+                        onDismiss = {},
+                        onOpenHouseholdMembers = {},
+                        onRenameHousehold = { renameOpened = true },
+                        onSignOut = {},
+                        onExportPersonalData = {},
+                        onDeleteAccount = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeHouseholdButtonTestTags.EDIT).performClick()
+        assertTrue(renameOpened)
+    }
+
+    @Test
+    fun accountSheet_viewer_hidesRenameEditAction() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeAccountSheet(
+                        visible = true,
+                        householdName = "Shared Home",
+                        canRenameHousehold = false,
+                        onDismiss = {},
+                        onOpenHouseholdMembers = {},
+                        onRenameHousehold = {},
+                        onSignOut = {},
+                        onExportPersonalData = {},
+                        onDeleteAccount = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeAccountSheetTestTags.FAMILY_HUB).assertIsDisplayed()
+        assertTrue(
+            composeRule.onAllNodesWithTag(HomeHouseholdButtonTestTags.EDIT)
+                .fetchSemanticsNodes().isEmpty(),
+        )
+    }
+
+    @Test
+    fun welcome_familyHero_opensMembers() {
+        var membersOpened = false
 
         composeRule.setContent {
             AppTheme {
@@ -148,9 +228,6 @@ class HomeHouseholdUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = Greeting("ready"),
                         userDisplayName = "Roberto",
-                        householdName = "Our Household",
-                        canRenameHousehold = true,
-                        onRenameHousehold = { renameOpened = true },
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
@@ -163,44 +240,9 @@ class HomeHouseholdUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(HomeTestTags.HOUSEHOLD_CARD)
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.FAMILY)
             .performScrollTo()
             .performClick()
         assertTrue(membersOpened)
-
-        composeRule.onNodeWithTag(HomeHouseholdButtonTestTags.EDIT)
-            .performScrollTo()
-            .performClick()
-        assertTrue(renameOpened)
-    }
-
-    @Test
-    fun welcome_viewer_hidesRenameEditAction() {
-        composeRule.setContent {
-            AppTheme {
-                InstrumentedKoinHost {
-                    HomeWelcomeContent(
-                        greeting = Greeting("ready"),
-                        userDisplayName = "Guest",
-                        householdName = "Shared Home",
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
-                        nutritionSummary = null,
-                        isRefreshing = false,
-                        onRefresh = {},
-                        onOpenMealPlan = {},
-                        onOpenGrocery = {},
-                        onOpenHouseholdMembers = {},
-                        greetingHour = 9,
-                    )
-                }
-            }
-        }
-
-        composeRule.onNodeWithTag(HomeTestTags.HOUSEHOLD_CARD).assertIsDisplayed()
-        assertTrue(
-            composeRule.onAllNodesWithTag(HomeHouseholdButtonTestTags.EDIT)
-                .fetchSemanticsNodes().isEmpty(),
-        )
     }
 }

@@ -5,8 +5,9 @@ inputs:
     description: Colon-free uppercase SHA-256 from the distributed APK
     required: true
   ios-team-id:
-    description: Apple Team ID (APNS_TEAM_ID secret)
-    required: true
+    description: Optional Apple Team ID for iOS Universal Links (apple-app-site-association)
+    required: false
+    default: ""
   firebase-project-id:
     description: Firebase project id
     required: true

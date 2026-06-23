@@ -19,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.AppBuildInfo
+import app.mymultiverse.kmp.presentation.components.HomeHouseholdButton
+import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.JourneyDestructiveTextButton
 import app.mymultiverse.kmp.presentation.components.LanguagePicker
 import app.mymultiverse.kmp.presentation.components.ThemePicker
@@ -29,11 +31,13 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_app_versi
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_app_version_rc
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_delete_account
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_export_personal_data
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_section_household
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_settings_title
 import org.jetbrains.compose.resources.stringResource
 
 object HomeAccountSheetTestTags {
     const val SHEET = "home_account_sheet"
+    const val FAMILY_HUB = "home_account_family_hub"
     const val SIGN_OUT = HomeTestTags.SIGN_OUT_BUTTON
     const val EXPORT = HomeTestTags.EXPORT_DATA_BUTTON
     const val DELETE = HomeTestTags.DELETE_ACCOUNT_BUTTON
@@ -44,7 +48,11 @@ object HomeAccountSheetTestTags {
 @Composable
 fun HomeAccountSheet(
     visible: Boolean,
+    householdName: String?,
+    canRenameHousehold: Boolean,
     onDismiss: () -> Unit,
+    onOpenHouseholdMembers: () -> Unit,
+    onRenameHousehold: () -> Unit,
     onSignOut: () -> Unit,
     onExportPersonalData: () -> Unit,
     onDeleteAccount: () -> Unit,
@@ -72,6 +80,31 @@ fun HomeAccountSheet(
                 color = JourneySemanticColors.inkDeep(),
                 modifier = Modifier.padding(bottom = 8.dp),
             )
+
+            if (!householdName.isNullOrBlank()) {
+                FamilyLogisticsSectionHeader(
+                    title = stringResource(Res.string.home_section_household),
+                )
+                HomeHouseholdButton(
+                    householdName = householdName,
+                    canManage = canRenameHousehold,
+                    onOpenHousehold = {
+                        onDismiss()
+                        onOpenHouseholdMembers()
+                    },
+                    onRenameHousehold = {
+                        onDismiss()
+                        onRenameHousehold()
+                    },
+                    modifier = Modifier
+                        .padding(bottom = 12.dp)
+                        .testTag(HomeAccountSheetTestTags.FAMILY_HUB),
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(bottom = 12.dp),
+                    color = JourneySemanticColors.inkMuted().copy(alpha = 0.25f),
+                )
+            }
 
             ThemePicker(modifier = Modifier.padding(bottom = 12.dp))
 

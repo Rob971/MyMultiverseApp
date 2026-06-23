@@ -5,9 +5,30 @@ import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class NutritionStorageCodecTest {
+
+    @Test
+    fun encodeDecodeGrocery_roundTripsPantryFlag() {
+        val items = listOf(
+            GroceryItem(id = "1", label = "Salt", isPantryCheck = true),
+            GroceryItem(id = "2", label = "Chicken", isPantryCheck = false),
+        )
+
+        val decoded = NutritionStorageCodec.decodeGrocery(NutritionStorageCodec.encodeGrocery(items))
+
+        assertEquals(items, decoded)
+    }
+
+    @Test
+    fun decodeGrocery_defaultsPantryFlagWhenMissing() {
+        val raw = "1\u001FMilk\u001Ffalse"
+        val decoded = NutritionStorageCodec.decodeGrocery(raw)
+
+        assertFalse(decoded.single().isPantryCheck)
+    }
 
     @Test
     fun encodeDecodeGrocery_roundTripsItems() {

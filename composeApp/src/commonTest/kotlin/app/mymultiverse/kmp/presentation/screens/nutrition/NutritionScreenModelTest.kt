@@ -1,5 +1,6 @@
 package app.mymultiverse.kmp.presentation.screens.nutrition
 
+import app.mymultiverse.kmp.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.kmp.domain.model.nutrition.DayMeals
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
@@ -25,12 +26,15 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import com.russhwolf.settings.MapSettings
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -375,6 +379,7 @@ class NutritionScreenModelTest {
             householdRepository = FakeHouseholdRepository(),
             collaborationRepository = FakeHouseholdCollaborationRepository(),
             aiAssistant = FakeNutritionAdviceService(),
+            ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
             scope = modelScope,
         )
 
@@ -396,7 +401,28 @@ class NutritionScreenModelTest {
         advanceUntilIdle()
 
         assertEquals(2, repository.aiGrocery.value.size)
-        assertEquals("Garlic", repository.aiGrocery.value.first().label)
+        val garlic = repository.aiGrocery.value.first { it.label == "Garlic" }
+        val pasta = repository.aiGrocery.value.first { it.label == "Pasta" }
+        assertTrue(garlic.isPantryCheck)
+        assertFalse(pasta.isPantryCheck)
+    }
+
+    @Test
+    fun adoptAllAiGrocerySuggestions_leavesPantryStaplesSeparate() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.aiGrocery.value = listOf(
+            GroceryItem("ai-1", "Milk"),
+            GroceryItem("ai-2", "Salt", isPantryCheck = true),
+        )
+        val model = nutritionScreenModel(repository, scope = modelScope) { "grocery-1" }
+        advanceUntilIdle()
+
+        model.adoptAllAiGrocerySuggestions()
+        advanceUntilIdle()
+
+        assertEquals(1, repository.grocery.value.size)
+        assertEquals("Milk", repository.grocery.value.single().label)
+        assertEquals(listOf("Salt"), repository.aiGrocery.value.map { it.label })
     }
 
     @Test
@@ -483,6 +509,59 @@ class NutritionScreenModelTest {
         assertEquals(2, repository.aiGrocery.value.size)
         assertIs<NutritionScreenModel.BulkMealGroceryResult>(model.bulkMealGroceryResult.value)
     }
+
+    @Test
+    fun addGroceryItem_showsGhostPairingOfferForTortillas() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val model = nutritionScreenModel(repository, scope = modelScope) { "new-item" }
+        model.addGroceryItem("Tortillas")
+        advanceUntilIdle()
+
+        val offer = model.ghostPairingOffer.value
+        assertNotNull(offer)
+        assertEquals(3, offer.suggestions.size)
+    }
+
+    @Test
+    fun acceptGhostPairing_addsSuggestedItems() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val model = nutritionScreenModel(repository, scope = modelScope) { "new-item" }
+        model.addGroceryItem("Tortillas")
+        advanceUntilIdle()
+
+        model.acceptGhostPairing(listOf("Salsa", "Cheese", "Sour cream"))
+        advanceUntilIdle()
+
+        assertNull(model.ghostPairingOffer.value)
+        val labels = repository.grocery.value.map { it.label }
+        assertTrue(labels.contains("Tortillas"))
+        assertTrue(labels.contains("Salsa"))
+        assertTrue(labels.contains("Cheese"))
+        assertTrue(labels.contains("Sour cream"))
+    }
+
+    @Test
+    fun dismissGhostPairing_preventsRepeatOffer() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val dismissStore = GroceryGhostPairingDismissStore(MapSettings())
+        val model = nutritionScreenModel(
+            repository,
+            scope = modelScope,
+            ghostPairingDismissStore = dismissStore,
+        ) { "new-item" }
+
+        model.addGroceryItem("Tortillas")
+        advanceUntilIdle()
+        assertNotNull(model.ghostPairingOffer.value)
+
+        model.dismissGhostPairing()
+        advanceUntilIdle()
+        assertNull(model.ghostPairingOffer.value)
+
+        model.addGroceryItem("Tacos")
+        advanceUntilIdle()
+        assertNull(model.ghostPairingOffer.value)
+    }
 }
 
 private class FakeNutritionRepository(
@@ -524,6 +603,7 @@ private fun nutritionScreenModel(
     advice: NutritionAiAssistantService = FakeNutritionAdviceService(),
     householdRepository: FakeHouseholdRepository = FakeHouseholdRepository(),
     collaborationRepository: FakeHouseholdCollaborationRepository = FakeHouseholdCollaborationRepository(),
+    ghostPairingDismissStore: GroceryGhostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
     scope: CoroutineScope,
     newItemId: () -> String = { "item-1" },
 ): NutritionScreenModel =
@@ -532,6 +612,7 @@ private fun nutritionScreenModel(
         householdRepository = householdRepository,
         collaborationRepository = collaborationRepository,
         aiAssistant = advice,
+        ghostPairingDismissStore = ghostPairingDismissStore,
         scope = scope,
         newItemId = newItemId,
     )

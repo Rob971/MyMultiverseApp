@@ -52,6 +52,12 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_groc
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_clear_checked_undo
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_description
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_duplicate
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_ghost_pairing_action
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_ghost_pairing_dismiss
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_ghost_pairing_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_pantry_check_adopt_remaining
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_pantry_check_subtitle
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_pantry_check_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_edit_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_edit_item
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty
@@ -73,12 +79,14 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_groc
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_label
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
+import app.mymultiverse.kmp.domain.nutrition.GroceryGhostPairing
 import app.mymultiverse.kmp.domain.nutrition.NutritionCollaborationActivityKind
 import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
 import app.mymultiverse.kmp.domain.nutrition.MealPlanPresentation
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionsSection
+import app.mymultiverse.kmp.presentation.components.PantryCheckSection
 import app.mymultiverse.kmp.presentation.components.AiInlineTriggerButton
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
 import app.mymultiverse.kmp.presentation.components.JourneyIconButton
@@ -86,6 +94,8 @@ import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.kmp.presentation.components.WeekSelectorBanner
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.GroceryDashboardCard
+import app.mymultiverse.kmp.presentation.components.GroceryDashboardCard
+import app.mymultiverse.kmp.presentation.components.GroceryGhostPairingBanner
 import app.mymultiverse.kmp.presentation.components.GroceryInputBar
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.kmp.presentation.components.GroceryItemRow
@@ -127,6 +137,7 @@ fun GroceryShoppingScreen(
     val aiGroceryItems by screenModel.aiGroceryItems.collectAsState()
     val adoptAllResult by screenModel.adoptAllGroceryResult.collectAsState()
     val collaborationSnackbar by screenModel.collaborationSnackbar.collectAsState()
+    val ghostPairingOffer by screenModel.ghostPairingOffer.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val weekOffset by screenModel.weekOffset.collectAsState()
@@ -151,6 +162,11 @@ fun GroceryShoppingScreen(
     val nextWeekLabel = stringResource(Res.string.nutrition_week_next)
     val aiSuggestionsTitle = stringResource(Res.string.nutrition_ai_grocery_suggestions_title)
     val adoptAllLabel = stringResource(Res.string.nutrition_ai_adopt_all_grocery)
+    val pantryCheckTitle = stringResource(Res.string.nutrition_pantry_check_title)
+    val pantryCheckSubtitle = stringResource(Res.string.nutrition_pantry_check_subtitle)
+    val pantryAdoptRemainingLabel = stringResource(Res.string.nutrition_pantry_check_adopt_remaining)
+    val shoppingAiItems = remember(aiGroceryItems) { aiGroceryItems.filterNot { it.isPantryCheck } }
+    val pantryCheckItems = remember(aiGroceryItems) { aiGroceryItems.filter { it.isPantryCheck } }
     val sections = remember(items) { GroceryListPresentation.partition(items) }
     val displaySections = remember(sections, hideCheckedItems) {
         GroceryListPresentation.forShoppingDisplay(sections, hideCheckedItems)
@@ -367,7 +383,11 @@ fun GroceryShoppingScreen(
                 totalCount = totalCount,
                 checkedCount = checkedCount,
                 canWrite = canWrite,
-                aiGroceryItems = aiGroceryItems,
+                aiGroceryItems = shoppingAiItems,
+                pantryCheckItems = pantryCheckItems,
+                pantryCheckTitle = pantryCheckTitle,
+                pantryCheckSubtitle = pantryCheckSubtitle,
+                pantryAdoptRemainingLabel = pantryAdoptRemainingLabel,
                 aiSuggestionsTitle = aiSuggestionsTitle,
                 adoptAllLabel = adoptAllLabel,
                 sections = displaySections,
@@ -418,6 +438,12 @@ fun GroceryShoppingScreen(
                         ),
                     )
                 },
+                ghostPairingOffer = ghostPairingOffer,
+                onAcceptGhostPairing = { labels ->
+                    screenModel.acceptGhostPairing(labels)
+                    pendingScrollLabel = labels.firstOrNull()
+                },
+                onDismissGhostPairing = screenModel::dismissGhostPairing,
             )
         }
 
@@ -489,6 +515,10 @@ private fun LazyListScope.groceryShoppingListItems(
     checkedCount: Int,
     canWrite: Boolean,
     aiGroceryItems: List<GroceryItem>,
+    pantryCheckItems: List<GroceryItem>,
+    pantryCheckTitle: String,
+    pantryCheckSubtitle: String,
+    pantryAdoptRemainingLabel: String,
     aiSuggestionsTitle: String,
     adoptAllLabel: String,
     sections: GroceryListPresentation.Sections,
@@ -522,6 +552,9 @@ private fun LazyListScope.groceryShoppingListItems(
     showBuildFromMealsChip: Boolean = false,
     buildFromMealsLabel: String = "",
     onBuildFromMeals: () -> Unit = {},
+    ghostPairingOffer: GroceryGhostPairing.Offer? = null,
+    onAcceptGhostPairing: (List<String>) -> Unit = {},
+    onDismissGhostPairing: () -> Unit = {},
 ) {
     item(key = "week-selector") {
         WeekSelectorBanner(
@@ -558,6 +591,24 @@ private fun LazyListScope.groceryShoppingListItems(
         )
     }
 
+    if (canWrite && ghostPairingOffer != null) {
+        item(key = "ghost-pairing") {
+            val labels = ghostPairingOffer.suggestions.map { groceryGhostPairingItemLabel(it) }
+            if (labels.isNotEmpty()) {
+                GroceryGhostPairingBanner(
+                    title = stringResource(Res.string.nutrition_grocery_ghost_pairing_title),
+                    actionLabel = stringResource(
+                        Res.string.nutrition_grocery_ghost_pairing_action,
+                        formatGhostPairingItemList(labels),
+                    ),
+                    dismissLabel = stringResource(Res.string.nutrition_grocery_ghost_pairing_dismiss),
+                    onAddSuggestions = { onAcceptGhostPairing(labels) },
+                    onDismiss = onDismissGhostPairing,
+                )
+            }
+        }
+    }
+
     if (showBuildFromMealsChip) {
         item(key = "build-from-meals") {
             AiInlineTriggerButton(
@@ -578,6 +629,20 @@ private fun LazyListScope.groceryShoppingListItems(
         }
     }
 
+    if (pantryCheckItems.isNotEmpty()) {
+        item(key = "pantry-check") {
+            PantryCheckSection(
+                title = pantryCheckTitle,
+                subtitle = pantryCheckSubtitle,
+                items = pantryCheckItems,
+                onMarkHave = { item -> screenModel.dismissPantryCheckItem(item.id) },
+                adoptRemainingLabel = pantryAdoptRemainingLabel,
+                onAdoptRemaining = { screenModel.adoptRemainingPantryItems() },
+                enabled = canWrite,
+            )
+        }
+    }
+
     if (aiGroceryItems.isNotEmpty()) {
         item(key = "ai-suggestions") {
             AiGrocerySuggestionsSection(
@@ -591,7 +656,7 @@ private fun LazyListScope.groceryShoppingListItems(
         }
     }
 
-    if (totalCount == 0 && aiGroceryItems.isEmpty()) {
+    if (totalCount == 0 && aiGroceryItems.isEmpty() && pantryCheckItems.isEmpty()) {
         item(key = "empty-state") {
             JourneyEmptyState(
                 title = stringResource(Res.string.nutrition_grocery_empty_title),

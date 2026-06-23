@@ -19,6 +19,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeRight
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.mymultiverse.kmp.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.kmp.domain.model.Greeting
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
@@ -26,6 +27,7 @@ import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionChipsTestTags
+import app.mymultiverse.kmp.presentation.components.GroceryGhostPairingTestTags
 import app.mymultiverse.kmp.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.kmp.presentation.components.GroceryItemRowTestTags
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
@@ -33,9 +35,10 @@ import app.mymultiverse.kmp.presentation.components.MealPlanEmptyStateTestTags
 import app.mymultiverse.kmp.presentation.components.MealPlanTestTags
 import app.mymultiverse.kmp.presentation.screens.nutrition.GroceryListTestTags
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
+import app.mymultiverse.kmp.presentation.screens.home.HomeTestTags
 import app.mymultiverse.kmp.presentation.screens.home.HomeWelcomeContent
 import app.mymultiverse.kmp.presentation.screens.home.HomeNutritionSummary
-import app.mymultiverse.kmp.presentation.screens.home.HomeTestTags
+import app.mymultiverse.kmp.presentation.components.HomePrimaryActionsTestTags
 import app.mymultiverse.kmp.presentation.screens.nutrition.AiHelperSheet
 import app.mymultiverse.kmp.presentation.screens.nutrition.AiHelperLaunchContext
 import app.mymultiverse.kmp.presentation.screens.nutrition.AiHelperSheetTestTags
@@ -50,6 +53,7 @@ import app.mymultiverse.kmp.presentation.screens.nutrition.WeeklyMealPlanScreen
 import app.mymultiverse.kmp.presentation.theme.AppTheme
 import app.mymultiverse.kmp.ui.InstrumentedComposeTest.waitFor
 import app.mymultiverse.kmp.ui.InstrumentedComposeTest.waitForState
+import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -95,6 +99,7 @@ class NutritionUxInstrumentedTest {
             householdRepository = InstrumentedHouseholdRepository(),
             collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(adviceAnswer),
+            ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
             scope = scope,
             newItemId = {
                 if (nextItemId == 0) {
@@ -123,6 +128,29 @@ class NutritionUxInstrumentedTest {
         composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
 
         composeRule.onNodeWithText("Milk").assertIsDisplayed()
+    }
+
+    @Test
+    fun grocery_ghostPairingBanner_addsSuggestedItems() {
+        val screenModel = nutritionScreenModel()
+
+        composeRule.setContent {
+            AppTheme {
+                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+            }
+        }
+
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.INPUT_FIELD)
+            .performTextInput("Tortillas")
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
+        composeRule.waitForState(screenModel.ghostPairingOffer) { it != null }
+
+        composeRule.onNodeWithTag(GroceryGhostPairingTestTags.ROOT).assertIsDisplayed()
+        composeRule.onNodeWithTag(GroceryGhostPairingTestTags.ACTION).performClick()
+        composeRule.waitForState(screenModel.groceryItems) { it.size >= 4 }
+
+        composeRule.onNodeWithText("Salsa").assertIsDisplayed()
+        composeRule.onNodeWithText("Cheese").assertIsDisplayed()
     }
 
     @Test
@@ -376,7 +404,7 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 NutritionHubScreen(
-                    householdName = "Test household",
+                    householdName = "Test Family",
                     enabledFeatures = setOf(
                         NutritionSharingFeature.Grocery,
                         NutritionSharingFeature.MealPlan,
@@ -401,7 +429,7 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 NutritionHubScreen(
-                    householdName = "Test household",
+                    householdName = "Test Family",
                     enabledFeatures = setOf(
                         NutritionSharingFeature.Grocery,
                         NutritionSharingFeature.MealPlan,
@@ -429,7 +457,7 @@ class NutritionUxInstrumentedTest {
         composeRule.setContent {
             AppTheme {
                 NutritionHubScreen(
-                    householdName = "Test household",
+                    householdName = "Test Family",
                     enabledFeatures = setOf(
                         NutritionSharingFeature.Grocery,
                         NutritionSharingFeature.MealPlan,
@@ -450,7 +478,7 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun homeContent_tapHouseholdCard_invokesCallback() {
+    fun homeContent_tapFamilyHero_invokesCallback() {
         var openedHousehold = false
 
         composeRule.setContent {
@@ -459,9 +487,6 @@ class NutritionUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
-                        householdName = "Our household",
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
@@ -474,7 +499,7 @@ class NutritionUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(HomeTestTags.HOUSEHOLD_CARD)
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.FAMILY)
             .performScrollTo()
             .performClick()
 
@@ -489,9 +514,6 @@ class NutritionUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
-                        householdName = null,
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
                         nutritionSummary = HomeNutritionSummary(
                             weekKey = WeekCalendar.currentWeekKey(),
                             groceryProgress = null,
@@ -521,9 +543,6 @@ class NutritionUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
-                        householdName = null,
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
@@ -550,9 +569,6 @@ class NutritionUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
-                        householdName = null,
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
@@ -565,7 +581,7 @@ class NutritionUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(HomeTestTags.NUTRITION_CTA)
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.PLAN)
             .performScrollTo()
             .performClick()
 
@@ -580,9 +596,6 @@ class NutritionUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = Greeting("ready"),
                         userDisplayName = "Roberto",
-                        householdName = null,
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
@@ -607,9 +620,6 @@ class NutritionUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = Greeting("ready"),
                         userDisplayName = "maria",
-                        householdName = null,
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
@@ -633,9 +643,6 @@ class NutritionUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = Greeting("ready"),
                         userDisplayName = null,
-                        householdName = null,
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
@@ -660,9 +667,6 @@ class NutritionUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = null,
                         userDisplayName = "Roberto",
-                        householdName = null,
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
@@ -688,9 +692,6 @@ class NutritionUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = null,
                         userDisplayName = null,
-                        householdName = null,
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
@@ -715,9 +716,6 @@ class NutritionUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = Greeting("Small steps keep the week calm."),
                         userDisplayName = "Roberto",
-                        householdName = null,
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
@@ -742,9 +740,6 @@ class NutritionUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = Greeting("Hello"),
                         userDisplayName = "Test User",
-                        householdName = null,
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
                         nutritionSummary = null,
                         isRefreshing = false,
                         onRefresh = {},
@@ -762,7 +757,7 @@ class NutritionUxInstrumentedTest {
                 .fetchSemanticsNodes().isEmpty(),
         )
         composeRule.onNodeWithTag(HomeTestTags.INSPIRATION_LINE).assertIsDisplayed()
-        composeRule.onNodeWithTag(HomeTestTags.NUTRITION_CTA)
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.PLAN)
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -1003,9 +998,6 @@ class NutritionUxInstrumentedTest {
                     HomeWelcomeContent(
                         greeting = Greeting("ready"),
                         userDisplayName = "Test User",
-                        householdName = "Our Family",
-                        canRenameHousehold = false,
-                        onRenameHousehold = {},
                         nutritionSummary = HomeNutritionSummary(
                             weekKey = WeekCalendar.currentWeekKey(),
                             groceryProgress = null,
@@ -1022,7 +1014,7 @@ class NutritionUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(HomeTestTags.GROCERY_EMPTY_CTA)
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.GROCERY)
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()

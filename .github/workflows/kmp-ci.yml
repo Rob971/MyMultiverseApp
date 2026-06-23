@@ -442,14 +442,13 @@ jobs:
         continue-on-error: true
         env:
           ANDROID_SHA256_FINGERPRINT: ${{ steps.app_links_fingerprint.outputs.sha256 }}
-          IOS_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           FIREBASE_PROJECT_ID: ${{ env.FIREBASE_PROJECT_ID }}
           FIREBASE_TOOLS_VERSION: ${{ env.FIREBASE_TOOLS_VERSION }}
           SKIP_VERIFY: "1"
         run: |
-          if [[ -z "${IOS_TEAM_ID}" || -z "${FIREBASE_SERVICE_ACCOUNT_JSON}" ]]; then
-            echo "::notice::Skipping App Links hosting deploy (set APNS_TEAM_ID and FIREBASE_SERVICE_ACCOUNT_JSON)."
+          if [[ -z "${FIREBASE_SERVICE_ACCOUNT_JSON}" ]]; then
+            echo "::notice::Skipping App Links hosting deploy (set FIREBASE_SERVICE_ACCOUNT_JSON)."
             exit 0
           fi
           chmod +x ./scripts/deploy-app-links-hosting.sh

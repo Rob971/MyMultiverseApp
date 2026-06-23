@@ -5,7 +5,9 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.mymultiverse.kmp.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
+import com.russhwolf.settings.MapSettings
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.navigation.NavigationTestTags
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionHubScreen
@@ -33,6 +35,7 @@ class AppNavigationInstrumentedTest {
             householdRepository = InstrumentedHouseholdRepository(),
             collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(),
+            ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
             scope = scope,
             newItemId = { "instrumented-nav-item" },
         )

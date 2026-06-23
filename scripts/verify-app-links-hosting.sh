@@ -29,17 +29,21 @@ fi
 rm -f "${ASSET_BODY}"
 echo "OK"
 
-echo "==> apple-app-site-association"
-AASA_BODY="$(mktemp)"
-AASA_STATUS="$(curl_well_known "/.well-known/apple-app-site-association" "${AASA_BODY}")"
-[[ "${AASA_STATUS}" == "200" ]] || fail "apple-app-site-association returned ${AASA_STATUS}"
-grep -q 'applinks' "${AASA_BODY}" || fail "AASA missing applinks"
-grep -q '/invite' "${AASA_BODY}" || fail "AASA missing /invite path"
-if grep -q 'TEAMID' "${AASA_BODY}"; then
-  fail "AASA still contains TEAMID placeholder"
+if [[ "${VERIFY_IOS_UNIVERSAL_LINKS:-0}" == "1" ]]; then
+  echo "==> apple-app-site-association"
+  AASA_BODY="$(mktemp)"
+  AASA_STATUS="$(curl_well_known "/.well-known/apple-app-site-association" "${AASA_BODY}")"
+  [[ "${AASA_STATUS}" == "200" ]] || fail "apple-app-site-association returned ${AASA_STATUS}"
+  grep -q 'applinks' "${AASA_BODY}" || fail "AASA missing applinks"
+  grep -q '/invite' "${AASA_BODY}" || fail "AASA missing /invite path"
+  if grep -q 'TEAMID' "${AASA_BODY}"; then
+    fail "AASA still contains TEAMID placeholder"
+  fi
+  rm -f "${AASA_BODY}"
+  echo "OK"
+else
+  echo "==> apple-app-site-association (skipped — Android-only; set VERIFY_IOS_UNIVERSAL_LINKS=1 to check iOS)"
 fi
-rm -f "${AASA_BODY}"
-echo "OK"
 
 echo "==> invite fallback page"
 INVITE_BODY="$(mktemp)"

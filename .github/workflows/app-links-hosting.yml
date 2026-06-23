@@ -75,12 +75,8 @@ jobs:
           echo "sha256=${FINGERPRINT}" >> "$GITHUB_OUTPUT"
           echo "ANDROID_SHA256_FINGERPRINT=${FINGERPRINT}"
 
-      - name: Require hosting secrets
+      - name: Require Firebase hosting credentials
         run: |
-          if [[ -z "${{ secrets.APNS_TEAM_ID }}" ]]; then
-            echo "APNS_TEAM_ID secret is required for apple-app-site-association." >&2
-            exit 1
-          fi
           if [[ -z "${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}" ]]; then
             echo "FIREBASE_SERVICE_ACCOUNT_JSON secret is required for Firebase Hosting deploy." >&2
             exit 1
@@ -90,7 +86,6 @@ jobs:
         uses: ./.github/actions/firebase-app-links-hosting
         with:
           android-sha256-fingerprint: ${{ steps.fingerprint.outputs.sha256 }}
-          ios-team-id: ${{ secrets.APNS_TEAM_ID }}
           firebase-project-id: ${{ env.FIREBASE_PROJECT_ID }}
           firebase-service-account-json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           firebase-tools-version: ${{ env.FIREBASE_TOOLS_VERSION }}

@@ -1,8 +1,8 @@
 # Product UX backlog — nutrition logistics & silent-butler AI
 
-**Status:** S11 polish shipped · **Updated:** 2026-06-22  
-**App:** MyMultiverse (KMP) · **QA YAML baseline:** v42  
-**Current sprint:** none (Phase 4 optional next)
+**Status:** S13 shipped · **Updated:** 2026-06-23  
+**App:** MyMultiverse (KMP) · **QA YAML baseline:** v50 · **Release:** 1.0.36  
+**Current sprint:** S12 wrap-up — E4-11 contextual chips (optional)
 
 This backlog synthesizes product thesis, UX roadmap, and AI interaction model for household grocery + meal planning. Use it as the scope razor before building anything new.
 
@@ -18,13 +18,14 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **Phase 1** — Paper at the store | S3, S4 | **Done** |
 | **Phase 2** — Silent butler | S5–S7 | **Done** |
 | **Phase 3** — Family in the loop | S8–S10 | **Done** |
-| **Phase 4** — Ghost magic | S11–S12 | Optional |
+| **Phase 4** — Ghost magic | S11–S12 | **In progress** |
+| **Phase 5** — UX audit clarity | S13 | **Done** |
 
-**Phases remaining:** **1** of 5 total — **Phase 4** (optional). Phases 0–3 are complete.
+**Phases remaining:** Phase 4 (optional AI polish) + Phase 5 (dashboard/i18n). Phases 0–3 are complete.
 
-**Open stories (non-deferred):** Phase 4 → E4-9–E4-11.
+**Open stories (non-deferred):** E4-11 · E3-9 (App Links DNS live).
 
-### Shipped stories (27 unique IDs + E6-3 ongoing)
+### Shipped stories (28 unique IDs + E6-3 ongoing)
 
 | Sprint | Stories |
 |--------|---------|
@@ -39,8 +40,10 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **S9** | E3-3, E3-4 (+ member-joined push, foreground FCM, grocery collaboration snackbar) |
 | **S10** | E3-7, E5-2, E6-1 (+ silent duplicate merge, suggest→ingredients sheet, font scaling) |
 | **S11** | E1-6, E6-2 (+ week banner on Today, tab + AI a11y) |
+| **S12** | E4-9 (+ ghost pairing banner on Groceries), E4-10 (+ pantry check on meal→grocery) |
+| **Post-S11 releases** | Onboarding v1.0.33–36, App Links tooling, Firebase QA v48 (see below) |
 
-**Next up:** Phase 4 (S12) E4-9, E4-10 or unscheduled backlog grooming
+**Next up:** E4-11 contextual chips · E3-9 DNS go-live
 
 ---
 
@@ -123,7 +126,16 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 - Debounced grocery collaboration snackbar on remote add/check (E3-4, S9)
 - Firebase QA YAML v40: invite share, Sunday nudge, member-joined push, collaboration snackbar (E6-3)
 
----
+**Post–S11 releases (v1.0.33–1.0.36, QA v43–v48)**
+
+- SSO onboarding gate (`AuthScreen`), dedicated household setup, invite deep-link resolver (v1.0.33)
+- Dark-mode household members cards + overflow menus; semantic ink on auth/invite surfaces (v1.0.34)
+- `JourneySemanticColors` sweep on shared UI components (v1.0.35)
+- Email/password auth fallback; HTTPS invite App Links client; instrumented onboarding smoke (v1.0.36)
+- Firebase App Links hosting: `firebase.json`, deploy/verify/DNS scripts, GitHub **App Links hosting** workflow (v47)
+- Ghost pairing banner on Groceries — terracotta “Often bought together” + one-tap add (E4-9, v48)
+
+**Navigation note:** Bottom tabs use custom `MainTabShell` + `AppRoute` — **not** Voyager (catalog only).
 
 ## Epic map
 
@@ -153,8 +165,8 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | E1-5 | Empty grocery CTA on Today when list is empty | P1 | ✅ S4 | `HomeScreen` This week section |
 | E1-6 | Week context banner on Today (“Week of …”) | P1 | ✅ S11 | `WeekContextBanner` on `HomeWelcomeContent` |
 | E1-7 | Sunday empty-week nudge on Today | P1 | ✅ S8 | `HomeSundayPlanNudgeCard`, `HomeWeekPlanNudgeStore` |
-
----
+| E1-8 | Today tab: three hero actions (Plan meals · Grocery list · Family hub); demote duplicate cards | P1 | ✅ S13 | `HomePrimaryActions`, `HomeWelcomeContent` |
+| E1-9 | Family hub in account sheet (profile avatar); remove Family section from Today scroll | P1 | ✅ S13 | `HomeAccountSheet`, `AppRoute.HouseholdMembers` |
 
 ## E2 — Grocery at the store
 
@@ -181,8 +193,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | E3-6 | Skip redundant `NutritionEntryGate` when household already resolved | P1 | ✅ S4 | `NutritionFlow.kt`, `App.kt` |
 | E3-7 | Silent duplicate merge (e.g. two “Milk” → one line or count) vs error snackbar | P2 | ✅ S10 | Domain + `GroceryShoppingScreen` |
 | E3-8 | Live presence (“Alex is shopping now”) | P3 | Deferred | — |
-
----
+| E3-9 | HTTPS App Links hosting on `mymultiverse.app` (Firebase Hosting + custom DNS) | P1 | ⏳ S12 | `web/`, `scripts/deploy-app-links-hosting.sh`, `docs/app-links-custom-dns.md` |
 
 ## E4 — Silent butler AI
 
@@ -196,8 +207,8 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | E4-6 | Mode from launch context (hide Advice/Grocery/Meal plan switcher in default flow) | P1 | ✅ S7 | Sheet launch params |
 | E4-7 | Demote full-screen `NutritionAiAdviceScreen` to fallback/deep link only | P1 | ✅ S7 | `NutritionFlow`, `WeeklyMealPlanScreen` |
 | E4-8 | Terracotta AI chips in read-only zones (fix teal on `AiGrocerySuggestionChips` where AI-origin) | P1 | ✅ S6 | `ui-ux-compose.mdc` |
-| E4-9 | Ghost pairing banner (“+ Add salsa and cheese?”) | P2 | ⏳ S11 | `JourneyBanner` + domain helper |
-| E4-10 | Pantry check section: “Check if you have these” on meal→grocery | P2 | ⏳ S11 | Separate from active shopping list |
+| E4-9 | Ghost pairing banner (“+ Add salsa and cheese?”) | P2 | ✅ S12 | `GroceryGhostPairingBanner` + `GroceryGhostPairing` |
+| E4-10 | Pantry check section: “Check if you have these” on meal→grocery | P2 | ✅ S12 | `PantryCheckSection`, `MealGroceryPartition` |
 | E4-11 | Contextual chips from history (“Use up chicken”) | P2 | ⏳ S12 | Domain signals from meals/list |
 
 ---
@@ -220,9 +231,8 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 |----|-------|---|--------|---------------------|
 | E6-1 | System font scaling on grocery rows + meal plan | P1 | ✅ S10 | `GroceryItemRow`, `MealPlanDayCard` |
 | E6-2 | `contentDescription` audit on tab bar + AI entry points | P2 | ✅ S11 | `MainTabShell`, `AiInlineTriggerButton` |
-| E6-3 | Firebase QA YAML + manual cases for changed flows | P0 | ✅ ongoing | `firebase-appdistribution-testcases.yaml` (currently **v40**) |
-
----
+| E6-3 | Firebase QA YAML + manual cases for changed flows | P0 | ✅ ongoing | `firebase-appdistribution-testcases.yaml` (currently **v48**) |
+| E6-4 | Napulitano explicit language label + dialect subtitle in picker (not “NAP” code) | P2 | ✅ S13 | `SupportedAppLanguages`, `LanguagePicker`, 8 locales |
 
 ## Execution plan (12 weeks)
 
@@ -277,12 +287,23 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 
 Only if Phases 0–2 metrics are green.
 
-| Sprint | Deliverables |
-|--------|----------------|
-| **S11** | E4-9, E4-10 |
-| **S12** | E4-11 + one spike (E3-8 presence **or** E2-5 aisle) |
+| Sprint | Deliverables | Status |
+|--------|----------------|--------|
+| **S12** | E4-9 ghost pairing | ✅ shipped (v48) |
+| **S12** | E4-10 pantry check | ✅ shipped (v50) |
+| **S12+** | E4-11 + one spike (E3-8 presence **or** E2-5 aisle) | ⏳ |
 
----
+### Phase 5 — “UX audit clarity” (S13)
+
+**Promise:** “Today tells me what matters now — without five buttons saying the same thing.”
+
+| Sprint | Deliverables | Status |
+|--------|----------------|--------|
+| **S13** | E1-8 Today hero CTAs (keep bottom tabs) | ✅ shipped |
+| **S13** | E1-9 Family hub via profile account sheet | ✅ shipped |
+| **S13** | E6-4 Napulitano picker label + subtitle | ✅ shipped |
+
+**Deprecate on Today (when S13 ships):** “This week” nutrition card duplicate CTAs, first-win checklist on scroll, inline Family household card (Sunday nudge stays dismissible only).
 
 ## Dependency graph
 
@@ -291,6 +312,9 @@ E1-3 solo onboarding ──► E1-4 Groceries focus ✅
 E4-1 AiHelperSheet ✅ ──► E4-2, E4-3, E4-5, E5-2
 E2-2 swipe-to-check ✅ ──► instrumented grocery tests ✅
 E1-1 copy pass ✅ ──► E4-4 AI copy ✅
+E1-8 Today hero CTAs ──► demotes E1-5 empty-grocery CTA on scroll (tabs remain)
+E1-9 account sheet family ──► replaces Today Family section
+E3-9 App Links DNS ──► HTTPS invite opens Android app (E3-2 share links)
 ```
 
 ---
@@ -327,12 +351,14 @@ E1-1 copy pass ✅ ──► E4-4 AI copy ✅
 2. ~~**S5–S7** — silent butler AI (sheet, inline triggers, chip-first)~~ ✅  
 3. ~~**S3** — swipe-to-check + E5-1 meal CTA~~ ✅  
 4. ~~**S8** — invite share sheet + Sunday plan nudge~~ ✅ · ~~**S9** — push + activity snackbar~~ ✅ · ~~**S10** — household polish~~ ✅ · ~~**S11** — week banner + a11y~~ ✅  
-
----
+5. ~~**S13** — Today hero CTAs + family in account sheet + Napulitano label (UX audit)~~ ✅  
+6. ~~**S12** — E4-10 pantry check~~ ✅ · **E3-9** App Links DNS live · **E4-11** when capacity allows
 
 ## GitHub tracking
 
-**Shipped story issues (S1–S11 polish):** #26–#31, #32–#43, #44–#51, #55–#59 — **closed** on GitHub. **Open / next:** Phase 4 E4-9–E4-11 (#52–#54).
+**Shipped story issues (S1–S11 polish):** #26–#31, #32–#43, #44–#51, #55–#59 — **closed** on GitHub.
+
+**Open / next:** E4-11 (#54) · E3-9 · E4-9 (#52) close when verified on testers.
 
 | Kind | Issue |
 |------|-------|
@@ -345,7 +371,7 @@ E1-1 copy pass ✅ ──► E4-4 AI copy ✅
 | **Epic E6** | [#71 — Accessibility & polish](https://github.com/Rob971/MyMultiverseApp/issues/71) |
 | **Epic E7** | [#72 — Bigger bets (deferred)](https://github.com/Rob971/MyMultiverseApp/issues/72) |
 
-**Labels:** `ux-backlog`, `phase-0` … `phase-4`, `epic-e1` … `epic-e7`
+**Labels:** `ux-backlog`, `phase-0` … `phase-5`, `epic-e1` … `epic-e7`
 
 **Search:** [`label:ux-backlog`](https://github.com/Rob971/MyMultiverseApp/issues?q=label%3Aux-backlog)
 
@@ -360,6 +386,8 @@ E1-1 copy pass ✅ ──► E4-4 AI copy ✅
 | E1-5 | [#30](https://github.com/Rob971/MyMultiverseApp/issues/30) | 1 | P1 | ✅ S4 |
 | E1-6 | [#31](https://github.com/Rob971/MyMultiverseApp/issues/31) | 1 | P1 | ✅ S11 |
 | E1-7 | [#32](https://github.com/Rob971/MyMultiverseApp/issues/32) | 3 | P1 | ✅ S8 |
+| E1-8 | — | 5 | P1 | ✅ S13 |
+| E1-9 | — | 5 | P1 | ✅ S13 |
 | E2-1 | [#33](https://github.com/Rob971/MyMultiverseApp/issues/33) | 0 | P0 | ✅ S2 |
 | E2-2 | [#34](https://github.com/Rob971/MyMultiverseApp/issues/34) | 1 | P0 | ✅ S3 |
 | E2-3 | [#35](https://github.com/Rob971/MyMultiverseApp/issues/35) | 0 | P0 | ✅ S2 |
@@ -371,6 +399,7 @@ E1-1 copy pass ✅ ──► E4-4 AI copy ✅
 | E3-5 | [#41](https://github.com/Rob971/MyMultiverseApp/issues/41) | 1 | P1 | ✅ S3 |
 | E3-6 | [#42](https://github.com/Rob971/MyMultiverseApp/issues/42) | 1 | P1 | ✅ S4 |
 | E3-7 | [#43](https://github.com/Rob971/MyMultiverseApp/issues/43) | 3 | P2 | ✅ S10 |
+| E3-9 | — | 3 | P1 | ⏳ S12 |
 | E4-1 | [#44](https://github.com/Rob971/MyMultiverseApp/issues/44) | 2 | P0 | ✅ S5 |
 | E4-2 | [#45](https://github.com/Rob971/MyMultiverseApp/issues/45) | 2 | P0 | ✅ S6 |
 | E4-3 | [#46](https://github.com/Rob971/MyMultiverseApp/issues/46) | 2 | P0 | ✅ S6 |
@@ -379,8 +408,8 @@ E1-1 copy pass ✅ ──► E4-4 AI copy ✅
 | E4-6 | [#49](https://github.com/Rob971/MyMultiverseApp/issues/49) | 2 | P1 | ✅ S7 |
 | E4-7 | [#50](https://github.com/Rob971/MyMultiverseApp/issues/50) | 2 | P1 | ✅ S7 |
 | E4-8 | [#51](https://github.com/Rob971/MyMultiverseApp/issues/51) | 2 | P1 | ✅ S6 |
-| E4-9 | [#52](https://github.com/Rob971/MyMultiverseApp/issues/52) | 4 | P2 | ⏳ S11 |
-| E4-10 | [#53](https://github.com/Rob971/MyMultiverseApp/issues/53) | 4 | P2 | ⏳ S11 |
+| E4-9 | [#52](https://github.com/Rob971/MyMultiverseApp/issues/52) | 4 | P2 | ✅ S12 |
+| E4-10 | [#53](https://github.com/Rob971/MyMultiverseApp/issues/53) | 4 | P2 | ✅ S12 |
 | E4-11 | [#54](https://github.com/Rob971/MyMultiverseApp/issues/54) | 4 | P2 | ⏳ S12 |
 | E5-1 | [#55](https://github.com/Rob971/MyMultiverseApp/issues/55) | 0 | P0 | ✅ S2 |
 | E5-2 | [#56](https://github.com/Rob971/MyMultiverseApp/issues/56) | 3 | P1 | ✅ S10 |
@@ -388,6 +417,7 @@ E1-1 copy pass ✅ ──► E4-4 AI copy ✅
 | E6-1 | [#58](https://github.com/Rob971/MyMultiverseApp/issues/58) | 3 | P1 | ✅ S10 |
 | E6-2 | [#59](https://github.com/Rob971/MyMultiverseApp/issues/59) | 3 | P2 | ✅ S11 |
 | E6-3 | [#60](https://github.com/Rob971/MyMultiverseApp/issues/60) | 0 | P0 | ✅ ongoing |
+| E6-4 | — | 5 | P2 | ✅ S13 |
 | E2-5 | [#61](https://github.com/Rob971/MyMultiverseApp/issues/61) | 4 | P3 | deferred |
 | E2-6 | [#62](https://github.com/Rob971/MyMultiverseApp/issues/62) | 4 | P3 | deferred |
 | E3-8 | [#63](https://github.com/Rob971/MyMultiverseApp/issues/63) | 4 | P3 | deferred |

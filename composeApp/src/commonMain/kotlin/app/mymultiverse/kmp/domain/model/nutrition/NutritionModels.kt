@@ -4,6 +4,7 @@ data class GroceryItem(
     val id: String,
     val label: String,
     val isChecked: Boolean = false,
+    val isPantryCheck: Boolean = false,
 )
 
 data class DayMeals(

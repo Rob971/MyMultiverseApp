@@ -4,7 +4,7 @@ Run on **staging** (Supabase + Firebase tester APK) with **two phones / two acco
 
 **Automated CI:** `scripts/verify-supabase-household.sh` with `SUPABASE_TEST_EMAIL` / `SUPABASE_TEST_PASSWORD` covers household bootstrap, nutrition persistence, GDPR export RPC, and device token registration.
 
-**Manual cases:** [`firebase-appdistribution-testcases.yaml`](../firebase-appdistribution-testcases.yaml) (ids below).
+**Manual cases:** [`firebase-appdistribution-testcases.yaml`](../firebase-appdistribution-testcases.yaml) (currently **v48**; ids below).
 
 ---
 

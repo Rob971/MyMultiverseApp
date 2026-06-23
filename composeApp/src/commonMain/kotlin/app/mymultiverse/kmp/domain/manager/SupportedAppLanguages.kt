@@ -18,4 +18,7 @@ object SupportedAppLanguages {
 
     fun normalize(code: String): String =
         if (code in codes) code else DEFAULT_CODE
+
+    fun labelFor(code: String): String =
+        options.firstOrNull { it.first == normalize(code) }?.second ?: normalize(code)
 }

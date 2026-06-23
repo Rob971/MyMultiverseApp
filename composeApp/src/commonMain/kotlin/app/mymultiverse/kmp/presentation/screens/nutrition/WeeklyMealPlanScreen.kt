@@ -42,6 +42,7 @@ import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionsSection
+import app.mymultiverse.kmp.presentation.components.PantryCheckSection
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.kmp.presentation.components.JourneySnackbarHost
@@ -80,6 +81,9 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_grocery_bulk_none
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_grocery_error
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_grocery_none_new
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_pantry_check_adopt_remaining
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_pantry_check_subtitle
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_pantry_check_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_lunch
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_collapse_day
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_description
@@ -120,6 +124,8 @@ fun WeeklyMealPlanScreen(
 ) {
     val mealPlan by screenModel.mealPlan.collectAsState()
     val aiGrocery by screenModel.aiGroceryItems.collectAsState()
+    val shoppingAi = remember(aiGrocery) { aiGrocery.filterNot { it.isPantryCheck } }
+    val pantryCheckItems = remember(aiGrocery) { aiGrocery.filter { it.isPantryCheck } }
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val mealGroceryLoading by screenModel.mealGroceryLoading.collectAsState()
@@ -480,11 +486,25 @@ fun WeeklyMealPlanScreen(
                 }
             }
 
-            if (aiGrocery.isNotEmpty()) {
+            if (pantryCheckItems.isNotEmpty()) {
+                item(key = "pantry-check") {
+                    PantryCheckSection(
+                        title = stringResource(Res.string.nutrition_pantry_check_title),
+                        subtitle = stringResource(Res.string.nutrition_pantry_check_subtitle),
+                        items = pantryCheckItems,
+                        onMarkHave = { item -> screenModel.dismissPantryCheckItem(item.id) },
+                        adoptRemainingLabel = stringResource(Res.string.nutrition_pantry_check_adopt_remaining),
+                        onAdoptRemaining = { screenModel.adoptRemainingPantryItems() },
+                        enabled = canWrite,
+                    )
+                }
+            }
+
+            if (shoppingAi.isNotEmpty()) {
                 item(key = "ai-suggestions") {
                     AiGrocerySuggestionsSection(
                         title = stringResource(Res.string.nutrition_ai_grocery_suggestions_title),
-                        items = aiGrocery,
+                        items = shoppingAi,
                         adoptAllLabel = stringResource(Res.string.nutrition_ai_adopt_all_grocery),
                         onAdoptAll = { screenModel.adoptAllAiGrocerySuggestions() },
                         onAdopt = { suggestion -> screenModel.adoptAiGrocerySuggestion(suggestion.id) },
