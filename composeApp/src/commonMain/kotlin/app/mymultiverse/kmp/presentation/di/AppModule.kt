@@ -32,6 +32,8 @@ import app.mymultiverse.kmp.domain.service.NutritionAiAssistantService
 import app.mymultiverse.kmp.domain.manager.ThemeManager
 import app.mymultiverse.kmp.domain.usecase.GetGreetingUseCase
 import app.mymultiverse.kmp.presentation.screens.auth.LoginScreenModel
+import app.mymultiverse.kmp.presentation.screens.onboarding.OnboardingScreenModel
+import app.mymultiverse.kmp.presentation.screens.householdsetup.HouseholdSetupScreenModel
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionEntryScreenModel
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionScreenModel
@@ -108,6 +110,8 @@ private val dataModule = module {
 private val presentationModule = module {
     singleOf(::HomeScreenModel)
     singleOf(::LoginScreenModel)
+    singleOf(::OnboardingScreenModel)
+    singleOf(::HouseholdSetupScreenModel)
     singleOf(::JoinHouseholdScreenModel)
     singleOf(::InviteJoinFlowCoordinator)
     singleOf(::NutritionEntryScreenModel)

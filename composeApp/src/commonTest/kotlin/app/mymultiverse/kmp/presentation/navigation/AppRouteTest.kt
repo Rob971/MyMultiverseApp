@@ -47,4 +47,21 @@ class AppRouteTest {
     fun homeRoute_isSingleton() {
         assertIs<AppRoute.Home>(AppRoute.Home)
     }
+
+    @Test
+    fun onboardingRoute_isSingleton() {
+        assertIs<AppRoute.Onboarding>(AppRoute.Onboarding)
+    }
+
+    @Test
+    fun householdSetupRoute_isSingleton() {
+        assertIs<AppRoute.HouseholdSetup>(AppRoute.HouseholdSetup)
+    }
+
+    @Test
+    fun dashboardRoute_storesHouseholdId() {
+        val route = AppRoute.Dashboard(householdId = "household-42")
+
+        assertEquals("household-42", route.householdId)
+    }
 }

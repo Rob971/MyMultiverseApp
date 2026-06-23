@@ -121,6 +121,8 @@
     <string name="nutrition_collaboration_grocery_checked">%1$s marcó %2$s</string>
     <string name="nutrition_collaboration_grocery_batch">%1$s actualizó %2$d artículos en la lista</string>
     <string name="nutrition_grocery_toggle_item">Marcar como comprado</string>
+    <string name="nutrition_grocery_keep_screen_on">Mantener la pantalla encendida mientras compras</string>
+    <string name="nutrition_grocery_keep_screen_off">Permitir que la pantalla se apague</string>
     <string name="nutrition_grocery_empty_active">Todo está marcado. Añade más artículos o borra los marcados abajo.</string>
     <string name="nutrition_ai_try_again">Empezar de nuevo</string>
     <string name="nutrition_ai_suggestions_title">Sugerencias rápidas</string>
@@ -721,6 +723,8 @@
     <string name="longterm_opt_budget_full">Servicio completo (queremos contratar proveedores/profesionales)</string>
     <string name="auth_title">Bienvenido a MyMultiverse</string>
     <string name="auth_subtitle">Planifica comidas y compras junto a tu familia.</string>
+    <string name="onboarding_auth_invite_banner">Te invitaron a unirte a %1$s</string>
+    <string name="household_setup_default_name">Hogar de %1$s</string>
     <string name="auth_email_label">Correo electrónico</string>
     <string name="auth_password_label">Contraseña</string>
     <string name="auth_sign_in_button">Iniciar sesión</string>

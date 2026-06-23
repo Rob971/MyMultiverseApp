@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 42
-updated: 2026-06-22
+version: 44
+updated: 2026-06-23
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -11,7 +11,9 @@ summary: |
   This week section with nutrition progress and a primary Continue planning / Start planning CTA, plus family section.
   Plain-language copy: family (not household) and friendly sync messages with status icons.
   Viewers are read-only: they cannot edit any shared nutrition entry. Invites require auth email to match.
-  Home onboarding: one-tap Start with [family name] or accept invites; optional customize name below.
+  Seamless onboarding (v44): SSO-only auth screen (terracotta buttons); invite deep link shows "You're invited to join {name}" banner;
+  after SSO, new users name their family on a dedicated screen (keyboard opens on the name field); invite join skips family setup and lands on Today.
+  Home onboarding (legacy): one-tap Start with [family name] or accept invites for users who already have a household path on Home.
   Welcome content stays hidden until setup completes.
   Empty states: grocery list and solo-household members use guided CTAs (add item / invite someone).
   Post-create: snackbar on Welcome Home offers Invite action to open Household members.
@@ -45,10 +47,11 @@ testcases:
   - id: auth-oauth-redirect
     title: Google or Apple OAuth redirect
     steps:
-      - From Login, tap Google or Apple (providers enabled in Supabase Dashboard).
+      - From the auth screen (SSO buttons only), tap Google or Apple (providers enabled in Supabase Dashboard).
       - Complete provider sign-in in the browser; app reopens via app.mymultiverse.kmp://auth/callback.
     expected:
-      - Home screen appears without staying on Login.
+      - New users see the family name setup screen (keyboard focused on the name field), then Today after Create family.
+      - Returning users with an active family land on Today without staying on auth.
 
   - id: home-sign-out
     title: Sign out from home
@@ -310,11 +313,13 @@ testcases:
     steps:
       - Tap the HTTPS invite link from email (opens invite-open landing page, then MyMultiverse app).
       - Or paste the same HTTPS link into the mobile browser if the button is unavailable.
-      - Complete OTP or OAuth with the invited email.
+      - On the auth screen, confirm the terracotta invite banner shows the household name.
+      - Complete Google or Apple sign-in with the invited email.
     expected:
-      - Landing page offers Open MyMultiverse; app opens to join flow with token preserved.
-      - Join screen shows household name and inviter.
-      - After auth, user lands on Home with “You joined {household}” snackbar.
+      - Landing page offers Open MyMultiverse; app opens with invite token preserved.
+      - Auth screen shows "You're invited to join {household}" when the deep link is active.
+      - After SSO, family setup is skipped; user lands on Today with “You joined {household}” snackbar.
+      - OAuth with a different email shows the email-mismatch recovery screen with sign-out retry.
 
   - id: household-onboarding-create-with-invite
     title: Home onboarding layout when pending invite exists
@@ -373,8 +378,10 @@ testcases:
     title: Screen stays awake on Groceries tab
     steps:
       - Open the Groceries tab and leave the list visible for 30+ seconds without touching the screen.
+      - Optional — tap the lightbulb icon in the grocery header to turn keep-awake off, then on again.
     expected:
-      - Screen does not dim or lock while the grocery list is open.
+      - Screen does not dim or lock while the grocery list is open (lightbulb icon highlighted teal by default).
+      - Tapping the lightbulb turns keep-awake off (muted icon); screen may dim normally.
       - Leaving Groceries (another tab) allows normal screen timeout again.
 
   - id: meal-plan-add-to-grocery-hero

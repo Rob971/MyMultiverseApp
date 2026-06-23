@@ -979,6 +979,21 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun groceryScreen_keepScreenOnToggle_disablesFlag() {
+        composeRule.setContent {
+            AppTheme {
+                GroceryShoppingScreen(onBack = {}, screenModel = nutritionScreenModel())
+            }
+        }
+
+        composeRule.onNodeWithTag(GroceryListTestTags.KEEP_SCREEN_ON_TOGGLE).performClick()
+        composeRule.waitForIdle()
+
+        val flags = composeRule.activity.window.attributes.flags
+        assertTrue(flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON == 0)
+    }
+
+    @Test
     fun homeWelcome_emptyGrocery_showsAddFirstItemCta() {
         var openedGrocery = false
 

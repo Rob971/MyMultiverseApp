@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -57,6 +58,8 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_groc
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty_active
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty_cta
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty_title
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_keep_screen_off
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_keep_screen_on
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_hide_checked
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_show_checked
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_progress
@@ -78,6 +81,7 @@ import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionsSection
 import app.mymultiverse.kmp.presentation.components.AiInlineTriggerButton
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
+import app.mymultiverse.kmp.presentation.components.JourneyIconButton
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.kmp.presentation.components.WeekSelectorBanner
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
@@ -107,6 +111,7 @@ object GroceryListTestTags {
     const val COMPLETED_SECTION_HEADER = "grocery_completed_section_header"
     const val SHOPPING_HIDE_CHECKED_TOGGLE = "grocery_shopping_hide_checked_toggle"
     const val BUILD_FROM_MEALS = "grocery_build_from_meals"
+    const val KEEP_SCREEN_ON_TOGGLE = "grocery_keep_screen_on_toggle"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -132,6 +137,7 @@ fun GroceryShoppingScreen(
     var completedExpanded by rememberSaveable { mutableStateOf(false) }
     var completedExpandUserSet by rememberSaveable { mutableStateOf(false) }
     var hideCheckedItems by rememberSaveable { mutableStateOf(false) }
+    var keepScreenOn by rememberSaveable { mutableStateOf(true) }
     val listState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -153,7 +159,10 @@ fun GroceryShoppingScreen(
     val totalCount = items.size
     val accentColor = SharedJourneyColors.SageSoft
 
-    KeepScreenOn(enabled = true)
+    KeepScreenOn(enabled = keepScreenOn)
+
+    val keepScreenOnLabel = stringResource(Res.string.nutrition_grocery_keep_screen_on)
+    val keepScreenOffLabel = stringResource(Res.string.nutrition_grocery_keep_screen_off)
 
     val addHint = stringResource(Res.string.nutrition_grocery_add_hint)
     val duplicateMessage = stringResource(Res.string.nutrition_grocery_duplicate)
@@ -304,6 +313,22 @@ fun GroceryShoppingScreen(
         title = stringResource(Res.string.nutrition_grocery_title),
         onBack = onBack,
         showBackButton = !embeddedInTabs,
+        actions = {
+            JourneyIconButton(
+                onClick = { keepScreenOn = !keepScreenOn },
+                modifier = Modifier.testTag(GroceryListTestTags.KEEP_SCREEN_ON_TOGGLE),
+            ) {
+                Icon(
+                    imageVector = AppIcons.Lightbulb,
+                    contentDescription = if (keepScreenOn) keepScreenOffLabel else keepScreenOnLabel,
+                    tint = if (keepScreenOn) {
+                        JourneySemanticColors.brandTeal()
+                    } else {
+                        JourneySemanticColors.inkMuted()
+                    },
+                )
+            }
+        },
         snackbarHost = {
             JourneySnackbarHost(
                 hostState = snackbarHostState,

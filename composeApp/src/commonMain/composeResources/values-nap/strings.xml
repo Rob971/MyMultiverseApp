@@ -121,6 +121,8 @@
     <string name="nutrition_collaboration_grocery_checked">%1$s spuntato %2$s</string>
     <string name="nutrition_collaboration_grocery_batch">%1$s aggiornato %2$d cose 'n lista</string>
     <string name="nutrition_grocery_toggle_item">Segna comme comprato</string>
+    <string name="nutrition_grocery_keep_screen_on">Tien' 'o schermo acceso mentre faje 'a spesa</string>
+    <string name="nutrition_grocery_keep_screen_off">Permette ca' 'o schermo se spenga</string>
     <string name="nutrition_grocery_empty_active">Tutto spuntato. Miett'articoli o pulisce spuntate abbascio.</string>
     <string name="nutrition_ai_try_again">Ricomincia</string>
     <string name="nutrition_ai_suggestions_title">Scelte rapide</string>
@@ -721,6 +723,8 @@
     <string name="longterm_opt_budget_full">Servizio completo (vulimmo assumere professionisti)</string>
     <string name="auth_title">Benvenuto in MyMultiverse</string>
     <string name="auth_subtitle">Planifica pasti e spesa cu 'a famiglia toja.</string>
+    <string name="onboarding_auth_invite_banner">T'ann' invitato a trasì a %1$s</string>
+    <string name="household_setup_default_name">Famiglia 'e %1$s</string>
     <string name="auth_email_label">Email</string>
     <string name="auth_password_label">Password</string>
     <string name="auth_sign_in_button">Accedi</string>

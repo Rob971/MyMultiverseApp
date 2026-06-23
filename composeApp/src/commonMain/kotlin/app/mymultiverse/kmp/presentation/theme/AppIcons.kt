@@ -826,4 +826,40 @@ object AppIcons {
             return _close!!
         }
     private var _close: ImageVector? = null
+
+    val Lightbulb: ImageVector
+        get() {
+            if (_lightbulb != null) return _lightbulb!!
+            _lightbulb = ImageVector.Builder(
+                name = "Filled.Lightbulb",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(9.0f, 21.0f)
+                    curveTo(9.0f, 21.55f, 9.45f, 22.0f, 10.0f, 22.0f)
+                    horizontalLineTo(14.0f)
+                    curveTo(14.55f, 22.0f, 15.0f, 21.55f, 15.0f, 21.0f)
+                    verticalLineTo(20.0f)
+                    horizontalLineTo(9.0f)
+                    verticalLineTo(21.0f)
+                    close()
+                    moveTo(12.0f, 2.0f)
+                    curveTo(8.13f, 2.0f, 5.0f, 5.13f, 5.0f, 9.0f)
+                    curveTo(5.0f, 11.38f, 6.19f, 13.47f, 8.0f, 14.74f)
+                    verticalLineTo(17.0f)
+                    curveTo(8.0f, 17.55f, 8.45f, 18.0f, 9.0f, 18.0f)
+                    horizontalLineTo(15.0f)
+                    curveTo(15.55f, 18.0f, 16.0f, 17.55f, 16.0f, 17.0f)
+                    verticalLineTo(14.74f)
+                    curveTo(17.81f, 13.47f, 19.0f, 11.38f, 19.0f, 9.0f)
+                    curveTo(19.0f, 5.13f, 15.87f, 2.0f, 12.0f, 2.0f)
+                    close()
+                }
+            }.build()
+            return _lightbulb!!
+        }
+    private var _lightbulb: ImageVector? = null
 }

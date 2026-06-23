@@ -102,6 +102,8 @@ object NutritionStringKeys {
         "nutrition_collaboration_grocery_checked",
         "nutrition_collaboration_grocery_batch",
         "nutrition_grocery_toggle_item",
+        "nutrition_grocery_keep_screen_on",
+        "nutrition_grocery_keep_screen_off",
         "nutrition_grocery_empty_active",
         "nutrition_ai_try_again",
         "nutrition_ai_suggestions_title",

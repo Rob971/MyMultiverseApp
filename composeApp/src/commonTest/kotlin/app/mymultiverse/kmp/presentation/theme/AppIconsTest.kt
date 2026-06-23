@@ -15,5 +15,6 @@ class AppIconsTest {
         assertNotEquals(AppIcons.CheckCircle.name, AppIcons.Check.name)
         assertNotEquals(AppIcons.Person.name, AppIcons.CheckCircle.name)
         assertNotEquals(AppIcons.ShoppingCart.name, AppIcons.Restaurant.name)
+        assertNotEquals(AppIcons.Lightbulb.name, AppIcons.Sparkles.name)
     }
 }

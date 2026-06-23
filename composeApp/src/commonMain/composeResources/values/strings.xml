@@ -121,6 +121,8 @@
     <string name="nutrition_collaboration_grocery_checked">%1$s checked off %2$s</string>
     <string name="nutrition_collaboration_grocery_batch">%1$s updated %2$d items on the grocery list</string>
     <string name="nutrition_grocery_toggle_item">Mark item bought</string>
+    <string name="nutrition_grocery_keep_screen_on">Keep screen on while shopping</string>
+    <string name="nutrition_grocery_keep_screen_off">Allow screen to sleep</string>
     <string name="nutrition_grocery_empty_active">Everything is checked off. Add more items or clear checked items below.</string>
     <string name="nutrition_ai_try_again">Start over</string>
     <string name="nutrition_ai_suggestions_title">Quick picks</string>
@@ -722,6 +724,8 @@
     <string name="longterm_opt_budget_full">Full Service (We want to hire vendors/professionals)</string>
     <string name="auth_title">Welcome to MyMultiverse</string>
     <string name="auth_subtitle">Plan meals and groceries together with your family.</string>
+    <string name="onboarding_auth_invite_banner">You're invited to join %1$s</string>
+    <string name="household_setup_default_name">%1$s's Household</string>
     <string name="auth_email_label">Email</string>
     <string name="auth_password_label">Password</string>
     <string name="auth_sign_in_button">Sign in</string>

@@ -22,16 +22,21 @@ import app.mymultiverse.kmp.domain.manager.AppThemePreferences
 import app.mymultiverse.kmp.domain.manager.ThemeManager
 import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.presentation.components.NapolitanBackground
-import app.mymultiverse.kmp.presentation.navigation.AppMainTab
+import app.mymultiverse.kmp.presentation.navigation.AppNavigator
 import app.mymultiverse.kmp.data.invite.HouseholdPushEvents
 import app.mymultiverse.kmp.presentation.navigation.AppRoute
+import app.mymultiverse.kmp.presentation.navigation.AppMainTab
 import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
 import app.mymultiverse.kmp.presentation.navigation.MainTabShell
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.navigation.rememberAppNavigator
 import app.mymultiverse.kmp.presentation.platform.ConfigureSystemBars
 import app.mymultiverse.kmp.presentation.PlatformPushSetup
-import app.mymultiverse.kmp.presentation.screens.auth.LoginScreen
+import app.mymultiverse.kmp.domain.model.sharing.HouseholdMembershipStatus
+import app.mymultiverse.kmp.presentation.navigation.resolvePostAuthRoute
+import app.mymultiverse.kmp.presentation.navigation.shouldBlockAuthenticatedShell
+import app.mymultiverse.kmp.presentation.screens.onboarding.AuthScreen
+import app.mymultiverse.kmp.presentation.screens.householdsetup.HouseholdCreationScreen
 import app.mymultiverse.kmp.presentation.screens.home.HomePhase
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreen
 import app.mymultiverse.kmp.presentation.screens.home.HomeScreenModel
@@ -41,7 +46,7 @@ import app.mymultiverse.kmp.presentation.invite.InviteJoinAcceptError
 import app.mymultiverse.kmp.presentation.invite.InviteJoinAcceptState
 import app.mymultiverse.kmp.presentation.invite.InviteJoinFlowCoordinator
 import app.mymultiverse.kmp.presentation.screens.invite.InviteEmailMismatchScreen
-import app.mymultiverse.kmp.presentation.screens.invite.JoinHouseholdScreen
+import app.mymultiverse.kmp.domain.repository.HouseholdRepository
 import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionFlow
 import app.mymultiverse.kmp.presentation.theme.AppTheme
 import app.mymultiverse.kmp.presentation.theme.ProvideAppDarkTheme
@@ -63,6 +68,8 @@ fun App() {
         val logger = koinInject<AppLogger>()
         val authState by authRepository.authState.collectAsState(initial = AuthState.Loading)
         val pendingInviteToken by inviteFlow.pendingInviteToken.collectAsState()
+
+        val navigator = rememberAppNavigator(startDestination = AppRoute.Onboarding)
 
         LaunchedEffect(Unit) {
             logger.startSession()
@@ -93,21 +100,19 @@ fun App() {
                 AuthState.Unauthenticated,
                 AuthState.ConfigurationMissing,
                 -> {
-                    val inviteToken = pendingInviteToken?.takeIf { it.isNotBlank() }
-                    if (inviteToken != null) {
-                        JoinHouseholdScreen(
-                            inviteToken = inviteToken,
-                            showConfigMissing = state is AuthState.ConfigurationMissing,
-                        )
-                    } else {
-                        LoginScreen(
-                            showConfigMissing = state is AuthState.ConfigurationMissing,
-                        )
+                    LaunchedEffect(state) {
+                        navigator.replaceCurrent(AppRoute.Onboarding)
                     }
+                    AuthScreen(
+                        pendingInviteToken = pendingInviteToken,
+                        showConfigMissing = state is AuthState.ConfigurationMissing,
+                    )
                 }
 
                 is AuthState.Authenticated -> {
-                    AuthenticatedApp()
+                    AuthenticatedApp(
+                        navigator = navigator,
+                    )
                 }
             }
         }
@@ -117,16 +122,36 @@ fun App() {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun AuthenticatedApp() {
+private fun AuthenticatedApp(
+    navigator: AppNavigator,
+) {
     val authRepository = koinInject<AuthRepository>()
+    val householdRepository = koinInject<HouseholdRepository>()
     val inviteFlow = koinInject<InviteJoinFlowCoordinator>()
     val pendingInviteToken by inviteFlow.pendingInviteToken.collectAsState()
     val acceptState by inviteFlow.acceptState.collectAsState()
     val authState by authRepository.authState.collectAsState()
+    val membership by householdRepository.observeMembershipStatus().collectAsState(
+        initial = HouseholdMembershipStatus.Loading,
+    )
+
+    LaunchedEffect(Unit) {
+        householdRepository.refreshMembership()
+    }
 
     LaunchedEffect(pendingInviteToken) {
         if (!pendingInviteToken.isNullOrBlank()) {
             inviteFlow.acceptPendingInviteIfNeeded()
+        }
+    }
+
+    LaunchedEffect(membership, pendingInviteToken, acceptState) {
+        resolvePostAuthRoute(
+            membership = membership,
+            pendingInviteToken = pendingInviteToken,
+            acceptState = acceptState,
+        )?.let { route ->
+            navigator.replaceCurrent(route)
         }
     }
 
@@ -145,7 +170,7 @@ private fun AuthenticatedApp() {
         }
     }
 
-    if (!pendingInviteToken.isNullOrBlank() && acceptState is InviteJoinAcceptState.Accepting) {
+    if (shouldBlockAuthenticatedShell(membership, pendingInviteToken, acceptState)) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
@@ -155,7 +180,27 @@ private fun AuthenticatedApp() {
         return
     }
 
-    AuthenticatedMainApp()
+    when (val route = navigator.current) {
+        AppRoute.HouseholdSetup -> {
+            HouseholdCreationScreen(
+                onHouseholdCreated = { householdId ->
+                    navigator.replaceCurrent(AppRoute.Dashboard(householdId = householdId))
+                },
+            )
+        }
+
+        is AppRoute.Dashboard -> {
+            AuthenticatedMainApp()
+        }
+
+        AppRoute.Onboarding,
+        AppRoute.Home,
+        is AppRoute.HouseholdMembers,
+        is AppRoute.Nutrition,
+        -> {
+            AuthenticatedMainApp()
+        }
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -240,7 +285,11 @@ private fun AuthenticatedMainApp() {
             return
         }
 
-        AppRoute.Home -> Unit
+        AppRoute.Home,
+        AppRoute.Onboarding,
+        AppRoute.HouseholdSetup,
+        is AppRoute.Dashboard,
+        -> Unit
     }
 
     val showBottomBar = when (selectedTab) {
