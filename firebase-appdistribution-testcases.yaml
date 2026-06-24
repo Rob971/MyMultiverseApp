@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 57
+version: 58
 updated: 2026-06-24
 
 summary: |
@@ -45,6 +45,7 @@ summary: |
   Meal plan simplification (v55): Plan tab shows compact week progress then Daily planning day cards; removed bulk generate-grocery, pantry check, and AI suggestion sections; per-meal Add to grocery and Suggest 20-min meal remain on each day.
   Grocery add discoverability (v56): Groceries tab renames Update list to To buy with inline add row (labeled Add button) under the section header on phone; empty-state and all-checked CTAs scroll to and focus the add field; sticky bottom bar keeps labeled Add button; Today timeline shows Shopping list row title instead of Update list.
   Meal plan grocery direct add (v57): Plan tab Add to grocery list writes generated ingredients (including pantry staples) straight to the editable Groceries list — no AI suggestion chips or manual adopt step.
+  UX polish (v58): Groceries phone uses a single sticky add bar (no duplicate inline field); delete/clear undo snackbars auto-dismiss; meal plan day labels refresh on language change; auth screens show a prominent language chip with globe icon.
 
 testcases:
   - id: auth-sign-in
@@ -225,9 +226,10 @@ testcases:
     steps:
       - Open Groceries tab with no items for the current week.
     expected:
-      - To buy section shows inline add row with field and labeled Add button (testTags grocery_to_buy_section, grocery_inline_add_row).
+      - To buy section header is visible (testTag grocery_to_buy_section).
+      - Sticky bottom add bar shows field and labeled Add button (testTags grocery_sticky_input_bar, grocery_add_button).
       - Empty card shows title, body, and Add an item button (testTag grocery_empty_state).
-      - Tapping the empty-state button scrolls to the inline add row and focuses the field.
+      - Tapping the empty-state button focuses the sticky add field.
 
   - id: household-solo-invite-empty
     title: Solo household members empty state
@@ -615,8 +617,8 @@ testcases:
   - id: grocery-crud
     title: Add, check off, edit, reorder, and delete grocery items
     steps:
-      - Open Groceries tab; confirm To buy section and inline add row appear directly under Week starting.
-      - Add two items (e.g. Milk, Bread) using the inline row or sticky bottom bar.
+      - Open Groceries tab; confirm To buy section appears directly under Week starting.
+      - Add two items (e.g. Milk, Bread) using the sticky bottom bar (phone) or side panel (wide).
       - Try adding a duplicate item with different casing or spacing.
       - Drag the handle on an active row to reorder items.
       - Tap checkbox on one item to mark it checked.
@@ -625,7 +627,8 @@ testcases:
       - Swipe right to check an item; swipe left to delete and use Undo if shown.
     expected:
       - To buy subtitle shows progress when items exist, or add hint when empty.
-      - Section header Add action scrolls to inline add row on phone.
+      - Section header Add action focuses the sticky add field on phone.
+      - Delete and clear-checked undo snackbars auto-dismiss after a few seconds unless Undo is tapped.
       - Duplicate entry scrolls to the existing row with no error snackbar; list still has one row.
       - Reorder persists after leaving and returning to the screen.
       - Checked items move to Checked off section.
