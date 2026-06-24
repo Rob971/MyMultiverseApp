@@ -1,8 +1,8 @@
 # Product UX backlog — nutrition logistics & silent-butler AI
 
-**Status:** S12 shipped · **Updated:** 2026-06-23  
-**App:** MyMultiverse (KMP) · **QA YAML baseline:** v52 · **Release:** 1.0.36  
-**Current sprint:** S12 complete — E3-9 DNS go-live (ops)
+**Status:** S12 + E3-9 shipped · Grocery simplification (v54) · **Updated:** 2026-06-24  
+**App:** MyMultiverse (KMP) · **QA YAML baseline:** v54 · **Release:** 1.0.39  
+**Current sprint:** Maintenance — tester sign-off on S12 features + v54 grocery QA
 
 This backlog synthesizes product thesis, UX roadmap, and AI interaction model for household grocery + meal planning. Use it as the scope razor before building anything new.
 
@@ -21,9 +21,9 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **Phase 4** — Ghost magic | S11–S12 | **Done** |
 | **Phase 5** — UX audit clarity | S13 | **Done** |
 
-**Phases remaining:** Phase 5 maintenance + ops (E3-9 DNS). Phases 0–4 are complete.
+**Phases remaining:** None (planned backlog complete). Phases 0–5 are complete.
 
-**Open stories (non-deferred):** E3-9 (App Links DNS live).
+**Open stories (non-deferred):** Tester verification only (#52, #54).
 
 ### Shipped stories (28 unique IDs + E6-3 ongoing)
 
@@ -41,9 +41,10 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **S10** | E3-7, E5-2, E6-1 (+ silent duplicate merge, suggest→ingredients sheet, font scaling) |
 | **S11** | E1-6, E6-2 (+ week banner on Today, tab + AI a11y) |
 | **S12** | E4-9 (+ ghost pairing banner on Groceries), E4-10 (+ pantry check on meal→grocery), E4-11 (+ contextual Use up chips from meal/grocery history) |
+| **Post-S12 maint** | E2-7 (+ Groceries tab Update list focus, drag reorder; AI/pantry/build chip removed from shopping screen) |
 | **Post-S11 releases** | Onboarding v1.0.33–36, App Links tooling, Firebase QA v48 (see below) |
 
-**Next up:** E3-9 DNS go-live · E4-9 (#52) close when verified on testers
+**Next up:** Device smoke on invite deep link · close #52 / #54 after tester OK
 
 ---
 
@@ -82,7 +83,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 - First-win checklist on Welcome Home (`HomeFirstWinChecklist`)
 - Guided empty states (grocery, meal plan, solo household)
 - Offline-first nutrition + sync outbox + `NutritionSyncStatusBanner`
-- AI read-only terracotta (`AiReadOnlyGroceryList`, `AiGrocerySuggestionsSection`)
+- AI read-only terracotta (`AiReadOnlyGroceryList`, `AiGrocerySuggestionsSection` on Plan tab)
 - Deep-link invites + Google/Apple SSO on join (`JoinHouseholdScreen`)
 - Per-meal and bulk meal → grocery (`nutrition_meal_generate_grocery`)
 - Journey design system Waves A–C (dark theme, wide layouts, 48dp targets)
@@ -114,7 +115,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 - `AiHelperSheet` — `ModalBottomSheet` ~60% over Plan tab; dismiss on apply (E4-1, S5)
 - Shared `NutritionAiAssistantContent`; Plan tab “Plan with AI” opens sheet (not full-screen)
 - AI copy rewrite — output-first, no chatbot tone, all 8 locales (E4-4, S5)
-- Inline empty meal slot “Suggest 20-min meal”; grocery “Build list from this week’s meals” chip; terracotta AI chips (E4-2, E4-3, E4-8, S6)
+- Inline empty meal slot “Suggest 20-min meal”; grocery “Build list from this week’s meals” chip (S6, **removed from Groceries tab v54** — meal→grocery via Plan); terracotta AI chips (E4-2, E4-3, E4-8, S6)
 - Chip-first sheet, launch context hides mode switcher, full-screen AI demoted to fallback; plan empty-state AI chips (E4-5, E4-6, E4-7, E5-3, S7)
 - Instrumented tests: `AiHelperSheet`, inline triggers, chip-first sheet, empty-state chips
 
@@ -134,6 +135,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 - Email/password auth fallback; HTTPS invite App Links client; instrumented onboarding smoke (v1.0.36)
 - Firebase App Links hosting: `firebase.json`, deploy/verify/DNS scripts, GitHub **App Links hosting** workflow (v47)
 - Ghost pairing banner on Groceries — terracotta “Often bought together” + one-tap add (E4-9, v48)
+- Groceries tab simplification — **Update list** section after week selector; drag-to-reorder active rows; pantry check + AI suggestion chips + build-from-meals chip removed from shopping screen (stay on Plan tab) (E2-7, v54)
 
 **Navigation note:** Bottom tabs use custom `MainTabShell` + `AppRoute` — **not** Voyager (catalog only).
 
@@ -176,6 +178,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | E2-2 | Swipe-to-check (wide gesture); retain row tap + haptics; reconcile with swipe-to-delete | P0 | ✅ S3 | `GroceryItemRow.kt` |
 | E2-3 | Wire iOS haptics on grocery check-off | P0 | ✅ S2 | `JourneyHaptics.ios.kt` |
 | E2-4 | Shopping mode: unchecked first; optional hide checked | P1 | ✅ S3 | `GroceryShoppingScreen`, `GroceryListPresentation` |
+| E2-7 | Groceries tab: **Update list** section + drag reorder; remove AI/pantry/build chip clutter from shopping screen | P1 | ✅ maint v54 | `GroceryShoppingScreen`, `GroceryItemRow`, `GroceryListPresentation.moveActiveItem` |
 | E2-5 | Auto-aisle categorization | P3 | Deferred | — |
 | E2-6 | Smart paste / recipe ingredient parse | P3 | Deferred | — |
 
@@ -193,7 +196,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | E3-6 | Skip redundant `NutritionEntryGate` when household already resolved | P1 | ✅ S4 | `NutritionFlow.kt`, `App.kt` |
 | E3-7 | Silent duplicate merge (e.g. two “Milk” → one line or count) vs error snackbar | P2 | ✅ S10 | Domain + `GroceryShoppingScreen` |
 | E3-8 | Live presence (“Alex is shopping now”) | P3 | Deferred | — |
-| E3-9 | HTTPS App Links hosting on `mymultiverse.app` (Firebase Hosting + custom DNS) | P1 | ⏳ S12 | `web/`, `scripts/deploy-app-links-hosting.sh`, `docs/app-links-custom-dns.md` |
+| E3-9 | HTTPS App Links hosting on `mymultiverse.app` (Firebase Hosting + custom DNS) | P1 | ✅ S12 | `web/`, `scripts/deploy-app-links-hosting.sh`, `docs/app-links-custom-dns.md` |
 
 ## E4 — Silent butler AI
 
@@ -201,14 +204,14 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 |----|-------|---|--------|---------------------|
 | E4-1 | `AiHelperSheet` (`ModalBottomSheet` ~60%) reusing `NutritionScreenModel.runAiAssistant()` | P0 | ✅ S5 | `AiHelperSheet.kt`, `NutritionAiAssistantContent.kt` |
 | E4-2 | Inline trigger: empty meal slot → “Suggest 20-min meal” (Sparkles, tertiary) | P0 | ✅ S6 | `MealPlanDayCard` |
-| E4-3 | Grocery chip: “Build list from this week’s meals” | P0 | ✅ S6 | `GroceryShoppingScreen` |
+| E4-3 | Grocery chip: “Build list from this week’s meals” | P0 | ✅ S6 (chip removed from Groceries v54) | Was `GroceryShoppingScreen`; meal→grocery via Plan tab + AI sheet |
 | E4-4 | Copy rewrite — output-first, no chatbot tone (8 locales) | P0 | ✅ S5 | `nutrition_ai_*` keys |
 | E4-5 | Chip-first sheet; text field behind “More options” | P1 | ✅ S7 | `AiHelperSheet` |
 | E4-6 | Mode from launch context (hide Advice/Grocery/Meal plan switcher in default flow) | P1 | ✅ S7 | Sheet launch params |
 | E4-7 | Demote full-screen `NutritionAiAdviceScreen` to fallback/deep link only | P1 | ✅ S7 | `NutritionFlow`, `WeeklyMealPlanScreen` |
 | E4-8 | Terracotta AI chips in read-only zones (fix teal on `AiGrocerySuggestionChips` where AI-origin) | P1 | ✅ S6 | `ui-ux-compose.mdc` |
 | E4-9 | Ghost pairing banner (“+ Add salsa and cheese?”) | P2 | ✅ S12 | `GroceryGhostPairingBanner` + `GroceryGhostPairing` |
-| E4-10 | Pantry check section: “Check if you have these” on meal→grocery | P2 | ✅ S12 | `PantryCheckSection`, `MealGroceryPartition` |
+| E4-10 | Pantry check section: “Check if you have these” on meal→grocery | P2 | ✅ S12 (Plan tab only v54) | `PantryCheckSection`, `WeeklyMealPlanScreen`, `MealGroceryPartition` |
 | E4-11 | Contextual chips from history (“Use up chicken”) | P2 | ✅ S12 | `NutritionContextualChips`, `MealPlanEmptyState`, `NutritionAiAssistantContent` |
 
 ---
@@ -231,7 +234,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 |----|-------|---|--------|---------------------|
 | E6-1 | System font scaling on grocery rows + meal plan | P1 | ✅ S10 | `GroceryItemRow`, `MealPlanDayCard` |
 | E6-2 | `contentDescription` audit on tab bar + AI entry points | P2 | ✅ S11 | `MainTabShell`, `AiInlineTriggerButton` |
-| E6-3 | Firebase QA YAML + manual cases for changed flows | P0 | ✅ ongoing | `firebase-appdistribution-testcases.yaml` (currently **v48**) |
+| E6-3 | Firebase QA YAML + manual cases for changed flows | P0 | ✅ ongoing | `firebase-appdistribution-testcases.yaml` (currently **v54**) |
 | E6-4 | Napulitano explicit language label + dialect subtitle in picker (not “NAP” code) | P2 | ✅ S13 | `SupportedAppLanguages`, `LanguagePicker`, 8 locales |
 
 ## Execution plan (12 weeks)
@@ -291,7 +294,9 @@ Only if Phases 0–2 metrics are green.
 |--------|----------------|--------|
 | **S12** | E4-9 ghost pairing | ✅ shipped (v48) |
 | **S12** | E4-10 pantry check | ✅ shipped (v50) |
-| **S12+** | E3-9 DNS go-live · optional spike (E3-8 presence **or** E2-5 aisle) | ⏳ |
+| **S12+** | E3-9 DNS go-live | ✅ shipped |
+| **S13+** | Optional spike (E3-8 presence **or** E2-5 aisle) | backlog |
+| **Maint** | E2-7 grocery Update list + drag reorder | ✅ shipped (v54) |
 
 ### Phase 5 — “UX audit clarity” (S13)
 
@@ -352,13 +357,14 @@ E3-9 App Links DNS ──► HTTPS invite opens Android app (E3-2 share links)
 3. ~~**S3** — swipe-to-check + E5-1 meal CTA~~ ✅  
 4. ~~**S8** — invite share sheet + Sunday plan nudge~~ ✅ · ~~**S9** — push + activity snackbar~~ ✅ · ~~**S10** — household polish~~ ✅ · ~~**S11** — week banner + a11y~~ ✅  
 5. ~~**S13** — Today hero CTAs + family in account sheet + Napulitano label (UX audit)~~ ✅  
-6. ~~**S12** — E4-10 pantry check · E4-11 contextual chips~~ ✅ · **E3-9** App Links DNS live (manual DNS)
+6. ~~**S12** — E4-10 pantry check · E4-11 contextual chips · E3-9 App Links DNS~~ ✅  
+7. ~~**Maint v54** — E2-7 Groceries Update list focus + drag reorder~~ ✅
 
 ## GitHub tracking
 
 **Shipped story issues (S1–S11 polish):** #26–#31, #32–#43, #44–#51, #55–#59 — **closed** on GitHub.
 
-**Open / next:** E3-9 · E4-9 (#52) close when verified on testers.
+**Open / next:** #52 · #54 close when verified on testers.
 
 | Kind | Issue |
 |------|-------|
@@ -399,7 +405,7 @@ E3-9 App Links DNS ──► HTTPS invite opens Android app (E3-2 share links)
 | E3-5 | [#41](https://github.com/Rob971/MyMultiverseApp/issues/41) | 1 | P1 | ✅ S3 |
 | E3-6 | [#42](https://github.com/Rob971/MyMultiverseApp/issues/42) | 1 | P1 | ✅ S4 |
 | E3-7 | [#43](https://github.com/Rob971/MyMultiverseApp/issues/43) | 3 | P2 | ✅ S10 |
-| E3-9 | — | 3 | P1 | ⏳ S12 |
+| E3-9 | — | 3 | P1 | ✅ S12 |
 | E4-1 | [#44](https://github.com/Rob971/MyMultiverseApp/issues/44) | 2 | P0 | ✅ S5 |
 | E4-2 | [#45](https://github.com/Rob971/MyMultiverseApp/issues/45) | 2 | P0 | ✅ S6 |
 | E4-3 | [#46](https://github.com/Rob971/MyMultiverseApp/issues/46) | 2 | P0 | ✅ S6 |
