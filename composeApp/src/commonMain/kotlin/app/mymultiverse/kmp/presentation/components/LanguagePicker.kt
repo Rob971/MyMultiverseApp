@@ -1,15 +1,20 @@
 package app.mymultiverse.kmp.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -18,15 +23,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.domain.manager.SupportedAppLanguages
-import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_settings_language
@@ -39,11 +45,20 @@ object LanguagePickerTestTags {
     const val ROOT = "settings_language_picker"
     const val TRIGGER = "settings_language_trigger"
     const val GLOBAL_TRIGGER = "global_language_trigger"
+    const val GLOBAL_CHIP = "global_language_chip"
+}
+
+enum class GlobalLanguageStyle {
+    IconOnly,
+    Chip,
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GlobalLanguageAction(modifier: Modifier = Modifier) {
+fun GlobalLanguageAction(
+    modifier: Modifier = Modifier,
+    style: GlobalLanguageStyle = GlobalLanguageStyle.IconOnly,
+) {
     val languageManager = koinInject<LanguageManager>()
     val currentLanguage by languageManager.currentLanguage.collectAsState()
     var expanded by remember { mutableStateOf(false) }
@@ -51,18 +66,59 @@ fun GlobalLanguageAction(modifier: Modifier = Modifier) {
     val pickerDescription = stringResource(Res.string.language_picker_current, currentLabel)
 
     Box(modifier = modifier) {
-        JourneyIconButton(
-            onClick = { expanded = true },
-            modifier = Modifier
-                .testTag(LanguagePickerTestTags.GLOBAL_TRIGGER)
-                .semantics {
-                    contentDescription = pickerDescription
-                },
-        ) {
-            JourneyIcon(
-                role = AppIconRole.Language,
-                contentDescription = null,
-            )
+        when (style) {
+            GlobalLanguageStyle.IconOnly -> {
+                JourneyIconButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier
+                        .testTag(LanguagePickerTestTags.GLOBAL_TRIGGER)
+                        .semantics {
+                            contentDescription = pickerDescription
+                        },
+                ) {
+                    JourneyIcon(
+                        role = AppIconRole.Language,
+                        contentDescription = null,
+                    )
+                }
+            }
+            GlobalLanguageStyle.Chip -> {
+                Surface(
+                    onClick = { expanded = true },
+                    modifier = Modifier
+                        .testTag(LanguagePickerTestTags.GLOBAL_CHIP)
+                        .semantics {
+                            contentDescription = pickerDescription
+                        },
+                    shape = RoundedCornerShape(24.dp),
+                    color = JourneySemanticColors.cardSurface(),
+                    shadowElevation = 2.dp,
+                    tonalElevation = 1.dp,
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = JourneySemanticColors.brandTeal().copy(alpha = 0.45f),
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        JourneyIcon(
+                            role = AppIconRole.Language,
+                            contentDescription = null,
+                            modifier = Modifier.size(FamilyLogisticsDesign.iconSize - 8.dp),
+                            tint = JourneySemanticColors.brandTeal(),
+                        )
+                        Text(
+                            text = pickerDescription,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = JourneySemanticColors.inkDeep(),
+                        )
+                    }
+                }
+            }
         }
         LanguageDropdownMenu(
             expanded = expanded,

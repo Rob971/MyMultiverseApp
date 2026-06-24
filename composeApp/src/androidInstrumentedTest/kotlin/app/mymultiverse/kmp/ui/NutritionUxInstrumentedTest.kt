@@ -28,7 +28,6 @@ import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.GroceryGhostPairingTestTags
-import app.mymultiverse.kmp.presentation.components.GroceryInlineAddRowTestTags
 import app.mymultiverse.kmp.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.kmp.presentation.components.GroceryItemRowTestTags
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyStateTestTags
@@ -796,7 +795,7 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun grocery_toBuySection_showsInlineAddRowAfterWeekSelector() {
+    fun grocery_toBuySection_showsStickyInputBarOnPhone() {
         val screenModel = nutritionScreenModel()
 
         composeRule.setContent {
@@ -806,12 +805,12 @@ class NutritionUxInstrumentedTest {
         }
 
         composeRule.onNodeWithTag(GroceryListTestTags.TO_BUY_SECTION).assertIsDisplayed()
-        composeRule.onNodeWithTag(GroceryInlineAddRowTestTags.ROW).assertIsDisplayed()
-        composeRule.onNodeWithTag(GroceryInlineAddRowTestTags.ADD_BUTTON).assertIsDisplayed()
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.STICKY_BAR).assertIsDisplayed()
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).assertIsDisplayed()
     }
 
     @Test
-    fun grocery_emptyStateCta_scrollsToInlineAddAndFocusesInput() {
+    fun grocery_emptyStateCta_focusesStickyInputBar() {
         val screenModel = nutritionScreenModel()
 
         composeRule.setContent {
@@ -822,7 +821,7 @@ class NutritionUxInstrumentedTest {
 
         composeRule.onNodeWithTag(GroceryListTestTags.EMPTY_STATE).performScrollTo()
         composeRule.onNodeWithTag(JourneyEmptyStateTestTags.PRIMARY_ACTION).performClick()
-        composeRule.onNodeWithTag(GroceryInlineAddRowTestTags.INPUT_FIELD).assertIsFocused()
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.INPUT_FIELD).assertIsFocused()
     }
 
     @Test

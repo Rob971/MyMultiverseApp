@@ -81,12 +81,12 @@ import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.kmp.presentation.components.WeekSelectorBanner
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.GroceryGhostPairingBanner
-import app.mymultiverse.kmp.presentation.components.GroceryInlineAddRow
 import app.mymultiverse.kmp.presentation.components.GroceryInputBar
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.kmp.presentation.components.GroceryItemRow
 import app.mymultiverse.kmp.presentation.components.GroceryItemRowTestTags
 import app.mymultiverse.kmp.presentation.components.JourneySnackbarHost
+import app.mymultiverse.kmp.presentation.components.showJourneyActionSnackbar
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.platform.KeepScreenOn
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
@@ -130,7 +130,6 @@ fun GroceryShoppingScreen(
     var editingItemId by rememberSaveable { mutableStateOf<String?>(null) }
     var refocusInput by rememberSaveable { mutableStateOf(false) }
     var pendingScrollLabel by rememberSaveable { mutableStateOf<String?>(null) }
-    var pendingScrollToAdd by rememberSaveable { mutableStateOf(false) }
     var completedExpanded by rememberSaveable { mutableStateOf(false) }
     var completedExpandUserSet by rememberSaveable { mutableStateOf(false) }
     var hideCheckedItems by rememberSaveable { mutableStateOf(false) }
@@ -235,7 +234,7 @@ fun GroceryShoppingScreen(
         if (editingItemId == item.id) editingItemId = null
         screenModel.removeGroceryItem(item.id)
         scope.launch {
-            val result = snackbarHostState.showSnackbar(
+            val result = snackbarHostState.showJourneyActionSnackbar(
                 message = undoMessage,
                 actionLabel = undoLabel,
             )
@@ -252,7 +251,7 @@ fun GroceryShoppingScreen(
             editingItemId = null
         }
         scope.launch {
-            val result = snackbarHostState.showSnackbar(
+            val result = snackbarHostState.showJourneyActionSnackbar(
                 message = clearCheckedMessage,
                 actionLabel = undoLabel,
             )
@@ -262,8 +261,8 @@ fun GroceryShoppingScreen(
         }
     }
 
-    fun scrollToAddAndFocus() {
-        pendingScrollToAdd = true
+    fun focusAddInput() {
+        refocusInput = true
     }
 
     LaunchedEffect(sections.completed.size) {
@@ -274,18 +273,9 @@ fun GroceryShoppingScreen(
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val isWideLayout = maxWidth >= ScreenLayout.expandedMinWidth
-        val showInlineAddRow = canWrite && !isWideLayout
+        val showPhoneStickyInput = canWrite && !isWideLayout
 
-        LaunchedEffect(pendingScrollToAdd, showInlineAddRow) {
-            if (!pendingScrollToAdd) return@LaunchedEffect
-            if (showInlineAddRow) {
-                listState.animateScrollToItem(GROCERY_INLINE_ADD_ROW_INDEX)
-            }
-            refocusInput = true
-            pendingScrollToAdd = false
-        }
-
-        LaunchedEffect(items, pendingScrollLabel, canWrite, showInlineAddRow, ghostPairingOffer, totalCount) {
+        LaunchedEffect(items, pendingScrollLabel, canWrite, ghostPairingOffer, totalCount) {
             val label = pendingScrollLabel ?: return@LaunchedEffect
             if (items.none { it.label.equals(label, ignoreCase = true) }) return@LaunchedEffect
 
@@ -294,7 +284,6 @@ fun GroceryShoppingScreen(
 
             val index = groceryActiveItemListIndex(
                 canWrite = canWrite,
-                showInlineAddRow = showInlineAddRow,
                 hasViewerNotice = !canWrite,
                 hasGhostPairing = canWrite && ghostPairingOffer != null,
                 hasShoppingModeToggle = sections.completed.isNotEmpty() && totalCount > 0,
@@ -330,11 +319,11 @@ fun GroceryShoppingScreen(
             snackbarHost = {
                 JourneySnackbarHost(
                     hostState = snackbarHostState,
-                    aboveBottomBar = canWrite && !isWideLayout,
+                    aboveBottomBar = showPhoneStickyInput,
                 )
             },
             bottomBar = {
-                if (canWrite && !isWideLayout) {
+                if (showPhoneStickyInput) {
                     GroceryInputBar(
                         value = newItemText,
                         onValueChange = { newItemText = it },
@@ -343,7 +332,7 @@ fun GroceryShoppingScreen(
                         addButtonLabel = addButtonLabel,
                         onSubmit = { submitNewItem() },
                         accentColor = JourneySemanticColors.brandTeal(),
-                        requestFocus = false,
+                        requestFocus = refocusInput,
                         onFocusRequested = { refocusInput = false },
                         embeddedInMainTabs = embeddedInTabs,
                     )
@@ -363,16 +352,10 @@ fun GroceryShoppingScreen(
                     weekOffset = weekOffset,
                     screenModel = screenModel,
                     canWrite = canWrite,
-                    showInlineAddRow = showInlineAddRow,
+                    showPhoneStickyInput = showPhoneStickyInput,
                     toBuySectionTitle = toBuySectionTitle,
                     toBuySectionSubtitle = toBuySectionSubtitle,
-                    addHint = addHint,
                     addButtonLabel = addButtonLabel,
-                    newItemText = newItemText,
-                    onNewItemTextChange = { newItemText = it },
-                    onSubmitNewItem = { submitNewItem() },
-                    refocusInput = refocusInput,
-                    onFocusRequested = { refocusInput = false },
                     sections = displaySections,
                     rawSections = sections,
                     hideCheckedItems = hideCheckedItems,
@@ -396,7 +379,7 @@ fun GroceryShoppingScreen(
                         completedExpandUserSet = true
                         completedExpanded = !completedExpanded
                     },
-                    onScrollToAddAndFocus = { scrollToAddAndFocus() },
+                    onScrollToAddAndFocus = { focusAddInput() },
                     onStartEdit = { editingItemId = it },
                     onCancelEdit = { if (editingItemId == it) editingItemId = null },
                     onSaveEdit = { id, label ->
@@ -477,11 +460,8 @@ fun GroceryShoppingScreen(
     }
 }
 
-private const val GROCERY_INLINE_ADD_ROW_INDEX = 2
-
 private fun groceryActiveItemListIndex(
     canWrite: Boolean,
-    showInlineAddRow: Boolean,
     hasViewerNotice: Boolean,
     hasGhostPairing: Boolean,
     hasShoppingModeToggle: Boolean,
@@ -490,7 +470,6 @@ private fun groceryActiveItemListIndex(
 ): Int {
     if (hasEmptyState) return -1
     var index = 1 // to-buy header after week selector (0)
-    if (showInlineAddRow) index++
     if (hasViewerNotice) index++
     if (hasGhostPairing) index++
     if (hasShoppingModeToggle) index++
@@ -504,16 +483,10 @@ private fun LazyListScope.groceryShoppingListItems(
     weekOffset: Int,
     screenModel: NutritionScreenModel,
     canWrite: Boolean,
-    showInlineAddRow: Boolean,
+    showPhoneStickyInput: Boolean,
     toBuySectionTitle: String,
     toBuySectionSubtitle: String,
-    addHint: String,
     addButtonLabel: String,
-    newItemText: String,
-    onNewItemTextChange: (String) -> Unit,
-    onSubmitNewItem: () -> Unit,
-    refocusInput: Boolean,
-    onFocusRequested: () -> Unit,
     sections: GroceryListPresentation.Sections,
     rawSections: GroceryListPresentation.Sections,
     hideCheckedItems: Boolean,
@@ -563,30 +536,15 @@ private fun LazyListScope.groceryShoppingListItems(
             FamilyLogisticsSectionHeader(
                 title = toBuySectionTitle,
                 titleModifier = Modifier.testTag(GroceryListTestTags.TO_BUY_SECTION),
-                actionLabel = if (showInlineAddRow) addButtonLabel else null,
+                actionLabel = if (showPhoneStickyInput) addButtonLabel else null,
                 actionModifier = Modifier.testTag(GroceryListTestTags.SECTION_ADD_ACTION),
-                onAction = if (showInlineAddRow) onScrollToAddAndFocus else null,
+                onAction = if (showPhoneStickyInput) onScrollToAddAndFocus else null,
             )
             Text(
                 text = toBuySectionSubtitle,
                 style = MaterialTheme.typography.bodySmall,
                 color = JourneySemanticColors.inkMuted(),
                 modifier = Modifier.padding(horizontal = 4.dp),
-            )
-        }
-    }
-
-    if (showInlineAddRow) {
-        item(key = "inline-add-row") {
-            GroceryInlineAddRow(
-                value = newItemText,
-                onValueChange = onNewItemTextChange,
-                placeholder = addHint,
-                addButtonLabel = addButtonLabel,
-                onSubmit = onSubmitNewItem,
-                accentColor = JourneySemanticColors.brandTeal(),
-                requestFocus = refocusInput,
-                onFocusRequested = onFocusRequested,
             )
         }
     }

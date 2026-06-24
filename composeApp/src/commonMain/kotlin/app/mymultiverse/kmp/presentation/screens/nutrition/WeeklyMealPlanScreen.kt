@@ -32,6 +32,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.key
+import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.domain.nutrition.MealPlanDayEntry
 import app.mymultiverse.kmp.domain.nutrition.MealPlanDayOrdering
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
@@ -103,6 +105,29 @@ fun WeeklyMealPlanScreen(
     onOpenAiSheet: (AiHelperLaunchContext) -> Unit = {},
     showBackButton: Boolean = true,
     screenModel: NutritionScreenModel = koinInject(),
+) {
+    val languageManager = koinInject<LanguageManager>()
+    val currentLanguage by languageManager.currentLanguage.collectAsState()
+
+    key(currentLanguage) {
+        WeeklyMealPlanScreenContent(
+            onBack = onBack,
+            onOpenSection = onOpenSection,
+            onOpenAiSheet = onOpenAiSheet,
+            showBackButton = showBackButton,
+            screenModel = screenModel,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WeeklyMealPlanScreenContent(
+    onBack: () -> Unit,
+    onOpenSection: (NutritionSection, NutritionAiMode?) -> Unit,
+    onOpenAiSheet: (AiHelperLaunchContext) -> Unit,
+    showBackButton: Boolean,
+    screenModel: NutritionScreenModel,
 ) {
     val mealPlan by screenModel.mealPlan.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
