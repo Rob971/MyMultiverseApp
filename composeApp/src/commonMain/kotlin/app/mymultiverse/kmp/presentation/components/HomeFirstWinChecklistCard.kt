@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,7 +15,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 
 object HomeFirstWinChecklistTestTags {
@@ -67,10 +66,9 @@ fun HomeFirstWinChecklistCard(
                         .testTag(HomeFirstWinChecklistTestTags.DISMISS)
                         .semantics { contentDescription = dismissLabel },
                 ) {
-                    Icon(
-                        imageVector = AppIcons.Close,
+                    JourneyIcon(
+                        role = AppIconRole.ChromeClose,
                         contentDescription = null,
-                        tint = JourneySemanticColors.inkMuted(),
                     )
                 }
             }
@@ -119,8 +117,8 @@ private fun HomeFirstWinActionRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (complete) {
-                Icon(
-                    imageVector = AppIcons.CheckCircle,
+                JourneyIcon(
+                    role = AppIconRole.SyncSuccess,
                     contentDescription = null,
                     tint = JourneySemanticColors.brandTeal(),
                 )
@@ -140,10 +138,11 @@ private fun HomeFirstWinActionRow(
                         .fillMaxWidth()
                         .testTag(testTag),
                 ) {
-                    Icon(
-                        imageVector = AppIcons.Add,
+                    JourneyIcon(
+                        role = AppIconRole.ActionAdd,
                         contentDescription = null,
                         modifier = Modifier.padding(end = 8.dp),
+                        useContentColor = true,
                     )
                     Text(actionLabel)
                 }
@@ -154,10 +153,11 @@ private fun HomeFirstWinActionRow(
                         .fillMaxWidth()
                         .testTag(testTag),
                 ) {
-                    Icon(
-                        imageVector = AppIcons.Person,
+                    JourneyIcon(
+                        role = AppIconRole.Account,
                         contentDescription = null,
                         modifier = Modifier.padding(end = 8.dp),
+                        useContentColor = true,
                     )
                     Text(actionLabel)
                 }

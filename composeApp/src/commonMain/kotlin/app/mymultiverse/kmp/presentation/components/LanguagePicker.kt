@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -27,7 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.manager.LanguageManager
 import app.mymultiverse.kmp.domain.manager.SupportedAppLanguages
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_settings_language
@@ -60,10 +59,9 @@ fun GlobalLanguageAction(modifier: Modifier = Modifier) {
                     contentDescription = pickerDescription
                 },
         ) {
-            Icon(
-                imageVector = AppIcons.Language,
+            JourneyIcon(
+                role = AppIconRole.Language,
                 contentDescription = null,
-                tint = JourneySemanticColors.brandTeal(),
             )
         }
         LanguageDropdownMenu(

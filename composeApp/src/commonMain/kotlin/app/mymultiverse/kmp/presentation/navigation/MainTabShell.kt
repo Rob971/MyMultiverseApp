@@ -2,7 +2,6 @@ package app.mymultiverse.kmp.presentation.navigation
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -15,7 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.components.JourneyIcon
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nav_tab_grocery
@@ -56,9 +56,10 @@ fun MainTabShell(
                             selected = selectedTab == AppMainTab.Home,
                             onClick = { onTabSelected(AppMainTab.Home) },
                             icon = {
-                                Icon(
-                                    imageVector = AppIcons.Home,
+                                JourneyIcon(
+                                    role = AppIconRole.NavHome,
                                     contentDescription = homeTabLabel,
+                                    useContentColor = true,
                                 )
                             },
                             label = { Text(homeTabLabel) },
@@ -69,9 +70,10 @@ fun MainTabShell(
                             selected = selectedTab == AppMainTab.MealPlan,
                             onClick = { onTabSelected(AppMainTab.MealPlan) },
                             icon = {
-                                Icon(
-                                    imageVector = AppIcons.DateRange,
+                                JourneyIcon(
+                                    role = AppIconRole.NavMealPlan,
                                     contentDescription = mealPlanTabLabel,
+                                    useContentColor = true,
                                 )
                             },
                             label = { Text(mealPlanTabLabel) },
@@ -82,9 +84,10 @@ fun MainTabShell(
                             selected = selectedTab == AppMainTab.Grocery,
                             onClick = { onTabSelected(AppMainTab.Grocery) },
                             icon = {
-                                Icon(
-                                    imageVector = AppIcons.ShoppingCart,
+                                JourneyIcon(
+                                    role = AppIconRole.NavGrocery,
                                     contentDescription = groceryTabLabel,
+                                    useContentColor = true,
                                 )
                             },
                             label = { Text(groceryTabLabel) },

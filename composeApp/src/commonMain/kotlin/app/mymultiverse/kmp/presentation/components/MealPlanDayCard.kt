@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
@@ -39,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.model.nutrition.DayMeals
 import app.mymultiverse.kmp.domain.nutrition.MealPlanPresentation
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 
@@ -249,9 +249,10 @@ private fun MealPlanMealField(
             trailingIcon = if (value.isNotBlank() && !readOnly && onClear != null) {
                 {
                     JourneyIconButton(onClick = onClear) {
-                        Icon(
-                            imageVector = AppIcons.Delete,
+                        JourneyIcon(
+                            role = AppIconRole.ActionDelete,
                             contentDescription = clearFieldLabel,
+                            useContentColor = true,
                         )
                     }
                 }
@@ -306,10 +307,11 @@ private fun MealPlanMealField(
                         .testTag(generateGroceryTestTag),
                 ) {
                     if (!isGeneratingGrocery) {
-                        Icon(
-                            imageVector = AppIcons.Sparkles,
+                        JourneyIcon(
+                            role = AppIconRole.AiAccent,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
+                            useContentColor = true,
                         )
                         Spacer(Modifier.width(8.dp))
                     }

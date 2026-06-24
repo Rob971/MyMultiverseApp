@@ -58,4 +58,13 @@ object JourneySemanticColors {
 
     @Composable
     fun onBannerDescription(): Color = SharedJourneyColors.InkSecondary
+
+    /** Icons and labels on filled accent buttons (teal / gold circles). */
+    @Composable
+    fun onAccentButton(): Color = SharedJourneyColors.SunDrenchedWhite
+
+    /** Grocery checked state and sync success — readable on light and dark surfaces. */
+    @Composable
+    fun successAccent(): Color =
+        if (isDark()) SharedJourneyColors.AccentMintTeal else SharedJourneyColors.SageSoft
 }

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
@@ -101,11 +100,11 @@ fun GroceryInputBar(
                 contentDescription = addContentDescription,
                 modifier = Modifier.testTag(GroceryInputBarTestTags.ADD_BUTTON),
             ) {
-                Icon(
-                    imageVector = AppIcons.Add,
+                JourneyIcon(
+                    role = AppIconRole.ActionAdd,
                     contentDescription = null,
-                    tint = SharedJourneyColors.SunDrenchedWhite,
                     modifier = Modifier.size(FamilyLogisticsDesign.iconSize - 4.dp),
+                    tint = JourneySemanticColors.onAccentButton(),
                 )
             }
         }

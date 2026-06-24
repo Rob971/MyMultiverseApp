@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -21,7 +20,7 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.action_back
 import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.kmp.presentation.navigation.NavigationTestTags
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,10 +73,9 @@ fun NutritionScaffold(
                             onClick = onBack,
                             modifier = Modifier.testTag(NavigationTestTags.BACK_BUTTON),
                         ) {
-                            Icon(
-                                imageVector = AppIcons.ArrowBack,
+                            JourneyIcon(
+                                role = AppIconRole.ChromeBack,
                                 contentDescription = backLabel,
-                                tint = JourneySemanticColors.brandTeal(),
                             )
                         }
                     }

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -16,8 +15,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.kmp.presentation.theme.AppIcons
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
+import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 
 @Composable
 fun AiInlineTriggerButton(
@@ -38,17 +37,16 @@ fun AiInlineTriggerButton(
         enabled = enabled,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = AppIcons.Sparkles,
+            JourneyIcon(
+                role = AppIconRole.AiAccent,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
-                tint = SharedJourneyColors.AiReadOnlyAccent,
             )
             Spacer(Modifier.width(8.dp))
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
-                color = SharedJourneyColors.AiReadOnlyAccent,
+                color = JourneySemanticColors.brandTerracotta(),
             )
         }
     }
