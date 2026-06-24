@@ -840,7 +840,7 @@
     <string name="sharing_members_member_added">Membro azzeccato â famiglia toja.</string>
     <string name="sharing_members_pending_invites_title">Inviti 'n attesa</string>
     <string name="sharing_members_pending_invite_label">'N attesa · %1$s</string>
-    <string name="sharing_members_read_only_hint">Solo 'o pruprietario d'â famiglia può invità o levà membri.</string>
+    <string name="sharing_members_read_only_hint">Solo 'o pruprietario d'â famiglia e ll'admin ponno invità o levà membri.</string>
     <string name="sharing_members_select_role">Livello 'e accesso</string>
     <string name="sharing_members_leave">Lassa 'a famiglia</string>
     <string name="sharing_members_leave_confirm_title">Lassà 'a famiglia?</string>
@@ -921,4 +921,12 @@
     <string name="sharing_members_promote_admin_confirm_title">Fà admin d'â famiglia?</string>
     <string name="sharing_members_promote_admin_confirm_message">%1$s può invità ll'ata e gestì 'e membri, ma nun può trasferì 'a pruprietà o scancellà 'o gruppo famigliare.</string>
     <string name="sharing_members_role_updated">Ruolo aggiornato</string>
+    <string name="sharing_members_invite">Invita</string>
+    <string name="sharing_members_invite_chooser_title">Invita dint'a famiglia toja</string>
+    <string name="sharing_members_invite_by_email">Invita pe' email</string>
+    <string name="sharing_members_invite_by_email_hint">Pònno accettà dopo ll'accesso cu st'indirizzo.</string>
+    <string name="sharing_members_invite_add_dependent">Mitte nu dipendente (senza accesso)</string>
+    <string name="sharing_members_role_admin_description">Pò invità, gestì membri e cagnà liste e piani condivisi.</string>
+    <string name="sharing_members_role_editor_description">Pò cagnà liste d' 'a spesa e piani pasti condivisi.</string>
+    <string name="sharing_members_role_viewer_description">Pò guardà liste e piani condivisi sulamente.</string>
 </resources>

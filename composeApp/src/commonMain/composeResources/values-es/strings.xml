@@ -840,7 +840,7 @@
     <string name="sharing_members_member_added">Miembro añadido a tu familia.</string>
     <string name="sharing_members_pending_invites_title">Invitaciones pendientes</string>
     <string name="sharing_members_pending_invite_label">Pendiente · %1$s</string>
-    <string name="sharing_members_read_only_hint">Solo el propietario de la familia puede invitar o eliminar miembros.</string>
+    <string name="sharing_members_read_only_hint">Solo el propietario de la familia y los administradores pueden invitar o eliminar miembros.</string>
     <string name="sharing_members_select_role">Nivel de acceso</string>
     <string name="sharing_members_leave">Salir de la familia</string>
     <string name="sharing_members_leave_confirm_title">¿Salir de la familia?</string>
@@ -921,4 +921,12 @@
     <string name="sharing_members_promote_admin_confirm_title">¿Hacer admin de la familia?</string>
     <string name="sharing_members_promote_admin_confirm_message">%1$s puede invitar personas y gestionar miembros, pero no puede transferir la propiedad ni eliminar el grupo familiar.</string>
     <string name="sharing_members_role_updated">Rol actualizado</string>
+    <string name="sharing_members_invite">Invitar</string>
+    <string name="sharing_members_invite_chooser_title">Invitar a tu familia</string>
+    <string name="sharing_members_invite_by_email">Invitar por correo</string>
+    <string name="sharing_members_invite_by_email_hint">Pueden aceptar tras iniciar sesión con esa dirección.</string>
+    <string name="sharing_members_invite_add_dependent">Añadir dependiente (sin cuenta)</string>
+    <string name="sharing_members_role_admin_description">Puede invitar, gestionar miembros y editar listas y planes compartidos.</string>
+    <string name="sharing_members_role_editor_description">Puede editar listas de la compra y planes de comidas compartidos.</string>
+    <string name="sharing_members_role_viewer_description">Solo puede ver listas y planes compartidos.</string>
 </resources>

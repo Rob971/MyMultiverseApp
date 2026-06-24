@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 52
-updated: 2026-06-23
+version: 53
+updated: 2026-06-24
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -37,6 +37,8 @@ summary: |
   App Links hosting (v47): deploy web/.well-known + /invite fallback; verify with scripts/verify-app-links-hosting.sh after DNS is live.
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
+  Global language (v53): globe icon in app headers (auth, onboarding, Home, nutrition screens) plus full picker in account sheet.
+  Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
   Contextual AI chips E4-11 (v52): Plan empty state and AI helper sheet prepend Use up {ingredient} chips from unchecked grocery + meal history (fallback to protein/budget/veggies when no signals).
 
@@ -228,8 +230,8 @@ testcases:
       - Sign in as owner of a household with only yourself (no pending invites).
       - Open Household members from Home.
     expected:
-      - Solo invite empty state appears with Invite someone CTA (testTag household_members_solo_empty_state).
-      - Tapping opens the add-person invite dialog.
+      - Solo invite empty state appears with Invite CTA (testTag household_members_solo_empty_state).
+      - Tapping opens the invite chooser (email invite or dependant).
 
   - id: home-rename-household
     title: Rename household from Welcome Home (owner or admin)
@@ -245,7 +247,8 @@ testcases:
     title: Owner promotes member to household admin
     steps:
       - Sign in as owner; open Household members.
-      - On an editor member row, tap ⋮ (more actions) → Change role → Household admin → confirm promotion.
+      - On an editor member row, tap ⋮ (more actions) → Change role → Family admin → confirm promotion.
+      - Observe role badges on member rows (owner terracotta, admin teal, editor teal container, viewer muted).
       - Sign in as the promoted admin on another device or account.
     expected:
       - Member rows show name, email, and a role chip (Owner terracotta, others muted).
@@ -884,12 +887,14 @@ testcases:
       - AI inline triggers announce their full label as one control.
 
   - id: language-picker
-    title: App language from Home settings
+    title: App language from header or settings
     steps:
-      - On Welcome Home, tap ⋮ and change language in the picker.
-      - Dismiss the sheet and revisit Home, Nutrition hub, and meal plan strings.
+      - On the auth screen (before sign-in), tap the globe icon and switch language.
+      - After sign-in on Welcome Home, use the globe in the top bar or open account sheet → Language picker.
+      - Visit Nutrition hub and Family members to confirm strings update.
     expected:
-      - Home greeting, section headers, and nutrition strings update for the selected locale (EN, FR, ES, DE, IT, Napoli, AR).
+      - Auth, Home, nutrition, and members strings update for the selected locale (EN, FR, ES, DE, IT, Napoli, AR).
+      - Napulitano option shows dialect subtitle in the dropdown.
 
   - id: supabase-persistence-smoke
     title: Supabase household persistence (two accounts)

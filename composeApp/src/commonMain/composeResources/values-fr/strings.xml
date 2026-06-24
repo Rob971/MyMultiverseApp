@@ -840,7 +840,7 @@
     <string name="sharing_members_member_added">Membre ajouté à votre famille.</string>
     <string name="sharing_members_pending_invites_title">Invitations en attente</string>
     <string name="sharing_members_pending_invite_label">En attente · %1$s</string>
-    <string name="sharing_members_read_only_hint">Seul le propriétaire de la famille peut inviter ou retirer des membres.</string>
+    <string name="sharing_members_read_only_hint">Seuls le propriétaire de la famille et les admins peuvent inviter ou retirer des membres.</string>
     <string name="sharing_members_select_role">Niveau d'accès</string>
     <string name="sharing_members_leave">Quitter la famille</string>
     <string name="sharing_members_leave_confirm_title">Quitter la famille ?</string>
@@ -921,4 +921,12 @@
     <string name="sharing_members_promote_admin_confirm_title">Nommer admin de la famille ?</string>
     <string name="sharing_members_promote_admin_confirm_message">%1$s peut inviter des personnes et gérer les membres, mais ne peut pas transférer la propriété ni supprimer le groupe familial.</string>
     <string name="sharing_members_role_updated">Rôle mis à jour</string>
+    <string name="sharing_members_invite">Inviter</string>
+    <string name="sharing_members_invite_chooser_title">Inviter dans votre famille</string>
+    <string name="sharing_members_invite_by_email">Inviter par e-mail</string>
+    <string name="sharing_members_invite_by_email_hint">La personne peut accepter après connexion avec cette adresse.</string>
+    <string name="sharing_members_invite_add_dependent">Ajouter une personne à charge (sans compte)</string>
+    <string name="sharing_members_role_admin_description">Peut inviter, gérer les membres et modifier les listes et plans partagés.</string>
+    <string name="sharing_members_role_editor_description">Peut modifier les listes de courses et plans de repas partagés.</string>
+    <string name="sharing_members_role_viewer_description">Peut uniquement consulter les listes et plans partagés.</string>
 </resources>

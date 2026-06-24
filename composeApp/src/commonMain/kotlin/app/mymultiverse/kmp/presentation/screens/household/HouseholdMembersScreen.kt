@@ -12,16 +12,14 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.foundation.shape.RoundedCornerShape
+import app.mymultiverse.kmp.presentation.components.JourneySecondaryButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,6 +44,9 @@ import app.mymultiverse.kmp.domain.repository.AuthRepository
 import app.mymultiverse.kmp.data.invite.InviteRedirectUrls
 import app.mymultiverse.kmp.domain.platform.PersonalDataExporter
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsCardSurface
+import app.mymultiverse.kmp.presentation.components.HouseholdRoleBadge
+import app.mymultiverse.kmp.presentation.components.HouseholdRoleSelector
+import app.mymultiverse.kmp.presentation.components.householdRoleLabel
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
 import app.mymultiverse.kmp.presentation.components.JourneyIconButton
 import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
@@ -60,6 +61,11 @@ import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.content_more_options
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_add_dependent
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_by_email
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_by_email_hint
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_invite_chooser_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_add_dependent
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_add_person
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.sharing_members_cancel
@@ -127,7 +133,12 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 object HouseholdMembersTestTags {
-    const val ADD_PERSON_BUTTON = "household_members_add_person"
+    const val INVITE_BUTTON = "household_members_invite"
+    /** @deprecated Use [INVITE_BUTTON] */
+    const val ADD_PERSON_BUTTON = INVITE_BUTTON
+    const val INVITE_CHOOSER = "household_members_invite_chooser"
+    const val INVITE_BY_EMAIL_OPTION = "household_members_invite_by_email"
+    const val INVITE_ADD_DEPENDENT_OPTION = "household_members_invite_add_dependent"
     const val ADD_PERSON_CONFIRM_BUTTON = "household_members_add_person_confirm"
     const val ADD_PERSON_DIALOG_ERROR = "household_members_add_person_error"
     const val MEMBER_ROW = "household_members_row"
@@ -142,8 +153,6 @@ object HouseholdMembersTestTags {
     const val MEMBER_ROW_OVERFLOW = "household_members_row_overflow"
     const val MEMBER_CHANGE_ROLE_MENU = "household_members_change_role_menu"
     const val MEMBER_REMOVE_MENU = "household_members_remove_menu"
-    const val ADD_ACTIONS_OVERFLOW = "household_members_add_actions_overflow"
-    const val ADD_DEPENDENT_MENU = "household_members_add_dependent_menu"
     const val HOUSEHOLD_ACTIONS_OVERFLOW = "household_members_household_actions_overflow"
     const val HOUSEHOLD_TRANSFER_MENU = "household_members_transfer_menu"
     const val HOUSEHOLD_LEAVE_MENU = "household_members_leave_menu"
@@ -264,51 +273,14 @@ fun HouseholdMembersScreen(
                 }
                 if (uiState.canManageMembers) {
                     item {
-                        var addMenuExpanded by remember { mutableStateOf(false) }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                        JourneyPrimaryButton(
+                            onClick = screenModel::openInviteChooser,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(HouseholdMembersTestTags.INVITE_BUTTON),
                         ) {
-                            JourneyPrimaryButton(
-                                onClick = screenModel::openAddPersonDialog,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .testTag(HouseholdMembersTestTags.ADD_PERSON_BUTTON),
-                            ) {
-                                Text(stringResource(Res.string.sharing_members_add_person))
-                            }
-                            JourneyIconButton(
-                                onClick = { addMenuExpanded = true },
-                                modifier = Modifier.testTag(HouseholdMembersTestTags.ADD_ACTIONS_OVERFLOW),
-                            ) {
-                                Icon(
-                                    imageVector = AppIcons.MoreVert,
-                                    contentDescription = stringResource(Res.string.content_more_options),
-                                    tint = JourneySemanticColors.inkSecondary(),
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = addMenuExpanded,
-                                onDismissRequest = { addMenuExpanded = false },
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(Res.string.sharing_members_add_dependent)) },
-                                    onClick = {
-                                        addMenuExpanded = false
-                                        screenModel.openAddDependantDialog()
-                                    },
-                                    modifier = Modifier.testTag(HouseholdMembersTestTags.ADD_DEPENDENT_MENU),
-                                )
-                            }
+                            Text(stringResource(Res.string.sharing_members_invite))
                         }
-                    }
-                    item {
-                        Text(
-                            text = stringResource(Res.string.sharing_members_dependent_hint),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = JourneySemanticColors.inkMuted(),
-                        )
                     }
                 }
                 if (uiState.outboundInvites.isNotEmpty()) {
@@ -343,8 +315,8 @@ fun HouseholdMembersScreen(
                             title = stringResource(Res.string.sharing_members_solo_title),
                             body = stringResource(Res.string.sharing_members_solo_body),
                             icon = AppIcons.Person,
-                            primaryActionLabel = stringResource(Res.string.sharing_members_solo_cta),
-                            onPrimaryAction = screenModel::openAddPersonDialog,
+                            primaryActionLabel = stringResource(Res.string.sharing_members_invite),
+                            onPrimaryAction = screenModel::openInviteChooser,
                             testTag = HouseholdMembersTestTags.SOLO_EMPTY_STATE,
                         )
                     }
@@ -441,6 +413,49 @@ fun HouseholdMembersScreen(
         }
     }
 
+    if (uiState.showInviteChooserDialog) {
+        AlertDialog(
+            onDismissRequest = screenModel::dismissInviteChooser,
+            modifier = Modifier.testTag(HouseholdMembersTestTags.INVITE_CHOOSER),
+            title = { Text(stringResource(Res.string.sharing_members_invite_chooser_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    JourneyPrimaryButton(
+                        onClick = screenModel::openAddPersonDialog,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag(HouseholdMembersTestTags.INVITE_BY_EMAIL_OPTION),
+                    ) {
+                        Text(stringResource(Res.string.sharing_members_invite_by_email))
+                    }
+                    Text(
+                        text = stringResource(Res.string.sharing_members_invite_by_email_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = JourneySemanticColors.inkMuted(),
+                    )
+                    JourneySecondaryButton(
+                        onClick = screenModel::openAddDependantDialog,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag(HouseholdMembersTestTags.INVITE_ADD_DEPENDENT_OPTION),
+                    ) {
+                        Text(stringResource(Res.string.sharing_members_invite_add_dependent))
+                    }
+                    Text(
+                        text = stringResource(Res.string.sharing_members_dependent_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = JourneySemanticColors.inkMuted(),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = screenModel::dismissInviteChooser) {
+                    Text(stringResource(Res.string.sharing_members_cancel))
+                }
+            },
+        )
+    }
+
     if (uiState.showAddPersonDialog) {
         AlertDialog(
             onDismissRequest = screenModel::dismissDialogs,
@@ -464,25 +479,11 @@ fun HouseholdMembersScreen(
                         )
                     }
                     Text(stringResource(Res.string.sharing_members_select_role))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilterChip(
-                            selected = uiState.selectedRole == HouseholdMemberRole.Editor,
-                            onClick = { screenModel.onRoleChange(HouseholdMemberRole.Editor) },
-                            label = { Text(stringResource(Res.string.sharing_members_role_editor)) },
-                        )
-                        FilterChip(
-                            selected = uiState.selectedRole == HouseholdMemberRole.Viewer,
-                            onClick = { screenModel.onRoleChange(HouseholdMemberRole.Viewer) },
-                            label = { Text(stringResource(Res.string.sharing_members_role_viewer)) },
-                        )
-                        if (uiState.currentUserRole?.canAssignAdminRole() == true) {
-                            FilterChip(
-                                selected = uiState.selectedRole == HouseholdMemberRole.Admin,
-                                onClick = { screenModel.onRoleChange(HouseholdMemberRole.Admin) },
-                                label = { Text(stringResource(Res.string.sharing_members_role_admin)) },
-                            )
-                        }
-                    }
+                    HouseholdRoleSelector(
+                        selectedRole = uiState.selectedRole,
+                        onRoleSelected = screenModel::onRoleChange,
+                        showAdminOption = uiState.currentUserRole?.canAssignAdminRole() == true,
+                    )
                 }
             },
             confirmButton = {
@@ -605,25 +606,11 @@ fun HouseholdMembersScreen(
                         )
                     }
                     Text(stringResource(Res.string.sharing_members_select_role))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilterChip(
-                            selected = uiState.selectedMemberRole == HouseholdMemberRole.Editor,
-                            onClick = { screenModel.onMemberRoleChange(HouseholdMemberRole.Editor) },
-                            label = { Text(stringResource(Res.string.sharing_members_role_editor)) },
-                        )
-                        FilterChip(
-                            selected = uiState.selectedMemberRole == HouseholdMemberRole.Viewer,
-                            onClick = { screenModel.onMemberRoleChange(HouseholdMemberRole.Viewer) },
-                            label = { Text(stringResource(Res.string.sharing_members_role_viewer)) },
-                        )
-                        if (uiState.currentUserRole?.canAssignAdminRole() == true) {
-                            FilterChip(
-                                selected = uiState.selectedMemberRole == HouseholdMemberRole.Admin,
-                                onClick = { screenModel.onMemberRoleChange(HouseholdMemberRole.Admin) },
-                                label = { Text(stringResource(Res.string.sharing_members_role_admin)) },
-                            )
-                        }
-                    }
+                    HouseholdRoleSelector(
+                        selectedRole = uiState.selectedMemberRole,
+                        onRoleSelected = screenModel::onMemberRoleChange,
+                        showAdminOption = uiState.currentUserRole?.canAssignAdminRole() == true,
+                    )
                     if (dialogErrorMessage != null) {
                         Text(
                             text = dialogErrorMessage,
@@ -781,15 +768,6 @@ private fun MemberRow(
     onRemove: () -> Unit,
     onChangeRole: () -> Unit,
 ) {
-    val roleLabel = when (member.kind) {
-        HouseholdMemberKind.Dependant -> stringResource(Res.string.sharing_members_kind_dependent)
-        else -> when (member.role) {
-            HouseholdMemberRole.Owner -> stringResource(Res.string.sharing_members_role_owner)
-            HouseholdMemberRole.Admin -> stringResource(Res.string.sharing_members_role_admin)
-            HouseholdMemberRole.Editor -> stringResource(Res.string.sharing_members_role_editor)
-            HouseholdMemberRole.Viewer -> stringResource(Res.string.sharing_members_role_viewer)
-        }
-    }
     val canChangeRole = canManage &&
         member.role != HouseholdMemberRole.Owner &&
         actorRole?.canChangeRoleOf(member.role) == true
@@ -798,14 +776,6 @@ private fun MemberRow(
         actorRole?.canRemoveMember(member.role) == true
     val showOverflow = canChangeRole || canRemove
     var menuExpanded by remember { mutableStateOf(false) }
-    val roleChipColor = when (member.role) {
-        HouseholdMemberRole.Owner -> JourneySemanticColors.brandTerracotta().copy(alpha = 0.18f)
-        else -> JourneySemanticColors.brandTealContainer()
-    }
-    val roleTextColor = when (member.role) {
-        HouseholdMemberRole.Owner -> JourneySemanticColors.brandTerracotta()
-        else -> JourneySemanticColors.inkSecondary()
-    }
 
     FamilyLogisticsCardSurface(
         modifier = Modifier
@@ -829,18 +799,10 @@ private fun MemberRow(
                     fontWeight = FontWeight.SemiBold,
                     color = JourneySemanticColors.inkDeep(),
                 )
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = roleChipColor,
-                ) {
-                    Text(
-                        text = roleLabel,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = roleTextColor,
-                        fontWeight = FontWeight.Medium,
-                    )
-                }
+                HouseholdRoleBadge(
+                    role = member.role,
+                    kind = member.kind,
+                )
             }
             if (showOverflow) {
                 JourneyIconButton(
@@ -894,12 +856,7 @@ private fun PendingInviteRow(
     shareActionLabel: String,
     onShare: (() -> Unit)?,
 ) {
-    val roleLabel = when (invite.role) {
-        HouseholdMemberRole.Owner -> stringResource(Res.string.sharing_members_role_owner)
-        HouseholdMemberRole.Admin -> stringResource(Res.string.sharing_members_role_admin)
-        HouseholdMemberRole.Editor -> stringResource(Res.string.sharing_members_role_editor)
-        HouseholdMemberRole.Viewer -> stringResource(Res.string.sharing_members_role_viewer)
-    }
+    val roleLabel = householdRoleLabel(role = invite.role)
     var menuExpanded by remember { mutableStateOf(false) }
 
     FamilyLogisticsCardSurface(
@@ -923,6 +880,7 @@ private fun PendingInviteRow(
                     style = MaterialTheme.typography.bodyLarge,
                     color = JourneySemanticColors.inkDeep(),
                 )
+                HouseholdRoleBadge(role = invite.role)
                 Text(
                     text = stringResource(Res.string.sharing_members_pending_invite_label, roleLabel),
                     style = MaterialTheme.typography.bodySmall,

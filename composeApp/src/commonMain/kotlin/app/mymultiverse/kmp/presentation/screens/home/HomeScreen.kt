@@ -52,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
+import app.mymultiverse.kmp.presentation.components.GlobalLanguageAction
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.PendingInvitesCard
 import app.mymultiverse.kmp.presentation.theme.AppIcons
@@ -451,6 +452,7 @@ private fun HomeTopBar(
         title = { },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         actions = {
+            GlobalLanguageAction()
             onOpenSettings?.let { openSettings ->
                 UserAvatarButton(
                     initials = avatarInitials ?: "?",
