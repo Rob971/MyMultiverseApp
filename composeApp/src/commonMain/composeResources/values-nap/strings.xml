@@ -101,6 +101,9 @@
     <string name="nutrition_today">Oggi</string>
     <string name="nutrition_delete_item">Lèva articolo</string>
     <string name="nutrition_grocery_section_to_buy">Pe' comprà</string>
+    <string name="nutrition_grocery_section_update_list">Aggiorna 'a lista</string>
+    <string name="nutrition_grocery_update_list_hint">Trascina pe' mettere 'n ordene. Striscia a dritta pe' spuntà, a manca pe' levà.</string>
+    <string name="nutrition_grocery_drag_handle">Trascina pe' riordinà</string>
     <string name="nutrition_grocery_section_completed">Spuntate</string>
     <string name="nutrition_grocery_section_completed_count">Spuntate (%1$d)</string>
     <string name="nutrition_grocery_expand_completed">Ardesia 'e spuntate</string>

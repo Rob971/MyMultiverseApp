@@ -879,46 +879,16 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun grocery_buildFromMealsChip_opensGroceryAiSheet() {
-        val weekKey = WeekCalendar.currentWeekKey()
-        val dayIndex = WeekCalendar.todayIndexInWeek(weekKey) ?: 0
-        val screenModel = nutritionScreenModel(
-            weekKey = weekKey,
-            plannedLunch = dayIndex to "Pasta primavera",
-        )
-        val sheetVisible = mutableStateOf(false)
-        val launchContext = mutableStateOf(AiHelperLaunchContext(mode = NutritionAiMode.GroceryList))
+    fun grocery_updateListSection_showsAfterWeekSelector() {
+        val screenModel = nutritionScreenModel()
 
         composeRule.setContent {
             AppTheme {
-                Box {
-                    GroceryShoppingScreen(
-                        onBack = {},
-                        onOpenAiSheet = { context ->
-                            launchContext.value = context
-                            sheetVisible.value = true
-                        },
-                        screenModel = screenModel,
-                    )
-                    AiHelperSheet(
-                        visible = sheetVisible.value,
-                        launchContext = launchContext.value,
-                        onDismiss = { sheetVisible.value = false },
-                        onApplied = { sheetVisible.value = false },
-                        screenModel = screenModel,
-                    )
-                }
+                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
             }
         }
 
-        composeRule.waitForState(screenModel.mealPlan) { plan ->
-            plan.days.any { day -> day.lunch.isNotBlank() || day.dinner.isNotBlank() }
-        }
-        composeRule.onNodeWithTag(GroceryListTestTags.SCROLL_LIST)
-            .performScrollToNode(hasTestTag(GroceryListTestTags.BUILD_FROM_MEALS))
-        composeRule.onNodeWithTag(GroceryListTestTags.BUILD_FROM_MEALS).performClick()
-        composeRule.onNodeWithTag(AiHelperSheetTestTags.SHEET).assertIsDisplayed()
-        composeRule.onNodeWithTag(NutritionAiTestTags.MODE_GROCERY).assertDoesNotExist()
+        composeRule.onNodeWithTag(GroceryListTestTags.UPDATE_LIST_SECTION).assertIsDisplayed()
     }
 
     @Test

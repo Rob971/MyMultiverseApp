@@ -95,9 +95,7 @@ fun NutritionFlow(
             GroceryShoppingScreen(
                 onBack = onBack,
                 embeddedInTabs = embeddedInTabs,
-                onOpenAiSheet = ::openAiSheet,
             )
-            AiHelperSheetHost()
         }
 
         NutritionSection.MealPlan -> {

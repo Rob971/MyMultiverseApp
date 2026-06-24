@@ -2,8 +2,10 @@ package app.mymultiverse.kmp.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -24,10 +26,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
@@ -46,6 +50,7 @@ object GroceryItemRowTestTags {
     const val EDIT_FIELD_PREFIX = "grocery_edit_"
     const val EDIT_BUTTON_PREFIX = "grocery_edit_btn_"
     const val SAVE_BUTTON_PREFIX = "grocery_save_btn_"
+    const val DRAG_HANDLE_PREFIX = "grocery_drag_handle_"
     const val SWIPE_CHECK_HINT = "grocery_swipe_check_hint"
     const val SWIPE_DELETE_HINT = "grocery_swipe_delete_hint"
 }
@@ -68,6 +73,9 @@ fun GroceryItemRow(
     onDelete: () -> Unit,
     readOnly: Boolean = false,
     showDivider: Boolean = true,
+    enableReorder: Boolean = false,
+    dragHandleContentDescription: String = "",
+    onReorderStep: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     if (readOnly) {
@@ -85,6 +93,9 @@ fun GroceryItemRow(
             onToggle = {},
             readOnly = true,
             showDivider = showDivider,
+            enableReorder = false,
+            dragHandleContentDescription = dragHandleContentDescription,
+            onReorderStep = {},
             modifier = modifier
                 .fillMaxWidth()
                 .testTag("${GroceryItemRowTestTags.ROW_PREFIX}${item.id}"),
@@ -164,6 +175,9 @@ fun GroceryItemRow(
             onToggle = onToggle,
             readOnly = false,
             showDivider = showDivider,
+            enableReorder = enableReorder && !item.isChecked,
+            dragHandleContentDescription = dragHandleContentDescription,
+            onReorderStep = onReorderStep,
         )
     }
 }
@@ -183,6 +197,9 @@ private fun GroceryFlatRowContent(
     onToggle: () -> Unit,
     readOnly: Boolean,
     showDivider: Boolean,
+    enableReorder: Boolean,
+    dragHandleContentDescription: String,
+    onReorderStep: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var editText by remember(item.id, isEditing) {
@@ -191,6 +208,9 @@ private fun GroceryFlatRowContent(
     val performHaptic = rememberJourneyHapticFeedback()
     val fontScale = maxOf(1f, LocalDensity.current.fontScale)
     val rowMinHeight = (56 * fontScale).dp
+    val density = LocalDensity.current
+    val reorderThresholdPx = remember(density) { with(density) { 48.dp.toPx() } }
+    var accumulatedDrag by remember(item.id) { mutableFloatStateOf(0f) }
 
     Box(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -208,6 +228,41 @@ private fun GroceryFlatRowContent(
             verticalAlignment = if (isEditing) Alignment.Top else Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            if (enableReorder && !isEditing) {
+                Box(
+                    modifier = Modifier
+                        .size(FamilyLogisticsDesign.minTouchTarget)
+                        .testTag("${GroceryItemRowTestTags.DRAG_HANDLE_PREFIX}${item.id}")
+                        .pointerInput(item.id) {
+                            detectVerticalDragGestures(
+                                onDragStart = { accumulatedDrag = 0f },
+                                onDragEnd = { accumulatedDrag = 0f },
+                                onDragCancel = { accumulatedDrag = 0f },
+                                onVerticalDrag = { _, dragAmount ->
+                                    accumulatedDrag += dragAmount
+                                    while (accumulatedDrag >= reorderThresholdPx) {
+                                        performHaptic(JourneyHapticFeedback.LightClick)
+                                        onReorderStep(1)
+                                        accumulatedDrag -= reorderThresholdPx
+                                    }
+                                    while (accumulatedDrag <= -reorderThresholdPx) {
+                                        performHaptic(JourneyHapticFeedback.LightClick)
+                                        onReorderStep(-1)
+                                        accumulatedDrag += reorderThresholdPx
+                                    }
+                                },
+                            )
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = AppIcons.DragHandle,
+                        contentDescription = dragHandleContentDescription,
+                        tint = JourneySemanticColors.inkMuted(),
+                    )
+                }
+            }
+
             JourneyIconButton(
                 onClick = {
                     performHaptic(JourneyHapticFeedback.LightClick)

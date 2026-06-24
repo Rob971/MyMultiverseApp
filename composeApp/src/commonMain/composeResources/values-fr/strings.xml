@@ -101,6 +101,9 @@
     <string name="nutrition_today">Aujourd'hui</string>
     <string name="nutrition_delete_item">Supprimer l'article</string>
     <string name="nutrition_grocery_section_to_buy">À acheter</string>
+    <string name="nutrition_grocery_section_update_list">Mettre à jour la liste</string>
+    <string name="nutrition_grocery_update_list_hint">Glissez pour réordonner. Balayez à droite pour cocher, à gauche pour supprimer.</string>
+    <string name="nutrition_grocery_drag_handle">Glisser pour réordonner</string>
     <string name="nutrition_grocery_section_completed">Cochés</string>
     <string name="nutrition_grocery_section_completed_count">Cochés (%1$d)</string>
     <string name="nutrition_grocery_expand_completed">Afficher les cochés</string>

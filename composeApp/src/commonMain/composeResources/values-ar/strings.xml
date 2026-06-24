@@ -101,6 +101,9 @@
     <string name="nutrition_today">اليوم</string>
     <string name="nutrition_delete_item">إزالة العنصر</string>
     <string name="nutrition_grocery_section_to_buy">للشراء</string>
+    <string name="nutrition_grocery_section_update_list">تحديث القائمة</string>
+    <string name="nutrition_grocery_update_list_hint">اسحب لإعادة الترتيب. مرّر لليمين للتحديد، ولليسار للإزالة.</string>
+    <string name="nutrition_grocery_drag_handle">اسحب لإعادة الترتيب</string>
     <string name="nutrition_grocery_section_completed">تم الشراء</string>
     <string name="nutrition_grocery_section_completed_count">تم الشراء (%1$d)</string>
     <string name="nutrition_grocery_expand_completed">إظهار المشتريات</string>

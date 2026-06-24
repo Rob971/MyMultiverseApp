@@ -2,6 +2,7 @@ package app.mymultiverse.kmp.presentation.screens.nutrition
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,15 +30,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_criteria_from_meals
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_none
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_summary
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_suggestions_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_next
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_previous
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_delete_item
@@ -46,18 +41,14 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_coll
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_collaboration_grocery_batch
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_collaboration_grocery_checked
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_add_hint
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_build_from_meals
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_cancel_edit
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_clear_checked
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_clear_checked_undo
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_description
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_drag_handle
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_duplicate
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_ghost_pairing_action
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_ghost_pairing_dismiss
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_ghost_pairing_title
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_pantry_check_adopt_remaining
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_pantry_check_subtitle
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_pantry_check_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_edit_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_edit_item
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_empty
@@ -71,7 +62,8 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_groc
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_progress
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_save_edit
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_section_completed_count
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_section_to_buy
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_section_update_list
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_update_list_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_toggle_item
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_undo_action
@@ -82,19 +74,12 @@ import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.nutrition.GroceryGhostPairing
 import app.mymultiverse.kmp.domain.nutrition.NutritionCollaborationActivityKind
 import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
-import app.mymultiverse.kmp.domain.nutrition.MealPlanPresentation
-import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
-import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionsSection
-import app.mymultiverse.kmp.presentation.components.PantryCheckSection
-import app.mymultiverse.kmp.presentation.components.AiInlineTriggerButton
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
 import app.mymultiverse.kmp.presentation.components.JourneyIconButton
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.kmp.presentation.components.WeekSelectorBanner
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
-import app.mymultiverse.kmp.presentation.components.GroceryDashboardCard
-import app.mymultiverse.kmp.presentation.components.GroceryDashboardCard
 import app.mymultiverse.kmp.presentation.components.GroceryGhostPairingBanner
 import app.mymultiverse.kmp.presentation.components.GroceryInputBar
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
@@ -107,7 +92,6 @@ import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -120,7 +104,7 @@ object GroceryListTestTags {
     const val EMPTY_STATE = "grocery_empty_state"
     const val COMPLETED_SECTION_HEADER = "grocery_completed_section_header"
     const val SHOPPING_HIDE_CHECKED_TOGGLE = "grocery_shopping_hide_checked_toggle"
-    const val BUILD_FROM_MEALS = "grocery_build_from_meals"
+    const val UPDATE_LIST_SECTION = "grocery_update_list_section"
     const val KEEP_SCREEN_ON_TOGGLE = "grocery_keep_screen_on_toggle"
 }
 
@@ -129,13 +113,9 @@ object GroceryListTestTags {
 fun GroceryShoppingScreen(
     onBack: () -> Unit,
     embeddedInTabs: Boolean = false,
-    onOpenAiSheet: ((AiHelperLaunchContext) -> Unit)? = null,
     screenModel: NutritionScreenModel = koinInject(),
 ) {
     val items by screenModel.groceryItems.collectAsState()
-    val mealPlan by screenModel.mealPlan.collectAsState()
-    val aiGroceryItems by screenModel.aiGroceryItems.collectAsState()
-    val adoptAllResult by screenModel.adoptAllGroceryResult.collectAsState()
     val collaborationSnackbar by screenModel.collaborationSnackbar.collectAsState()
     val ghostPairingOffer by screenModel.ghostPairingOffer.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
@@ -160,20 +140,12 @@ fun GroceryShoppingScreen(
     )
     val previousWeekLabel = stringResource(Res.string.nutrition_week_previous)
     val nextWeekLabel = stringResource(Res.string.nutrition_week_next)
-    val aiSuggestionsTitle = stringResource(Res.string.nutrition_ai_grocery_suggestions_title)
-    val adoptAllLabel = stringResource(Res.string.nutrition_ai_adopt_all_grocery)
-    val pantryCheckTitle = stringResource(Res.string.nutrition_pantry_check_title)
-    val pantryCheckSubtitle = stringResource(Res.string.nutrition_pantry_check_subtitle)
-    val pantryAdoptRemainingLabel = stringResource(Res.string.nutrition_pantry_check_adopt_remaining)
-    val shoppingAiItems = remember(aiGroceryItems) { aiGroceryItems.filterNot { it.isPantryCheck } }
-    val pantryCheckItems = remember(aiGroceryItems) { aiGroceryItems.filter { it.isPantryCheck } }
     val sections = remember(items) { GroceryListPresentation.partition(items) }
     val displaySections = remember(sections, hideCheckedItems) {
         GroceryListPresentation.forShoppingDisplay(sections, hideCheckedItems)
     }
     val checkedCount = sections.completed.size
     val totalCount = items.size
-    val accentColor = SharedJourneyColors.SageSoft
 
     KeepScreenOn(enabled = keepScreenOn)
 
@@ -190,7 +162,20 @@ fun GroceryShoppingScreen(
     val cancelEditLabel = stringResource(Res.string.nutrition_grocery_cancel_edit)
     val toggleContentDescription = stringResource(Res.string.nutrition_grocery_toggle_item)
     val deleteContentDescription = stringResource(Res.string.nutrition_delete_item)
-    val sectionToBuy = stringResource(Res.string.nutrition_grocery_section_to_buy)
+    val dragHandleContentDescription = stringResource(Res.string.nutrition_grocery_drag_handle)
+    val updateListTitle = stringResource(Res.string.nutrition_grocery_section_update_list)
+    val updateListHint = stringResource(Res.string.nutrition_grocery_update_list_hint)
+    val updateListProgress = if (totalCount > 0) {
+        stringResource(Res.string.nutrition_grocery_progress, checkedCount, totalCount)
+    } else {
+        ""
+    }
+    val updateListEmptySubtitle = stringResource(Res.string.nutrition_grocery_empty)
+    val updateListSubtitle = if (totalCount > 0) {
+        "$updateListHint · $updateListProgress"
+    } else {
+        updateListEmptySubtitle
+    }
     val sectionCompletedCount = stringResource(
         Res.string.nutrition_grocery_section_completed_count,
         sections.completed.size,
@@ -202,25 +187,7 @@ fun GroceryShoppingScreen(
         sections.completed.size,
     )
     val clearCheckedMessage = stringResource(Res.string.nutrition_grocery_clear_checked_undo)
-    val adoptAllNoneMessage = stringResource(Res.string.nutrition_ai_adopt_all_grocery_none)
     val collaborationActorUnknown = stringResource(Res.string.nutrition_collaboration_actor_unknown)
-    val adoptAllSummaryMessage = adoptAllResult?.let { count ->
-        if (count == 0) {
-            adoptAllNoneMessage
-        } else {
-            stringResource(Res.string.nutrition_ai_adopt_all_grocery_summary, count)
-        }
-    }
-    val mealsCriteriaSeed = remember(mealPlan.days) {
-        MealPlanPresentation.groceryAiCriteriaSeed(mealPlan.days)
-    }
-    val buildFromMealsLabel = stringResource(Res.string.nutrition_grocery_build_from_meals)
-    val buildFromMealsCriteria = if (mealsCriteriaSeed.isNotBlank()) {
-        stringResource(Res.string.nutrition_ai_criteria_from_meals, mealsCriteriaSeed)
-    } else {
-        ""
-    }
-    val showBuildFromMealsChip = canWrite && mealsCriteriaSeed.isNotBlank() && onOpenAiSheet != null
 
     val collaborationSnackbarMessage = collaborationSnackbar?.let { event ->
         val actor = event.actorName.ifBlank { collaborationActorUnknown }
@@ -241,12 +208,6 @@ fun GroceryShoppingScreen(
                 event.itemLabel,
             )
         }
-    }
-
-    LaunchedEffect(adoptAllSummaryMessage) {
-        val message = adoptAllSummaryMessage ?: return@LaunchedEffect
-        snackbarHostState.showSnackbar(message)
-        screenModel.consumeAdoptAllGroceryResult()
     }
 
     LaunchedEffect(collaborationSnackbarMessage) {
@@ -307,16 +268,16 @@ fun GroceryShoppingScreen(
         }
     }
 
-    LaunchedEffect(items, pendingScrollLabel, aiGroceryItems.size, canWrite) {
+    LaunchedEffect(items, pendingScrollLabel, canWrite) {
         val label = pendingScrollLabel ?: return@LaunchedEffect
         if (items.none { it.label.equals(label, ignoreCase = true) }) return@LaunchedEffect
 
         var index = 1
         if (!canWrite) index++
-        if (aiGroceryItems.isNotEmpty()) index += 2
+        index += 1
         val activeIndex = sections.active.indexOfFirst { it.label.equals(label, ignoreCase = true) }
         if (activeIndex < 0) return@LaunchedEffect
-        index += 1 + activeIndex
+        index += activeIndex
 
         listState.animateScrollToItem(index.coerceAtLeast(0))
         pendingScrollLabel = null
@@ -325,139 +286,152 @@ fun GroceryShoppingScreen(
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val isWideLayout = maxWidth >= ScreenLayout.expandedMinWidth
 
-    NutritionScaffold(
-        title = stringResource(Res.string.nutrition_grocery_title),
-        onBack = onBack,
-        showBackButton = !embeddedInTabs,
-        actions = {
-            JourneyIconButton(
-                onClick = { keepScreenOn = !keepScreenOn },
-                modifier = Modifier.testTag(GroceryListTestTags.KEEP_SCREEN_ON_TOGGLE),
-            ) {
-                Icon(
-                    imageVector = AppIcons.Lightbulb,
-                    contentDescription = if (keepScreenOn) keepScreenOffLabel else keepScreenOnLabel,
-                    tint = if (keepScreenOn) {
-                        JourneySemanticColors.brandTeal()
-                    } else {
-                        JourneySemanticColors.inkMuted()
-                    },
-                )
-            }
-        },
-        snackbarHost = {
-            JourneySnackbarHost(
-                hostState = snackbarHostState,
-                aboveBottomBar = canWrite && !isWideLayout,
-            )
-        },
-        bottomBar = {
-            if (canWrite && !isWideLayout) {
-                GroceryInputBar(
-                    value = newItemText,
-                    onValueChange = { newItemText = it },
-                    placeholder = addHint,
-                    addContentDescription = addHint,
-                    onSubmit = { submitNewItem() },
-                    accentColor = JourneySemanticColors.brandTeal(),
-                    requestFocus = refocusInput,
-                    onFocusRequested = { refocusInput = false },
-                    embeddedInMainTabs = embeddedInTabs,
-                )
-            }
-        },
-    ) { padding ->
-        val listModifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = ScreenLayout.horizontalPadding)
-            .testTag(GroceryListTestTags.SCROLL_LIST)
-
-        val groceryListContent: LazyListScope.() -> Unit = {
-            groceryShoppingListItems(
-                weekLabel = weekLabel,
-                previousWeekLabel = previousWeekLabel,
-                nextWeekLabel = nextWeekLabel,
-                weekOffset = weekOffset,
-                screenModel = screenModel,
-                accentColor = accentColor,
-                totalCount = totalCount,
-                checkedCount = checkedCount,
-                canWrite = canWrite,
-                aiGroceryItems = shoppingAiItems,
-                pantryCheckItems = pantryCheckItems,
-                pantryCheckTitle = pantryCheckTitle,
-                pantryCheckSubtitle = pantryCheckSubtitle,
-                pantryAdoptRemainingLabel = pantryAdoptRemainingLabel,
-                aiSuggestionsTitle = aiSuggestionsTitle,
-                adoptAllLabel = adoptAllLabel,
-                sections = displaySections,
-                rawSections = sections,
-                hideCheckedItems = hideCheckedItems,
-                onHideCheckedToggle = { hideCheckedItems = !hideCheckedItems },
-                hideCheckedLabel = hideCheckedLabel,
-                showCheckedLabel = showCheckedLabel,
-                items = items,
-                editingItemId = editingItemId,
-                editLabel = editLabel,
-                editContentDescription = editContentDescription,
-                saveContentDescription = saveContentDescription,
-                cancelEditLabel = cancelEditLabel,
-                toggleContentDescription = toggleContentDescription,
-                deleteContentDescription = deleteContentDescription,
-                sectionToBuy = sectionToBuy,
-                sectionCompletedCount = sectionCompletedCount,
-                clearCheckedLabel = clearCheckedLabel,
-                completedExpanded = completedExpanded,
-                onCompletedExpandToggle = {
-                    completedExpandUserSet = true
-                    completedExpanded = !completedExpanded
-                },
-                onAdoptAll = { screenModel.adoptAllAiGrocerySuggestions() },
-                onAdoptSuggestion = { suggestion ->
-                    screenModel.adoptAiGrocerySuggestion(suggestion.id)
-                    pendingScrollLabel = suggestion.label
-                },
-                onRefocusInput = { refocusInput = true },
-                onStartEdit = { editingItemId = it },
-                onCancelEdit = { if (editingItemId == it) editingItemId = null },
-                onSaveEdit = { id, label ->
-                    val saved = screenModel.updateGroceryItemLabel(id, label)
-                    if (!saved) showMessage(duplicateMessage)
-                    saved
-                },
-                onToggle = { screenModel.toggleGroceryItem(it) },
-                onDelete = { item, index -> deleteWithUndo(item, index) },
-                onClearChecked = { clearCheckedWithUndo() },
-                showBuildFromMealsChip = showBuildFromMealsChip,
-                buildFromMealsLabel = buildFromMealsLabel,
-                onBuildFromMeals = {
-                    onOpenAiSheet?.invoke(
-                        AiHelperLaunchContext(
-                            mode = NutritionAiMode.GroceryList,
-                            initialCriteria = buildFromMealsCriteria,
-                        ),
+        NutritionScaffold(
+            title = stringResource(Res.string.nutrition_grocery_title),
+            onBack = onBack,
+            showBackButton = !embeddedInTabs,
+            actions = {
+                JourneyIconButton(
+                    onClick = { keepScreenOn = !keepScreenOn },
+                    modifier = Modifier.testTag(GroceryListTestTags.KEEP_SCREEN_ON_TOGGLE),
+                ) {
+                    Icon(
+                        imageVector = AppIcons.Lightbulb,
+                        contentDescription = if (keepScreenOn) keepScreenOffLabel else keepScreenOnLabel,
+                        tint = if (keepScreenOn) {
+                            JourneySemanticColors.brandTeal()
+                        } else {
+                            JourneySemanticColors.inkMuted()
+                        },
                     )
-                },
-                ghostPairingOffer = ghostPairingOffer,
-                onAcceptGhostPairing = { labels ->
-                    screenModel.acceptGhostPairing(labels)
-                    pendingScrollLabel = labels.firstOrNull()
-                },
-                onDismissGhostPairing = screenModel::dismissGhostPairing,
-            )
-        }
+                }
+            },
+            snackbarHost = {
+                JourneySnackbarHost(
+                    hostState = snackbarHostState,
+                    aboveBottomBar = canWrite && !isWideLayout,
+                )
+            },
+            bottomBar = {
+                if (canWrite && !isWideLayout) {
+                    GroceryInputBar(
+                        value = newItemText,
+                        onValueChange = { newItemText = it },
+                        placeholder = addHint,
+                        addContentDescription = addHint,
+                        onSubmit = { submitNewItem() },
+                        accentColor = JourneySemanticColors.brandTeal(),
+                        requestFocus = refocusInput,
+                        onFocusRequested = { refocusInput = false },
+                        embeddedInMainTabs = embeddedInTabs,
+                    )
+                }
+            },
+        ) { padding ->
+            val listModifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = ScreenLayout.horizontalPadding)
+                .testTag(GroceryListTestTags.SCROLL_LIST)
 
-        if (isWideLayout && canWrite) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-            ) {
+            val groceryListContent: LazyListScope.() -> Unit = {
+                groceryShoppingListItems(
+                    weekLabel = weekLabel,
+                    previousWeekLabel = previousWeekLabel,
+                    nextWeekLabel = nextWeekLabel,
+                    weekOffset = weekOffset,
+                    screenModel = screenModel,
+                    canWrite = canWrite,
+                    updateListTitle = updateListTitle,
+                    updateListSubtitle = updateListSubtitle,
+                    sections = displaySections,
+                    rawSections = sections,
+                    hideCheckedItems = hideCheckedItems,
+                    onHideCheckedToggle = { hideCheckedItems = !hideCheckedItems },
+                    hideCheckedLabel = hideCheckedLabel,
+                    showCheckedLabel = showCheckedLabel,
+                    totalCount = totalCount,
+                    items = items,
+                    editingItemId = editingItemId,
+                    editLabel = editLabel,
+                    editContentDescription = editContentDescription,
+                    saveContentDescription = saveContentDescription,
+                    cancelEditLabel = cancelEditLabel,
+                    toggleContentDescription = toggleContentDescription,
+                    deleteContentDescription = deleteContentDescription,
+                    dragHandleContentDescription = dragHandleContentDescription,
+                    sectionCompletedCount = sectionCompletedCount,
+                    clearCheckedLabel = clearCheckedLabel,
+                    completedExpanded = completedExpanded,
+                    onCompletedExpandToggle = {
+                        completedExpandUserSet = true
+                        completedExpanded = !completedExpanded
+                    },
+                    onRefocusInput = { refocusInput = true },
+                    onStartEdit = { editingItemId = it },
+                    onCancelEdit = { if (editingItemId == it) editingItemId = null },
+                    onSaveEdit = { id, label ->
+                        val saved = screenModel.updateGroceryItemLabel(id, label)
+                        if (!saved) showMessage(duplicateMessage)
+                        saved
+                    },
+                    onToggle = { screenModel.toggleGroceryItem(it) },
+                    onDelete = { item, index -> deleteWithUndo(item, index) },
+                    onReorderStep = { itemId, direction ->
+                        screenModel.moveActiveGroceryItem(itemId, direction)
+                    },
+                    onClearChecked = { clearCheckedWithUndo() },
+                    ghostPairingOffer = ghostPairingOffer,
+                    onAcceptGhostPairing = { labels ->
+                        screenModel.acceptGhostPairing(labels)
+                        pendingScrollLabel = labels.firstOrNull()
+                    },
+                    onDismissGhostPairing = screenModel::dismissGhostPairing,
+                )
+            }
+
+            if (isWideLayout && canWrite) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                ) {
+                    PullToRefreshBox(
+                        isRefreshing = isRefreshing,
+                        onRefresh = screenModel::refresh,
+                        state = pullRefreshState,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        LazyColumn(
+                            modifier = listModifier,
+                            state = listState,
+                            contentPadding = screenListPadding(extraBottom = ScreenLayout.listItemSpacing),
+                            verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
+                            content = groceryListContent,
+                        )
+                    }
+                    GroceryInputBar(
+                        modifier = Modifier
+                            .width(ScreenLayout.expandedSidePanelWidth)
+                            .fillMaxHeight(),
+                        value = newItemText,
+                        onValueChange = { newItemText = it },
+                        placeholder = addHint,
+                        addContentDescription = addHint,
+                        onSubmit = { submitNewItem() },
+                        accentColor = JourneySemanticColors.brandTeal(),
+                        requestFocus = refocusInput,
+                        onFocusRequested = { refocusInput = false },
+                        embeddedInSidePanel = true,
+                    )
+                }
+            } else {
                 PullToRefreshBox(
                     isRefreshing = isRefreshing,
                     onRefresh = screenModel::refresh,
                     state = pullRefreshState,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
                 ) {
                     LazyColumn(
                         modifier = listModifier,
@@ -467,40 +441,8 @@ fun GroceryShoppingScreen(
                         content = groceryListContent,
                     )
                 }
-                GroceryInputBar(
-                    modifier = Modifier
-                        .width(ScreenLayout.expandedSidePanelWidth)
-                        .fillMaxHeight(),
-                    value = newItemText,
-                    onValueChange = { newItemText = it },
-                    placeholder = addHint,
-                    addContentDescription = addHint,
-                    onSubmit = { submitNewItem() },
-                    accentColor = JourneySemanticColors.brandTeal(),
-                    requestFocus = refocusInput,
-                    onFocusRequested = { refocusInput = false },
-                    embeddedInSidePanel = true,
-                )
-            }
-        } else {
-            PullToRefreshBox(
-                isRefreshing = isRefreshing,
-                onRefresh = screenModel::refresh,
-                state = pullRefreshState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-            ) {
-                LazyColumn(
-                    modifier = listModifier,
-                    state = listState,
-                    contentPadding = screenListPadding(extraBottom = ScreenLayout.listItemSpacing),
-                    verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
-                    content = groceryListContent,
-                )
             }
         }
-    }
     }
 }
 
@@ -510,23 +452,16 @@ private fun LazyListScope.groceryShoppingListItems(
     nextWeekLabel: String,
     weekOffset: Int,
     screenModel: NutritionScreenModel,
-    accentColor: Color,
-    totalCount: Int,
-    checkedCount: Int,
     canWrite: Boolean,
-    aiGroceryItems: List<GroceryItem>,
-    pantryCheckItems: List<GroceryItem>,
-    pantryCheckTitle: String,
-    pantryCheckSubtitle: String,
-    pantryAdoptRemainingLabel: String,
-    aiSuggestionsTitle: String,
-    adoptAllLabel: String,
+    updateListTitle: String,
+    updateListSubtitle: String,
     sections: GroceryListPresentation.Sections,
     rawSections: GroceryListPresentation.Sections,
     hideCheckedItems: Boolean,
     onHideCheckedToggle: () -> Unit,
     hideCheckedLabel: String,
     showCheckedLabel: String,
+    totalCount: Int,
     items: List<GroceryItem>,
     editingItemId: String?,
     editLabel: String,
@@ -535,23 +470,19 @@ private fun LazyListScope.groceryShoppingListItems(
     cancelEditLabel: String,
     toggleContentDescription: String,
     deleteContentDescription: String,
-    sectionToBuy: String,
+    dragHandleContentDescription: String,
     sectionCompletedCount: String,
     clearCheckedLabel: String,
     completedExpanded: Boolean,
     onCompletedExpandToggle: () -> Unit,
-    onAdoptAll: () -> Unit,
-    onAdoptSuggestion: (GroceryItem) -> Unit,
     onRefocusInput: () -> Unit,
     onStartEdit: (String) -> Unit,
     onCancelEdit: (String) -> Unit,
     onSaveEdit: (String, String) -> Boolean,
     onToggle: (String) -> Unit,
     onDelete: (GroceryItem, Int) -> Unit,
+    onReorderStep: (String, Int) -> Unit,
     onClearChecked: () -> Unit,
-    showBuildFromMealsChip: Boolean = false,
-    buildFromMealsLabel: String = "",
-    onBuildFromMeals: () -> Unit = {},
     ghostPairingOffer: GroceryGhostPairing.Offer? = null,
     onAcceptGhostPairing: (List<String>) -> Unit = {},
     onDismissGhostPairing: () -> Unit = {},
@@ -568,27 +499,25 @@ private fun LazyListScope.groceryShoppingListItems(
         )
     }
 
+    item(key = "update-list-header") {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            FamilyLogisticsSectionHeader(
+                title = updateListTitle,
+                titleModifier = Modifier.testTag(GroceryListTestTags.UPDATE_LIST_SECTION),
+            )
+            Text(
+                text = updateListSubtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = JourneySemanticColors.inkMuted(),
+                modifier = Modifier.padding(horizontal = 4.dp),
+            )
+        }
+    }
+
     if (!canWrite) {
         item(key = "viewer-notice") {
             HouseholdViewerReadOnlyNotice()
         }
-    }
-
-    item(key = "dashboard") {
-        GroceryDashboardCard(
-            description = stringResource(Res.string.nutrition_grocery_description),
-            progressLabel = if (totalCount > 0) {
-                stringResource(
-                    Res.string.nutrition_grocery_progress,
-                    checkedCount,
-                    totalCount,
-                )
-            } else {
-                stringResource(Res.string.nutrition_grocery_empty_title)
-            },
-            progress = if (totalCount == 0) 0f else checkedCount.toFloat() / totalCount,
-            accentColor = accentColor,
-        )
     }
 
     if (canWrite && ghostPairingOffer != null) {
@@ -609,16 +538,6 @@ private fun LazyListScope.groceryShoppingListItems(
         }
     }
 
-    if (showBuildFromMealsChip) {
-        item(key = "build-from-meals") {
-            AiInlineTriggerButton(
-                label = buildFromMealsLabel,
-                onClick = onBuildFromMeals,
-                testTag = GroceryListTestTags.BUILD_FROM_MEALS,
-            )
-        }
-    }
-
     if (rawSections.completed.isNotEmpty() && totalCount > 0) {
         item(key = "shopping-mode-toggle") {
             JourneyTertiaryButton(
@@ -629,34 +548,7 @@ private fun LazyListScope.groceryShoppingListItems(
         }
     }
 
-    if (pantryCheckItems.isNotEmpty()) {
-        item(key = "pantry-check") {
-            PantryCheckSection(
-                title = pantryCheckTitle,
-                subtitle = pantryCheckSubtitle,
-                items = pantryCheckItems,
-                onMarkHave = { item -> screenModel.dismissPantryCheckItem(item.id) },
-                adoptRemainingLabel = pantryAdoptRemainingLabel,
-                onAdoptRemaining = { screenModel.adoptRemainingPantryItems() },
-                enabled = canWrite,
-            )
-        }
-    }
-
-    if (aiGroceryItems.isNotEmpty()) {
-        item(key = "ai-suggestions") {
-            AiGrocerySuggestionsSection(
-                title = aiSuggestionsTitle,
-                items = aiGroceryItems,
-                adoptAllLabel = adoptAllLabel,
-                onAdoptAll = onAdoptAll,
-                onAdopt = onAdoptSuggestion,
-                enabled = canWrite,
-            )
-        }
-    }
-
-    if (totalCount == 0 && aiGroceryItems.isEmpty() && pantryCheckItems.isEmpty()) {
+    if (totalCount == 0) {
         item(key = "empty-state") {
             JourneyEmptyState(
                 title = stringResource(Res.string.nutrition_grocery_empty_title),
@@ -671,11 +563,8 @@ private fun LazyListScope.groceryShoppingListItems(
                 testTag = GroceryListTestTags.EMPTY_STATE,
             )
         }
-    } else if (totalCount > 0) {
+    } else {
         if (sections.active.isNotEmpty()) {
-            item(key = "section-to-buy") {
-                FamilyLogisticsSectionHeader(title = sectionToBuy)
-            }
             items(
                 items = sections.active,
                 key = { it.id },
@@ -692,6 +581,9 @@ private fun LazyListScope.groceryShoppingListItems(
                     cancelEditLabel = cancelEditLabel,
                     toggleContentDescription = toggleContentDescription,
                     deleteContentDescription = deleteContentDescription,
+                    dragHandleContentDescription = dragHandleContentDescription,
+                    enableReorder = canWrite && sections.active.size > 1,
+                    onReorderStep = { direction -> onReorderStep(item.id, direction) },
                     onStartEdit = { onStartEdit(item.id) },
                     onCancelEdit = { onCancelEdit(item.id) },
                     onSaveEdit = { label -> onSaveEdit(item.id, label) },
@@ -741,6 +633,9 @@ private fun LazyListScope.groceryShoppingListItems(
                         cancelEditLabel = cancelEditLabel,
                         toggleContentDescription = toggleContentDescription,
                         deleteContentDescription = deleteContentDescription,
+                        dragHandleContentDescription = dragHandleContentDescription,
+                        enableReorder = false,
+                        onReorderStep = {},
                         onStartEdit = { onStartEdit(item.id) },
                         onCancelEdit = { onCancelEdit(item.id) },
                         onSaveEdit = { label -> onSaveEdit(item.id, label) },
@@ -767,6 +662,9 @@ private fun GroceryListItem(
     cancelEditLabel: String,
     toggleContentDescription: String,
     deleteContentDescription: String,
+    dragHandleContentDescription: String,
+    enableReorder: Boolean,
+    onReorderStep: (Int) -> Unit,
     onStartEdit: () -> Unit,
     onCancelEdit: () -> Unit,
     onSaveEdit: (String) -> Boolean,
@@ -792,6 +690,9 @@ private fun GroceryListItem(
         onDelete = onDelete,
         readOnly = readOnly,
         showDivider = showDivider,
+        enableReorder = enableReorder,
+        dragHandleContentDescription = dragHandleContentDescription,
+        onReorderStep = onReorderStep,
         modifier = modifier,
     )
 }

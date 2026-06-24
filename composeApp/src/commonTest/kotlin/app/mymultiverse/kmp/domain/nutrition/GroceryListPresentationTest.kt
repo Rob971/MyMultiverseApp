@@ -52,4 +52,30 @@ class GroceryListPresentationTest {
         assertEquals(emptyList(), hidden.completed)
         assertEquals(1, shown.completed.size)
     }
+
+    @Test
+    fun moveActiveItem_reordersUncheckedItemsOnly() {
+        val items = listOf(
+            GroceryItem("1", "Milk", isChecked = false),
+            GroceryItem("2", "Bread", isChecked = false),
+            GroceryItem("3", "Eggs", isChecked = true),
+        )
+
+        val movedDown = GroceryListPresentation.moveActiveItem(items, "1", direction = 1)
+        assertEquals(listOf("Bread", "Milk", "Eggs"), movedDown.map { it.label })
+
+        val movedUp = GroceryListPresentation.moveActiveItem(movedDown, "1", direction = -1)
+        assertEquals(listOf("Milk", "Bread", "Eggs"), movedUp.map { it.label })
+    }
+
+    @Test
+    fun moveActiveItem_ignoresCheckedItems() {
+        val items = listOf(
+            GroceryItem("1", "Milk", isChecked = true),
+            GroceryItem("2", "Bread", isChecked = false),
+        )
+
+        val result = GroceryListPresentation.moveActiveItem(items, "1", direction = 1)
+        assertEquals(items, result)
+    }
 }

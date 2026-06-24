@@ -101,6 +101,9 @@
     <string name="nutrition_today">Today</string>
     <string name="nutrition_delete_item">Remove item</string>
     <string name="nutrition_grocery_section_to_buy">To buy</string>
+    <string name="nutrition_grocery_section_update_list">Update list</string>
+    <string name="nutrition_grocery_update_list_hint">Drag to reorder. Swipe right to check off, left to remove.</string>
+    <string name="nutrition_grocery_drag_handle">Drag to reorder</string>
     <string name="nutrition_grocery_section_completed">Checked off</string>
     <string name="nutrition_grocery_section_completed_count">Checked off (%1$d)</string>
     <string name="nutrition_grocery_expand_completed">Show checked off items</string>

@@ -101,6 +101,9 @@
     <string name="nutrition_today">Heute</string>
     <string name="nutrition_delete_item">Artikel entfernen</string>
     <string name="nutrition_grocery_section_to_buy">Zu kaufen</string>
+    <string name="nutrition_grocery_section_update_list">Liste aktualisieren</string>
+    <string name="nutrition_grocery_update_list_hint">Ziehen zum Sortieren. Nach rechts wischen zum Abhaken, nach links zum Entfernen.</string>
+    <string name="nutrition_grocery_drag_handle">Zum Sortieren ziehen</string>
     <string name="nutrition_grocery_section_completed">Erledigt</string>
     <string name="nutrition_grocery_section_completed_count">Erledigt (%1$d)</string>
     <string name="nutrition_grocery_expand_completed">Erledigte anzeigen</string>

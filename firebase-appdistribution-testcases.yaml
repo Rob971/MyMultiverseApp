@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 53
+version: 54
 updated: 2026-06-24
 
 summary: |
@@ -41,6 +41,7 @@ summary: |
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
   Contextual AI chips E4-11 (v52): Plan empty state and AI helper sheet prepend Use up {ingredient} chips from unchecked grocery + meal history (fallback to protein/budget/veggies when no signals).
+  Grocery simplification (v54): Groceries tab focuses on Update list (week selector → list CRUD); removed build-from-meals chip, pantry check, and AI suggestion sections from grocery screen; drag handle reorders active items; swipe gestures unchanged.
 
 testcases:
   - id: auth-sign-in
@@ -508,15 +509,14 @@ testcases:
       - Apply fills the empty slot; sheet dismisses; meal text appears in the slot.
 
   - id: ai-grocery-build-from-meals-chip
-    title: Build grocery list from this week's meals chip
+    title: Build grocery list from planned meals (meal plan AI)
     steps:
       - Sign in with write access; add at least one lunch or dinner on the Plan tab.
-      - Open the Groceries tab with an empty or partial list.
-      - Tap Build list from this week's meals (terracotta chip below the dashboard).
-      - Generate and adopt suggestions in the AI helper sheet.
+      - Use meal-level Add to grocery list or AI helper sheet in grocery mode from Plan.
+      - Open Groceries tab and confirm adopted items appear under Update list.
     expected:
-      - AI helper sheet opens in grocery mode with criteria seeded from planned meals.
-      - Adopted items appear on the editable grocery list (separate from read-only AI cards).
+      - Grocery items generated from meals appear on the editable grocery list.
+      - Groceries tab no longer shows a build-from-meals chip (simplified layout).
 
   - id: ai-suggestion-chips-terracotta
     title: Terracotta AI suggestion chips (not teal)
@@ -612,31 +612,36 @@ testcases:
       - Keyboard does not cover the input when typing.
 
   - id: grocery-crud
-    title: Add, check off, edit, and delete grocery items
+    title: Add, check off, edit, reorder, and delete grocery items
     steps:
+      - Open Groceries tab; confirm Update list section appears directly under Week starting.
       - Add two items (e.g. Milk, Bread).
       - Try adding a duplicate item with different casing or spacing.
+      - Drag the handle on an active row to reorder items.
       - Tap checkbox on one item to mark it checked.
       - Use Clear checked and tap Undo from the snackbar.
       - Edit an item label inline.
-      - Swipe-delete an item and use Undo if shown.
+      - Swipe right to check an item; swipe left to delete and use Undo if shown.
     expected:
+      - Update list subtitle explains drag and swipe gestures.
       - Duplicate entry scrolls to the existing row with no error snackbar; list still has one row.
-      - Items appear under To buy / Checked off as appropriate.
+      - Reorder persists after leaving and returning to the screen.
+      - Checked items move to Checked off section.
       - Clear checked removes completed items and Undo restores them in order.
       - Changes persist after leaving and returning to the screen.
       - Second household member sees the same grocery list after sync.
 
   - id: grocery-ai-suggestion-chips
-    title: AI grocery suggestion chips on grocery screen
+    title: AI grocery suggestion chips on meal plan screen
     steps:
       - Generate AI grocery items from a meal on Weekly meal plan (see meal-plan-meal-grocery).
-      - Open the Grocery shopping screen.
+      - Open the Plan tab and scroll to the AI grocery suggestions section.
       - Tap one or more suggestion chips (e.g. + Salt, + Olive oil).
+      - Open Groceries tab and confirm adopted items appear in Update list.
     expected:
-      - Horizontal AI suggestion chips appear below the dashboard header.
-      - Tapping a chip adds the item to "To buy" and removes the chip without a snackbar.
-      - Rapid taps on multiple chips all apply smoothly.
+      - Terracotta AI suggestion chips appear on the meal plan screen (not on Groceries).
+      - Tapping a chip adds the item to the shared grocery list.
+      - Adopted items show under Update list on the Groceries tab.
 
   - id: grocery-completed-collapse
     title: Collapse checked-off grocery items

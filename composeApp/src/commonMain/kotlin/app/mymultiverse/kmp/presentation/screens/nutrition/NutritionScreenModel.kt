@@ -359,6 +359,17 @@ class NutritionScreenModel(
         }
     }
 
+    fun moveActiveGroceryItem(itemId: String, direction: Int) {
+        if (!canWriteHouseholdData.value || direction == 0) return
+        scope.launch {
+            val current = groceryItems.value
+            val updated = GroceryListPresentation.moveActiveItem(current, itemId, direction)
+            if (updated != current) {
+                repository.saveGroceryItems(updated)
+            }
+        }
+    }
+
     fun updateMeal(dayIndex: Int, lunch: String? = null, dinner: String? = null) {
         if (!canWriteHouseholdData.value) return
         if (dayIndex !in 0 until WeeklyMealPlan.DAYS_IN_WEEK) return

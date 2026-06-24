@@ -101,6 +101,9 @@
     <string name="nutrition_today">Oggi</string>
     <string name="nutrition_delete_item">Rimuovi articolo</string>
     <string name="nutrition_grocery_section_to_buy">Da comprare</string>
+    <string name="nutrition_grocery_section_update_list">Aggiorna lista</string>
+    <string name="nutrition_grocery_update_list_hint">Trascina per riordinare. Scorri a destra per spuntare, a sinistra per rimuovere.</string>
+    <string name="nutrition_grocery_drag_handle">Trascina per riordinare</string>
     <string name="nutrition_grocery_section_completed">Spuntati</string>
     <string name="nutrition_grocery_section_completed_count">Spuntati (%1$d)</string>
     <string name="nutrition_grocery_expand_completed">Mostra spuntati</string>

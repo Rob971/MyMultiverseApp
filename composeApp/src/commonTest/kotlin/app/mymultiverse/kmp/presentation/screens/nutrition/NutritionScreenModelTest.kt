@@ -200,6 +200,23 @@ class NutritionScreenModelTest {
     }
 
     @Test
+    fun moveActiveGroceryItem_reordersActiveItems() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.grocery.value = listOf(
+            GroceryItem("1", "Milk", false),
+            GroceryItem("2", "Bread", false),
+            GroceryItem("3", "Eggs", true),
+        )
+        val model = nutritionScreenModel(repository, scope = modelScope)
+        advanceUntilIdle()
+
+        model.moveActiveGroceryItem("1", direction = 1)
+        advanceUntilIdle()
+
+        assertEquals(listOf("Bread", "Milk", "Eggs"), repository.grocery.value.map { it.label })
+    }
+
+    @Test
     fun updateMeal_updatesLunchAndDinnerForDay() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val model = nutritionScreenModel(repository, scope = modelScope)

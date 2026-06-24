@@ -40,4 +40,18 @@ object GroceryListPresentation {
             item.id != excludingId && item.label.trim().lowercase() == normalized
         }
     }
+
+    /** Moves an unchecked item up (-1) or down (+1) among active items; completed order is preserved. */
+    fun moveActiveItem(items: List<GroceryItem>, itemId: String, direction: Int): List<GroceryItem> {
+        if (direction == 0) return items
+        val sections = partition(items)
+        val active = sections.active.toMutableList()
+        val fromIndex = active.indexOfFirst { it.id == itemId }
+        if (fromIndex < 0) return items
+        val toIndex = (fromIndex + direction).coerceIn(0, active.lastIndex)
+        if (fromIndex == toIndex) return items
+        val item = active.removeAt(fromIndex)
+        active.add(toIndex, item)
+        return active + sections.completed
+    }
 }
