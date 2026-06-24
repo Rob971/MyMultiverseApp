@@ -49,7 +49,7 @@ echo "==> invite fallback page"
 INVITE_BODY="$(mktemp)"
 INVITE_STATUS="$(curl -sS -L -o "${INVITE_BODY}" -w '%{http_code}' "${BASE}/invite?token=ci-smoke-test")"
 [[ "${INVITE_STATUS}" == "200" ]] || fail "/invite returned ${INVITE_STATUS}"
-grep -qi 'MyMultiverse' "${INVITE_BODY}" || fail "/invite missing landing copy"
+grep -qi 'Ammò' "${INVITE_BODY}" || fail "/invite missing landing copy"
 rm -f "${INVITE_BODY}"
 echo "OK"
 

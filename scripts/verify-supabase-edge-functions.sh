@@ -48,7 +48,7 @@ fi
 rm -f "${NOTIFY_BODY}"
 echo "OK: notify-household-invite reachable"
 
-echo "==> Probing invite-open landing page (expect 200 HTML with Open MyMultiverse)"
+echo "==> Probing invite-open landing page (expect 200 HTML with Open Ammò)"
 OPEN_BODY="$(mktemp)"
 OPEN_STATUS="$(curl -s -o "${OPEN_BODY}" -w '%{http_code}' \
   "${FUNCTIONS_URL}/invite-open?token=ci-smoke-test-token")"
@@ -60,7 +60,7 @@ if [[ "${OPEN_STATUS}" != "200" ]]; then
   exit 1
 fi
 
-if ! grep -q "Open MyMultiverse" "${OPEN_BODY}"; then
+if ! grep -q "Open Ammò" "${OPEN_BODY}"; then
   echo "ERROR: invite-open response missing landing page copy" >&2
   cat "${OPEN_BODY}" >&2
   rm -f "${OPEN_BODY}"
