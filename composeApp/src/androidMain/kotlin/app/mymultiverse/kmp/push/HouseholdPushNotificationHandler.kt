@@ -85,8 +85,8 @@ object HouseholdPushNotificationHandler {
 
     private fun defaultBody(data: Map<String, String>): String? =
         when (data[InvitePushPayload.KEY_TYPE]) {
-            InvitePushPayload.TYPE_HOUSEHOLD_INVITE -> "Open MyMultiverse to accept"
-            InvitePushPayload.TYPE_MEMBER_JOINED -> "Open MyMultiverse to see your household"
+            InvitePushPayload.TYPE_HOUSEHOLD_INVITE -> "Open Ammò to accept"
+            InvitePushPayload.TYPE_MEMBER_JOINED -> "Open Ammò to see your household"
             else -> null
         }
 

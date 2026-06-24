@@ -750,7 +750,8 @@
     <string name="longterm_opt_budget_tight">Stretto / Autofinanziato (tutto fai da te)</string>
     <string name="longterm_opt_budget_moderate">Moderato (un po' fai da te, professionisti pe' 'e cose grosse)</string>
     <string name="longterm_opt_budget_full">Servizio completo (vulimmo assumere professionisti)</string>
-    <string name="auth_title">Benvenuto in MyMultiverse</string>
+    <string name="app_brand_name">Ammò</string>
+    <string name="auth_title">Benvenuto n'Ammò</string>
     <string name="auth_subtitle">Planifica pasti e spesa cu 'a famiglia toja.</string>
     <string name="onboarding_auth_invite_banner">T'ann' invitato a trasì a %1$s</string>
     <string name="household_setup_default_name">Famiglia 'e %1$s</string>
@@ -836,7 +837,7 @@
     <string name="sharing_members_invite_sent">Invito mandato a %1$s. Pònno accettà dopo 'o accesso.</string>
     <string name="sharing_members_invite_share_title">Condividere 'o invito</string>
     <string name="sharing_members_invite_share_action">Condividere</string>
-    <string name="sharing_members_invite_share_message">Si' invitato a unìte a %1$s ncopp'a MyMultiverse! Arè stu link pe' accettà: %2$s</string>
+    <string name="sharing_members_invite_share_message">Si' invitato a unìte a %1$s ncopp'a Ammò! Arè stu link pe' accettà: %2$s</string>
     <string name="sharing_members_member_added">Membro azzeccato â famiglia toja.</string>
     <string name="sharing_members_pending_invites_title">Inviti 'n attesa</string>
     <string name="sharing_members_pending_invite_label">'N attesa · %1$s</string>

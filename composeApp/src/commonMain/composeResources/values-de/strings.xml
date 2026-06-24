@@ -750,7 +750,8 @@
     <string name="longterm_opt_budget_tight">Knapp / Bootstrapping (Alles selbst machen)</string>
     <string name="longterm_opt_budget_moderate">Moderat (Etwas DIY, Profis für die großen Dinge)</string>
     <string name="longterm_opt_budget_full">Full Service (Wir möchten Dienstleister/Profis beauftragen)</string>
-    <string name="auth_title">Willkommen bei MyMultiverse</string>
+    <string name="app_brand_name">Ammò</string>
+    <string name="auth_title">Willkommen bei Ammò</string>
     <string name="auth_subtitle">Plant Mahlzeiten und Einkäufe gemeinsam mit eurer Familie.</string>
     <string name="onboarding_auth_invite_banner">Du wurdest eingeladen, %1$s beizutreten</string>
     <string name="household_setup_default_name">Haushalt von %1$s</string>
@@ -836,7 +837,7 @@
     <string name="sharing_members_invite_sent">Einladung an %1$s gesendet. Beitritt nach Anmeldung möglich.</string>
     <string name="sharing_members_invite_share_title">Einladung teilen</string>
     <string name="sharing_members_invite_share_action">Teilen</string>
-    <string name="sharing_members_invite_share_message">Du bist eingeladen, %1$s auf MyMultiverse beizutreten! Öffne diesen Link zum Annehmen: %2$s</string>
+    <string name="sharing_members_invite_share_message">Du bist eingeladen, %1$s auf Ammò beizutreten! Öffne diesen Link zum Annehmen: %2$s</string>
     <string name="sharing_members_member_added">Mitglied zu deiner Familie hinzugefügt.</string>
     <string name="sharing_members_pending_invites_title">Ausstehende Einladungen</string>
     <string name="sharing_members_pending_invite_label">Ausstehend · %1$s</string>

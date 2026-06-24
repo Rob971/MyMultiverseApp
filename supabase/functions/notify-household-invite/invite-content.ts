@@ -2,6 +2,8 @@ export const INVITE_DEEP_LINK_SCHEME = "app.mymultiverse.kmp";
 export const INVITE_DEEP_LINK_HOST = "invite";
 export const ANDROID_APP_PACKAGE = "app.mymultiverse.kmp";
 export const DEFAULT_INVITE_OPEN_PATH = "/functions/v1/invite-open";
+export const APP_BRAND_NAME = "Ammò";
+export const DEFAULT_INVITE_FROM_EMAIL = `Ammò <invites@mymultiverse.app>`;
 
 export type InviteEmailContent = {
   inviterName: string;
@@ -53,19 +55,19 @@ export function buildInviteOpenPageHtml(inviteDeepLink: string): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Open MyMultiverse</title>
+  <title>Open ${APP_BRAND_NAME}</title>
   <meta http-equiv="refresh" content="0;url=${deepLink}" />
 </head>
 <body style="margin:0;padding:32px 16px;background:#f6f1ea;font-family:Helvetica,Arial,sans-serif;color:#2c241c;text-align:center;">
   <div style="max-width:420px;margin:0 auto;background:#ffffff;border-radius:16px;padding:32px 24px;">
-    <p style="margin:0 0 8px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#c45c26;">MyMultiverse</p>
+    <p style="margin:0 0 8px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#c45c26;">${APP_BRAND_NAME}</p>
     <h1 style="margin:0 0 12px;font-size:24px;line-height:1.25;">Open your invitation</h1>
     <p style="margin:0 0 24px;font-size:16px;line-height:1.5;color:#5c5348;">
-      Continue in the MyMultiverse app to review and accept your household invite.
+      Continue in the ${APP_BRAND_NAME} app to review and accept your household invite.
     </p>
     <p style="margin:0 0 16px;">
       <a href="${deepLink}" style="display:inline-block;background:#1f6f78;color:#ffffff;text-decoration:none;font-size:16px;font-weight:600;padding:14px 28px;border-radius:999px;">
-        Open MyMultiverse
+        Open ${APP_BRAND_NAME}
       </a>
     </p>
     <p style="margin:0;font-size:14px;line-height:1.5;color:#8a8178;">
@@ -105,7 +107,7 @@ export function buildInviteEmailHtml(content: InviteEmailContent): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Join ${household} on MyMultiverse</title>
+  <title>Join ${household} on ${APP_BRAND_NAME}</title>
 </head>
 <body style="margin:0;padding:0;background:#f6f1ea;font-family:Helvetica,Arial,sans-serif;color:#2c241c;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f1ea;padding:32px 16px;">
@@ -114,7 +116,7 @@ export function buildInviteEmailHtml(content: InviteEmailContent): string {
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#ffffff;border-radius:16px;padding:32px 28px;">
           <tr>
             <td>
-              <p style="margin:0 0 8px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#c45c26;">MyMultiverse</p>
+              <p style="margin:0 0 8px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#c45c26;">${APP_BRAND_NAME}</p>
               <h1 style="margin:0 0 12px;font-size:28px;line-height:1.2;color:#2c241c;">Join ${household}</h1>
               <p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#5c5348;">
                 <strong>${inviter}</strong> invited you to share groceries, meal plans, and family logistics together.
@@ -143,7 +145,7 @@ export function buildInviteEmailHtml(content: InviteEmailContent): string {
 
 export function buildInviteEmailText(content: InviteEmailContent): string {
   return [
-    `Join ${content.householdName} on MyMultiverse`,
+    `Join ${content.householdName} on ${APP_BRAND_NAME}`,
     "",
     `${content.inviterName} invited you to share groceries, meal plans, and family logistics together.`,
     "",

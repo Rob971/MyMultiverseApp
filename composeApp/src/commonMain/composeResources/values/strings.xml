@@ -751,7 +751,8 @@
     <string name="longterm_opt_budget_tight">Tight / Bootstrapping (DIY all the way)</string>
     <string name="longterm_opt_budget_moderate">Moderate (Some DIY, hiring pros for the big stuff)</string>
     <string name="longterm_opt_budget_full">Full Service (We want to hire vendors/professionals)</string>
-    <string name="auth_title">Welcome to MyMultiverse</string>
+    <string name="app_brand_name">Ammò</string>
+    <string name="auth_title">Welcome to Ammò</string>
     <string name="auth_subtitle">Plan meals and groceries together with your family.</string>
     <string name="onboarding_auth_invite_banner">You're invited to join %1$s</string>
     <string name="household_setup_default_name">%1$s's Household</string>
@@ -837,7 +838,7 @@
     <string name="sharing_members_invite_sent">Invitation sent to %1$s. They can accept after signing in.</string>
     <string name="sharing_members_invite_share_title">Share invitation</string>
     <string name="sharing_members_invite_share_action">Share</string>
-    <string name="sharing_members_invite_share_message">You are invited to join %1$s on MyMultiverse! Open this link to accept: %2$s</string>
+    <string name="sharing_members_invite_share_message">You are invited to join %1$s on Ammò! Open this link to accept: %2$s</string>
     <string name="sharing_members_member_added">Member added to your family.</string>
     <string name="sharing_members_select_role">Access level</string>
     <string name="sharing_members_pending_invites_title">Pending invites</string>

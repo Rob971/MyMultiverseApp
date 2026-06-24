@@ -101,7 +101,7 @@ Deno.test("buildInviteEmailText includes HTTPS web link", () => {
 Deno.test("buildInviteOpenPageHtml redirects to custom scheme", () => {
   const html = buildInviteOpenPageHtml("app.mymultiverse.kmp://invite?token=secret-token");
   assertIncludes(html, "app.mymultiverse.kmp://invite?token=secret-token", "deep link");
-  assertIncludes(html, "Open MyMultiverse", "open button");
+  assertIncludes(html, "Open Ammò", "open button");
 });
 
 Deno.test("buildAndroidIntentLink targets app package", () => {

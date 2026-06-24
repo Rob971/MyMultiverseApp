@@ -56,6 +56,6 @@ class AppLogger(
         }
 
     private companion object {
-        const val ROOT_TAG = "MyMultiverse"
+        const val ROOT_TAG = "Ammò"
     }
 }

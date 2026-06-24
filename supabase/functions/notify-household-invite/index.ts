@@ -2,11 +2,13 @@ import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supa
 import { isDeliverableIosToken, sendIosInvitePush } from "./apns.ts";
 import { isDeliverableAndroidToken, sendAndroidInvitePush } from "./fcm.ts";
 import {
+  APP_BRAND_NAME,
   buildInviteDeepLink,
   buildInviteEmailHtml,
   buildInviteEmailSubject,
   buildInviteEmailText,
   buildInviteWebLink,
+  DEFAULT_INVITE_FROM_EMAIL,
   resolveInviteOpenLinkBase,
 } from "./invite-content.ts";
 import { buildInvitePushData, inviteTokenFromPayload } from "./invite-token.ts";
@@ -126,7 +128,7 @@ async function processHouseholdInvite(
   apnsUseSandbox: boolean,
 ): Promise<void> {
   const inviteeEmail = String(payload.invitee_email ?? "");
-  const householdName = String(payload.household_name ?? "MyMultiverse");
+  const householdName = String(payload.household_name ?? "your household");
   const inviterName = String(payload.inviter_name ?? "Someone");
   const inviteToken = await resolveInviteToken(admin, payload);
 
@@ -160,9 +162,9 @@ async function processHouseholdInvite(
             from: fromEmail,
             to: [inviteeEmail],
             subject: `${inviterName} invited you to ${householdName}`,
-            html: `<p>${inviterName} invited you to join <strong>${householdName}</strong> on MyMultiverse.</p><p>Open the app and sign in with <strong>${inviteeEmail}</strong> to accept.</p>`,
+            html: `<p>${inviterName} invited you to join <strong>${householdName}</strong> on ${APP_BRAND_NAME}.</p><p>Open the app and sign in with <strong>${inviteeEmail}</strong> to accept.</p>`,
             text: [
-              `${inviterName} invited you to join ${householdName} on MyMultiverse.`,
+              `${inviterName} invited you to join ${householdName} on ${APP_BRAND_NAME}.`,
               `Open the app and sign in with ${inviteeEmail} to accept.`,
             ].join("\n"),
           },
@@ -180,7 +182,7 @@ async function processHouseholdInvite(
   const inviteeUserId = payload.invitee_user_id as string | null | undefined;
   if (inviteeUserId) {
     const pushTitle = `${inviterName} invited you`;
-    const pushBody = `Join ${householdName} on MyMultiverse`;
+    const pushBody = `Join ${householdName} on ${APP_BRAND_NAME}`;
     const pushData = buildInvitePushData(payload, inviteToken);
     await sendPushToUserTokens(
       admin,
@@ -261,7 +263,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const resendApiKey = Deno.env.get("RESEND_API_KEY") ?? "";
-    const fromEmail = Deno.env.get("INVITE_FROM_EMAIL") ?? "invites@mymultiverse.app";
+    const fromEmail = Deno.env.get("INVITE_FROM_EMAIL") ?? DEFAULT_INVITE_FROM_EMAIL;
     const fcmServiceAccountJson = Deno.env.get("FCM_SERVICE_ACCOUNT_JSON") ?? "";
     const apnsKeyId = Deno.env.get("APNS_KEY_ID") ?? "";
     const apnsTeamId = Deno.env.get("APNS_TEAM_ID") ?? "";

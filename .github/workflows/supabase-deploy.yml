@@ -146,7 +146,7 @@ jobs:
             echo "WARN: RESEND_API_KEY not set — invite emails will be log-only until configured."
           fi
           if [ -z "$INVITE_FROM_EMAIL" ]; then
-            echo "INVITE_FROM_EMAIL not set; function default invites@mymultiverse.app will be used."
+            echo "INVITE_FROM_EMAIL not set; function default Ammò <invites@mymultiverse.app> will be used."
           fi
           if [ -z "$FCM_SERVICE_ACCOUNT_JSON" ]; then
             echo "WARN: FCM_SERVICE_ACCOUNT_JSON not set — Android push delivery will be skipped until configured."
@@ -166,7 +166,7 @@ jobs:
 
       - name: Set edge function secrets
         run: |
-          invite_from="${INVITE_FROM_EMAIL:-invites@mymultiverse.app}"
+          invite_from="${INVITE_FROM_EMAIL:-Ammò <invites@mymultiverse.app>}"
           invite_open_base="${INVITE_OPEN_LINK_BASE:-https://mymultiverse.app/invite}"
           apns_bundle="${APNS_BUNDLE_ID:-app.mymultiverse.kmp}"
           apns_sandbox="${APNS_USE_SANDBOX:-true}"

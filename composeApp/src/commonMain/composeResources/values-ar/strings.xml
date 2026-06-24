@@ -750,7 +750,8 @@
     <string name="longterm_opt_budget_tight">محدود / ذاتي التمويل (أعمال ذاتية بالكامل)</string>
     <string name="longterm_opt_budget_moderate">معتدل (بعض الأعمال الذاتية، محترفون للأعمال الكبيرة)</string>
     <string name="longterm_opt_budget_full">خدمة كاملة (نريد توظيف موردين/محترفين)</string>
-    <string name="auth_title">مرحبًا بك في MyMultiverse</string>
+    <string name="app_brand_name">Ammò</string>
+    <string name="auth_title">مرحبًا بك في Ammò</string>
     <string name="auth_subtitle">خطط للوجبات والبقالة مع عائلتك.</string>
     <string name="onboarding_auth_invite_banner">أُدعيت للانضمام إلى %1$s</string>
     <string name="household_setup_default_name">أسرة %1$s</string>
@@ -836,7 +837,7 @@
     <string name="sharing_members_invite_sent">تم إرسال الدعوة إلى %1$s. يمكنهم القبول بعد تسجيل الدخول.</string>
     <string name="sharing_members_invite_share_title">مشاركة الدعوة</string>
     <string name="sharing_members_invite_share_action">مشاركة</string>
-    <string name="sharing_members_invite_share_message">أنت مدعو للانضمام إلى %1$s على MyMultiverse! افتح هذا الرابط للقبول: %2$s</string>
+    <string name="sharing_members_invite_share_message">أنت مدعو للانضمام إلى %1$s على Ammò! افتح هذا الرابط للقبول: %2$s</string>
     <string name="sharing_members_member_added">تمت إضافة العضو إلى عائلتك.</string>
     <string name="sharing_members_pending_invites_title">دعوات قيد الانتظار</string>
     <string name="sharing_members_pending_invite_label">قيد الانتظار · %1$s</string>

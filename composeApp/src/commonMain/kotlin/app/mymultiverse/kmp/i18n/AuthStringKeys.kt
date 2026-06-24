@@ -2,6 +2,7 @@ package app.mymultiverse.kmp.i18n
 
 object AuthStringKeys {
     val all: Set<String> = setOf(
+        "app_brand_name",
         "auth_title",
         "auth_subtitle",
         "onboarding_auth_invite_banner",
