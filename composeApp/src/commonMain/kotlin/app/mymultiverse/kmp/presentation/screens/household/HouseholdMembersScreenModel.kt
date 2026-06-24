@@ -56,6 +56,7 @@ data class HouseholdMembersUiState(
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
     val showAddPersonDialog: Boolean = false,
+    val showInviteChooserDialog: Boolean = false,
     val emailInput: String = "",
     val selectedRole: HouseholdMemberRole = HouseholdMemberRole.Editor,
     val successMessageKey: HouseholdMembersSuccess? = null,
@@ -192,9 +193,24 @@ class HouseholdMembersScreenModel(
         }
     }
 
+    fun openInviteChooser() {
+        _uiState.update {
+            it.copy(
+                showInviteChooserDialog = true,
+                error = null,
+                dialogError = null,
+            )
+        }
+    }
+
+    fun dismissInviteChooser() {
+        _uiState.update { it.copy(showInviteChooserDialog = false) }
+    }
+
     fun openAddPersonDialog() {
         _uiState.update {
             it.copy(
+                showInviteChooserDialog = false,
                 showAddPersonDialog = true,
                 emailInput = "",
                 selectedRole = HouseholdMemberRole.Editor,
@@ -362,6 +378,7 @@ class HouseholdMembersScreenModel(
     fun openAddDependantDialog() {
         _uiState.update {
             it.copy(
+                showInviteChooserDialog = false,
                 showAddDependantDialog = true,
                 dependantNameInput = "",
                 dialogError = null,

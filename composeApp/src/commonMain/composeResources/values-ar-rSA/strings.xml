@@ -840,7 +840,7 @@
     <string name="sharing_members_member_added">تمت إضافة العضو إلى عائلتك.</string>
     <string name="sharing_members_pending_invites_title">دعوات قيد الانتظار</string>
     <string name="sharing_members_pending_invite_label">قيد الانتظار · %1$s</string>
-    <string name="sharing_members_read_only_hint">مالك العائلة فقط يمكنه دعوة الأعضاء أو إزالتهم.</string>
+    <string name="sharing_members_read_only_hint">مالك العائلة والمسؤولون فقط يمكنهم دعوة الأعضاء أو إزالتهم.</string>
     <string name="sharing_members_select_role">مستوى الوصول</string>
     <string name="sharing_members_leave">مغادرة العائلة</string>
     <string name="sharing_members_leave_confirm_title">مغادرة العائلة؟</string>
@@ -921,4 +921,12 @@
     <string name="sharing_members_promote_admin_confirm_title">تعيين مسؤول للعائلة؟</string>
     <string name="sharing_members_promote_admin_confirm_message">يمكن لـ %1$s دعوة الأشخاص وإدارة الأعضاء، لكن لا يمكنه نقل الملكية أو حذف المجموعة العائلية.</string>
     <string name="sharing_members_role_updated">تم تحديث الدور</string>
+    <string name="sharing_members_invite">دعوة</string>
+    <string name="sharing_members_invite_chooser_title">دعوة إلى عائلتك</string>
+    <string name="sharing_members_invite_by_email">دعوة عبر البريد</string>
+    <string name="sharing_members_invite_by_email_hint">يمكنهم القبول بعد تسجيل الدخول بهذا العنوان.</string>
+    <string name="sharing_members_invite_add_dependent">إضافة تابع (بدون حساب)</string>
+    <string name="sharing_members_role_admin_description">يمكنه دعوة الأشخاص وإدارة الأعضاء وتعديل القوائم والخطط المشتركة.</string>
+    <string name="sharing_members_role_editor_description">يمكنه تعديل قوائم البقالة وخطط الوجبات المشتركة.</string>
+    <string name="sharing_members_role_viewer_description">يمكنه عرض القوائم والخطط المشتركة فقط.</string>
 </resources>

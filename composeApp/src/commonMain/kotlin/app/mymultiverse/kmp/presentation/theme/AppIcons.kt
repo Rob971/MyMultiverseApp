@@ -862,4 +862,81 @@ object AppIcons {
             return _lightbulb!!
         }
     private var _lightbulb: ImageVector? = null
+
+    val Language: ImageVector
+        get() {
+            if (_language != null) return _language!!
+            _language = ImageVector.Builder(
+                name = "Filled.Language",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(11.99f, 2.0f)
+                    curveTo(6.47f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
+                    reflectiveCurveTo(6.47f, 22.0f, 11.99f, 22.0f)
+                    curveTo(17.52f, 22.0f, 22.0f, 17.52f, 22.0f, 12.0f)
+                    reflectiveCurveTo(17.52f, 2.0f, 11.99f, 2.0f)
+                    close()
+                    moveTo(18.92f, 8.0f)
+                    horizontalLineTo(15.97f)
+                    curveTo(15.65f, 6.75f, 15.19f, 5.55f, 14.59f, 4.44f)
+                    curveTo(16.43f, 5.07f, 17.96f, 6.34f, 18.92f, 8.0f)
+                    close()
+                    moveTo(12.0f, 4.04f)
+                    curveTo(12.83f, 5.24f, 13.48f, 6.57f, 13.91f, 8.0f)
+                    horizontalLineTo(10.09f)
+                    curveTo(10.52f, 6.57f, 11.17f, 5.24f, 12.0f, 4.04f)
+                    close()
+                    moveTo(4.26f, 14.0f)
+                    curveTo(4.1f, 13.36f, 4.0f, 12.69f, 4.0f, 12.0f)
+                    reflectiveCurveTo(4.1f, 10.64f, 4.26f, 10.0f)
+                    horizontalLineTo(7.64f)
+                    curveTo(7.56f, 10.66f, 7.5f, 11.32f, 7.5f, 12.0f)
+                    reflectiveCurveTo(7.56f, 13.34f, 7.64f, 14.0f)
+                    horizontalLineTo(4.26f)
+                    close()
+                    moveTo(5.08f, 16.0f)
+                    horizontalLineTo(8.03f)
+                    curveTo(8.35f, 17.25f, 8.81f, 18.45f, 9.41f, 19.56f)
+                    curveTo(7.57f, 18.93f, 6.04f, 17.66f, 5.08f, 16.0f)
+                    close()
+                    moveTo(8.03f, 8.0f)
+                    horizontalLineTo(5.08f)
+                    curveTo(6.04f, 6.34f, 7.57f, 5.07f, 9.41f, 4.44f)
+                    curveTo(8.81f, 5.55f, 8.35f, 6.75f, 8.03f, 8.0f)
+                    close()
+                    moveTo(12.0f, 19.96f)
+                    curveTo(11.17f, 18.76f, 10.52f, 17.43f, 10.09f, 16.0f)
+                    horizontalLineTo(13.91f)
+                    curveTo(13.48f, 17.43f, 12.83f, 18.76f, 12.0f, 19.96f)
+                    close()
+                    moveTo(14.34f, 14.0f)
+                    horizontalLineTo(9.66f)
+                    curveTo(9.57f, 13.34f, 9.5f, 12.68f, 9.5f, 12.0f)
+                    reflectiveCurveTo(9.57f, 10.65f, 9.66f, 10.0f)
+                    horizontalLineTo(14.34f)
+                    curveTo(14.43f, 10.65f, 14.5f, 11.32f, 14.5f, 12.0f)
+                    reflectiveCurveTo(14.43f, 13.34f, 14.34f, 14.0f)
+                    close()
+                    moveTo(14.59f, 19.56f)
+                    curveTo(15.19f, 18.45f, 15.65f, 17.25f, 15.97f, 16.0f)
+                    horizontalLineTo(18.92f)
+                    curveTo(17.96f, 17.66f, 16.43f, 18.93f, 14.59f, 19.56f)
+                    close()
+                    moveTo(16.36f, 14.0f)
+                    curveTo(16.44f, 13.34f, 16.5f, 12.68f, 16.5f, 12.0f)
+                    reflectiveCurveTo(16.44f, 10.66f, 16.36f, 10.0f)
+                    horizontalLineTo(19.74f)
+                    curveTo(19.9f, 10.64f, 20.0f, 11.31f, 20.0f, 12.0f)
+                    reflectiveCurveTo(19.9f, 13.36f, 19.74f, 14.0f)
+                    horizontalLineTo(16.36f)
+                    close()
+                }
+            }.build()
+            return _language!!
+        }
+    private var _language: ImageVector? = null
 }

@@ -165,12 +165,12 @@ class HouseholdMembersAdminInstrumentedTest {
         }
 
         composeRule.waitFor(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithText("Only the family owner can invite or remove members.")
+            composeRule.onAllNodesWithText("Only the family owner and admins can invite or remove members.")
                 .fetchSemanticsNodes().isNotEmpty()
         }
 
         assertTrue(
-            composeRule.onAllNodesWithTag(HouseholdMembersTestTags.ADD_PERSON_BUTTON)
+            composeRule.onAllNodesWithTag(HouseholdMembersTestTags.INVITE_BUTTON)
                 .fetchSemanticsNodes().isEmpty(),
         )
     }

@@ -1,7 +1,7 @@
 package app.mymultiverse.kmp.presentation.components
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawing
@@ -32,6 +32,7 @@ fun NutritionScaffold(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     showBackButton: Boolean = true,
+    showGlobalLanguageAction: Boolean = true,
     actions: @Composable RowScope.() -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
@@ -81,7 +82,12 @@ fun NutritionScaffold(
                         }
                     }
                 },
-                actions = actions,
+                actions = {
+                    if (showGlobalLanguageAction) {
+                        GlobalLanguageAction()
+                    }
+                    actions()
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
             )
         },

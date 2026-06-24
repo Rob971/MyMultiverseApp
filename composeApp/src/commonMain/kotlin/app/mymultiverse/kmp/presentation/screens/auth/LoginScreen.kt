@@ -11,9 +11,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import app.mymultiverse.kmp.presentation.components.GlobalLanguageAction
 import app.mymultiverse.kmp.presentation.components.JourneyTextField
 import app.mymultiverse.kmp.presentation.components.JourneyTextFieldDefaults
 import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
@@ -24,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -72,6 +77,7 @@ object LoginTestTags {
     const val BACK_TO_SSO = "login_back_to_sso"
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     showConfigMissing: Boolean,
@@ -112,7 +118,16 @@ fun LoginScreen(
         else -> null
     }
 
-    Scaffold(containerColor = androidx.compose.ui.graphics.Color.Transparent) { padding ->
+    Scaffold(
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+        topBar = {
+            TopAppBar(
+                title = { },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                actions = { GlobalLanguageAction() },
+            )
+        },
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -842,7 +842,7 @@
     <string name="sharing_members_select_role">Access level</string>
     <string name="sharing_members_pending_invites_title">Pending invites</string>
     <string name="sharing_members_pending_invite_label">Pending · %1$s</string>
-    <string name="sharing_members_read_only_hint">Only the family owner can invite or remove members.</string>
+    <string name="sharing_members_read_only_hint">Only the family owner and admins can invite or remove members.</string>
     <string name="sharing_members_leave">Leave family</string>
     <string name="sharing_members_leave_confirm_title">Leave family?</string>
     <string name="sharing_members_leave_confirm_message">You will lose access to shared lists and meal plans in %1$s.</string>
@@ -922,4 +922,12 @@
     <string name="sharing_members_promote_admin_confirm_title">Make family admin?</string>
     <string name="sharing_members_promote_admin_confirm_message">%1$s can invite people and manage members, but cannot transfer ownership or delete the family group.</string>
     <string name="sharing_members_role_updated">Role updated</string>
+    <string name="sharing_members_invite">Invite</string>
+    <string name="sharing_members_invite_chooser_title">Invite to your family</string>
+    <string name="sharing_members_invite_by_email">Invite by email</string>
+    <string name="sharing_members_invite_by_email_hint">They can accept after signing in with that address.</string>
+    <string name="sharing_members_invite_add_dependent">Add dependant (no login)</string>
+    <string name="sharing_members_role_admin_description">Can invite people, manage members, and edit shared lists and meal plans.</string>
+    <string name="sharing_members_role_editor_description">Can edit shared grocery lists and meal plans.</string>
+    <string name="sharing_members_role_viewer_description">Can view shared lists and meal plans only.</string>
 </resources>
