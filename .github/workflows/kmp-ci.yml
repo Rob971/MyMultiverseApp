@@ -438,19 +438,37 @@ jobs:
           echo "ANDROID_SHA256_FINGERPRINT=${FINGERPRINT}"
           echo "Use this value with scripts/generate-app-links-well-known.sh for Firebase tester builds."
 
+      - name: Validate Firebase service account secret
+        shell: bash
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [[ -z "${FIREBASE_SERVICE_ACCOUNT_JSON}" ]]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT_JSON is not set. Add the Firebase service account JSON in GitHub repo secrets."
+            exit 1
+          fi
+          printf '%s' "${FIREBASE_SERVICE_ACCOUNT_JSON}" | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for key in ('type', 'project_id', 'private_key', 'client_email'):
+              if key not in data:
+                  raise SystemExit(f'Missing key in service account JSON: {key}')
+          print(f'Firebase service account: {data[\"client_email\"]}')
+          "
+
+      - name: Authenticate to Google Cloud (Firebase)
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
       - name: Deploy App Links hosting
         continue-on-error: true
         env:
           ANDROID_SHA256_FINGERPRINT: ${{ steps.app_links_fingerprint.outputs.sha256 }}
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           FIREBASE_PROJECT_ID: ${{ env.FIREBASE_PROJECT_ID }}
           FIREBASE_TOOLS_VERSION: ${{ env.FIREBASE_TOOLS_VERSION }}
           SKIP_VERIFY: "1"
         run: |
-          if [[ -z "${FIREBASE_SERVICE_ACCOUNT_JSON}" ]]; then
-            echo "::notice::Skipping App Links hosting deploy (set FIREBASE_SERVICE_ACCOUNT_JSON)."
-            exit 0
-          fi
           chmod +x ./scripts/deploy-app-links-hosting.sh
           ./scripts/deploy-app-links-hosting.sh || {
             echo "::warning::App Links hosting deploy failed — connect mymultiverse.app to Firebase Hosting (DNS) then re-run the App Links hosting workflow."

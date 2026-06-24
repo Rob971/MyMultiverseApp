@@ -54,7 +54,7 @@ runs:
           firebase-tools-${{ inputs.firebase-tools-version }}-
           firebase-tools-
 
-    - name: Write Firebase service account
+    - name: Validate Firebase service account JSON
       shell: bash
       env:
         FIREBASE_SERVICE_ACCOUNT_JSON: ${{ inputs.firebase-service-account-json }}
@@ -63,13 +63,24 @@ runs:
           echo "FIREBASE_SERVICE_ACCOUNT_JSON secret is required for Firebase App Distribution."
           exit 1
         fi
-        printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
+        printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" | python3 -c "
+        import json, sys
+        data = json.load(sys.stdin)
+        for key in ('type', 'project_id', 'private_key', 'client_email'):
+            if key not in data:
+                raise SystemExit(f'Missing key in service account JSON: {key}')
+        print(f'Firebase service account: {data[\"client_email\"]}')
+        "
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ inputs.firebase-service-account-json }}
 
     - name: Distribute debug APK to Firebase App Distribution
       id: distribute
       shell: bash
       env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
         FIREBASE_TESTERS: ${{ inputs.firebase-testers }}
         FIREBASE_GROUPS: ${{ inputs.firebase-groups }}
       run: |
