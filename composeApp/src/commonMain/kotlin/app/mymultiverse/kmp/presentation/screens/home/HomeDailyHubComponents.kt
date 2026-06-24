@@ -48,10 +48,10 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_daily_mea
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_dashboard_plan_lunch
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_dashboard_shopping_list
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_grocery_empty_cta
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_hero_grocery_list
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_section_this_week
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_tonight_dinner_empty
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_tonight_dinner_title
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_update_list
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_progress
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_progress
@@ -301,7 +301,7 @@ private fun HomeTodayTimelineFeed(
 
         HomeTimelineRow(
             markerColor = colorScheme.secondary,
-            title = stringResource(Res.string.home_update_list),
+            title = stringResource(Res.string.home_hero_grocery_list),
             subtitle = grocerySubtitle,
             onClick = onOpenGrocery,
             rowTestTag = HomeTestTags.UPDATE_LIST_ROW,

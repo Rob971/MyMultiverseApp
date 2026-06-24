@@ -17,6 +17,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIconRole
+import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
@@ -207,6 +210,14 @@ fun NutritionFeatureHeader(
                         },
                     ),
             ) {
+                JourneyIcon(
+                    imageVector = AppIcons.Sparkles,
+                    role = AppIconRole.OnAccent,
+                    contentDescription = null,
+                    modifier = Modifier.size(FamilyLogisticsDesign.iconSize - 8.dp),
+                    useContentColor = true,
+                )
+                Spacer(Modifier.width(8.dp))
                 Text(planWithAiLabel)
             }
         }

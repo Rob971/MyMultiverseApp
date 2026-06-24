@@ -39,6 +39,7 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_coll
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_collaboration_grocery_added
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_collaboration_grocery_batch
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_collaboration_grocery_checked
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_add_button
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_add_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_cancel_edit
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_clear_checked
@@ -61,8 +62,7 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_groc
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_progress
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_save_edit
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_section_completed_count
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_section_update_list
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_update_list_hint
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_section_to_buy
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_toggle_item
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_undo_action
@@ -81,6 +81,7 @@ import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.kmp.presentation.components.WeekSelectorBanner
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.GroceryGhostPairingBanner
+import app.mymultiverse.kmp.presentation.components.GroceryInlineAddRow
 import app.mymultiverse.kmp.presentation.components.GroceryInputBar
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.kmp.presentation.components.GroceryItemRow
@@ -105,7 +106,10 @@ object GroceryListTestTags {
     const val EMPTY_STATE = "grocery_empty_state"
     const val COMPLETED_SECTION_HEADER = "grocery_completed_section_header"
     const val SHOPPING_HIDE_CHECKED_TOGGLE = "grocery_shopping_hide_checked_toggle"
-    const val UPDATE_LIST_SECTION = "grocery_update_list_section"
+    const val TO_BUY_SECTION = "grocery_to_buy_section"
+    const val SECTION_ADD_ACTION = "grocery_section_add_action"
+    /** @deprecated Use [TO_BUY_SECTION] */
+    const val UPDATE_LIST_SECTION = TO_BUY_SECTION
     const val KEEP_SCREEN_ON_TOGGLE = "grocery_keep_screen_on_toggle"
 }
 
@@ -126,6 +130,7 @@ fun GroceryShoppingScreen(
     var editingItemId by rememberSaveable { mutableStateOf<String?>(null) }
     var refocusInput by rememberSaveable { mutableStateOf(false) }
     var pendingScrollLabel by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingScrollToAdd by rememberSaveable { mutableStateOf(false) }
     var completedExpanded by rememberSaveable { mutableStateOf(false) }
     var completedExpandUserSet by rememberSaveable { mutableStateOf(false) }
     var hideCheckedItems by rememberSaveable { mutableStateOf(false) }
@@ -154,6 +159,7 @@ fun GroceryShoppingScreen(
     val keepScreenOffLabel = stringResource(Res.string.nutrition_grocery_keep_screen_off)
 
     val addHint = stringResource(Res.string.nutrition_grocery_add_hint)
+    val addButtonLabel = stringResource(Res.string.nutrition_grocery_add_button)
     val duplicateMessage = stringResource(Res.string.nutrition_grocery_duplicate)
     val undoLabel = stringResource(Res.string.nutrition_grocery_undo_action)
     val undoMessage = stringResource(Res.string.nutrition_grocery_undo_delete)
@@ -164,18 +170,11 @@ fun GroceryShoppingScreen(
     val toggleContentDescription = stringResource(Res.string.nutrition_grocery_toggle_item)
     val deleteContentDescription = stringResource(Res.string.nutrition_delete_item)
     val dragHandleContentDescription = stringResource(Res.string.nutrition_grocery_drag_handle)
-    val updateListTitle = stringResource(Res.string.nutrition_grocery_section_update_list)
-    val updateListHint = stringResource(Res.string.nutrition_grocery_update_list_hint)
-    val updateListProgress = if (totalCount > 0) {
+    val toBuySectionTitle = stringResource(Res.string.nutrition_grocery_section_to_buy)
+    val toBuySectionSubtitle = if (totalCount > 0) {
         stringResource(Res.string.nutrition_grocery_progress, checkedCount, totalCount)
     } else {
-        ""
-    }
-    val updateListEmptySubtitle = stringResource(Res.string.nutrition_grocery_empty)
-    val updateListSubtitle = if (totalCount > 0) {
-        "$updateListHint · $updateListProgress"
-    } else {
-        updateListEmptySubtitle
+        addHint
     }
     val sectionCompletedCount = stringResource(
         Res.string.nutrition_grocery_section_completed_count,
@@ -263,29 +262,50 @@ fun GroceryShoppingScreen(
         }
     }
 
+    fun scrollToAddAndFocus() {
+        pendingScrollToAdd = true
+    }
+
     LaunchedEffect(sections.completed.size) {
         if (!completedExpandUserSet) {
             completedExpanded = sections.completed.size <= 3
         }
     }
 
-    LaunchedEffect(items, pendingScrollLabel, canWrite) {
-        val label = pendingScrollLabel ?: return@LaunchedEffect
-        if (items.none { it.label.equals(label, ignoreCase = true) }) return@LaunchedEffect
-
-        var index = 1
-        if (!canWrite) index++
-        index += 1
-        val activeIndex = sections.active.indexOfFirst { it.label.equals(label, ignoreCase = true) }
-        if (activeIndex < 0) return@LaunchedEffect
-        index += activeIndex
-
-        listState.animateScrollToItem(index.coerceAtLeast(0))
-        pendingScrollLabel = null
-    }
-
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val isWideLayout = maxWidth >= ScreenLayout.expandedMinWidth
+        val showInlineAddRow = canWrite && !isWideLayout
+
+        LaunchedEffect(pendingScrollToAdd, showInlineAddRow) {
+            if (!pendingScrollToAdd) return@LaunchedEffect
+            if (showInlineAddRow) {
+                listState.animateScrollToItem(GROCERY_INLINE_ADD_ROW_INDEX)
+            }
+            refocusInput = true
+            pendingScrollToAdd = false
+        }
+
+        LaunchedEffect(items, pendingScrollLabel, canWrite, showInlineAddRow, ghostPairingOffer, totalCount) {
+            val label = pendingScrollLabel ?: return@LaunchedEffect
+            if (items.none { it.label.equals(label, ignoreCase = true) }) return@LaunchedEffect
+
+            val activeIndex = sections.active.indexOfFirst { it.label.equals(label, ignoreCase = true) }
+            if (activeIndex < 0) return@LaunchedEffect
+
+            val index = groceryActiveItemListIndex(
+                canWrite = canWrite,
+                showInlineAddRow = showInlineAddRow,
+                hasViewerNotice = !canWrite,
+                hasGhostPairing = canWrite && ghostPairingOffer != null,
+                hasShoppingModeToggle = sections.completed.isNotEmpty() && totalCount > 0,
+                hasEmptyState = totalCount == 0,
+                activeItemIndex = activeIndex,
+            )
+            if (index < 0) return@LaunchedEffect
+
+            listState.animateScrollToItem(index)
+            pendingScrollLabel = null
+        }
 
         NutritionScaffold(
             title = stringResource(Res.string.nutrition_grocery_title),
@@ -320,9 +340,10 @@ fun GroceryShoppingScreen(
                         onValueChange = { newItemText = it },
                         placeholder = addHint,
                         addContentDescription = addHint,
+                        addButtonLabel = addButtonLabel,
                         onSubmit = { submitNewItem() },
                         accentColor = JourneySemanticColors.brandTeal(),
-                        requestFocus = refocusInput,
+                        requestFocus = false,
                         onFocusRequested = { refocusInput = false },
                         embeddedInMainTabs = embeddedInTabs,
                     )
@@ -342,8 +363,16 @@ fun GroceryShoppingScreen(
                     weekOffset = weekOffset,
                     screenModel = screenModel,
                     canWrite = canWrite,
-                    updateListTitle = updateListTitle,
-                    updateListSubtitle = updateListSubtitle,
+                    showInlineAddRow = showInlineAddRow,
+                    toBuySectionTitle = toBuySectionTitle,
+                    toBuySectionSubtitle = toBuySectionSubtitle,
+                    addHint = addHint,
+                    addButtonLabel = addButtonLabel,
+                    newItemText = newItemText,
+                    onNewItemTextChange = { newItemText = it },
+                    onSubmitNewItem = { submitNewItem() },
+                    refocusInput = refocusInput,
+                    onFocusRequested = { refocusInput = false },
                     sections = displaySections,
                     rawSections = sections,
                     hideCheckedItems = hideCheckedItems,
@@ -367,7 +396,7 @@ fun GroceryShoppingScreen(
                         completedExpandUserSet = true
                         completedExpanded = !completedExpanded
                     },
-                    onRefocusInput = { refocusInput = true },
+                    onScrollToAddAndFocus = { scrollToAddAndFocus() },
                     onStartEdit = { editingItemId = it },
                     onCancelEdit = { if (editingItemId == it) editingItemId = null },
                     onSaveEdit = { id, label ->
@@ -418,6 +447,7 @@ fun GroceryShoppingScreen(
                         onValueChange = { newItemText = it },
                         placeholder = addHint,
                         addContentDescription = addHint,
+                        addButtonLabel = addButtonLabel,
                         onSubmit = { submitNewItem() },
                         accentColor = JourneySemanticColors.brandTeal(),
                         requestFocus = refocusInput,
@@ -447,6 +477,26 @@ fun GroceryShoppingScreen(
     }
 }
 
+private const val GROCERY_INLINE_ADD_ROW_INDEX = 2
+
+private fun groceryActiveItemListIndex(
+    canWrite: Boolean,
+    showInlineAddRow: Boolean,
+    hasViewerNotice: Boolean,
+    hasGhostPairing: Boolean,
+    hasShoppingModeToggle: Boolean,
+    hasEmptyState: Boolean,
+    activeItemIndex: Int,
+): Int {
+    if (hasEmptyState) return -1
+    var index = 1 // to-buy header after week selector (0)
+    if (showInlineAddRow) index++
+    if (hasViewerNotice) index++
+    if (hasGhostPairing) index++
+    if (hasShoppingModeToggle) index++
+    return index + activeItemIndex
+}
+
 private fun LazyListScope.groceryShoppingListItems(
     weekLabel: String,
     previousWeekLabel: String,
@@ -454,8 +504,16 @@ private fun LazyListScope.groceryShoppingListItems(
     weekOffset: Int,
     screenModel: NutritionScreenModel,
     canWrite: Boolean,
-    updateListTitle: String,
-    updateListSubtitle: String,
+    showInlineAddRow: Boolean,
+    toBuySectionTitle: String,
+    toBuySectionSubtitle: String,
+    addHint: String,
+    addButtonLabel: String,
+    newItemText: String,
+    onNewItemTextChange: (String) -> Unit,
+    onSubmitNewItem: () -> Unit,
+    refocusInput: Boolean,
+    onFocusRequested: () -> Unit,
     sections: GroceryListPresentation.Sections,
     rawSections: GroceryListPresentation.Sections,
     hideCheckedItems: Boolean,
@@ -476,7 +534,7 @@ private fun LazyListScope.groceryShoppingListItems(
     clearCheckedLabel: String,
     completedExpanded: Boolean,
     onCompletedExpandToggle: () -> Unit,
-    onRefocusInput: () -> Unit,
+    onScrollToAddAndFocus: () -> Unit,
     onStartEdit: (String) -> Unit,
     onCancelEdit: (String) -> Unit,
     onSaveEdit: (String, String) -> Boolean,
@@ -500,17 +558,35 @@ private fun LazyListScope.groceryShoppingListItems(
         )
     }
 
-    item(key = "update-list-header") {
+    item(key = "to-buy-header") {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             FamilyLogisticsSectionHeader(
-                title = updateListTitle,
-                titleModifier = Modifier.testTag(GroceryListTestTags.UPDATE_LIST_SECTION),
+                title = toBuySectionTitle,
+                titleModifier = Modifier.testTag(GroceryListTestTags.TO_BUY_SECTION),
+                actionLabel = if (showInlineAddRow) addButtonLabel else null,
+                actionModifier = Modifier.testTag(GroceryListTestTags.SECTION_ADD_ACTION),
+                onAction = if (showInlineAddRow) onScrollToAddAndFocus else null,
             )
             Text(
-                text = updateListSubtitle,
+                text = toBuySectionSubtitle,
                 style = MaterialTheme.typography.bodySmall,
                 color = JourneySemanticColors.inkMuted(),
                 modifier = Modifier.padding(horizontal = 4.dp),
+            )
+        }
+    }
+
+    if (showInlineAddRow) {
+        item(key = "inline-add-row") {
+            GroceryInlineAddRow(
+                value = newItemText,
+                onValueChange = onNewItemTextChange,
+                placeholder = addHint,
+                addButtonLabel = addButtonLabel,
+                onSubmit = onSubmitNewItem,
+                accentColor = JourneySemanticColors.brandTeal(),
+                requestFocus = refocusInput,
+                onFocusRequested = onFocusRequested,
             )
         }
     }
@@ -560,7 +636,9 @@ private fun LazyListScope.groceryShoppingListItems(
                 } else {
                     null
                 },
-                onPrimaryAction = if (canWrite) onRefocusInput else null,
+                onPrimaryAction = if (canWrite) onScrollToAddAndFocus else null,
+                primaryActionIcon = AppIcons.Add,
+                primaryActionIconRole = AppIconRole.OnAccent,
                 testTag = GroceryListTestTags.EMPTY_STATE,
             )
         }
@@ -597,12 +675,20 @@ private fun LazyListScope.groceryShoppingListItems(
             }
         } else {
             item(key = "empty-active") {
-                Text(
-                    text = stringResource(Res.string.nutrition_grocery_empty_active),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = JourneySemanticColors.inkMuted(),
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringResource(Res.string.nutrition_grocery_empty_active),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = JourneySemanticColors.inkMuted(),
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
+                    )
+                    if (canWrite) {
+                        JourneyTertiaryButton(
+                            onClick = onScrollToAddAndFocus,
+                            label = stringResource(Res.string.nutrition_grocery_empty_cta),
+                        )
+                    }
+                }
             }
         }
 

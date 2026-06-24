@@ -3,11 +3,12 @@ package app.mymultiverse.kmp.presentation.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
+import app.mymultiverse.kmp.presentation.theme.AppIcons
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_hero_family
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_hero_grocery_list
@@ -42,7 +43,12 @@ fun HomePrimaryActions(
                 .fillMaxWidth()
                 .testTag(HomePrimaryActionsTestTags.PLAN),
         ) {
-            Text(stringResource(Res.string.home_hero_plan_meals))
+            JourneyButtonLabel(
+                text = stringResource(Res.string.home_hero_plan_meals),
+                icon = AppIcons.MealPlan,
+                role = AppIconRole.OnAccent,
+                useContentColor = true,
+            )
         }
         JourneySecondaryButton(
             onClick = onOpenGrocery,
@@ -50,7 +56,12 @@ fun HomePrimaryActions(
                 .fillMaxWidth()
                 .testTag(HomePrimaryActionsTestTags.GROCERY),
         ) {
-            Text(stringResource(Res.string.home_hero_grocery_list))
+            JourneyButtonLabel(
+                text = stringResource(Res.string.home_hero_grocery_list),
+                icon = AppIcons.GroceryList,
+                role = AppIconRole.Primary,
+                useContentColor = true,
+            )
         }
         JourneySecondaryButton(
             onClick = onOpenFamily,
@@ -58,7 +69,12 @@ fun HomePrimaryActions(
                 .fillMaxWidth()
                 .testTag(HomePrimaryActionsTestTags.FAMILY),
         ) {
-            Text(stringResource(Res.string.home_hero_family))
+            JourneyButtonLabel(
+                text = stringResource(Res.string.home_hero_family),
+                icon = AppIcons.Household,
+                role = AppIconRole.Household,
+                useContentColor = true,
+            )
         }
     }
 }

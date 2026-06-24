@@ -6,7 +6,6 @@ import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.kmp.domain.nutrition.GroceryGhostPairing
 import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
-import app.mymultiverse.kmp.domain.nutrition.MealGroceryPartition
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.MealPlanPresentation
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
@@ -651,14 +650,29 @@ class NutritionScreenModel(
         return appendAiGroceryItems(labels, isPantryCheck = false)
     }
 
+    /**
+     * Meal-plan "Add to grocery list" writes directly to the editable list (all labels,
+     * including pantry staples). AI adviser grocery mode still uses [appendLabeledAiGroceryItems].
+     */
     private suspend fun appendMealGroceryLabels(labels: List<String>): Int {
         if (!canWriteHouseholdData.value) return 0
-        val partitioned = MealGroceryPartition.partition(labels)
-        val labeled = buildList {
-            partitioned.shopping.forEach { add(it to false) }
-            partitioned.pantryStaples.forEach { add(it to true) }
+        var grocery = groceryItems.value
+        val seenInBatch = mutableSetOf<String>()
+        val newItems = buildList {
+            labels.forEach { raw ->
+                val label = raw.trim()
+                val key = label.lowercase()
+                if (label.isEmpty() || key in seenInBatch) return@forEach
+                if (GroceryListPresentation.isDuplicateLabel(grocery, label)) return@forEach
+                seenInBatch += key
+                val item = GroceryItem(id = newId(), label = label)
+                add(item)
+                grocery = listOf(item) + grocery
+            }
         }
-        return appendLabeledAiGroceryItems(labeled)
+        if (newItems.isEmpty()) return 0
+        repository.saveGroceryItems(grocery)
+        return newItems.size
     }
 
     private suspend fun appendAiGroceryItems(labels: List<String>, isPantryCheck: Boolean): Int {

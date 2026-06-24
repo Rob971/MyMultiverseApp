@@ -38,6 +38,8 @@ enum class AppIconRole {
     MealSlot,
     ComingSoonExplore,
     ComingSoonBudget,
+    Household,
+    InviteMember,
     OnAccent,
 }
 
@@ -66,6 +68,8 @@ fun AppIconRole.imageVector(): ImageVector = when (this) {
     AppIconRole.MealSlot -> AppIcons.Restaurant
     AppIconRole.ComingSoonExplore -> AppIcons.Explore
     AppIconRole.ComingSoonBudget -> AppIcons.AccountBalance
+    AppIconRole.Household -> AppIcons.Household
+    AppIconRole.InviteMember -> AppIcons.PersonAdd
     AppIconRole.DragHandle -> AppIcons.DragHandle
     AppIconRole.FeatureAccent,
     AppIconRole.Muted,
@@ -99,7 +103,10 @@ fun AppIconRole.resolveTint(accentColor: Color? = null): Color = when (this) {
     AppIconRole.GroceryUnchecked,
     AppIconRole.ComingSoonExplore,
     AppIconRole.ComingSoonBudget,
+    AppIconRole.Household,
     -> JourneySemanticColors.inkMuted()
+
+    AppIconRole.InviteMember -> JourneySemanticColors.brandTeal()
 
     AppIconRole.ChromeChevronRight,
     AppIconRole.ChromeChevronLeft,

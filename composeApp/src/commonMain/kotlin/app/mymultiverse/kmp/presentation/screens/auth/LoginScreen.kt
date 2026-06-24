@@ -20,6 +20,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import app.mymultiverse.kmp.presentation.components.GlobalLanguageAction
 import app.mymultiverse.kmp.presentation.components.JourneyTextField
 import app.mymultiverse.kmp.presentation.components.JourneyTextFieldDefaults
+import app.mymultiverse.kmp.presentation.components.JourneyButtonLabel
 import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.kmp.presentation.components.JourneySecondaryButton
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
@@ -38,6 +39,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
+import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
@@ -256,14 +259,17 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .testTag(LoginTestTags.SUBMIT_BUTTON),
             ) {
-                Text(
-                    stringResource(
+                JourneyButtonLabel(
+                    text = stringResource(
                         if (uiState.isSignUpMode) {
                             Res.string.auth_sign_up_button
                         } else {
                             Res.string.auth_sign_in_button
                         },
                     ),
+                    icon = AppIcons.Person,
+                    role = AppIconRole.OnAccent,
+                    useContentColor = true,
                 )
             }
             JourneyTertiaryButton(

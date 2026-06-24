@@ -34,9 +34,13 @@ fun JourneyEmptyState(
     icon: ImageVector = AppIcons.Restaurant,
     primaryActionLabel: String? = null,
     onPrimaryAction: (() -> Unit)? = null,
+    primaryActionIcon: ImageVector? = null,
+    primaryActionIconRole: AppIconRole = AppIconRole.OnAccent,
     primaryActionTestTag: String = JourneyEmptyStateTestTags.PRIMARY_ACTION,
     secondaryActionLabel: String? = null,
     onSecondaryAction: (() -> Unit)? = null,
+    secondaryActionIcon: ImageVector? = null,
+    secondaryActionIconRole: AppIconRole = AppIconRole.Primary,
     secondaryActionTestTag: String = JourneyEmptyStateTestTags.SECONDARY_ACTION,
     testTag: String? = null,
     extraContent: @Composable (() -> Unit)? = null,
@@ -83,7 +87,12 @@ fun JourneyEmptyState(
                         .fillMaxWidth()
                         .testTag(primaryActionTestTag),
                 ) {
-                    Text(primaryActionLabel)
+                    JourneyButtonLabel(
+                        text = primaryActionLabel,
+                        icon = primaryActionIcon ?: icon,
+                        role = primaryActionIconRole,
+                        useContentColor = true,
+                    )
                 }
             }
             if (secondaryActionLabel != null && onSecondaryAction != null) {
@@ -93,7 +102,12 @@ fun JourneyEmptyState(
                         .fillMaxWidth()
                         .testTag(secondaryActionTestTag),
                 ) {
-                    Text(secondaryActionLabel)
+                    JourneyButtonLabel(
+                        text = secondaryActionLabel,
+                        icon = secondaryActionIcon,
+                        role = secondaryActionIconRole,
+                        useContentColor = true,
+                    )
                 }
             }
             extraContent?.invoke()

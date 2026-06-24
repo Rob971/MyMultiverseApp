@@ -2,7 +2,9 @@ package app.mymultiverse.kmp.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -13,9 +15,31 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
+
+@Composable
+fun RowScope.JourneyButtonLabel(
+    text: String,
+    icon: ImageVector? = null,
+    role: AppIconRole = AppIconRole.Primary,
+    useContentColor: Boolean = true,
+) {
+    if (icon != null) {
+        JourneyIcon(
+            imageVector = icon,
+            role = role,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            useContentColor = useContentColor,
+        )
+        Spacer(Modifier.width(8.dp))
+    }
+    Text(text)
+}
 
 @Composable
 fun JourneyPrimaryButton(

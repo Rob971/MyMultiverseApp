@@ -320,8 +320,8 @@ object AppIcons {
                 path {
                     moveTo(12.0f, 2.0f)
                     curveTo(6.48f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
-                    reflectiveCurveTo(4.48f, 10.0f, 10.0f, 10.0f)
-                    reflectiveCurveTo(10.0f, -4.48f, 10.0f, -10.0f)
+                    reflectiveCurveTo(6.48f, 22.0f, 12.0f, 22.0f)
+                    reflectiveCurveTo(22.0f, 17.52f, 22.0f, 12.0f)
                     reflectiveCurveTo(17.52f, 2.0f, 12.0f, 2.0f)
                     close()
                     moveTo(10.0f, 17.0f)
@@ -353,8 +353,8 @@ object AppIcons {
                 path {
                     moveTo(12.0f, 2.0f)
                     curveTo(6.48f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
-                    reflectiveCurveTo(4.48f, 10.0f, 10.0f, 10.0f)
-                    reflectiveCurveTo(10.0f, -4.48f, 10.0f, -10.0f)
+                    reflectiveCurveTo(6.48f, 22.0f, 12.0f, 22.0f)
+                    reflectiveCurveTo(22.0f, 17.52f, 22.0f, 12.0f)
                     reflectiveCurveTo(17.52f, 2.0f, 12.0f, 2.0f)
                     close()
                     moveTo(12.0f, 20.0f)
@@ -993,7 +993,7 @@ object AppIcons {
         }
     private var _dragHandle: ImageVector? = null
 
-    /** Weekly meal plan — calendar with a meal block (distinct from generic date range). */
+    /** Weekly meal plan — calendar with plate and utensils (distinct from generic date range). */
     val MealPlan: ImageVector
         get() {
             if (_mealPlan != null) return _mealPlan!!
@@ -1005,12 +1005,6 @@ object AppIcons {
                 viewportHeight = 24f,
             ).apply {
                 path {
-                    moveTo(17.0f, 12.0f)
-                    horizontalLineToRelative(-5.0f)
-                    verticalLineToRelative(5.0f)
-                    horizontalLineToRelative(5.0f)
-                    verticalLineToRelative(-5.0f)
-                    close()
                     moveTo(16.0f, 1.0f)
                     verticalLineToRelative(2.0f)
                     horizontalLineTo(8.0f)
@@ -1036,12 +1030,38 @@ object AppIcons {
                     verticalLineToRelative(11.0f)
                     close()
                 }
+                path {
+                    moveTo(10.5f, 12.5f)
+                    curveTo(9.67f, 12.5f, 9.0f, 13.17f, 9.0f, 14.0f)
+                    reflectiveCurveTo(9.67f, 15.5f, 10.5f, 15.5f)
+                    reflectiveCurveTo(12.0f, 14.83f, 12.0f, 14.0f)
+                    reflectiveCurveTo(11.33f, 12.5f, 10.5f, 12.5f)
+                    close()
+                    moveTo(13.5f, 11.0f)
+                    verticalLineToRelative(5.0f)
+                    horizontalLineToRelative(1.0f)
+                    verticalLineTo(11.0f)
+                    horizontalLineToRelative(-1.0f)
+                    close()
+                    moveTo(15.5f, 10.0f)
+                    verticalLineToRelative(6.0f)
+                    horizontalLineToRelative(1.0f)
+                    verticalLineTo(10.0f)
+                    horizontalLineToRelative(-1.0f)
+                    close()
+                    moveTo(17.5f, 11.0f)
+                    verticalLineToRelative(4.0f)
+                    horizontalLineToRelative(1.0f)
+                    verticalLineTo(11.0f)
+                    horizontalLineToRelative(-1.0f)
+                    close()
+                }
             }.build()
             return _mealPlan!!
         }
     private var _mealPlan: ImageVector? = null
 
-    /** Shared grocery checklist — distinct from cart / add-to-cart actions. */
+    /** Shared grocery checklist — clipboard with checked and pending rows. */
     val GroceryList: ImageVector
         get() {
             if (_groceryList != null) return _groceryList!!
@@ -1053,33 +1073,171 @@ object AppIcons {
                 viewportHeight = 24f,
             ).apply {
                 path {
-                    moveTo(9.0f, 16.17f)
-                    lineTo(4.83f, 12.0f)
-                    lineTo(3.41f, 13.41f)
-                    lineTo(9.0f, 19.0f)
-                    lineTo(21.0f, 7.0f)
-                    lineTo(19.59f, 5.59f)
-                    lineTo(9.0f, 16.17f)
+                    moveTo(8.0f, 2.0f)
+                    horizontalLineToRelative(2.0f)
+                    verticalLineToRelative(2.0f)
+                    horizontalLineTo(8.0f)
+                    verticalLineTo(2.0f)
                     close()
-                    moveTo(20.0f, 3.0f)
-                    horizontalLineTo(4.0f)
+                    moveTo(5.0f, 4.0f)
                     curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
                     verticalLineToRelative(14.0f)
                     curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f)
-                    horizontalLineToRelative(14.0f)
+                    horizontalLineToRelative(12.0f)
                     curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
-                    verticalLineTo(5.0f)
+                    verticalLineTo(6.0f)
                     curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
+                    horizontalLineToRelative(-1.0f)
+                    verticalLineTo(4.0f)
+                    horizontalLineToRelative(-2.0f)
+                    verticalLineToRelative(2.0f)
+                    horizontalLineTo(8.0f)
+                    verticalLineTo(4.0f)
+                    horizontalLineTo(6.0f)
+                    verticalLineTo(4.0f)
+                    horizontalLineTo(5.0f)
                     close()
-                    moveTo(20.0f, 19.0f)
-                    horizontalLineTo(4.0f)
-                    verticalLineTo(5.0f)
-                    horizontalLineToRelative(14.0f)
-                    verticalLineToRelative(14.0f)
+                }
+                path {
+                    moveTo(7.0f, 10.0f)
+                    curveToRelative(0.0f, 0.55f, 0.45f, 1.0f, 1.0f, 1.0f)
+                    reflectiveCurveTo(9.0f, 10.55f, 9.0f, 10.0f)
+                    reflectiveCurveTo(8.55f, 9.0f, 8.0f, 9.0f)
+                    reflectiveCurveTo(7.0f, 9.45f, 7.0f, 10.0f)
+                    close()
+                    moveTo(10.0f, 9.5f)
+                    horizontalLineToRelative(7.0f)
+                    verticalLineToRelative(1.0f)
+                    horizontalLineToRelative(-7.0f)
+                    verticalLineTo(9.5f)
+                    close()
+                    moveTo(7.0f, 14.0f)
+                    curveToRelative(0.0f, 0.55f, 0.45f, 1.0f, 1.0f, 1.0f)
+                    reflectiveCurveTo(9.0f, 14.55f, 9.0f, 14.0f)
+                    reflectiveCurveTo(8.55f, 13.0f, 8.0f, 13.0f)
+                    reflectiveCurveTo(7.0f, 13.45f, 7.0f, 14.0f)
+                    close()
+                    moveTo(10.0f, 13.5f)
+                    horizontalLineToRelative(7.0f)
+                    verticalLineToRelative(1.0f)
+                    horizontalLineToRelative(-7.0f)
+                    verticalLineTo(13.5f)
+                    close()
+                    moveTo(7.0f, 18.0f)
+                    curveToRelative(0.0f, 0.55f, 0.45f, 1.0f, 1.0f, 1.0f)
+                    reflectiveCurveTo(9.0f, 18.55f, 9.0f, 18.0f)
+                    reflectiveCurveTo(8.55f, 17.0f, 8.0f, 17.0f)
+                    reflectiveCurveTo(7.0f, 17.45f, 7.0f, 18.0f)
+                    close()
+                    moveTo(10.0f, 17.5f)
+                    horizontalLineToRelative(7.0f)
+                    verticalLineToRelative(1.0f)
+                    horizontalLineToRelative(-7.0f)
+                    verticalLineTo(17.5f)
+                    close()
+                }
+                path {
+                    moveTo(7.5f, 9.75f)
+                    lineTo(8.0f, 10.25f)
+                    lineTo(9.25f, 9.0f)
+                    lineTo(8.75f, 8.5f)
+                    lineTo(8.0f, 9.25f)
+                    lineTo(7.75f, 9.0f)
+                    lineTo(7.5f, 9.75f)
                     close()
                 }
             }.build()
             return _groceryList!!
         }
     private var _groceryList: ImageVector? = null
+
+    /** Household / family collaboration — group of people. */
+    val Household: ImageVector
+        get() {
+            if (_household != null) return _household!!
+            _household = ImageVector.Builder(
+                name = "Filled.Household",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(16.0f, 11.0f)
+                    curveToRelative(1.66f, 0.0f, 2.99f, -1.34f, 2.99f, -3.0f)
+                    reflectiveCurveTo(17.66f, 5.0f, 16.0f, 5.0f)
+                    reflectiveCurveTo(13.0f, 6.34f, 13.0f, 8.0f)
+                    reflectiveCurveTo(14.34f, 11.0f, 16.0f, 11.0f)
+                    close()
+                    moveTo(8.0f, 11.0f)
+                    curveToRelative(1.66f, 0.0f, 2.99f, -1.34f, 2.99f, -3.0f)
+                    reflectiveCurveTo(9.66f, 5.0f, 8.0f, 5.0f)
+                    reflectiveCurveTo(5.0f, 6.34f, 5.0f, 8.0f)
+                    reflectiveCurveTo(6.34f, 11.0f, 8.0f, 11.0f)
+                    close()
+                    moveTo(8.0f, 13.0f)
+                    curveToRelative(-2.33f, 0.0f, -7.0f, 1.17f, -7.0f, 3.5f)
+                    verticalLineTo(19.0f)
+                    horizontalLineToRelative(14.0f)
+                    verticalLineToRelative(-2.5f)
+                    curveTo(15.0f, 14.17f, 10.33f, 13.0f, 8.0f, 13.0f)
+                    close()
+                    moveTo(16.0f, 13.0f)
+                    curveToRelative(-0.29f, 0.0f, -0.62f, 0.02f, -0.97f, 0.05f)
+                    curveToRelative(1.16f, 0.84f, 1.97f, 1.97f, 1.97f, 3.45f)
+                    verticalLineTo(19.0f)
+                    horizontalLineToRelative(6.0f)
+                    verticalLineToRelative(-2.5f)
+                    curveTo(23.0f, 14.34f, 18.33f, 13.0f, 16.0f, 13.0f)
+                    close()
+                }
+            }.build()
+            return _household!!
+        }
+    private var _household: ImageVector? = null
+
+    /** Invite a member — person with add badge. */
+    val PersonAdd: ImageVector
+        get() {
+            if (_personAdd != null) return _personAdd!!
+            _personAdd = ImageVector.Builder(
+                name = "Filled.PersonAdd",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(15.0f, 12.0f)
+                    curveToRelative(2.21f, 0.0f, 4.0f, -1.79f, 4.0f, -4.0f)
+                    reflectiveCurveTo(17.21f, 4.0f, 15.0f, 4.0f)
+                    reflectiveCurveTo(11.0f, 5.79f, 11.0f, 8.0f)
+                    reflectiveCurveTo(12.79f, 12.0f, 15.0f, 12.0f)
+                    close()
+                    moveTo(6.0f, 10.0f)
+                    verticalLineTo(7.0f)
+                    horizontalLineTo(4.0f)
+                    verticalLineToRelative(3.0f)
+                    horizontalLineTo(1.0f)
+                    verticalLineToRelative(2.0f)
+                    horizontalLineToRelative(3.0f)
+                    verticalLineToRelative(3.0f)
+                    horizontalLineToRelative(2.0f)
+                    verticalLineToRelative(-3.0f)
+                    horizontalLineToRelative(3.0f)
+                    verticalLineToRelative(-2.0f)
+                    horizontalLineTo(6.0f)
+                    close()
+                    moveTo(15.0f, 14.0f)
+                    curveToRelative(-2.67f, 0.0f, -8.0f, 1.34f, -8.0f, 4.0f)
+                    verticalLineTo(20.0f)
+                    horizontalLineToRelative(16.0f)
+                    verticalLineToRelative(-2.0f)
+                    curveTo(23.0f, 15.34f, 17.67f, 14.0f, 15.0f, 14.0f)
+                    close()
+                }
+            }.build()
+            return _personAdd!!
+        }
+    private var _personAdd: ImageVector? = null
 }

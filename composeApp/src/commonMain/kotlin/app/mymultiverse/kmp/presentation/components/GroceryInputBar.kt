@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +38,7 @@ fun GroceryInputBar(
     onValueChange: (String) -> Unit,
     placeholder: String,
     addContentDescription: String,
+    addButtonLabel: String? = null,
     onSubmit: () -> Unit,
     accentColor: Color = SharedJourneyColors.MediterraneanTeal,
     modifier: Modifier = Modifier,
@@ -93,19 +93,35 @@ fun GroceryInputBar(
                 keyboardActions = KeyboardActions(onDone = { onSubmit() }),
                 focusAccentColor = accentColor,
             )
-            FeatureAccentIconButton(
-                onClick = onSubmit,
-                enabled = value.isNotBlank(),
-                accentColor = accentColor,
-                contentDescription = addContentDescription,
-                modifier = Modifier.testTag(GroceryInputBarTestTags.ADD_BUTTON),
-            ) {
-                JourneyIcon(
-                    role = AppIconRole.ActionAdd,
-                    contentDescription = null,
-                    modifier = Modifier.size(FamilyLogisticsDesign.iconSize - 4.dp),
-                    tint = JourneySemanticColors.onAccentButton(),
-                )
+            if (addButtonLabel != null) {
+                JourneyPrimaryButton(
+                    onClick = onSubmit,
+                    enabled = value.isNotBlank(),
+                    modifier = Modifier.testTag(GroceryInputBarTestTags.ADD_BUTTON),
+                ) {
+                    JourneyIcon(
+                        role = AppIconRole.ActionAdd,
+                        contentDescription = null,
+                        modifier = Modifier.size(FamilyLogisticsDesign.iconSize - 8.dp),
+                        tint = JourneySemanticColors.onAccentButton(),
+                    )
+                    Text(addButtonLabel)
+                }
+            } else {
+                FeatureAccentIconButton(
+                    onClick = onSubmit,
+                    enabled = value.isNotBlank(),
+                    accentColor = accentColor,
+                    contentDescription = addContentDescription,
+                    modifier = Modifier.testTag(GroceryInputBarTestTags.ADD_BUTTON),
+                ) {
+                    JourneyIcon(
+                        role = AppIconRole.ActionAdd,
+                        contentDescription = null,
+                        modifier = Modifier.size(FamilyLogisticsDesign.iconSize - 4.dp),
+                        tint = JourneySemanticColors.onAccentButton(),
+                    )
+                }
             }
         }
     }

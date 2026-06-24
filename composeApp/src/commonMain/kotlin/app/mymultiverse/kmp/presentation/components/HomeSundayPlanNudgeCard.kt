@@ -16,6 +16,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIconRole
+import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
@@ -82,7 +83,12 @@ fun HomeSundayPlanNudgeCard(
                     .fillMaxWidth()
                     .testTag(HomeSundayPlanNudgeTestTags.ACTION),
             ) {
-                Text(actionLabel)
+                JourneyButtonLabel(
+                    text = actionLabel,
+                    icon = AppIcons.MealPlan,
+                    role = AppIconRole.OnAccent,
+                    useContentColor = true,
+                )
             }
         }
     }

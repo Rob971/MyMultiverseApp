@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.hasTestTag
@@ -27,8 +28,10 @@ import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.GroceryGhostPairingTestTags
+import app.mymultiverse.kmp.presentation.components.GroceryInlineAddRowTestTags
 import app.mymultiverse.kmp.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.kmp.presentation.components.GroceryItemRowTestTags
+import app.mymultiverse.kmp.presentation.components.JourneyEmptyStateTestTags
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.presentation.components.MealPlanEmptyStateTestTags
 import app.mymultiverse.kmp.presentation.components.MealPlanTestTags
@@ -213,7 +216,7 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch))
             .performScrollTo()
             .performClick()
-        composeRule.waitForState(screenModel.aiGroceryItems) { it.isNotEmpty() }
+        composeRule.waitForState(screenModel.groceryItems) { it.isNotEmpty() }
     }
 
     @Test
@@ -266,7 +269,7 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun mealPlan_generateLunchGrocery_appendsAiGroceryItems() {
+    fun mealPlan_generateLunchGrocery_appendsGroceryItems() {
         val weekKey = WeekCalendar.currentWeekKey()
         val dayIndex = WeekCalendar.todayIndexInWeek(weekKey) ?: 0
         val screenModel = nutritionScreenModel(weekKey = weekKey)
@@ -292,7 +295,7 @@ class NutritionUxInstrumentedTest {
             .performScrollToNode(hasTestTag(MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch)))
         composeRule.onNodeWithTag(MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch))
             .performClick()
-        composeRule.waitForState(screenModel.aiGroceryItems) { it.size == 3 }
+        composeRule.waitForState(screenModel.groceryItems) { it.size == 3 }
     }
 
     @Test
@@ -793,7 +796,7 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun grocery_updateListSection_showsAfterWeekSelector() {
+    fun grocery_toBuySection_showsInlineAddRowAfterWeekSelector() {
         val screenModel = nutritionScreenModel()
 
         composeRule.setContent {
@@ -802,7 +805,24 @@ class NutritionUxInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag(GroceryListTestTags.UPDATE_LIST_SECTION).assertIsDisplayed()
+        composeRule.onNodeWithTag(GroceryListTestTags.TO_BUY_SECTION).assertIsDisplayed()
+        composeRule.onNodeWithTag(GroceryInlineAddRowTestTags.ROW).assertIsDisplayed()
+        composeRule.onNodeWithTag(GroceryInlineAddRowTestTags.ADD_BUTTON).assertIsDisplayed()
+    }
+
+    @Test
+    fun grocery_emptyStateCta_scrollsToInlineAddAndFocusesInput() {
+        val screenModel = nutritionScreenModel()
+
+        composeRule.setContent {
+            AppTheme {
+                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+            }
+        }
+
+        composeRule.onNodeWithTag(GroceryListTestTags.EMPTY_STATE).performScrollTo()
+        composeRule.onNodeWithTag(JourneyEmptyStateTestTags.PRIMARY_ACTION).performClick()
+        composeRule.onNodeWithTag(GroceryInlineAddRowTestTags.INPUT_FIELD).assertIsFocused()
     }
 
     @Test

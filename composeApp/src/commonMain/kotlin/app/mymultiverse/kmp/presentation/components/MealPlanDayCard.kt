@@ -308,7 +308,8 @@ private fun MealPlanMealField(
                 ) {
                     if (!isGeneratingGrocery) {
                         JourneyIcon(
-                            role = AppIconRole.AiAccent,
+                            imageVector = AppIcons.GroceryList,
+                            role = AppIconRole.OnAccent,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
                             useContentColor = true,

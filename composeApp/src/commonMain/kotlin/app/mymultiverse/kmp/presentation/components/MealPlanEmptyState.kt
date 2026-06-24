@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
@@ -54,9 +55,12 @@ fun MealPlanEmptyState(
         icon = AppIcons.MealPlan,
         primaryActionLabel = planWithAiLabel,
         onPrimaryAction = onPlanWithAi,
+        primaryActionIcon = AppIcons.Sparkles,
+        primaryActionIconRole = AppIconRole.OnAccent,
         primaryActionTestTag = MealPlanEmptyStateTestTags.PLAN_WITH_AI,
         secondaryActionLabel = addManuallyLabel,
         onSecondaryAction = onAddManually,
+        secondaryActionIcon = AppIcons.Add,
         secondaryActionTestTag = MealPlanEmptyStateTestTags.ADD_MANUALLY,
         modifier = modifier.testTag(MealPlanEmptyStateTestTags.ROOT),
         extraContent = if (aiChips.isNotEmpty()) {

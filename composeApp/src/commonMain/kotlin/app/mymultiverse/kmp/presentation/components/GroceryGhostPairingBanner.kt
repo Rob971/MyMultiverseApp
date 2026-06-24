@@ -17,6 +17,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.theme.AppIconRole
+import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 
 object GroceryGhostPairingTestTags {
@@ -82,7 +83,12 @@ fun GroceryGhostPairingBanner(
                     .fillMaxWidth()
                     .testTag(GroceryGhostPairingTestTags.ACTION),
             ) {
-                Text(actionLabel)
+                JourneyButtonLabel(
+                    text = actionLabel,
+                    icon = AppIcons.GroceryList,
+                    role = AppIconRole.OnAccent,
+                    useContentColor = true,
+                )
             }
         }
     }

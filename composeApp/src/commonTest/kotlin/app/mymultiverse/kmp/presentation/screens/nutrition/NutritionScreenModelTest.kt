@@ -407,7 +407,7 @@ class NutritionScreenModelTest {
     }
 
     @Test
-    fun generateGroceryForMeal_appendsDistinctAiGrocery() = runTest(testDispatcher) {
+    fun generateGroceryForMeal_appendsDistinctGroceryItems() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val ai = FakeNutritionAdviceService(mealGroceryLabels = listOf("Garlic", "Pasta"))
         val model = nutritionScreenModel(repository, ai, scope = modelScope) { "meal-g1" }
@@ -417,11 +417,25 @@ class NutritionScreenModelTest {
         model.generateGroceryForMeal(0, MealSlot.Lunch, "Monday")
         advanceUntilIdle()
 
-        assertEquals(2, repository.aiGrocery.value.size)
-        val garlic = repository.aiGrocery.value.first { it.label == "Garlic" }
-        val pasta = repository.aiGrocery.value.first { it.label == "Pasta" }
-        assertTrue(garlic.isPantryCheck)
-        assertFalse(pasta.isPantryCheck)
+        assertTrue(repository.aiGrocery.value.isEmpty())
+        assertEquals(setOf("Garlic", "Pasta"), repository.grocery.value.map { it.label }.toSet())
+    }
+
+    @Test
+    fun generateGroceryForMeal_skipsDuplicateGroceryLabels() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.grocery.value = listOf(GroceryItem("g-1", "Pasta"))
+        val ai = FakeNutritionAdviceService(mealGroceryLabels = listOf("Garlic", "Pasta"))
+        val model = nutritionScreenModel(repository, ai, scope = modelScope) { "meal-g2" }
+
+        model.updateMeal(0, lunch = "Pasta carbonara")
+        advanceUntilIdle()
+        model.generateGroceryForMeal(0, MealSlot.Lunch, "Monday")
+        advanceUntilIdle()
+
+        assertEquals(2, repository.grocery.value.size)
+        assertEquals(1, model.mealGroceryResult.value?.itemCount)
+        assertEquals("Garlic", repository.grocery.value.first { it.label == "Garlic" }.label)
     }
 
     @Test
@@ -512,7 +526,7 @@ class NutritionScreenModelTest {
     }
 
     @Test
-    fun generateGroceryForAllPlannedMeals_appendsDistinctAiItems() = runTest(testDispatcher) {
+    fun generateGroceryForAllPlannedMeals_appendsDistinctGroceryItems() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val ai = FakeNutritionAdviceService(mealGroceryLabels = listOf("Garlic", "Pasta"))
         val model = nutritionScreenModel(repository, ai, scope = modelScope)
@@ -523,7 +537,8 @@ class NutritionScreenModelTest {
         model.generateGroceryForAllPlannedMeals()
         advanceUntilIdle()
 
-        assertEquals(2, repository.aiGrocery.value.size)
+        assertTrue(repository.aiGrocery.value.isEmpty())
+        assertEquals(setOf("Garlic", "Pasta"), repository.grocery.value.map { it.label }.toSet())
         assertIs<NutritionScreenModel.BulkMealGroceryResult>(model.bulkMealGroceryResult.value)
     }
 

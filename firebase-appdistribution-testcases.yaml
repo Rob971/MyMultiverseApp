@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 55
+version: 57
 updated: 2026-06-24
 
 summary: |
@@ -43,6 +43,8 @@ summary: |
   Contextual AI chips E4-11 (v52): Plan empty state and AI helper sheet prepend Use up {ingredient} chips from unchecked grocery + meal history (fallback to protein/budget/veggies when no signals).
   Grocery simplification (v54): Groceries tab focuses on Update list (week selector → list CRUD); removed build-from-meals chip, pantry check, and AI suggestion sections from grocery screen; drag handle reorders active items; swipe gestures unchanged.
   Meal plan simplification (v55): Plan tab shows compact week progress then Daily planning day cards; removed bulk generate-grocery, pantry check, and AI suggestion sections; per-meal Add to grocery and Suggest 20-min meal remain on each day.
+  Grocery add discoverability (v56): Groceries tab renames Update list to To buy with inline add row (labeled Add button) under the section header on phone; empty-state and all-checked CTAs scroll to and focus the add field; sticky bottom bar keeps labeled Add button; Today timeline shows Shopping list row title instead of Update list.
+  Meal plan grocery direct add (v57): Plan tab Add to grocery list writes generated ingredients (including pantry staples) straight to the editable Groceries list — no AI suggestion chips or manual adopt step.
 
 testcases:
   - id: auth-sign-in
@@ -175,7 +177,7 @@ testcases:
     expected:
       - Week context banner shows under This week when nutrition week data is loaded.
       - Hero Plan lunch opens Plan tab; Shopping list opens Groceries tab.
-      - Today tab shows timeline rows for tonight's dinner and Update list (grocery progress).
+      - Today tab shows timeline rows for tonight's dinner and Shopping list (grocery progress or add-first-item hint).
       - No duplicate This week nutrition card, first-win checklist, or Family hero on Today.
 
   - id: home-onboarding-create-household
@@ -221,10 +223,11 @@ testcases:
   - id: grocery-empty-state
     title: Grocery list empty state with add CTA
     steps:
-      - Open Nutrition → Grocery with no items for the current week.
+      - Open Groceries tab with no items for the current week.
     expected:
+      - To buy section shows inline add row with field and labeled Add button (testTags grocery_to_buy_section, grocery_inline_add_row).
       - Empty card shows title, body, and Add an item button (testTag grocery_empty_state).
-      - Tapping the button focuses the add-item field at the bottom.
+      - Tapping the empty-state button scrolls to the inline add row and focuses the field.
 
   - id: household-solo-invite-empty
     title: Solo household members empty state
@@ -439,7 +442,7 @@ testcases:
       - Open Plan tab and expand a day with a planned lunch or dinner.
     expected:
       - Each planned meal shows a primary Add to grocery list button (not a small text link).
-      - Tapping it generates AI grocery suggestions for that meal.
+      - Tapping it adds generated ingredients directly to the Groceries tab list (snackbar confirms count).
 
   - id: grocery-swipe-to-check
     title: Swipe to check grocery items
@@ -612,8 +615,8 @@ testcases:
   - id: grocery-crud
     title: Add, check off, edit, reorder, and delete grocery items
     steps:
-      - Open Groceries tab; confirm Update list section appears directly under Week starting.
-      - Add two items (e.g. Milk, Bread).
+      - Open Groceries tab; confirm To buy section and inline add row appear directly under Week starting.
+      - Add two items (e.g. Milk, Bread) using the inline row or sticky bottom bar.
       - Try adding a duplicate item with different casing or spacing.
       - Drag the handle on an active row to reorder items.
       - Tap checkbox on one item to mark it checked.
@@ -621,7 +624,8 @@ testcases:
       - Edit an item label inline.
       - Swipe right to check an item; swipe left to delete and use Undo if shown.
     expected:
-      - Update list subtitle explains drag and swipe gestures.
+      - To buy subtitle shows progress when items exist, or add hint when empty.
+      - Section header Add action scrolls to inline add row on phone.
       - Duplicate entry scrolls to the existing row with no error snackbar; list still has one row.
       - Reorder persists after leaving and returning to the screen.
       - Checked items move to Checked off section.
@@ -691,16 +695,17 @@ testcases:
     expected:
       - No Generate groceries for planned meals button at the top of Plan.
       - Per-meal grocery actions still work with snackbar feedback.
-      - Adopted items appear on the Groceries tab.
+      - Generated items appear on the Groceries tab without manual adopt.
 
-  - id: meal-plan-adopt-all-chips
-    title: AI grocery from meal slot (no plan-level suggestion chips)
+  - id: meal-plan-direct-grocery-add
+    title: Meal slot Add to grocery list writes to Groceries tab
     steps:
       - Enter a meal and tap Add to grocery list under that slot.
-      - Open Groceries tab to add generated items to Update list manually if needed.
+      - Open Groceries tab.
     expected:
-      - Plan tab no longer shows Suggested items or Add all chips.
-      - Grocery list on Groceries tab receives items you add from per-meal flow or manual entry.
+      - Plan tab shows no Suggested items or Add all chips.
+      - Generated ingredients (including staples like garlic or olive oil) appear under To buy on Groceries.
+      - Second tap on the same meal shows none-new snackbar when all labels are already on the list.
 
   - id: meal-plan-meal-autocomplete
     title: Meal name suggestions while typing
@@ -735,7 +740,7 @@ testcases:
     expected:
       - Snackbar confirms items were generated (or none new if duplicates).
       - Plan tab stays uncluttered (no pantry or suggestion chip sections).
-      - New items appear under Update list on Groceries when adopted or added manually.
+      - New items appear under To buy on Groceries immediately (no adopt step).
 
   - id: ai-advice
     title: AI meal planning from empty slot

@@ -46,12 +46,14 @@ import app.mymultiverse.kmp.presentation.components.FamilyLogisticsDesign
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
 import app.mymultiverse.kmp.presentation.components.JourneyTextField
+import app.mymultiverse.kmp.presentation.components.JourneyButtonLabel
 import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.kmp.presentation.components.NutritionFeatureHeader
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.nutritionDayLabel
 import app.mymultiverse.kmp.presentation.components.screenListPadding
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
@@ -519,7 +521,12 @@ fun NutritionAiAssistantContent(
                                 .fillMaxWidth()
                                 .testTag(NutritionAiTestTags.INGREDIENTS_ADD_ALL),
                         ) {
-                            Text(stringResource(Res.string.nutrition_ai_adopt_all_grocery))
+                            JourneyButtonLabel(
+                                text = stringResource(Res.string.nutrition_ai_adopt_all_grocery),
+                                icon = AppIcons.GroceryList,
+                                role = AppIconRole.OnAccent,
+                                useContentColor = true,
+                            )
                         }
                     }
                     JourneyTertiaryButton(

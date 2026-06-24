@@ -318,6 +318,8 @@ fun HouseholdMembersScreen(
                             icon = AppIcons.Person,
                             primaryActionLabel = stringResource(Res.string.sharing_members_invite),
                             onPrimaryAction = screenModel::openInviteChooser,
+                            primaryActionIcon = AppIcons.PersonAdd,
+                            primaryActionIconRole = AppIconRole.OnAccent,
                             testTag = HouseholdMembersTestTags.SOLO_EMPTY_STATE,
                         )
                     }

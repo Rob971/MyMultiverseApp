@@ -20,6 +20,10 @@ class AppIconsTest {
         assertNotEquals(AppIcons.GroceryList.name, AppIcons.ShoppingCart.name)
         assertNotEquals(AppIcons.MealPlan.name, AppIcons.DateRange.name)
         assertNotEquals(AppIcons.MealPlan.name, AppIcons.GroceryList.name)
+        assertNotEquals(AppIcons.Household.name, AppIcons.Person.name)
+        assertNotEquals(AppIcons.PersonAdd.name, AppIcons.Person.name)
+        assertNotEquals(AppIcons.PersonAdd.name, AppIcons.Household.name)
+        assertNotEquals(AppIcons.GroceryList.name, AppIcons.Check.name)
     }
 
     @Test
