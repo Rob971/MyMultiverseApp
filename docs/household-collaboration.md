@@ -305,6 +305,7 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 | 2026-06-17 | v1 merged to `main` (PR #7); post-merge status and P2 backlog documented |
 | 2026-06-18 | P2 A–D shipped on `main` (PR #8); closeout ops/platform/docs in PR #9 (`feature/p2-closeout`) |
 | 2026-06-23 | QA YAML v48: SSO onboarding, App Links tooling, ghost pairing banner; backlog S12/S13 |
+| 2026-06-24 | QA YAML v54–v55: Groceries **Update list** + Plan **Daily planning** simplification; release **1.0.40** |
 
 ---
 

@@ -9,7 +9,7 @@ alwaysApply: true
 
 1. **Unit** (`composeApp/src/commonTest`) — fast, deterministic; fake repositories/services.
 2. **Instrumented** (`androidInstrumentedTest`) — Compose UI smoke on critical paths.
-3. **Manual** (`firebase-appdistribution-testcases.yaml`) — Firebase App Distribution testers (currently **v31**).
+3. **Manual** (`firebase-appdistribution-testcases.yaml`) — Firebase App Distribution testers (currently **v55**).
 
 ## Unit tests
 

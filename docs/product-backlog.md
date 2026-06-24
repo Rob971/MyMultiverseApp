@@ -1,8 +1,8 @@
 # Product UX backlog — nutrition logistics & silent-butler AI
 
-**Status:** S12 + E3-9 shipped · Grocery + meal plan simplification (v54–v55) · **Updated:** 2026-06-24  
-**App:** MyMultiverse (KMP) · **QA YAML baseline:** v55 · **Release:** 1.0.39  
-**Current sprint:** Maintenance — tester sign-off on S12 features + v54 grocery QA
+**Status:** S12 + E3-9 shipped · Grocery + Plan tab simplification (E2-7, E2-8) · **Updated:** 2026-06-24  
+**App:** MyMultiverse (KMP) · **QA YAML baseline:** v55 · **Release:** 1.0.40 (Firebase distributed)  
+**Current sprint:** Maintenance — tester sign-off (#52 ghost pairing, v54–v55 nutrition UX)
 
 This backlog synthesizes product thesis, UX roadmap, and AI interaction model for household grocery + meal planning. Use it as the scope razor before building anything new.
 
@@ -25,7 +25,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 
 **Open stories (non-deferred):** Tester verification only (#52, #54).
 
-### Shipped stories (28 unique IDs + E6-3 ongoing)
+### Shipped stories (30 unique IDs + E6-3 ongoing)
 
 | Sprint | Stories |
 |--------|---------|
@@ -41,11 +41,10 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **S10** | E3-7, E5-2, E6-1 (+ silent duplicate merge, suggest→ingredients sheet, font scaling) |
 | **S11** | E1-6, E6-2 (+ week banner on Today, tab + AI a11y) |
 | **S12** | E4-9 (+ ghost pairing banner on Groceries), E4-10 (+ pantry check on meal→grocery), E4-11 (+ contextual Use up chips from meal/grocery history) |
-| **Post-S12 maint** | E2-7 (+ Groceries tab Update list focus, drag reorder; AI/pantry/build chip removed from shopping screen) |
-| **Post-S12 maint** | E2-8 (+ Plan tab compact week overview + Daily planning; bulk grocery/pantry/AI chips removed from meal plan screen) |
+| **Post-S12 maint** | E2-7, E2-8 (+ Groceries **Update list** + drag reorder; Plan **Daily planning**; tab-level AI/pantry/bulk sections removed) — **release 1.0.40** |
 | **Post-S11 releases** | Onboarding v1.0.33–36, App Links tooling, Firebase QA v48 (see below) |
 
-**Next up:** Device smoke on invite deep link · close #52 / #54 after tester OK
+**Next up:** Tester OK on **1.0.40** (v54–v55 QA) · close #52 ghost pairing after device smoke
 
 ---
 
@@ -84,7 +83,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 - First-win checklist on Welcome Home (`HomeFirstWinChecklist`)
 - Guided empty states (grocery, meal plan, solo household)
 - Offline-first nutrition + sync outbox + `NutritionSyncStatusBanner`
-- AI read-only terracotta (`AiReadOnlyGroceryList`, `AiGrocerySuggestionsSection` on Plan tab)
+- AI read-only terracotta (`AiReadOnlyGroceryList`, `AiGrocerySuggestionsSection` — components remain; **not** shown on Groceries/Plan tab roots after v54–v55)
 - Deep-link invites + Google/Apple SSO on join (`JoinHouseholdScreen`)
 - Per-meal and bulk meal → grocery (`nutrition_meal_generate_grocery`)
 - Journey design system Waves A–C (dark theme, wide layouts, 48dp targets)
@@ -114,10 +113,10 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 **Phase 2 — S5–S7 (v36–v38)**
 
 - `AiHelperSheet` — `ModalBottomSheet` ~60% over Plan tab; dismiss on apply (E4-1, S5)
-- Shared `NutritionAiAssistantContent`; Plan tab “Plan with AI” opens sheet (not full-screen)
+- Shared `NutritionAiAssistantContent`; Plan tab AI via **Suggest 20-min meal** on slots + `AiHelperSheet` (header Plan with AI removed v55)
 - AI copy rewrite — output-first, no chatbot tone, all 8 locales (E4-4, S5)
-- Inline empty meal slot “Suggest 20-min meal”; grocery “Build list from this week’s meals” chip (S6, **removed from Groceries tab v54** — meal→grocery via Plan); terracotta AI chips (E4-2, E4-3, E4-8, S6)
-- Chip-first sheet, launch context hides mode switcher, full-screen AI demoted to fallback; plan empty-state AI chips (E4-5, E4-6, E4-7, E5-3, S7)
+- Inline empty meal slot “Suggest 20-min meal”; grocery “Build list from this week’s meals” chip (S6, **removed from Groceries tab v54**); terracotta AI chips (E4-2, E4-3, E4-8, S6)
+- Chip-first sheet, launch context hides mode switcher, full-screen AI demoted to fallback; plan empty-state AI chips (E5-3/E4-11, **removed from Plan empty state v55**)
 - Instrumented tests: `AiHelperSheet`, inline triggers, chip-first sheet, empty-state chips
 
 **Phase 3 — S8–S9 (v39–v40)**
@@ -128,7 +127,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 - Debounced grocery collaboration snackbar on remote add/check (E3-4, S9)
 - Firebase QA YAML v40: invite share, Sunday nudge, member-joined push, collaboration snackbar (E6-3)
 
-**Post–S11 releases (v1.0.33–1.0.36, QA v43–v48)**
+**Post–S11 releases (v1.0.33–1.0.40, QA v43–v55)**
 
 - SSO onboarding gate (`AuthScreen`), dedicated household setup, invite deep-link resolver (v1.0.33)
 - Dark-mode household members cards + overflow menus; semantic ink on auth/invite surfaces (v1.0.34)
@@ -136,8 +135,8 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 - Email/password auth fallback; HTTPS invite App Links client; instrumented onboarding smoke (v1.0.36)
 - Firebase App Links hosting: `firebase.json`, deploy/verify/DNS scripts, GitHub **App Links hosting** workflow (v47)
 - Ghost pairing banner on Groceries — terracotta “Often bought together” + one-tap add (E4-9, v48)
-- Groceries tab simplification — **Update list** section after week selector; drag-to-reorder active rows; pantry check + AI suggestion chips + build-from-meals chip removed from shopping screen (stay on Plan tab) (E2-7, v54)
-- Plan tab simplification — compact week progress + **Daily planning** day cards; bulk generate-grocery, pantry check, and AI suggestion sections removed; per-meal grocery + Suggest 20-min meal on slots (E2-8, v55)
+- Groceries tab simplification — **Update list** after week selector; drag reorder; pantry/AI/build chip sections removed (E2-7, v54, **1.0.39**)
+- Plan tab simplification — compact week progress + **Daily planning**; bulk grocery/pantry/AI sections removed; per-slot actions kept (E2-8, v55, **1.0.40**)
 
 **Navigation note:** Bottom tabs use custom `MainTabShell` + `AppRoute` — **not** Voyager (catalog only).
 
@@ -180,8 +179,8 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | E2-2 | Swipe-to-check (wide gesture); retain row tap + haptics; reconcile with swipe-to-delete | P0 | ✅ S3 | `GroceryItemRow.kt` |
 | E2-3 | Wire iOS haptics on grocery check-off | P0 | ✅ S2 | `JourneyHaptics.ios.kt` |
 | E2-4 | Shopping mode: unchecked first; optional hide checked | P1 | ✅ S3 | `GroceryShoppingScreen`, `GroceryListPresentation` |
-| E2-7 | Groceries tab: **Update list** section + drag reorder; remove AI/pantry/build chip clutter from shopping screen | P1 | ✅ maint v54 | `GroceryShoppingScreen`, `GroceryItemRow`, `GroceryListPresentation.moveActiveItem` |
-| E2-8 | Plan tab: compact week overview + **Daily planning**; remove bulk grocery, pantry check, and AI suggestion sections | P1 | ✅ maint v55 | `WeeklyMealPlanScreen`, `MealPlanDayCard` |
+| E2-7 | Groceries tab: **Update list** section + drag reorder; remove AI/pantry/build chip clutter from shopping screen | P1 | ✅ 1.0.39 / QA v54 | `GroceryShoppingScreen`, `GroceryItemRow`, `GroceryListPresentation.moveActiveItem` |
+| E2-8 | Plan tab: compact week overview + **Daily planning**; remove bulk grocery, pantry check, and AI suggestion sections | P1 | ✅ 1.0.40 / QA v55 | `WeeklyMealPlanScreen`, `MealPlanDayCard` |
 | E2-5 | Auto-aisle categorization | P3 | Deferred | — |
 | E2-6 | Smart paste / recipe ingredient parse | P3 | Deferred | — |
 
@@ -207,15 +206,15 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 |----|-------|---|--------|---------------------|
 | E4-1 | `AiHelperSheet` (`ModalBottomSheet` ~60%) reusing `NutritionScreenModel.runAiAssistant()` | P0 | ✅ S5 | `AiHelperSheet.kt`, `NutritionAiAssistantContent.kt` |
 | E4-2 | Inline trigger: empty meal slot → “Suggest 20-min meal” (Sparkles, tertiary) | P0 | ✅ S6 | `MealPlanDayCard` |
-| E4-3 | Grocery chip: “Build list from this week’s meals” | P0 | ✅ S6 (chip removed from Groceries v54) | Was `GroceryShoppingScreen`; meal→grocery via Plan tab + AI sheet |
+| E4-3 | Grocery chip: “Build list from this week’s meals” | P0 | ✅ S6 (**removed from Groceries v54**) | Per-meal **Add to grocery list** on `MealPlanDayCard`; AI sheet via slot triggers |
 | E4-4 | Copy rewrite — output-first, no chatbot tone (8 locales) | P0 | ✅ S5 | `nutrition_ai_*` keys |
 | E4-5 | Chip-first sheet; text field behind “More options” | P1 | ✅ S7 | `AiHelperSheet` |
 | E4-6 | Mode from launch context (hide Advice/Grocery/Meal plan switcher in default flow) | P1 | ✅ S7 | Sheet launch params |
 | E4-7 | Demote full-screen `NutritionAiAdviceScreen` to fallback/deep link only | P1 | ✅ S7 | `NutritionFlow`, `WeeklyMealPlanScreen` |
 | E4-8 | Terracotta AI chips in read-only zones (fix teal on `AiGrocerySuggestionChips` where AI-origin) | P1 | ✅ S6 | `ui-ux-compose.mdc` |
 | E4-9 | Ghost pairing banner (“+ Add salsa and cheese?”) | P2 | ✅ S12 | `GroceryGhostPairingBanner` + `GroceryGhostPairing` |
-| E4-10 | Pantry check section: “Check if you have these” on meal→grocery | P2 | ✅ S12 (Plan tab only v54) | `PantryCheckSection`, `WeeklyMealPlanScreen`, `MealGroceryPartition` |
-| E4-11 | Contextual chips from history (“Use up chicken”) | P2 | ✅ S12 | `NutritionContextualChips`, `MealPlanEmptyState`, `NutritionAiAssistantContent` |
+| E4-10 | Pantry check section: “Check if you have these” on meal→grocery | P2 | ✅ S12 (**UI removed v54–v55**) | Domain `MealGroceryPartition` + per-meal generate; no tab-level `PantryCheckSection` |
+| E4-11 | Contextual chips from history (“Use up chicken”) | P2 | ✅ S12 (**Plan empty-state chips removed v55**) | `NutritionContextualChips` in `AiHelperSheet` / `NutritionAiAssistantContent` |
 
 ---
 
@@ -225,7 +224,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 |----|-------|---|--------|---------------------|
 | E5-1 | Primary CTA per meal: “Add to grocery list” (hero on `MealPlanDayCard`) | P0 | ✅ S2 | `WeeklyMealPlanScreen`, `MealPlanDayCard` |
 | E5-2 | Sheet flow: suggest meal → add → optional ingredients in one path | P1 | ✅ S10 | E4 + E5 integration |
-| E5-3 | Plan tab empty state: contextual AI chips opening sheet | P1 | ✅ S7 | `MealPlanEmptyState` |
+| E5-3 | Plan tab empty state: contextual AI chips opening sheet | P1 | ✅ S7 (**empty-state chips removed v55**) | `MealPlanEmptyState` → **Add meals below**; AI via **Suggest 20-min meal** on slots |
 | E5-4 | Predictive replenishment | P3 | Deferred | — |
 | E5-5 | Pantry memory for AI suggestions | P3 | Deferred | — |
 
@@ -299,8 +298,7 @@ Only if Phases 0–2 metrics are green.
 | **S12** | E4-10 pantry check | ✅ shipped (v50) |
 | **S12+** | E3-9 DNS go-live | ✅ shipped |
 | **S13+** | Optional spike (E3-8 presence **or** E2-5 aisle) | backlog |
-| **Maint** | E2-7 grocery Update list + drag reorder | ✅ shipped (v54) |
-| **Maint** | E2-8 meal plan Daily planning focus | ✅ shipped (v55) |
+| **Maint** | E2-7 + E2-8 nutrition tab simplification | ✅ shipped **1.0.40** (QA v54–v55) |
 
 ### Phase 5 — “UX audit clarity” (S13)
 
@@ -362,14 +360,13 @@ E3-9 App Links DNS ──► HTTPS invite opens Android app (E3-2 share links)
 4. ~~**S8** — invite share sheet + Sunday plan nudge~~ ✅ · ~~**S9** — push + activity snackbar~~ ✅ · ~~**S10** — household polish~~ ✅ · ~~**S11** — week banner + a11y~~ ✅  
 5. ~~**S13** — Today hero CTAs + family in account sheet + Napulitano label (UX audit)~~ ✅  
 6. ~~**S12** — E4-10 pantry check · E4-11 contextual chips · E3-9 App Links DNS~~ ✅  
-7. ~~**Maint v54** — E2-7 Groceries Update list focus + drag reorder~~ ✅  
-8. ~~**Maint v55** — E2-8 Plan tab Daily planning simplification~~ ✅
+7. ~~**Maint v54–v55** — E2-7 Groceries Update list · E2-8 Plan Daily planning~~ ✅ **1.0.40**
 
 ## GitHub tracking
 
 **Shipped story issues (S1–S11 polish):** #26–#31, #32–#43, #44–#51, #55–#59 — **closed** on GitHub.
 
-**Open / next:** #52 · #54 close when verified on testers.
+**Open / next:** #52 ghost pairing verify on **1.0.40** testers.
 
 | Kind | Issue |
 |------|-------|
