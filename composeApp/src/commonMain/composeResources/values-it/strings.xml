@@ -79,6 +79,8 @@
     <string name="nutrition_meal_plan_progress">%1$d di %2$d pasti pianificati</string>
     <string name="nutrition_meal_slot_unplanned">Non pianificato</string>
     <string name="nutrition_meal_plan_section_days">Giorni</string>
+    <string name="nutrition_meal_plan_section_daily">Pianificazione giornaliera</string>
+    <string name="nutrition_meal_plan_daily_hint">Espandi un giorno per modificare pranzo e cena, aggiungere alla spesa o ottenere un suggerimento rapido.</string>
     <string name="nutrition_meal_plan_empty_title">Cosa c'è nel menu questa settimana?</string>
     <string name="nutrition_meal_plan_empty_body">Pianifica pranzo e cena per la tua famiglia, o lascia che l'IA proponga un punto di partenza.</string>
     <string name="nutrition_meal_plan_empty_cta_ai">Pianifica con l'IA</string>

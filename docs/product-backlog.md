@@ -1,7 +1,7 @@
 # Product UX backlog — nutrition logistics & silent-butler AI
 
-**Status:** S12 + E3-9 shipped · Grocery simplification (v54) · **Updated:** 2026-06-24  
-**App:** MyMultiverse (KMP) · **QA YAML baseline:** v54 · **Release:** 1.0.39  
+**Status:** S12 + E3-9 shipped · Grocery + meal plan simplification (v54–v55) · **Updated:** 2026-06-24  
+**App:** MyMultiverse (KMP) · **QA YAML baseline:** v55 · **Release:** 1.0.39  
 **Current sprint:** Maintenance — tester sign-off on S12 features + v54 grocery QA
 
 This backlog synthesizes product thesis, UX roadmap, and AI interaction model for household grocery + meal planning. Use it as the scope razor before building anything new.
@@ -42,6 +42,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **S11** | E1-6, E6-2 (+ week banner on Today, tab + AI a11y) |
 | **S12** | E4-9 (+ ghost pairing banner on Groceries), E4-10 (+ pantry check on meal→grocery), E4-11 (+ contextual Use up chips from meal/grocery history) |
 | **Post-S12 maint** | E2-7 (+ Groceries tab Update list focus, drag reorder; AI/pantry/build chip removed from shopping screen) |
+| **Post-S12 maint** | E2-8 (+ Plan tab compact week overview + Daily planning; bulk grocery/pantry/AI chips removed from meal plan screen) |
 | **Post-S11 releases** | Onboarding v1.0.33–36, App Links tooling, Firebase QA v48 (see below) |
 
 **Next up:** Device smoke on invite deep link · close #52 / #54 after tester OK
@@ -136,6 +137,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 - Firebase App Links hosting: `firebase.json`, deploy/verify/DNS scripts, GitHub **App Links hosting** workflow (v47)
 - Ghost pairing banner on Groceries — terracotta “Often bought together” + one-tap add (E4-9, v48)
 - Groceries tab simplification — **Update list** section after week selector; drag-to-reorder active rows; pantry check + AI suggestion chips + build-from-meals chip removed from shopping screen (stay on Plan tab) (E2-7, v54)
+- Plan tab simplification — compact week progress + **Daily planning** day cards; bulk generate-grocery, pantry check, and AI suggestion sections removed; per-meal grocery + Suggest 20-min meal on slots (E2-8, v55)
 
 **Navigation note:** Bottom tabs use custom `MainTabShell` + `AppRoute` — **not** Voyager (catalog only).
 
@@ -179,6 +181,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | E2-3 | Wire iOS haptics on grocery check-off | P0 | ✅ S2 | `JourneyHaptics.ios.kt` |
 | E2-4 | Shopping mode: unchecked first; optional hide checked | P1 | ✅ S3 | `GroceryShoppingScreen`, `GroceryListPresentation` |
 | E2-7 | Groceries tab: **Update list** section + drag reorder; remove AI/pantry/build chip clutter from shopping screen | P1 | ✅ maint v54 | `GroceryShoppingScreen`, `GroceryItemRow`, `GroceryListPresentation.moveActiveItem` |
+| E2-8 | Plan tab: compact week overview + **Daily planning**; remove bulk grocery, pantry check, and AI suggestion sections | P1 | ✅ maint v55 | `WeeklyMealPlanScreen`, `MealPlanDayCard` |
 | E2-5 | Auto-aisle categorization | P3 | Deferred | — |
 | E2-6 | Smart paste / recipe ingredient parse | P3 | Deferred | — |
 
@@ -234,7 +237,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 |----|-------|---|--------|---------------------|
 | E6-1 | System font scaling on grocery rows + meal plan | P1 | ✅ S10 | `GroceryItemRow`, `MealPlanDayCard` |
 | E6-2 | `contentDescription` audit on tab bar + AI entry points | P2 | ✅ S11 | `MainTabShell`, `AiInlineTriggerButton` |
-| E6-3 | Firebase QA YAML + manual cases for changed flows | P0 | ✅ ongoing | `firebase-appdistribution-testcases.yaml` (currently **v54**) |
+| E6-3 | Firebase QA YAML + manual cases for changed flows | P0 | ✅ ongoing | `firebase-appdistribution-testcases.yaml` (currently **v55**) |
 | E6-4 | Napulitano explicit language label + dialect subtitle in picker (not “NAP” code) | P2 | ✅ S13 | `SupportedAppLanguages`, `LanguagePicker`, 8 locales |
 
 ## Execution plan (12 weeks)
@@ -297,6 +300,7 @@ Only if Phases 0–2 metrics are green.
 | **S12+** | E3-9 DNS go-live | ✅ shipped |
 | **S13+** | Optional spike (E3-8 presence **or** E2-5 aisle) | backlog |
 | **Maint** | E2-7 grocery Update list + drag reorder | ✅ shipped (v54) |
+| **Maint** | E2-8 meal plan Daily planning focus | ✅ shipped (v55) |
 
 ### Phase 5 — “UX audit clarity” (S13)
 
@@ -358,7 +362,8 @@ E3-9 App Links DNS ──► HTTPS invite opens Android app (E3-2 share links)
 4. ~~**S8** — invite share sheet + Sunday plan nudge~~ ✅ · ~~**S9** — push + activity snackbar~~ ✅ · ~~**S10** — household polish~~ ✅ · ~~**S11** — week banner + a11y~~ ✅  
 5. ~~**S13** — Today hero CTAs + family in account sheet + Napulitano label (UX audit)~~ ✅  
 6. ~~**S12** — E4-10 pantry check · E4-11 contextual chips · E3-9 App Links DNS~~ ✅  
-7. ~~**Maint v54** — E2-7 Groceries Update list focus + drag reorder~~ ✅
+7. ~~**Maint v54** — E2-7 Groceries Update list focus + drag reorder~~ ✅  
+8. ~~**Maint v55** — E2-8 Plan tab Daily planning simplification~~ ✅
 
 ## GitHub tracking
 

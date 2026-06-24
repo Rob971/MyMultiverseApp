@@ -26,7 +26,6 @@ import app.mymultiverse.kmp.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.kmp.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
-import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionChipsTestTags
 import app.mymultiverse.kmp.presentation.components.GroceryGhostPairingTestTags
 import app.mymultiverse.kmp.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.kmp.presentation.components.GroceryItemRowTestTags
@@ -189,30 +188,32 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun grocery_adoptAiChip_addsItemAndRemovesChip() {
-        val screenModel = nutritionScreenModel(
-            itemId = "grocery-new",
-            initialAiGrocery = listOf(GroceryItem("ai-salt", "Salt")),
-        )
+    fun grocery_generateFromMeal_addsItemsToModel() {
+        val weekKey = WeekCalendar.currentWeekKey()
+        val dayIndex = WeekCalendar.todayIndexInWeek(weekKey) ?: 0
+        val screenModel = nutritionScreenModel(weekKey = weekKey)
 
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                WeeklyMealPlanScreen(
+                    onBack = {},
+                    onOpenSection = { _, _ -> },
+                    screenModel = screenModel,
+                )
             }
         }
 
-        composeRule.onNodeWithTag(AiGrocerySuggestionChipsTestTags.chip("ai-salt"))
+        composeRule.onNodeWithTag(MealPlanTestTags.SCROLL_LIST)
+            .performScrollToNode(hasTestTag(MealPlanTestTags.lunchField(dayIndex)))
+        val lunchField = composeRule.onNodeWithTag(MealPlanTestTags.lunchField(dayIndex))
+        lunchField.performClick()
+        lunchField.performTextInput("Soup")
+        composeRule.waitForState(screenModel.mealPlan) { it.days[dayIndex].lunch == "Soup" }
+
+        composeRule.onNodeWithTag(MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch))
             .performScrollTo()
             .performClick()
-        composeRule.waitForState(screenModel.groceryItems) { it.any { item -> item.label == "Salt" } }
-        composeRule.waitForState(screenModel.aiGroceryItems) { it.isEmpty() }
-
-        composeRule.onNodeWithText("Salt").assertIsDisplayed()
-        assertTrue(
-            composeRule.onAllNodesWithTag(AiGrocerySuggestionChipsTestTags.chip("ai-salt"))
-                .fetchSemanticsNodes()
-                .isEmpty(),
-        )
+        composeRule.waitForState(screenModel.aiGroceryItems) { it.isNotEmpty() }
     }
 
     @Test
@@ -292,39 +293,22 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch))
             .performClick()
         composeRule.waitForState(screenModel.aiGroceryItems) { it.size == 3 }
-
-        composeRule.onNodeWithTag(MealPlanTestTags.SCROLL_LIST)
-            .performScrollToNode(hasTestTag(AiGrocerySuggestionChipsTestTags.ROW))
-        composeRule.onNodeWithTag(AiGrocerySuggestionChipsTestTags.ROW)
-            .assertIsDisplayed()
-        composeRule.onNodeWithText("Tomatoes").assertIsDisplayed()
-        composeRule.onNodeWithText("Basil").assertIsDisplayed()
     }
 
     @Test
-    fun mealPlan_adoptAiChip_addsItemToGroceryList() {
-        val weekKey = WeekCalendar.currentWeekKey()
-        val screenModel = nutritionScreenModel(
-            weekKey = weekKey,
-            initialAiGrocery = listOf(GroceryItem("ai-basil", "Basil")),
-        )
-
+    fun mealPlan_dailySection_displaysAfterWeekOverview() {
         composeRule.setContent {
             AppTheme {
                 WeeklyMealPlanScreen(
                     onBack = {},
                     onOpenSection = { _, _ -> },
-                    screenModel = screenModel,
+                    screenModel = nutritionScreenModel(),
                 )
             }
         }
 
-        composeRule.onNodeWithTag(MealPlanTestTags.SCROLL_LIST)
-            .performScrollToNode(hasTestTag(AiGrocerySuggestionChipsTestTags.chip("ai-basil")))
-        composeRule.onNodeWithTag(AiGrocerySuggestionChipsTestTags.chip("ai-basil"))
-            .performClick()
-        composeRule.waitForState(screenModel.groceryItems) { it.any { item -> item.label == "Basil" } }
-        composeRule.waitForState(screenModel.aiGroceryItems) { it.isEmpty() }
+        composeRule.onNodeWithTag(MealPlanTestTags.WEEK_OVERVIEW).assertIsDisplayed()
+        composeRule.onNodeWithTag(MealPlanTestTags.DAILY_SECTION).assertIsDisplayed()
     }
 
     @Test
@@ -763,76 +747,6 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(AiHelperSheetTestTags.SHEET).assertIsDisplayed()
         composeRule.onNodeWithTag(NutritionAiTestTags.MODE_MEAL_PLAN).assertDoesNotExist()
         composeRule.onNodeWithTag(NutritionAiTestTags.MORE_OPTIONS_TOGGLE).assertIsDisplayed()
-    }
-
-    @Test
-    fun mealPlan_emptyState_chip_opensHelperSheet() {
-        val screenModel = nutritionScreenModel()
-        val sheetVisible = mutableStateOf(false)
-        val launchContext = mutableStateOf(AiHelperLaunchContext(mode = NutritionAiMode.MealPlan))
-
-        composeRule.setContent {
-            AppTheme {
-                Box {
-                    WeeklyMealPlanScreen(
-                        onBack = {},
-                        onOpenSection = { _, _ -> },
-                        onOpenAiSheet = { context ->
-                            launchContext.value = context
-                            sheetVisible.value = true
-                        },
-                        screenModel = screenModel,
-                    )
-                    AiHelperSheet(
-                        visible = sheetVisible.value,
-                        launchContext = launchContext.value,
-                        onDismiss = { sheetVisible.value = false },
-                        onApplied = { sheetVisible.value = false },
-                        screenModel = screenModel,
-                    )
-                }
-            }
-        }
-
-        composeRule.onNodeWithTag(MealPlanTestTags.SCROLL_LIST)
-            .performScrollToNode(hasTestTag(MealPlanEmptyStateTestTags.CHIP_PROTEIN))
-        composeRule.onNodeWithTag(MealPlanEmptyStateTestTags.CHIP_PROTEIN).performClick()
-        composeRule.onNodeWithTag(AiHelperSheetTestTags.SHEET).assertIsDisplayed()
-    }
-
-    @Test
-    fun mealPlan_planWithAi_opensHelperSheet() {
-        val screenModel = nutritionScreenModel()
-        val sheetVisible = mutableStateOf(false)
-        val launchContext = mutableStateOf(AiHelperLaunchContext(mode = NutritionAiMode.MealPlan))
-
-        composeRule.setContent {
-            AppTheme {
-                Box {
-                    WeeklyMealPlanScreen(
-                        onBack = {},
-                        onOpenSection = { _, _ -> },
-                        onOpenAiSheet = { context ->
-                            launchContext.value = context
-                            sheetVisible.value = true
-                        },
-                        screenModel = screenModel,
-                    )
-                    AiHelperSheet(
-                        visible = sheetVisible.value,
-                        launchContext = launchContext.value,
-                        onDismiss = { sheetVisible.value = false },
-                        onApplied = { sheetVisible.value = false },
-                        screenModel = screenModel,
-                    )
-                }
-            }
-        }
-
-        composeRule.onNodeWithTag(MealPlanTestTags.SCROLL_LIST)
-            .performScrollToNode(hasTestTag(MealPlanEmptyStateTestTags.PLAN_WITH_AI))
-        composeRule.onNodeWithTag(MealPlanEmptyStateTestTags.PLAN_WITH_AI).performClick()
-        composeRule.onNodeWithTag(AiHelperSheetTestTags.SHEET).assertIsDisplayed()
     }
 
     @Test

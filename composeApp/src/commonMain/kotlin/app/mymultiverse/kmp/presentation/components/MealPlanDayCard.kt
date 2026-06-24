@@ -44,9 +44,9 @@ import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 
 object MealPlanTestTags {
     const val SCROLL_LIST = "meal_plan_scroll_list"
-    const val GENERATE_ALL_GROCERY = "meal_plan_generate_all_grocery"
+    const val WEEK_OVERVIEW = "meal_plan_week_overview"
+    const val DAILY_SECTION = "meal_plan_daily_section"
     const val CLEAR_WEEK = "meal_plan_clear_week"
-    const val PLAN_WITH_AI = "meal_plan_plan_with_ai"
     fun suggestAiButton(dayIndex: Int, slot: MealSlot) =
         "meal_plan_suggest_ai_${slot.name.lowercase()}_$dayIndex"
     fun lunchField(dayIndex: Int) = "meal_plan_lunch_$dayIndex"

@@ -60,6 +60,8 @@ object NutritionStringKeys {
         "nutrition_meal_plan_progress",
         "nutrition_meal_slot_unplanned",
         "nutrition_meal_plan_section_days",
+        "nutrition_meal_plan_section_daily",
+        "nutrition_meal_plan_daily_hint",
         "nutrition_meal_plan_empty_title",
         "nutrition_meal_plan_empty_body",
         "nutrition_meal_plan_empty_cta_ai",

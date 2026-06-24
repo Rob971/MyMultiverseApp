@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 54
+version: 55
 updated: 2026-06-24
 
 summary: |
@@ -42,6 +42,7 @@ summary: |
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
   Contextual AI chips E4-11 (v52): Plan empty state and AI helper sheet prepend Use up {ingredient} chips from unchecked grocery + meal history (fallback to protein/budget/veggies when no signals).
   Grocery simplification (v54): Groceries tab focuses on Update list (week selector → list CRUD); removed build-from-meals chip, pantry check, and AI suggestion sections from grocery screen; drag handle reorders active items; swipe gestures unchanged.
+  Meal plan simplification (v55): Plan tab shows compact week progress then Daily planning day cards; removed bulk generate-grocery, pantry check, and AI suggestion sections; per-meal Add to grocery and Suggest 20-min meal remain on each day.
 
 testcases:
   - id: auth-sign-in
@@ -540,17 +541,14 @@ testcases:
       - Quick pick tap generates; More options reveals custom criteria field.
 
   - id: meal-plan-empty-ai-chips
-    title: Plan empty state contextual AI chips (E4-11)
+    title: Quick meal suggestion from empty slot (replaces empty-state AI chips)
     steps:
-      - Sign in with write access; add chicken or tomatoes to the grocery list (unchecked) or plan a meal mentioning an ingredient.
-      - Clear the week or open Plan on an empty week.
-      - Scroll to the empty-state card below the header.
-      - Note chips: Use up {ingredient} when history exists, else high-protein / budget / veggie defaults.
-      - Tap a contextual Use up chip.
+      - Open Plan tab on an empty week.
+      - Expand today (or another day) in Daily planning.
+      - Tap Suggest 20-min meal on an empty lunch or dinner slot.
     expected:
-      - Terracotta chips appear below the primary Plan with AI button.
-      - Use up chip opens the AI helper sheet with criteria referencing that ingredient and starts generation.
-      - When no ingredient signals exist, default protein/budget/veggie chips still appear.
+      - No terracotta chips or Plan with AI on the empty-state card (only Add meals below).
+      - AI helper sheet opens for that slot with quick-meal criteria.
 
   - id: home-nutrition-card
     title: Plan meals hero on Today tab
@@ -657,9 +655,11 @@ testcases:
   - id: meal-plan-edit
     title: Edit weekly meal plan
     steps:
-      - From Nutrition hub, open Weekly meal plan.
+      - Open the Plan tab (Week food planning).
+      - Confirm week selector and meals-planned progress appear at the top, then Daily planning section.
       - Expand a day (if collapsed) and enter lunch and dinner text for today or another day.
     expected:
+      - No bulk generate-grocery, pantry check, or suggested-items sections on the Plan screen.
       - Today is highlighted; other days can expand/collapse.
       - Lunch and dinner fields save while on screen.
       - Progress shows meals planned (e.g. 2 of 14).
@@ -676,27 +676,31 @@ testcases:
   - id: meal-plan-empty-state
     title: Empty meal plan guidance
     steps:
-      - Open Weekly meal plan with no meals entered.
-      - Tap Plan with AI.
+      - Open Plan tab with no meals entered.
+      - Tap Add meals below on the empty-state card.
     expected:
-      - AI adviser opens in meal plan mode.
+      - Scroll focuses the Daily planning section with day cards.
+      - Use Suggest 20-min meal on an empty lunch/dinner slot to open the AI helper sheet.
 
   - id: meal-plan-bulk-grocery
-    title: Generate groceries for all planned meals
+    title: Per-meal grocery from planned meals (removed bulk action)
     steps:
-      - Enter meals on at least two days.
-      - Tap Generate groceries for planned meals.
+      - Enter meals on at least two days on the Plan tab.
+      - Use Add to grocery list under each filled meal slot (not a week-level bulk button).
+      - Open Groceries tab and confirm items appear under Update list.
     expected:
-      - AI chips appear with a summary snackbar.
+      - No Generate groceries for planned meals button at the top of Plan.
+      - Per-meal grocery actions still work with snackbar feedback.
+      - Adopted items appear on the Groceries tab.
 
   - id: meal-plan-adopt-all-chips
-    title: Adopt all AI grocery suggestions
+    title: AI grocery from meal slot (no plan-level suggestion chips)
     steps:
-      - Generate AI grocery suggestions.
-      - Tap Add all to list.
+      - Enter a meal and tap Add to grocery list under that slot.
+      - Open Groceries tab to add generated items to Update list manually if needed.
     expected:
-      - Items move to the editable grocery list.
-      - If every item was already on the list, snackbar says no new items were added.
+      - Plan tab no longer shows Suggested items or Add all chips.
+      - Grocery list on Groceries tab receives items you add from per-meal flow or manual entry.
 
   - id: meal-plan-meal-autocomplete
     title: Meal name suggestions while typing
@@ -723,25 +727,24 @@ testcases:
       - All meal fields reset for the selected week.
 
   - id: meal-plan-meal-grocery
-    title: Generate AI grocery for a single meal (lunch or dinner)
+    title: Add grocery items from a single meal
     steps:
-      - On Weekly meal plan, enter a non-empty lunch (e.g. Pasta primavera).
-      - Tap "Generate AI grocery list" under the lunch field.
-      - Repeat for dinner on another day if desired.
+      - On Plan tab, enter a non-empty lunch (e.g. Pasta primavera).
+      - Tap Add to grocery list under the lunch field.
+      - Open Groceries tab.
     expected:
-      - Snackbar confirms items added (or none new if duplicates).
-      - Terracotta Check if you have these section shows pantry staples (salt, oil, garlic, etc.) separate from Suggested items chips.
-      - Tap a pantry staple you already have to dismiss it; use Add remaining staples to list for missing basics.
-      - Suggested items appear on Groceries tab; tap to add to the shopping list.
+      - Snackbar confirms items were generated (or none new if duplicates).
+      - Plan tab stays uncluttered (no pantry or suggestion chip sections).
+      - New items appear under Update list on Groceries when adopted or added manually.
 
   - id: ai-advice
-    title: AI nutrition advice from meal plan
+    title: AI meal planning from empty slot
     steps:
-      - Open Nutrition hub → Weekly meal plan.
-      - Tap Plan week with AI in the header (or Plan with AI on the empty state).
+      - Open Plan tab with an empty lunch or dinner slot.
+      - Tap Suggest 20-min meal on that slot.
     expected:
-      - AI adviser opens in meal plan mode with scope and apply controls.
-      - Hub still shows only Grocery and Weekly meal plan cards.
+      - AI helper sheet opens scoped to that day and slot.
+      - Plan screen layout remains week overview + Daily planning only.
 
   - id: ai-grocery-mode
     title: AI grocery list from meal plan

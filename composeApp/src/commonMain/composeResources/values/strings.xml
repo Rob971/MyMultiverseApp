@@ -79,6 +79,8 @@
     <string name="nutrition_meal_plan_progress">%1$d of %2$d meals planned</string>
     <string name="nutrition_meal_slot_unplanned">Unplanned</string>
     <string name="nutrition_meal_plan_section_days">Days</string>
+    <string name="nutrition_meal_plan_section_daily">Daily planning</string>
+    <string name="nutrition_meal_plan_daily_hint">Expand a day to edit lunch and dinner, add items to your grocery list, or get a quick meal suggestion.</string>
     <string name="nutrition_meal_plan_empty_title">What's on the menu this week?</string>
     <string name="nutrition_meal_plan_empty_body">Plan lunch and dinner for your family, or let AI draft a starting point.</string>
     <string name="nutrition_meal_plan_empty_cta_ai">Plan with AI</string>

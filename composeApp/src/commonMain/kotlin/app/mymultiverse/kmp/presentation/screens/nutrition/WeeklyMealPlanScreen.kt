@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import app.mymultiverse.kmp.presentation.components.JourneyIconButton
@@ -41,21 +40,17 @@ import app.mymultiverse.kmp.domain.nutrition.MealSlot
 import app.mymultiverse.kmp.domain.nutrition.NutritionAiMode
 import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
-import app.mymultiverse.kmp.presentation.screens.nutrition.NutritionContextualChipsResolver
-import app.mymultiverse.kmp.presentation.components.AiGrocerySuggestionsSection
-import app.mymultiverse.kmp.presentation.components.PantryCheckSection
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.HouseholdViewerReadOnlyNotice
+import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
 import app.mymultiverse.kmp.presentation.components.JourneySnackbarHost
-import app.mymultiverse.kmp.presentation.components.JourneySecondaryButton
 import app.mymultiverse.kmp.presentation.components.MealPlanDayCard
-import app.mymultiverse.kmp.presentation.components.MealPlanEmptyAiChip
-import app.mymultiverse.kmp.presentation.components.MealPlanEmptyState
 import app.mymultiverse.kmp.presentation.components.MealPlanEmptyStateTestTags
 import app.mymultiverse.kmp.presentation.components.MealPlanTestTags
-import app.mymultiverse.kmp.presentation.components.NutritionFeatureHeader
+import app.mymultiverse.kmp.presentation.components.NutritionProgressChip
 import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
+import app.mymultiverse.kmp.presentation.components.WeekSelectorBanner
 import app.mymultiverse.kmp.presentation.components.nutritionDayLabel
 import app.mymultiverse.kmp.presentation.components.screenContentArea
 import app.mymultiverse.kmp.presentation.components.screenListPadding
@@ -63,10 +58,6 @@ import app.mymultiverse.kmp.presentation.navigation.NutritionSection
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_none
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_summary
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_grocery_suggestions_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_grocery_cancel_edit
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_clear_field
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_clear_week
@@ -74,40 +65,27 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_clear_week_confirm_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_copy_to_lunch
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_dinner
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_generate_all_grocery
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_generate_grocery
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_grocery_added
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_grocery_bulk_added
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_grocery_bulk_error
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_grocery_bulk_none
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_grocery_error
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_grocery_none_new
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_pantry_check_adopt_remaining
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_pantry_check_subtitle
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_pantry_check_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_lunch
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_collapse_day
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_description
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_daily_hint
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_empty_body
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_empty_cta_ai
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_empty_cta_manual
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_empty_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_expand_day
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_not_planned
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_plan_with_ai
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_chip_use_up
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_criteria_use_up
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestion_budget_plan
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestion_protein_plan
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_suggestion_veggies
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_criteria_quick_meal
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_suggest_quick_ai
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_progress
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_section_daily
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_section_days
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_section_today
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_section_week
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_plan_title
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_slot_unplanned
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_meal_suggest_quick_ai
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_ai_criteria_quick_meal
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_today
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_label
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_week_next
@@ -126,17 +104,10 @@ fun WeeklyMealPlanScreen(
     screenModel: NutritionScreenModel = koinInject(),
 ) {
     val mealPlan by screenModel.mealPlan.collectAsState()
-    val groceryItems by screenModel.groceryItems.collectAsState()
-    val aiGrocery by screenModel.aiGroceryItems.collectAsState()
-    val shoppingAi = remember(aiGrocery) { aiGrocery.filterNot { it.isPantryCheck } }
-    val pantryCheckItems = remember(aiGrocery) { aiGrocery.filter { it.isPantryCheck } }
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val mealGroceryLoading by screenModel.mealGroceryLoading.collectAsState()
     val mealGroceryResult by screenModel.mealGroceryResult.collectAsState()
-    val bulkGroceryLoading by screenModel.bulkMealGroceryLoading.collectAsState()
-    val bulkGroceryResult by screenModel.bulkMealGroceryResult.collectAsState()
-    val adoptAllResult by screenModel.adoptAllGroceryResult.collectAsState()
     val weekOffset by screenModel.weekOffset.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
@@ -156,27 +127,20 @@ fun WeeklyMealPlanScreen(
     )
     val previousWeekLabel = stringResource(Res.string.nutrition_week_previous)
     val nextWeekLabel = stringResource(Res.string.nutrition_week_next)
+    val progressLabel = stringResource(
+        Res.string.nutrition_meal_plan_progress,
+        mealProgress.plannedSlots,
+        mealProgress.totalSlots,
+    )
+    val dailySectionTitle = stringResource(Res.string.nutrition_meal_plan_section_daily)
+    val dailySectionHint = stringResource(Res.string.nutrition_meal_plan_daily_hint)
 
     val generateGroceryLabel = stringResource(Res.string.nutrition_meal_generate_grocery)
-    val generateAllGroceryLabel = stringResource(Res.string.nutrition_meal_generate_all_grocery)
     val lunchLabel = stringResource(Res.string.nutrition_meal_lunch)
     val dinnerLabel = stringResource(Res.string.nutrition_meal_dinner)
     val suggestQuickMealLabel = stringResource(Res.string.nutrition_meal_suggest_quick_ai)
-    val proteinPlanChipLabel = stringResource(Res.string.nutrition_ai_suggestion_protein_plan)
-    val budgetPlanChipLabel = stringResource(Res.string.nutrition_ai_suggestion_budget_plan)
-    val veggiePlanChipLabel = stringResource(Res.string.nutrition_ai_suggestion_veggies)
-    val contextualMatches = remember(mealPlan, groceryItems) {
-        NutritionContextualChipsResolver.ingredientMatches(mealPlan, groceryItems)
-    }
     val groceryNoneNew = stringResource(Res.string.nutrition_meal_grocery_none_new)
     val groceryError = stringResource(Res.string.nutrition_meal_grocery_error)
-    val adoptAllSummary = adoptAllResult?.let { count ->
-        if (count == 0) {
-            stringResource(Res.string.nutrition_ai_adopt_all_grocery_none)
-        } else {
-            stringResource(Res.string.nutrition_ai_adopt_all_grocery_summary, count)
-        }
-    }
 
     val mealGrocerySnackbarMessage = mealGroceryResult?.let { result ->
         val slotLabel = when (result.slot) {
@@ -195,34 +159,10 @@ fun WeeklyMealPlanScreen(
         }
     }
 
-    val bulkGrocerySnackbarMessage = bulkGroceryResult?.let { result ->
-        when {
-            result.isError && result.addedCount == 0 -> stringResource(Res.string.nutrition_meal_grocery_bulk_error)
-            result.addedCount == 0 -> stringResource(Res.string.nutrition_meal_grocery_bulk_none)
-            else -> stringResource(
-                Res.string.nutrition_meal_grocery_bulk_added,
-                result.addedCount,
-                result.mealsProcessed,
-            )
-        }
-    }
-
     LaunchedEffect(mealGrocerySnackbarMessage) {
         val message = mealGrocerySnackbarMessage ?: return@LaunchedEffect
         snackbarHostState.showSnackbar(message)
         screenModel.consumeMealGroceryResult()
-    }
-
-    LaunchedEffect(bulkGrocerySnackbarMessage) {
-        val message = bulkGrocerySnackbarMessage ?: return@LaunchedEffect
-        snackbarHostState.showSnackbar(message)
-        screenModel.consumeBulkMealGroceryResult()
-    }
-
-    LaunchedEffect(adoptAllSummary) {
-        val message = adoptAllSummary ?: return@LaunchedEffect
-        snackbarHostState.showSnackbar(message)
-        screenModel.consumeAdoptAllGroceryResult()
     }
 
     val todayEntry = todayIndex?.let { index -> orderedDays.firstOrNull { it.index == index } }
@@ -237,48 +177,11 @@ fun WeeklyMealPlanScreen(
         stringResource(Res.string.nutrition_meal_plan_section_days)
     }
     val isEmptyWeek = mealProgress.plannedSlots == 0
-    val hasPlannedMeals = mealProgress.plannedSlots > 0
 
     fun loadingSlotFor(dayIndex: Int): MealSlot? {
         val request = mealGroceryLoading ?: return null
         return if (request.dayIndex == dayIndex) request.slot else null
     }
-
-    fun openAiMealPlan(initialCriteria: String = "") {
-        onOpenAiSheet(
-            AiHelperLaunchContext(
-                mode = NutritionAiMode.MealPlan,
-                initialCriteria = initialCriteria,
-            ),
-        )
-    }
-
-    val defaultEmptyAiChips = listOf(
-        MealPlanEmptyAiChip(
-            label = proteinPlanChipLabel,
-            testTag = MealPlanEmptyStateTestTags.CHIP_PROTEIN,
-            onClick = { openAiMealPlan(proteinPlanChipLabel) },
-        ),
-        MealPlanEmptyAiChip(
-            label = budgetPlanChipLabel,
-            testTag = MealPlanEmptyStateTestTags.CHIP_BUDGET,
-            onClick = { openAiMealPlan(budgetPlanChipLabel) },
-        ),
-        MealPlanEmptyAiChip(
-            label = veggiePlanChipLabel,
-            testTag = MealPlanEmptyStateTestTags.CHIP_VEGGIES,
-            onClick = { openAiMealPlan(veggiePlanChipLabel) },
-        ),
-    )
-    val contextualEmptyAiChips = contextualMatches.map { match ->
-        val criteria = stringResource(Res.string.nutrition_ai_criteria_use_up, match.displayName)
-        MealPlanEmptyAiChip(
-            label = stringResource(Res.string.nutrition_ai_chip_use_up, match.displayName),
-            testTag = MealPlanEmptyStateTestTags.contextualChip(match.id),
-            onClick = { openAiMealPlan(criteria) },
-        )
-    }
-    val emptyWeekAiChips = contextualEmptyAiChips.ifEmpty { defaultEmptyAiChips }
 
     fun openSuggestQuickMeal(dayIndex: Int, criteria: String, slot: MealSlot) {
         onOpenAiSheet(
@@ -292,9 +195,11 @@ fun WeeklyMealPlanScreen(
         )
     }
 
-    fun scrollToDays() {
+    fun scrollToDailySection() {
         scope.launch {
-            val targetIndex = if (todayEntry != null) 4 else 3
+            var targetIndex = 2
+            if (!canWrite) targetIndex++
+            if (isEmptyWeek) targetIndex++
             listState.animateScrollToItem(targetIndex.coerceAtMost(listState.layoutInfo.totalItemsCount - 1))
         }
     }
@@ -425,161 +330,133 @@ fun WeeklyMealPlanScreen(
         BoxWithConstraints(modifier = Modifier.screenContentArea(padding)) {
             val isWideLayout = maxWidth >= ScreenLayout.expandedMinWidth
 
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = screenModel::refresh,
-            state = pullRefreshState,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag(MealPlanTestTags.SCROLL_LIST),
-            state = listState,
-            contentPadding = screenListPadding(),
-            verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
-        ) {
-            item {
-                NutritionFeatureHeader(
-                    weekLabel = weekLabel,
-                    description = stringResource(Res.string.nutrition_meal_plan_description),
-                    icon = AppIcons.DateRange,
-                    accentColor = JourneySemanticColors.brandTerracotta(),
-                    progressLabel = stringResource(
-                        Res.string.nutrition_meal_plan_progress,
-                        mealProgress.plannedSlots,
-                        mealProgress.totalSlots,
-                    ),
-                    progress = mealProgress.plannedSlots.toFloat() / mealProgress.totalSlots,
-                    canGoToPreviousWeek = screenModel.canGoToPreviousWeek,
-                    canGoToNextWeek = screenModel.canGoToNextWeek,
-                    previousWeekLabel = previousWeekLabel,
-                    nextWeekLabel = nextWeekLabel,
-                    onPreviousWeek = { screenModel.selectWeekOffset(weekOffset - 1) },
-                    onNextWeek = { screenModel.selectWeekOffset(weekOffset + 1) },
-                    planWithAiLabel = stringResource(Res.string.nutrition_meal_plan_plan_with_ai),
-                    onPlanWithAi = ::openAiMealPlan,
-                    showPlanWithAi = canWrite && mealProgress.plannedSlots < mealProgress.totalSlots / 2,
-                    planWithAiTestTag = MealPlanTestTags.PLAN_WITH_AI,
-                )
-            }
-
-            if (!canWrite) {
-                item {
-                    HouseholdViewerReadOnlyNotice()
-                }
-            }
-
-            if (isEmptyWeek) {
-                item {
-                    MealPlanEmptyState(
-                        title = stringResource(Res.string.nutrition_meal_plan_empty_title),
-                        body = stringResource(Res.string.nutrition_meal_plan_empty_body),
-                        planWithAiLabel = stringResource(Res.string.nutrition_meal_plan_empty_cta_ai),
-                        addManuallyLabel = stringResource(Res.string.nutrition_meal_plan_empty_cta_manual),
-                        onPlanWithAi = { openAiMealPlan() },
-                        onAddManually = ::scrollToDays,
-                        aiChips = emptyWeekAiChips,
-                    )
-                }
-            }
-
-            if (hasPlannedMeals && canWrite) {
-                item {
-                    JourneySecondaryButton(
-                        onClick = { screenModel.generateGroceryForAllPlannedMeals() },
-                        enabled = !bulkGroceryLoading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag(MealPlanTestTags.GENERATE_ALL_GROCERY),
-                    ) {
-                        if (bulkGroceryLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.padding(end = 8.dp),
-                                strokeWidth = 2.dp,
-                            )
-                        }
-                        Text(generateAllGroceryLabel)
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = screenModel::refresh,
+                state = pullRefreshState,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(MealPlanTestTags.SCROLL_LIST),
+                    state = listState,
+                    contentPadding = screenListPadding(),
+                    verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
+                ) {
+                    item(key = "week-selector") {
+                        WeekSelectorBanner(
+                            weekLabel = weekLabel,
+                            canGoToPreviousWeek = screenModel.canGoToPreviousWeek,
+                            canGoToNextWeek = screenModel.canGoToNextWeek,
+                            previousWeekLabel = previousWeekLabel,
+                            nextWeekLabel = nextWeekLabel,
+                            onPreviousWeek = { screenModel.selectWeekOffset(weekOffset - 1) },
+                            onNextWeek = { screenModel.selectWeekOffset(weekOffset + 1) },
+                        )
                     }
-                }
-            }
 
-            if (pantryCheckItems.isNotEmpty()) {
-                item(key = "pantry-check") {
-                    PantryCheckSection(
-                        title = stringResource(Res.string.nutrition_pantry_check_title),
-                        subtitle = stringResource(Res.string.nutrition_pantry_check_subtitle),
-                        items = pantryCheckItems,
-                        onMarkHave = { item -> screenModel.dismissPantryCheckItem(item.id) },
-                        adoptRemainingLabel = stringResource(Res.string.nutrition_pantry_check_adopt_remaining),
-                        onAdoptRemaining = { screenModel.adoptRemainingPantryItems() },
-                        enabled = canWrite,
-                    )
-                }
-            }
-
-            if (shoppingAi.isNotEmpty()) {
-                item(key = "ai-suggestions") {
-                    AiGrocerySuggestionsSection(
-                        title = stringResource(Res.string.nutrition_ai_grocery_suggestions_title),
-                        items = shoppingAi,
-                        adoptAllLabel = stringResource(Res.string.nutrition_ai_adopt_all_grocery),
-                        onAdoptAll = { screenModel.adoptAllAiGrocerySuggestions() },
-                        onAdopt = { suggestion -> screenModel.adoptAiGrocerySuggestion(suggestion.id) },
-                        enabled = canWrite,
-                    )
-                }
-            }
-
-            if (isWideLayout && todayEntry != null && upcomingEntries.isNotEmpty()) {
-                item(key = "wide-days") {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(ScreenLayout.horizontalPadding),
-                    ) {
+                    item(key = "week-overview") {
                         Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(MealPlanTestTags.WEEK_OVERVIEW),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            FamilyLogisticsSectionHeader(
-                                title = stringResource(Res.string.nutrition_meal_plan_section_today),
+                            NutritionProgressChip(
+                                label = progressLabel,
+                                progress = mealProgress.plannedSlots.toFloat() / mealProgress.totalSlots,
+                                accentColor = JourneySemanticColors.brandTerracotta(),
                             )
-                            dayCard(todayEntry, isToday = true, initiallyExpanded = true)
                         }
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
-                        ) {
-                            FamilyLogisticsSectionHeader(title = daysSectionTitle)
-                            upcomingEntries.forEach { entry ->
+                    }
+
+                    if (!canWrite) {
+                        item(key = "viewer-notice") {
+                            HouseholdViewerReadOnlyNotice()
+                        }
+                    }
+
+                    if (isEmptyWeek) {
+                        item(key = "empty-state") {
+                            JourneyEmptyState(
+                                title = stringResource(Res.string.nutrition_meal_plan_empty_title),
+                                body = stringResource(Res.string.nutrition_meal_plan_empty_body),
+                                icon = AppIcons.DateRange,
+                                primaryActionLabel = stringResource(
+                                    Res.string.nutrition_meal_plan_empty_cta_manual,
+                                ),
+                                onPrimaryAction = ::scrollToDailySection,
+                                testTag = MealPlanEmptyStateTestTags.ROOT,
+                                primaryActionTestTag = MealPlanEmptyStateTestTags.ADD_MANUALLY,
+                            )
+                        }
+                    }
+
+                    item(key = "daily-section-header") {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            FamilyLogisticsSectionHeader(
+                                title = dailySectionTitle,
+                                titleModifier = Modifier.testTag(MealPlanTestTags.DAILY_SECTION),
+                            )
+                            Text(
+                                text = dailySectionHint,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = JourneySemanticColors.inkMuted(),
+                                modifier = Modifier.padding(horizontal = 4.dp),
+                            )
+                        }
+                    }
+
+                    if (isWideLayout && todayEntry != null && upcomingEntries.isNotEmpty()) {
+                        item(key = "wide-days") {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(ScreenLayout.horizontalPadding),
+                            ) {
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
+                                ) {
+                                    FamilyLogisticsSectionHeader(
+                                        title = stringResource(Res.string.nutrition_meal_plan_section_today),
+                                    )
+                                    dayCard(todayEntry, isToday = true, initiallyExpanded = true)
+                                }
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
+                                ) {
+                                    FamilyLogisticsSectionHeader(title = daysSectionTitle)
+                                    upcomingEntries.forEach { entry ->
+                                        dayCard(entry, isToday = false, initiallyExpanded = false)
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (todayEntry != null) {
+                            item(key = "today-header") {
+                                FamilyLogisticsSectionHeader(
+                                    title = stringResource(Res.string.nutrition_meal_plan_section_today),
+                                )
+                            }
+                            item(key = "today-card") {
+                                dayCard(todayEntry, isToday = true, initiallyExpanded = true)
+                            }
+                        }
+
+                        if (upcomingEntries.isNotEmpty()) {
+                            item(key = "upcoming-header") {
+                                FamilyLogisticsSectionHeader(title = daysSectionTitle)
+                            }
+                            items(upcomingEntries, key = { it.index }) { entry ->
                                 dayCard(entry, isToday = false, initiallyExpanded = false)
                             }
                         }
                     }
                 }
-            } else {
-                if (todayEntry != null) {
-                    item {
-                        FamilyLogisticsSectionHeader(
-                            title = stringResource(Res.string.nutrition_meal_plan_section_today),
-                        )
-                    }
-                    item {
-                        dayCard(todayEntry, isToday = true, initiallyExpanded = true)
-                    }
-                }
-
-                if (upcomingEntries.isNotEmpty()) {
-                    item {
-                        FamilyLogisticsSectionHeader(title = daysSectionTitle)
-                    }
-                    items(upcomingEntries, key = { it.index }) { entry ->
-                        dayCard(entry, isToday = false, initiallyExpanded = false)
-                    }
-                }
             }
-        }
-        }
         }
     }
 }

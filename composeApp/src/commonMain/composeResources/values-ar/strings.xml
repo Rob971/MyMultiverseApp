@@ -79,6 +79,8 @@
     <string name="nutrition_meal_plan_progress">%1$d من %2$d وجبة مخططة</string>
     <string name="nutrition_meal_slot_unplanned">غير مخطط</string>
     <string name="nutrition_meal_plan_section_days">الأيام</string>
+    <string name="nutrition_meal_plan_section_daily">التخطيط اليومي</string>
+    <string name="nutrition_meal_plan_daily_hint">وسّع يومًا لتعديل الغداء والعشاء أو إضافة للقائمة أو الحصول على اقتراح سريع.</string>
     <string name="nutrition_meal_plan_empty_title">ما قائمة الطعام هذا الأسبوع؟</string>
     <string name="nutrition_meal_plan_empty_body">خطط الغداء والعشاء لعائلتك، أو دع الذكاء الاصطناعي يقترح نقطة بداية.</string>
     <string name="nutrition_meal_plan_empty_cta_ai">خطط بالذكاء الاصطناعي</string>
