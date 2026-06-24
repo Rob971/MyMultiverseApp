@@ -51,7 +51,7 @@ fun MealPlanEmptyState(
     JourneyEmptyState(
         title = title,
         body = body,
-        icon = AppIcons.DateRange,
+        icon = AppIcons.MealPlan,
         primaryActionLabel = planWithAiLabel,
         onPrimaryAction = onPlanWithAi,
         primaryActionTestTag = MealPlanEmptyStateTestTags.PLAN_WITH_AI,

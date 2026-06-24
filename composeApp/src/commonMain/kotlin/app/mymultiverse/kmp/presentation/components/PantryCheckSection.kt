@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
@@ -18,9 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object PantryCheckSectionTestTags {
     const val ROOT = "grocery_pantry_check_section"
@@ -79,16 +77,17 @@ fun PantryCheckSection(
                         )
                     },
                     icon = {
-                        Icon(
-                            imageVector = AppIcons.CheckCircle,
+                        JourneyIcon(
+                            role = AppIconRole.GroceryChecked,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
+                            useContentColor = true,
                         )
                     },
                     colors = SuggestionChipDefaults.suggestionChipColors(
-                        containerColor = SharedJourneyColors.AiReadOnlyAccent.copy(alpha = 0.08f),
-                        labelColor = SharedJourneyColors.AiReadOnlyAccent,
-                        iconContentColor = SharedJourneyColors.AiReadOnlyAccent,
+                        containerColor = JourneySemanticColors.brandTerracotta().copy(alpha = 0.08f),
+                        labelColor = JourneySemanticColors.brandTerracotta(),
+                        iconContentColor = JourneySemanticColors.brandTerracotta(),
                     ),
                     modifier = Modifier
                         .animateItem()

@@ -12,8 +12,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import app.mymultiverse.kmp.presentation.components.JourneyIcon
 import app.mymultiverse.kmp.presentation.components.JourneyIconButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -55,6 +55,7 @@ import app.mymultiverse.kmp.presentation.components.nutritionDayLabel
 import app.mymultiverse.kmp.presentation.components.screenContentArea
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.navigation.NutritionSection
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
@@ -306,8 +307,8 @@ fun WeeklyMealPlanScreen(
         actions = {
             if (canWrite) {
                 JourneyIconButton(onClick = { showOverflowMenu = true }) {
-                    Icon(
-                        imageVector = AppIcons.MoreVert,
+                    JourneyIcon(
+                        role = AppIconRole.ChromeOverflow,
                         contentDescription = stringResource(Res.string.nutrition_meal_clear_week),
                     )
                 }
@@ -382,7 +383,7 @@ fun WeeklyMealPlanScreen(
                             JourneyEmptyState(
                                 title = stringResource(Res.string.nutrition_meal_plan_empty_title),
                                 body = stringResource(Res.string.nutrition_meal_plan_empty_body),
-                                icon = AppIcons.DateRange,
+                                icon = AppIcons.MealPlan,
                                 primaryActionLabel = stringResource(
                                     Res.string.nutrition_meal_plan_empty_cta_manual,
                                 ),

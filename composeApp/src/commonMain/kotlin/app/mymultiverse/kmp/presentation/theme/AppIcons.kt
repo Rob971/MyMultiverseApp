@@ -992,4 +992,94 @@ object AppIcons {
             return _dragHandle!!
         }
     private var _dragHandle: ImageVector? = null
+
+    /** Weekly meal plan — calendar with a meal block (distinct from generic date range). */
+    val MealPlan: ImageVector
+        get() {
+            if (_mealPlan != null) return _mealPlan!!
+            _mealPlan = ImageVector.Builder(
+                name = "Filled.MealPlan",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(17.0f, 12.0f)
+                    horizontalLineToRelative(-5.0f)
+                    verticalLineToRelative(5.0f)
+                    horizontalLineToRelative(5.0f)
+                    verticalLineToRelative(-5.0f)
+                    close()
+                    moveTo(16.0f, 1.0f)
+                    verticalLineToRelative(2.0f)
+                    horizontalLineTo(8.0f)
+                    verticalLineTo(1.0f)
+                    horizontalLineTo(6.0f)
+                    verticalLineToRelative(2.0f)
+                    horizontalLineTo(5.0f)
+                    curveToRelative(-1.11f, 0.0f, -1.99f, 0.9f, -1.99f, 2.0f)
+                    lineTo(3.0f, 19.0f)
+                    curveToRelative(0.0f, 1.1f, 0.89f, 2.0f, 2.0f, 2.0f)
+                    horizontalLineToRelative(14.0f)
+                    curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
+                    verticalLineTo(5.0f)
+                    curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
+                    horizontalLineToRelative(-1.0f)
+                    verticalLineTo(1.0f)
+                    horizontalLineToRelative(-2.0f)
+                    close()
+                    moveTo(19.0f, 19.0f)
+                    horizontalLineTo(5.0f)
+                    verticalLineTo(8.0f)
+                    horizontalLineToRelative(14.0f)
+                    verticalLineToRelative(11.0f)
+                    close()
+                }
+            }.build()
+            return _mealPlan!!
+        }
+    private var _mealPlan: ImageVector? = null
+
+    /** Shared grocery checklist — distinct from cart / add-to-cart actions. */
+    val GroceryList: ImageVector
+        get() {
+            if (_groceryList != null) return _groceryList!!
+            _groceryList = ImageVector.Builder(
+                name = "Filled.GroceryList",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(9.0f, 16.17f)
+                    lineTo(4.83f, 12.0f)
+                    lineTo(3.41f, 13.41f)
+                    lineTo(9.0f, 19.0f)
+                    lineTo(21.0f, 7.0f)
+                    lineTo(19.59f, 5.59f)
+                    lineTo(9.0f, 16.17f)
+                    close()
+                    moveTo(20.0f, 3.0f)
+                    horizontalLineTo(4.0f)
+                    curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
+                    verticalLineToRelative(14.0f)
+                    curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f)
+                    horizontalLineToRelative(14.0f)
+                    curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
+                    verticalLineTo(5.0f)
+                    curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
+                    close()
+                    moveTo(20.0f, 19.0f)
+                    horizontalLineTo(4.0f)
+                    verticalLineTo(5.0f)
+                    horizontalLineToRelative(14.0f)
+                    verticalLineToRelative(14.0f)
+                    close()
+                }
+            }.build()
+            return _groceryList!!
+        }
+    private var _groceryList: ImageVector? = null
 }

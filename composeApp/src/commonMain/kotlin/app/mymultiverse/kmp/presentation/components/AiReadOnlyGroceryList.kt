@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,9 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 @Composable
 fun AiReadOnlyGroceryList(
@@ -28,7 +26,7 @@ fun AiReadOnlyGroceryList(
 ) {
     if (items.isEmpty()) return
 
-    val aiAccent = SharedJourneyColors.AiReadOnlyAccent
+    val aiAccent = JourneySemanticColors.brandTerracotta()
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -50,10 +48,9 @@ fun AiReadOnlyGroceryList(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Icon(
-                        imageVector = AppIcons.Sparkles,
+                    JourneyIcon(
+                        role = AppIconRole.AiAccent,
                         contentDescription = null,
-                        tint = aiAccent,
                         modifier = Modifier.size(20.dp),
                     )
                     Text(

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,7 +27,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
@@ -85,10 +84,11 @@ fun FamilyLogisticCard(
                     .background(accentColor.copy(alpha = 0.18f)),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(
+                JourneyIcon(
                     imageVector = icon,
+                    role = AppIconRole.FeatureAccent,
                     contentDescription = null,
-                    tint = accentColor,
+                    accentColor = accentColor,
                     modifier = Modifier.size(28.dp),
                 )
             }
@@ -138,10 +138,9 @@ fun FamilyLogisticCard(
             }
 
             if (enabled) {
-                Icon(
-                    imageVector = AppIcons.ChevronRight,
+                JourneyIcon(
+                    role = AppIconRole.ChromeChevronRight,
                     contentDescription = null,
-                    tint = JourneySemanticColors.inkMuted().copy(alpha = 0.7f),
                     modifier = Modifier.size(24.dp),
                 )
             }

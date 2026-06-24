@@ -14,7 +14,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
@@ -40,9 +39,9 @@ import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.model.nutrition.GroceryItem
 import app.mymultiverse.kmp.presentation.platform.JourneyHapticFeedback
 import app.mymultiverse.kmp.presentation.platform.rememberJourneyHapticFeedback
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object GroceryItemRowTestTags {
     const val ROW_PREFIX = "grocery_item_"
@@ -139,20 +138,19 @@ fun GroceryItemRow(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
+                JourneyIcon(
                     imageVector = if (item.isChecked) {
                         AppIcons.RadioButtonUnchecked
                     } else {
                         AppIcons.CheckCircle
                     },
+                    role = if (item.isChecked) AppIconRole.GroceryUnchecked else AppIconRole.GroceryChecked,
                     contentDescription = toggleContentDescription,
-                    tint = SharedJourneyColors.SageSoft,
                     modifier = Modifier.testTag(GroceryItemRowTestTags.SWIPE_CHECK_HINT),
                 )
-                Icon(
-                    imageVector = AppIcons.Delete,
+                JourneyIcon(
+                    role = AppIconRole.ActionDelete,
                     contentDescription = deleteContentDescription,
-                    tint = SharedJourneyColors.TerracottaOrange,
                     modifier = Modifier.testTag(GroceryItemRowTestTags.SWIPE_DELETE_HINT),
                 )
             }
@@ -255,10 +253,9 @@ private fun GroceryFlatRowContent(
                         },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(
-                        imageVector = AppIcons.DragHandle,
+                    JourneyIcon(
+                        role = AppIconRole.DragHandle,
                         contentDescription = dragHandleContentDescription,
-                        tint = JourneySemanticColors.inkMuted(),
                     )
                 }
             }
@@ -271,14 +268,10 @@ private fun GroceryFlatRowContent(
                 enabled = !isEditing && !readOnly,
                 modifier = Modifier.testTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}"),
             ) {
-                Icon(
+                JourneyIcon(
                     imageVector = if (item.isChecked) AppIcons.CheckCircle else AppIcons.RadioButtonUnchecked,
+                    role = if (item.isChecked) AppIconRole.GroceryChecked else AppIconRole.GroceryUnchecked,
                     contentDescription = toggleContentDescription,
-                    tint = if (item.isChecked) {
-                        SharedJourneyColors.SageSoft
-                    } else {
-                        JourneySemanticColors.inkMuted()
-                    },
                 )
             }
 
@@ -314,9 +307,10 @@ private fun GroceryFlatRowContent(
                         contentColor = JourneySemanticColors.brandTeal(),
                     ),
                 ) {
-                    Icon(
-                        imageVector = AppIcons.Check,
+                    JourneyIcon(
+                        role = AppIconRole.ActionConfirm,
                         contentDescription = saveContentDescription,
+                        useContentColor = true,
                     )
                 }
             } else {
@@ -339,9 +333,10 @@ private fun GroceryFlatRowContent(
                             contentColor = JourneySemanticColors.brandTeal(),
                         ),
                     ) {
-                        Icon(
-                            imageVector = AppIcons.Edit,
+                        JourneyIcon(
+                            role = AppIconRole.ActionEdit,
                             contentDescription = editContentDescription,
+                            useContentColor = true,
                         )
                     }
                 }

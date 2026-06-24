@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import androidx.compose.ui.unit.dp
 
@@ -30,10 +29,9 @@ fun UserAvatarButton(
         modifier = modifier,
     ) {
         if (showPersonFallback) {
-            Icon(
-                imageVector = AppIcons.Person,
+            JourneyIcon(
+                role = AppIconRole.Account,
                 contentDescription = contentDescription,
-                tint = JourneySemanticColors.brandTeal(),
             )
         } else {
             Box(

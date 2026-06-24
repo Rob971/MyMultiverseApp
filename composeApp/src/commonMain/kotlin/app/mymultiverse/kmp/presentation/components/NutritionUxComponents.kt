@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -21,7 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 
 object WeekSelectorTestTags {
@@ -59,8 +58,8 @@ fun WeekSelectorBanner(
                 enabled = canGoToPreviousWeek,
                 modifier = Modifier.testTag(WeekSelectorTestTags.PREVIOUS),
             ) {
-                Icon(
-                    imageVector = AppIcons.ChevronLeft,
+                JourneyIcon(
+                    role = AppIconRole.ChromeChevronLeft,
                     contentDescription = previousWeekLabel,
                     tint = if (canGoToPreviousWeek) {
                         brandTeal
@@ -83,8 +82,8 @@ fun WeekSelectorBanner(
                 enabled = canGoToNextWeek,
                 modifier = Modifier.testTag(WeekSelectorTestTags.NEXT),
             ) {
-                Icon(
-                    imageVector = AppIcons.ChevronRight,
+                JourneyIcon(
+                    role = AppIconRole.ChromeChevronRight,
                     contentDescription = nextWeekLabel,
                     tint = if (canGoToNextWeek) {
                         brandTeal

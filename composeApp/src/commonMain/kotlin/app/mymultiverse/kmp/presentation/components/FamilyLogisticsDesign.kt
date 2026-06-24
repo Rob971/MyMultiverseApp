@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -30,7 +29,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
@@ -172,10 +171,11 @@ fun NutritionFeatureHeader(
                         .background(accentColor.copy(alpha = 0.18f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(
+                    JourneyIcon(
                         imageVector = icon,
+                        role = AppIconRole.FeatureAccent,
                         contentDescription = null,
-                        tint = accentColor,
+                        accentColor = accentColor,
                         modifier = Modifier.size(FamilyLogisticsDesign.iconSize),
                     )
                 }
@@ -246,10 +246,9 @@ fun CollapsibleSectionChevron(
         targetValue = if (expanded) 180f else 0f,
         label = "collapsible_chevron_rotation",
     )
-    Icon(
-        imageVector = AppIcons.KeyboardArrowDown,
+    JourneyIcon(
+        role = AppIconRole.ChromeExpand,
         contentDescription = contentDescription,
-        tint = JourneySemanticColors.inkMuted(),
         modifier = modifier
             .size(24.dp)
             .rotate(rotation),

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,9 +16,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object HomeComingSoonTestTags {
     const val ROW = "home_coming_soon_row"
@@ -51,16 +49,16 @@ fun HomeComingSoonRow(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    imageVector = AppIcons.Explore,
+                JourneyIcon(
+                    role = AppIconRole.ComingSoonExplore,
                     contentDescription = null,
-                    tint = SharedJourneyColors.TerracottaOrange.copy(alpha = 0.7f),
+                    tint = JourneySemanticColors.brandTerracotta().copy(alpha = 0.7f),
                     modifier = Modifier.size(22.dp),
                 )
-                Icon(
-                    imageVector = AppIcons.AccountBalance,
+                JourneyIcon(
+                    role = AppIconRole.ComingSoonBudget,
                     contentDescription = null,
-                    tint = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.7f),
+                    tint = JourneySemanticColors.brandTeal().copy(alpha = 0.7f),
                     modifier = Modifier.size(22.dp),
                 )
                 Text(

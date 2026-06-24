@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,9 +16,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 object GroceryGhostPairingTestTags {
     const val ROOT = "grocery_ghost_pairing_banner"
@@ -38,7 +36,7 @@ fun GroceryGhostPairingBanner(
 ) {
     FamilyLogisticsCardSurface(
         modifier = modifier.testTag(GroceryGhostPairingTestTags.ROOT),
-        accentColor = SharedJourneyColors.AiReadOnlyAccent,
+        accentColor = JourneySemanticColors.brandTerracotta(),
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -54,10 +52,9 @@ fun GroceryGhostPairingBanner(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(
-                        imageVector = AppIcons.Sparkles,
+                    JourneyIcon(
+                        role = AppIconRole.AiAccent,
                         contentDescription = null,
-                        tint = SharedJourneyColors.AiReadOnlyAccent,
                         modifier = Modifier.size(22.dp),
                     )
                     Text(
@@ -73,10 +70,9 @@ fun GroceryGhostPairingBanner(
                         .testTag(GroceryGhostPairingTestTags.DISMISS)
                         .semantics { contentDescription = dismissLabel },
                 ) {
-                    Icon(
-                        imageVector = AppIcons.Close,
+                    JourneyIcon(
+                        role = AppIconRole.ChromeClose,
                         contentDescription = null,
-                        tint = JourneySemanticColors.inkMuted(),
                     )
                 }
             }

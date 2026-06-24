@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -76,6 +75,7 @@ import app.mymultiverse.kmp.domain.nutrition.NutritionCollaborationActivityKind
 import app.mymultiverse.kmp.domain.nutrition.GroceryListPresentation
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
+import app.mymultiverse.kmp.presentation.components.JourneyIcon
 import app.mymultiverse.kmp.presentation.components.JourneyIconButton
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.kmp.presentation.components.WeekSelectorBanner
@@ -90,6 +90,7 @@ import app.mymultiverse.kmp.presentation.components.NutritionScaffold
 import app.mymultiverse.kmp.presentation.platform.KeepScreenOn
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.screenListPadding
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import kotlinx.coroutines.launch
@@ -295,8 +296,8 @@ fun GroceryShoppingScreen(
                     onClick = { keepScreenOn = !keepScreenOn },
                     modifier = Modifier.testTag(GroceryListTestTags.KEEP_SCREEN_ON_TOGGLE),
                 ) {
-                    Icon(
-                        imageVector = AppIcons.Lightbulb,
+                    JourneyIcon(
+                        role = AppIconRole.Hint,
                         contentDescription = if (keepScreenOn) keepScreenOffLabel else keepScreenOnLabel,
                         tint = if (keepScreenOn) {
                             JourneySemanticColors.brandTeal()
@@ -553,7 +554,7 @@ private fun LazyListScope.groceryShoppingListItems(
             JourneyEmptyState(
                 title = stringResource(Res.string.nutrition_grocery_empty_title),
                 body = stringResource(Res.string.nutrition_grocery_empty),
-                icon = AppIcons.ShoppingCart,
+                icon = AppIcons.GroceryList,
                 primaryActionLabel = if (canWrite) {
                     stringResource(Res.string.nutrition_grocery_empty_cta)
                 } else {

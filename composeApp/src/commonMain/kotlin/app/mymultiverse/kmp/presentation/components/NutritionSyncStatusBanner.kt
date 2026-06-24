@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,9 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.domain.sync.NutritionSyncStatus
-import app.mymultiverse.kmp.presentation.theme.AppIcons
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
-import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_sync_status_offline
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.nutrition_sync_status_pending
@@ -49,7 +47,7 @@ fun NutritionSyncStatusBanner(
     }
 
     val iconTint = JourneySemanticColors.inkDeep()
-    val accent = SharedJourneyColors.MediterraneanTeal
+    val accent = JourneySemanticColors.brandTeal()
 
     Surface(
         modifier = modifier
@@ -73,8 +71,8 @@ fun NutritionSyncStatusBanner(
                     )
                 }
                 NutritionSyncStatus.Synced -> {
-                    Icon(
-                        imageVector = AppIcons.CheckCircle,
+                    JourneyIcon(
+                        role = AppIconRole.SyncSuccess,
                         contentDescription = null,
                         modifier = Modifier
                             .size(20.dp)
@@ -83,8 +81,8 @@ fun NutritionSyncStatusBanner(
                     )
                 }
                 is NutritionSyncStatus.PendingPush -> {
-                    Icon(
-                        imageVector = AppIcons.Refresh,
+                    JourneyIcon(
+                        role = AppIconRole.SyncIdle,
                         contentDescription = null,
                         modifier = Modifier
                             .size(20.dp)
@@ -93,8 +91,8 @@ fun NutritionSyncStatusBanner(
                     )
                 }
                 NutritionSyncStatus.RemoteUnavailable -> {
-                    Icon(
-                        imageVector = AppIcons.Refresh,
+                    JourneyIcon(
+                        role = AppIconRole.SyncIdle,
                         contentDescription = null,
                         modifier = Modifier
                             .size(20.dp)

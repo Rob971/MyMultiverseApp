@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -39,7 +38,9 @@ import app.mymultiverse.kmp.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.kmp.domain.nutrition.WeekCalendar
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsDesign
 import app.mymultiverse.kmp.presentation.components.HomePrimaryActionsTestTags
+import app.mymultiverse.kmp.presentation.components.JourneyIcon
 import app.mymultiverse.kmp.presentation.components.WeekContextBanner
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
@@ -80,7 +81,7 @@ fun HomeDailyHubCircularActions(
             accentColor = colorScheme.primary,
             ringColor = colorScheme.primary,
             containerColor = colorScheme.primaryContainer,
-            icon = AppIcons.Restaurant,
+            icon = AppIcons.MealPlan,
             label = stringResource(Res.string.home_dashboard_plan_lunch),
             onClick = onOpenMealPlan,
             modifier = Modifier.testTag(HomePrimaryActionsTestTags.PLAN),
@@ -89,7 +90,7 @@ fun HomeDailyHubCircularActions(
             accentColor = colorScheme.secondary,
             ringColor = colorScheme.secondary,
             containerColor = colorScheme.secondaryContainer,
-            icon = AppIcons.ShoppingCart,
+            icon = AppIcons.GroceryList,
             label = stringResource(Res.string.home_dashboard_shopping_list),
             onClick = onOpenGrocery,
             modifier = Modifier.testTag(HomePrimaryActionsTestTags.GROCERY),
@@ -120,10 +121,11 @@ private fun HomeCircularHubCta(
             modifier = Modifier.size(96.dp),
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(
+                JourneyIcon(
                     imageVector = icon,
+                    role = AppIconRole.FeatureAccent,
                     contentDescription = null,
-                    tint = accentColor,
+                    accentColor = accentColor,
                     modifier = Modifier.size(40.dp),
                 )
             }

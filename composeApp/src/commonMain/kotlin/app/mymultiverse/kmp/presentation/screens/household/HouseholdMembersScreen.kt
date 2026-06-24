@@ -12,7 +12,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHost
@@ -48,6 +47,7 @@ import app.mymultiverse.kmp.presentation.components.HouseholdRoleBadge
 import app.mymultiverse.kmp.presentation.components.HouseholdRoleSelector
 import app.mymultiverse.kmp.presentation.components.householdRoleLabel
 import app.mymultiverse.kmp.presentation.components.JourneyEmptyState
+import app.mymultiverse.kmp.presentation.components.JourneyIcon
 import app.mymultiverse.kmp.presentation.components.JourneyIconButton
 import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.kmp.presentation.components.JourneyTextField
@@ -56,6 +56,7 @@ import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.screenContentArea
 import app.mymultiverse.kmp.presentation.components.screenListPadding
 import app.mymultiverse.kmp.presentation.navigation.HouseholdContext
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
@@ -352,8 +353,8 @@ fun HouseholdMembersScreen(
                                 onClick = { householdMenuExpanded = true },
                                 modifier = Modifier.testTag(HouseholdMembersTestTags.HOUSEHOLD_ACTIONS_OVERFLOW),
                             ) {
-                                Icon(
-                                    imageVector = AppIcons.MoreVert,
+                                JourneyIcon(
+                                    role = AppIconRole.ChromeOverflow,
                                     contentDescription = stringResource(Res.string.sharing_members_more_actions),
                                     tint = JourneySemanticColors.inkSecondary(),
                                 )
@@ -809,8 +810,8 @@ private fun MemberRow(
                     onClick = { menuExpanded = true },
                     modifier = Modifier.testTag("${HouseholdMembersTestTags.MEMBER_ROW_OVERFLOW}_${member.id}"),
                 ) {
-                    Icon(
-                        imageVector = AppIcons.MoreVert,
+                    JourneyIcon(
+                        role = AppIconRole.ChromeOverflow,
                         contentDescription = stringResource(Res.string.content_more_options),
                         tint = JourneySemanticColors.inkSecondary(),
                     )
@@ -892,8 +893,8 @@ private fun PendingInviteRow(
                     onClick = { menuExpanded = true },
                     modifier = Modifier.testTag("${HouseholdMembersTestTags.PENDING_INVITE_OVERFLOW}_${invite.id}"),
                 ) {
-                    Icon(
-                        imageVector = AppIcons.MoreVert,
+                    JourneyIcon(
+                        role = AppIconRole.ChromeOverflow,
                         contentDescription = stringResource(Res.string.content_more_options),
                         tint = JourneySemanticColors.inkSecondary(),
                     )
