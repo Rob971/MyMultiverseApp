@@ -456,11 +456,6 @@ jobs:
           print(f'Firebase service account: {data[\"client_email\"]}')
           "
 
-      - name: Authenticate to Google Cloud (Firebase)
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
-
       - name: Distribute to Firebase App Distribution
         uses: ./.github/actions/firebase-distribute
         with:
