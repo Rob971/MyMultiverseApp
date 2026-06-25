@@ -76,6 +76,7 @@ runs:
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ inputs.firebase-service-account-json }}
+        cleanup_credentials: false
 
     - name: Distribute debug APK to Firebase App Distribution
       id: distribute
