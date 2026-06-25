@@ -74,9 +74,7 @@ runs:
         FIREBASE_TESTERS: ${{ inputs.firebase-testers }}
         FIREBASE_GROUPS: ${{ inputs.firebase-groups }}
       run: |
-        creds_file="$(python3 scripts/firebase-credentials.py write)"
-        export GOOGLE_APPLICATION_CREDENTIALS="$creds_file"
-        trap 'rm -f "$creds_file"' EXIT
+        firebase_token="$(python3 scripts/firebase-credentials.py token)"
 
         apk_path="${{ inputs.apk-path }}"
         app_version="unknown"
@@ -112,7 +110,9 @@ runs:
         fi
 
         set -o pipefail
-        npx -y firebase-tools@${{ inputs.firebase-tools-version }} appdistribution:distribute "${args[@]}" 2>&1 | tee "$RUNNER_TEMP/firebase-distribution.log"
+        npx -y firebase-tools@${{ inputs.firebase-tools-version }} appdistribution:distribute \
+          --token "${firebase_token}" \
+          "${args[@]}" 2>&1 | tee "$RUNNER_TEMP/firebase-distribution.log"
 
     - name: Publish Firebase release status
       if: always()
