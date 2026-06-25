@@ -78,7 +78,7 @@ if command -v curl >/dev/null 2>&1; then
   if [[ "${STATUS}" == "200" ]]; then
     echo "OK — assetlinks.json reachable on apex"
   else
-    warn "assetlinks.json not 200 yet (deploy hosting after DNS + run verify-app-links-hosting.sh)"
+    warn "assetlinks.json not 200 yet (deploy mymultiverse-website after DNS + run verify-hosting.sh)"
   fi
 else
   warn "curl not installed; skipping HTTPS probe"

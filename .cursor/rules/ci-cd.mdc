@@ -14,7 +14,8 @@ alwaysApply: false
 |----------|---------|---------|
 | `.github/workflows/kmp-ci.yml` | PR, `main` push, manual | Android CI, instrumented, Supabase migration validation, release |
 | `.github/workflows/supabase-deploy.yml` | `main` supabase changes, manual | `db push`, edge deploy, smoke probes |
-| `.github/workflows/app-links-hosting.yml` | manual | Generate `web/.well-known/*` and deploy Firebase Hosting for App Links |
+
+**Website hosting:** [Rob971/mymultiverse-website](https://github.com/Rob971/mymultiverse-website) — **Deploy hosting** workflow (not in this repo).
 
 ## KMP CI jobs
 

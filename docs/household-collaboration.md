@@ -285,7 +285,7 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 - `home-onboarding-create-household` — new user creates household; modules gated until setup complete.
 - `household-invite-deeplink` — HTTPS invite link from email opens app (App Links when DNS live).
 - `grocery-ghost-pairing` — terracotta “Often bought together” banner; one-tap add (E4-9, v48).
-- `app-links-hosting` — `/.well-known/assetlinks.json` on `mymultiverse.app` (manual; after DNS migration).
+- **Deploy hosting** (repo [mymultiverse-website](https://github.com/Rob971/mymultiverse-website)) — `/.well-known/assetlinks.json` on `mymultiverse.app` (manual; after DNS migration).
 
 **Remote Supabase migrations required for field tests:**  
 `20250617130000`, `20250617140000`, `20250618120000`, `20250618140000`, `20250618150000`, `20250618160000`, `20250618161000`, `20250618170000`, `20250618180000`.

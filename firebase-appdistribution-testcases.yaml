@@ -34,7 +34,7 @@ summary: |
   Phase 3 UX (v39): invite share sheet after sending (SMS/WhatsApp with deep link); Sunday empty-week plan nudge on Today (dismissible).
   Dark mode accessibility (v45): household members card rows with role chips and overflow (⋮) menus; semantic ink tokens on auth, invite, join, loading, coming-soon, viewer banner, and AI grocery subtitles for WCAG-readable text in system dark theme.
   Onboarding completion (v46): email/password fallback on auth screen; HTTPS invite App Links (mymultiverse.app/invite); instrumented smoke for auth + household creation screens.
-  App Links hosting (v47): deploy web/.well-known + /invite fallback; verify with scripts/verify-app-links-hosting.sh after DNS is live.
+  App Links hosting (v47): deploy via Rob971/mymultiverse-website; verify with scripts/verify-hosting.sh after DNS is live.
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
   Global language (v53): globe icon in app headers (auth, onboarding, Home, nutrition screens) plus full picker in account sheet.
@@ -347,15 +347,15 @@ testcases:
       - OAuth with a different email shows the email-mismatch recovery screen with sign-out retry.
 
   - id: app-links-hosting
-    title: Verify mymultiverse.app App Links hosting
+    title: Verify mymultiverse.app hosting (website repo)
     steps:
       - Maintainer: connect `mymultiverse.app` to Firebase Hosting (DNS away from Squarespace).
-      - Run GitHub Actions workflow **App Links hosting** (or scripts/deploy-app-links-hosting.sh locally).
-      - Run scripts/verify-app-links-hosting.sh from a machine with network access.
+      - Run GitHub Actions workflow **Deploy hosting** in Rob971/mymultiverse-website (or scripts/deploy.sh locally).
+      - Run scripts/verify-hosting.sh from a machine with network access.
       - On Android, tap https://mymultiverse.app/invite?token=… from Gmail or Messages (use a real pending invite token).
       - On iOS, repeat with the same HTTPS link after Universal Links are configured.
     expected:
-      - verify-app-links-hosting.sh passes (assetlinks.json, apple-app-site-association, /invite fallback page).
+      - verify-hosting.sh passes (assetlinks.json, apple-app-site-association, /invite, homepage, privacy).
       - Android opens the app directly when App Links are verified (no browser chooser).
       - iOS opens the app via Universal Link when entitlements and AASA match the installed build.
       - Invalid or missing token shows the invalid-link message on /invite.

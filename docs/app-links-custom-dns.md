@@ -1,6 +1,8 @@
 # App Links custom DNS — `mymultiverse.app` → Firebase Hosting
 
-Use this when moving **off Squarespace website hosting** so `https://mymultiverse.app` serves Firebase Hosting (`mymultiverseapp`) for App Links and the `/invite` fallback page.
+Use this when moving **off Squarespace website hosting** so `https://mymultiverse.app` serves Firebase Hosting (`mymultiverseapp`) for App Links, the company site, and the `/invite` fallback page.
+
+**Hosting repo:** [Rob971/mymultiverse-website](https://github.com/Rob971/mymultiverse-website)
 
 ## Current state (check with `./scripts/check-app-links-dns.sh`)
 
@@ -39,28 +41,29 @@ DNS is managed at [Squarespace Domains](https://domains.squarespace.com) (former
 
 Do **not** change nameservers unless you are moving DNS to another provider entirely.
 
-## 3. Deploy `web/` to Firebase Hosting
+## 3. Deploy to Firebase Hosting
 
-After DNS propagates (or with **Skip verify** while DNS is still on Squarespace):
+After DNS propagates (or with **Skip verify** while DNS is still on Squarespace), deploy from **[mymultiverse-website](https://github.com/Rob971/mymultiverse-website)**:
 
 ```bash
-gh workflow run "App Links hosting" --ref main -f skip_verify=true
+gh workflow run "Deploy hosting" --repo Rob971/mymultiverse-website --ref main -f skip_verify=true
 ```
 
 Re-run with `skip_verify=false` once DNS resolves:
 
 ```bash
-gh workflow run "App Links hosting" --ref main -f skip_verify=false
+gh workflow run "Deploy hosting" --repo Rob971/mymultiverse-website --ref main -f skip_verify=false
 ```
 
-Or locally (service account JSON required):
+**Secrets in website repo:** `FIREBASE_SERVICE_ACCOUNT_JSON`, `ANDROID_SHA256_FINGERPRINT` (from this app repo’s `scripts/print-android-apk-fingerprint.sh`).
+
+Or locally (clone website repo, service account JSON required):
 
 ```bash
-chmod +x scripts/print-android-apk-fingerprint.sh scripts/deploy-app-links-hosting.sh scripts/check-app-links-dns.sh
-./scripts/check-app-links-dns.sh
+./scripts/check-app-links-dns.sh   # from MyMultiverseApp
 ANDROID_SHA256_FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)" \
   GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json \
-  ./scripts/deploy-app-links-hosting.sh
+  ./scripts/deploy.sh                # from mymultiverse-website
 ```
 
 Optional — iOS Universal Links: set `IOS_TEAM_ID=YOUR_APPLE_TEAM_ID` on the deploy command (generates `apple-app-site-association`).
@@ -68,8 +71,8 @@ Optional — iOS Universal Links: set `IOS_TEAM_ID=YOUR_APPLE_TEAM_ID` on the de
 ## 4. Verify
 
 ```bash
-./scripts/check-app-links-dns.sh      # DNS points at Firebase, not Squarespace
-./scripts/verify-app-links-hosting.sh # HTTP 200 for assetlinks, AASA, /invite
+./scripts/check-app-links-dns.sh   # MyMultiverseApp — DNS points at Firebase
+./scripts/verify-hosting.sh        # mymultiverse-website — HTTP 200 checks
 ```
 
 On device: tap an invite link `https://mymultiverse.app/invite?token=…` — Android should open the app when App Links are verified.
@@ -79,14 +82,14 @@ On device: tap an invite link `https://mymultiverse.app/invite?token=…` — An
 | Symptom | Fix |
 |---------|-----|
 | Firebase stuck on **Needs setup** | Remove conflicting Squarespace A/CNAME on `@` and `www`; wait for TXT verification |
-| `verify-app-links-hosting.sh` 301 to www then 404 | Add `www.mymultiverse.app` in Firebase Hosting or redirect www → apex in Firebase |
-| Workflow fails on credentials | Add repo secret `FIREBASE_SERVICE_ACCOUNT_JSON` |
-| iOS Universal Links needed later | Re-deploy with `IOS_TEAM_ID=…` locally or add optional workflow input |
+| `verify-hosting.sh` 301 to www then 404 | Add `www.mymultiverse.app` in Firebase Hosting or redirect www → apex in Firebase |
+| Workflow fails on credentials | Add `FIREBASE_SERVICE_ACCOUNT_JSON` secret in **mymultiverse-website** |
+| iOS Universal Links needed later | Re-deploy with `IOS_TEAM_ID=…` locally or workflow input |
 | SSL pending | DNS must point only to Firebase; duplicate A records to old host block certificate issuance |
 
-## Related files
+## Related
 
-- `firebase.json` — Hosting config for `web/`
-- `scripts/deploy-app-links-hosting.sh` — generate well-known + deploy
-- `scripts/verify-app-links-hosting.sh` — post-deploy HTTP checks
-- `README.md` — App Links section
+| Repo | Role |
+|------|------|
+| [mymultiverse-website](https://github.com/Rob971/mymultiverse-website) | `public/`, `firebase.json`, deploy + verify scripts |
+| MyMultiverseApp (this repo) | `scripts/print-android-apk-fingerprint.sh`, `scripts/check-app-links-dns.sh` |
