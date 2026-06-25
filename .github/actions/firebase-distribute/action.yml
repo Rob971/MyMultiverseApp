@@ -63,14 +63,8 @@ runs:
           echo "FIREBASE_SERVICE_ACCOUNT_JSON secret is required for Firebase App Distribution."
           exit 1
         fi
-        printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" | python3 -c "
-        import json, sys
-        data = json.load(sys.stdin)
-        for key in ('type', 'project_id', 'private_key', 'client_email'):
-            if key not in data:
-                raise SystemExit(f'Missing key in service account JSON: {key}')
-        print(f'Firebase service account: {data[\"client_email\"]}')
-        "
+        pip install -q google-auth requests
+        python3 scripts/firebase-credentials.py verify
 
     - name: Distribute debug APK to Firebase App Distribution
       id: distribute
@@ -80,8 +74,7 @@ runs:
         FIREBASE_TESTERS: ${{ inputs.firebase-testers }}
         FIREBASE_GROUPS: ${{ inputs.firebase-groups }}
       run: |
-        creds_file="$(mktemp)"
-        printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$creds_file"
+        creds_file="$(python3 scripts/firebase-credentials.py write)"
         export GOOGLE_APPLICATION_CREDENTIALS="$creds_file"
         trap 'rm -f "$creds_file"' EXIT
 

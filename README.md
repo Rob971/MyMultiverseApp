@@ -252,7 +252,7 @@ Enable Google/Apple providers for OAuth. Ensure **Realtime** is enabled (Databas
 1. Build or download the APK you distribute (Firebase release uses **debug** signing).
 2. `chmod +x scripts/print-android-apk-fingerprint.sh scripts/check-app-links-dns.sh`
 3. `./scripts/check-app-links-dns.sh` — confirms apex is off Squarespace before you verify hosting.
-4. **Deploy site:** [mymultiverse-website](https://github.com/Rob971/mymultiverse-website) → Actions → **Deploy hosting** (set secrets `FIREBASE_SERVICE_ACCOUNT_JSON`, `ANDROID_SHA256_FINGERPRINT`). Or locally in that repo: `./scripts/deploy.sh`.
+4. **Deploy site:** [mymultiverse-website](https://github.com/Rob971/mymultiverse-website) → Actions → **Deploy hosting** (set secrets `FIREBASE_SERVICE_ACCOUNT_JSON`, `ANDROID_SHA256_FINGERPRINT`). Paste the service account JSON as **one minified line** (see website repo README). Or locally in that repo: `./scripts/deploy.sh`.
 5. Fingerprint for hosting: `ANDROID_SHA256_FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)"`
 6. Verify in website repo: `./scripts/verify-hosting.sh` — HTTP 200 for `assetlinks.json`, AASA, `/invite`, homepage, and `/privacy/`.
 
