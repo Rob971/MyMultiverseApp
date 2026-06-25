@@ -25,12 +25,6 @@ inputs:
     description: Comma-separated tester groups
     required: false
     default: ""
-  github-ref-name:
-    description: Branch or tag name for release notes
-    required: true
-  github-sha:
-    description: Commit SHA for release notes
-    required: true
 
 outputs:
   outcome:
@@ -65,17 +59,21 @@ runs:
         fi
         pip install -q google-auth requests
         python3 scripts/firebase-credentials.py verify
+        creds_file="$(python3 scripts/firebase-credentials.py write)"
+        chmod 600 "${creds_file}"
+        echo "GOOGLE_APPLICATION_CREDENTIALS=${creds_file}" >> "$GITHUB_ENV"
+
+    - name: Install Firebase CLI
+      shell: bash
+      run: npm install -g "firebase-tools@${{ inputs.firebase-tools-version }}"
 
     - name: Distribute debug APK to Firebase App Distribution
       id: distribute
       shell: bash
       env:
-        FIREBASE_SERVICE_ACCOUNT_JSON: ${{ inputs.firebase-service-account-json }}
         FIREBASE_TESTERS: ${{ inputs.firebase-testers }}
         FIREBASE_GROUPS: ${{ inputs.firebase-groups }}
       run: |
-        firebase_token="$(python3 scripts/firebase-credentials.py token)"
-
         apk_path="${{ inputs.apk-path }}"
         app_version="unknown"
         if [ -f gradle/app-version.properties ]; then
@@ -88,7 +86,7 @@ runs:
           source ./scripts/format-app-version.sh
           app_version="$(format_app_version "$name" "${prerelease:-}")"
         fi
-        release_notes="v${app_version} — debug build from ${{ inputs.github-ref-name }} at ${{ inputs.github-sha }}."
+        release_notes="v${app_version} — debug build from ${{ github.ref_name }} at ${{ github.sha }}."
         if [ -f firebase-appdistribution-testcases.yaml ]; then
           checklist=$(grep -E '^  - id:' firebase-appdistribution-testcases.yaml | sed 's/^  - id: /- /' | head -12)
           release_notes=$(printf '%s\n\nQA checklist (firebase-appdistribution-testcases.yaml):\n%s' "$release_notes" "$checklist")
@@ -99,6 +97,7 @@ runs:
           "--app" "${{ inputs.firebase-app-id }}"
           "--project" "${{ inputs.firebase-project-id }}"
           "--release-notes" "$release_notes"
+          "--non-interactive"
         )
 
         if [ -n "$FIREBASE_TESTERS" ]; then
@@ -110,9 +109,7 @@ runs:
         fi
 
         set -o pipefail
-        npx -y firebase-tools@${{ inputs.firebase-tools-version }} appdistribution:distribute \
-          --token "${firebase_token}" \
-          "${args[@]}" 2>&1 | tee "$RUNNER_TEMP/firebase-distribution.log"
+        firebase appdistribution:distribute "${args[@]}" 2>&1 | tee "$RUNNER_TEMP/firebase-distribution.log"
 
     - name: Publish Firebase release status
       if: always()
