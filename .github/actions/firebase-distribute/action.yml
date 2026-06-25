@@ -72,19 +72,19 @@ runs:
         print(f'Firebase service account: {data[\"client_email\"]}')
         "
 
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ inputs.firebase-service-account-json }}
-        cleanup_credentials: false
-
     - name: Distribute debug APK to Firebase App Distribution
       id: distribute
       shell: bash
       env:
+        FIREBASE_SERVICE_ACCOUNT_JSON: ${{ inputs.firebase-service-account-json }}
         FIREBASE_TESTERS: ${{ inputs.firebase-testers }}
         FIREBASE_GROUPS: ${{ inputs.firebase-groups }}
       run: |
+        creds_file="$(mktemp)"
+        printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$creds_file"
+        export GOOGLE_APPLICATION_CREDENTIALS="$creds_file"
+        trap 'rm -f "$creds_file"' EXIT
+
         apk_path="${{ inputs.apk-path }}"
         app_version="unknown"
         if [ -f gradle/app-version.properties ]; then
