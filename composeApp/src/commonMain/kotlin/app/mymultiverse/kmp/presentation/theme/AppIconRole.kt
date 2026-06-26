@@ -110,7 +110,7 @@ fun AppIconRole.resolveTint(accentColor: Color? = null): Color = when (this) {
 
     AppIconRole.ChromeChevronRight,
     AppIconRole.ChromeChevronLeft,
-    -> JourneySemanticColors.inkMuted().copy(alpha = 0.7f)
+    -> JourneySemanticColors.inkMuted()
 
     AppIconRole.Account -> JourneySemanticColors.brandTeal()
 

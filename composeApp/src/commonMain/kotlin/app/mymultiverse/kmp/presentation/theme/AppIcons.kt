@@ -551,6 +551,11 @@ object AppIcons {
         }
     private var _explore: ImageVector? = null
 
+    /**
+     * Wallet — used for the "Budget" coming-soon feature.
+     * Replaces the previous bank-building icon which implied institutional finance
+     * rather than personal budget management.
+     */
     val AccountBalance: ImageVector
         get() {
             if (_accountBalance != null) return _accountBalance!!
@@ -561,35 +566,31 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
+                // Wallet body
                 path {
-                    moveTo(4.0f, 10.0f)
-                    verticalLineTo(20.0f)
-                    horizontalLineTo(8.0f)
-                    verticalLineTo(10.0f)
-                    horizontalLineTo(4.0f)
+                    moveTo(21.0f, 7.0f)
+                    horizontalLineTo(5.0f)
+                    curveTo(4.45f, 7.0f, 4.0f, 6.55f, 4.0f, 6.0f)
+                    reflectiveCurveTo(4.45f, 5.0f, 5.0f, 5.0f)
+                    horizontalLineTo(21.0f)
+                    verticalLineTo(3.0f)
+                    horizontalLineTo(5.0f)
+                    curveTo(3.35f, 3.0f, 2.0f, 4.35f, 2.0f, 6.0f)
+                    verticalLineTo(18.0f)
+                    curveTo(2.0f, 19.65f, 3.35f, 21.0f, 5.0f, 21.0f)
+                    horizontalLineTo(21.0f)
+                    curveTo(21.55f, 21.0f, 22.0f, 20.55f, 22.0f, 20.0f)
+                    verticalLineTo(8.0f)
+                    curveTo(22.0f, 7.45f, 21.55f, 7.0f, 21.0f, 7.0f)
                     close()
-                    moveTo(10.0f, 10.0f)
-                    verticalLineTo(20.0f)
-                    horizontalLineTo(14.0f)
-                    verticalLineTo(10.0f)
-                    horizontalLineTo(10.0f)
-                    close()
-                    moveTo(16.0f, 10.0f)
-                    verticalLineTo(20.0f)
-                    horizontalLineTo(20.0f)
-                    verticalLineTo(10.0f)
-                    horizontalLineTo(16.0f)
-                    close()
-                    moveTo(2.0f, 22.0f)
-                    horizontalLineTo(22.0f)
-                    verticalLineTo(24.0f)
-                    horizontalLineTo(2.0f)
-                    verticalLineTo(22.0f)
-                    close()
-                    moveTo(12.0f, 7.0f)
-                    lineTo(22.0f, 2.0f)
-                    lineTo(2.0f, 2.0f)
-                    lineTo(12.0f, 7.0f)
+                }
+                // Coin slot indicator inside the wallet
+                path {
+                    moveTo(18.0f, 15.5f)
+                    curveTo(18.0f, 16.33f, 17.33f, 17.0f, 16.5f, 17.0f)
+                    reflectiveCurveTo(15.0f, 16.33f, 15.0f, 15.5f)
+                    reflectiveCurveTo(15.67f, 14.0f, 16.5f, 14.0f)
+                    reflectiveCurveTo(18.0f, 14.67f, 18.0f, 15.5f)
                     close()
                 }
             }.build()
@@ -940,6 +941,10 @@ object AppIcons {
         }
     private var _language: ImageVector? = null
 
+    /**
+     * Three horizontal bars — the universally-recognised drag/reorder handle.
+     * Replaces the previous 6-dot grid which was ambiguous and low-contrast.
+     */
     val DragHandle: ImageVector
         get() {
             if (_dragHandle != null) return _dragHandle!!
@@ -951,41 +956,20 @@ object AppIcons {
                 viewportHeight = 24f,
             ).apply {
                 path {
-                    moveTo(11.0f, 18.0f)
-                    curveTo(11.0f, 19.1f, 10.1f, 20.0f, 9.0f, 20.0f)
-                    reflectiveCurveTo(7.0f, 19.1f, 7.0f, 18.0f)
-                    reflectiveCurveTo(7.9f, 16.0f, 9.0f, 16.0f)
-                    reflectiveCurveTo(11.0f, 16.9f, 11.0f, 18.0f)
+                    moveTo(3.0f, 8.0f)
+                    horizontalLineTo(21.0f)
+                    verticalLineTo(10.0f)
+                    horizontalLineTo(3.0f)
                     close()
-                    moveTo(9.0f, 10.0f)
-                    curveTo(7.9f, 10.0f, 7.0f, 10.9f, 7.0f, 12.0f)
-                    reflectiveCurveTo(7.9f, 14.0f, 9.0f, 14.0f)
-                    reflectiveCurveTo(11.0f, 13.1f, 11.0f, 12.0f)
-                    reflectiveCurveTo(10.1f, 10.0f, 9.0f, 10.0f)
+                    moveTo(3.0f, 12.0f)
+                    horizontalLineTo(21.0f)
+                    verticalLineTo(14.0f)
+                    horizontalLineTo(3.0f)
                     close()
-                    moveTo(9.0f, 4.0f)
-                    curveTo(7.9f, 4.0f, 7.0f, 4.9f, 7.0f, 6.0f)
-                    reflectiveCurveTo(7.9f, 8.0f, 9.0f, 8.0f)
-                    reflectiveCurveTo(11.0f, 7.1f, 11.0f, 6.0f)
-                    reflectiveCurveTo(10.1f, 4.0f, 9.0f, 4.0f)
-                    close()
-                    moveTo(15.0f, 8.0f)
-                    curveTo(16.1f, 8.0f, 17.0f, 7.1f, 17.0f, 6.0f)
-                    reflectiveCurveTo(16.1f, 4.0f, 15.0f, 4.0f)
-                    reflectiveCurveTo(13.0f, 4.9f, 13.0f, 6.0f)
-                    reflectiveCurveTo(13.9f, 8.0f, 15.0f, 8.0f)
-                    close()
-                    moveTo(15.0f, 10.0f)
-                    curveTo(13.9f, 10.0f, 13.0f, 10.9f, 13.0f, 12.0f)
-                    reflectiveCurveTo(13.9f, 14.0f, 15.0f, 14.0f)
-                    reflectiveCurveTo(17.0f, 13.1f, 17.0f, 12.0f)
-                    reflectiveCurveTo(16.1f, 10.0f, 15.0f, 10.0f)
-                    close()
-                    moveTo(15.0f, 16.0f)
-                    curveTo(13.9f, 16.0f, 13.0f, 16.9f, 13.0f, 18.0f)
-                    reflectiveCurveTo(13.9f, 20.0f, 15.0f, 20.0f)
-                    reflectiveCurveTo(17.0f, 19.1f, 17.0f, 18.0f)
-                    reflectiveCurveTo(16.1f, 16.0f, 15.0f, 16.0f)
+                    moveTo(3.0f, 16.0f)
+                    horizontalLineTo(21.0f)
+                    verticalLineTo(18.0f)
+                    horizontalLineTo(3.0f)
                     close()
                 }
             }.build()
@@ -1030,30 +1014,61 @@ object AppIcons {
                     verticalLineToRelative(11.0f)
                     close()
                 }
+                // Fork — three tines + handle, positioned on the left half of the calendar interior.
+                // Tine 1
                 path {
-                    moveTo(10.5f, 12.5f)
-                    curveTo(9.67f, 12.5f, 9.0f, 13.17f, 9.0f, 14.0f)
-                    reflectiveCurveTo(9.67f, 15.5f, 10.5f, 15.5f)
-                    reflectiveCurveTo(12.0f, 14.83f, 12.0f, 14.0f)
-                    reflectiveCurveTo(11.33f, 12.5f, 10.5f, 12.5f)
-                    close()
-                    moveTo(13.5f, 11.0f)
-                    verticalLineToRelative(5.0f)
+                    moveTo(7.0f, 10.0f)
                     horizontalLineToRelative(1.0f)
-                    verticalLineTo(11.0f)
+                    verticalLineTo(13.0f)
                     horizontalLineToRelative(-1.0f)
                     close()
-                    moveTo(15.5f, 10.0f)
-                    verticalLineToRelative(6.0f)
+                }
+                // Tine 2
+                path {
+                    moveTo(8.8f, 10.0f)
                     horizontalLineToRelative(1.0f)
-                    verticalLineTo(10.0f)
+                    verticalLineTo(13.0f)
                     horizontalLineToRelative(-1.0f)
                     close()
-                    moveTo(17.5f, 11.0f)
-                    verticalLineToRelative(4.0f)
+                }
+                // Tine 3
+                path {
+                    moveTo(10.6f, 10.0f)
                     horizontalLineToRelative(1.0f)
-                    verticalLineTo(11.0f)
+                    verticalLineTo(13.0f)
                     horizontalLineToRelative(-1.0f)
+                    close()
+                }
+                // Fork handle — bridges all three tines down to the grip
+                path {
+                    moveTo(8.1f, 13.0f)
+                    horizontalLineToRelative(2.4f)
+                    verticalLineTo(13.7f)
+                    curveTo(10.5f, 14.0f, 9.8f, 14.3f, 9.3f, 14.3f)
+                    curveTo(8.8f, 14.3f, 8.1f, 14.0f, 8.1f, 13.7f)
+                    close()
+                }
+                path {
+                    moveTo(8.7f, 14.3f)
+                    horizontalLineToRelative(1.2f)
+                    verticalLineTo(18.0f)
+                    horizontalLineToRelative(-1.2f)
+                    close()
+                }
+                // Knife — tapered blade + handle, positioned on the right half.
+                // Blade (triangle): narrow at top, widening to knife-width
+                path {
+                    moveTo(14.0f, 10.0f)
+                    lineTo(16.0f, 13.5f)
+                    lineTo(14.0f, 13.5f)
+                    close()
+                }
+                // Knife handle
+                path {
+                    moveTo(14.0f, 13.5f)
+                    horizontalLineToRelative(1.5f)
+                    verticalLineTo(18.0f)
+                    horizontalLineToRelative(-1.5f)
                     close()
                 }
             }.build()
@@ -1136,14 +1151,14 @@ object AppIcons {
                     verticalLineTo(17.5f)
                     close()
                 }
+                // Visible check mark on the first row bullet (~4×4dp, previously 1.75×1.75dp).
                 path {
-                    moveTo(7.5f, 9.75f)
-                    lineTo(8.0f, 10.25f)
-                    lineTo(9.25f, 9.0f)
-                    lineTo(8.75f, 8.5f)
-                    lineTo(8.0f, 9.25f)
-                    lineTo(7.75f, 9.0f)
-                    lineTo(7.5f, 9.75f)
+                    moveTo(6.5f, 9.5f)
+                    lineTo(7.75f, 10.75f)
+                    lineTo(10.5f, 7.75f)
+                    lineTo(9.75f, 7.0f)
+                    lineTo(7.75f, 9.25f)
+                    lineTo(7.25f, 8.75f)
                     close()
                 }
             }.build()
