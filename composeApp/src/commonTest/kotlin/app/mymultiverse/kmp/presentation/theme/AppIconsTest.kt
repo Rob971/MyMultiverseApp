@@ -24,6 +24,10 @@ class AppIconsTest {
         assertNotEquals(AppIcons.PersonAdd.name, AppIcons.Person.name)
         assertNotEquals(AppIcons.PersonAdd.name, AppIcons.Household.name)
         assertNotEquals(AppIcons.GroceryList.name, AppIcons.Check.name)
+        assertNotEquals(AppIcons.KeepScreenOn.name, AppIcons.Lightbulb.name)
+        assertNotEquals(AppIcons.SyncPending.name, AppIcons.Refresh.name)
+        assertNotEquals(AppIcons.SyncOffline.name, AppIcons.SyncPending.name)
+        assertNotEquals(AppIcons.PantryHave.name, AppIcons.CheckCircle.name)
     }
 
     @Test
@@ -39,6 +43,18 @@ class AppIconsTest {
         assertNotEquals(
             AppIconRole.Language.imageVector().name,
             AppIconRole.ChromeBack.imageVector().name,
+        )
+        assertNotEquals(
+            AppIconRole.KeepScreenOn.imageVector().name,
+            AppIconRole.Hint.imageVector().name,
+        )
+        assertNotEquals(
+            AppIconRole.SyncPending.imageVector().name,
+            AppIconRole.SyncOffline.imageVector().name,
+        )
+        assertNotEquals(
+            AppIconRole.PantryHave.imageVector().name,
+            AppIconRole.GroceryChecked.imageVector().name,
         )
     }
 }

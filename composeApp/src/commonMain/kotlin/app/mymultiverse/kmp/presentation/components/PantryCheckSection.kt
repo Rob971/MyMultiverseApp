@@ -78,7 +78,7 @@ fun PantryCheckSection(
                     },
                     icon = {
                         JourneyIcon(
-                            role = AppIconRole.GroceryChecked,
+                            role = AppIconRole.PantryHave,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
                             useContentColor = true,

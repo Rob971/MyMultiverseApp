@@ -82,17 +82,17 @@ fun NutritionSyncStatusBanner(
                 }
                 is NutritionSyncStatus.PendingPush -> {
                     JourneyIcon(
-                        role = AppIconRole.SyncIdle,
+                        role = AppIconRole.SyncPending,
                         contentDescription = null,
                         modifier = Modifier
                             .size(20.dp)
                             .testTag(NutritionSyncStatusTestTags.ICON),
-                        tint = iconTint,
+                        tint = accent,
                     )
                 }
                 NutritionSyncStatus.RemoteUnavailable -> {
                     JourneyIcon(
-                        role = AppIconRole.SyncIdle,
+                        role = AppIconRole.SyncOffline,
                         contentDescription = null,
                         modifier = Modifier
                             .size(20.dp)

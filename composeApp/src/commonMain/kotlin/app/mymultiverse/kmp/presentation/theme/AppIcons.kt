@@ -408,6 +408,7 @@ object AppIcons {
         }
     private var _notifications: ImageVector? = null
 
+    /** AI assistant — bold wand with spark (readable at 18–24dp). */
     val Sparkles: ImageVector
         get() {
             if (_sparkles != null) {
@@ -421,35 +422,28 @@ object AppIcons {
                 viewportHeight = 24f,
             ).apply {
                 path {
-                    moveTo(19.0f, 9.0f)
-                    lineTo(20.25f, 6.25f)
-                    lineTo(23.0f, 5.0f)
-                    lineTo(20.25f, 3.75f)
-                    lineTo(19.0f, 1.0f)
-                    lineTo(17.75f, 3.75f)
-                    lineTo(15.0f, 5.0f)
-                    lineTo(17.75f, 6.25f)
-                    lineTo(19.0f, 9.0f)
+                    moveTo(4.5f, 19.5f)
+                    lineTo(14.0f, 10.0f)
+                    lineTo(16.0f, 12.0f)
+                    lineTo(6.5f, 21.5f)
                     close()
-                    moveTo(11.5f, 9.5f)
-                    lineTo(13.0f, 6.0f)
-                    lineTo(14.5f, 9.5f)
-                    lineTo(18.0f, 11.0f)
-                    lineTo(14.5f, 12.5f)
-                    lineTo(13.0f, 16.0f)
-                    lineTo(11.5f, 12.5f)
-                    lineTo(8.0f, 11.0f)
-                    lineTo(11.5f, 9.5f)
-                    close()
-                    moveTo(19.0f, 15.0f)
-                    lineTo(17.75f, 17.75f)
+                    moveTo(15.0f, 3.0f)
+                    lineTo(17.5f, 8.5f)
+                    lineTo(23.0f, 11.0f)
+                    lineTo(17.5f, 13.5f)
                     lineTo(15.0f, 19.0f)
-                    lineTo(17.75f, 20.25f)
-                    lineTo(19.0f, 23.0f)
-                    lineTo(20.25f, 20.25f)
-                    lineTo(23.0f, 19.0f)
-                    lineTo(20.25f, 17.75f)
-                    lineTo(19.0f, 15.0f)
+                    lineTo(12.5f, 13.5f)
+                    lineTo(7.0f, 11.0f)
+                    lineTo(12.5f, 8.5f)
+                    close()
+                    moveTo(19.5f, 4.0f)
+                    lineTo(20.5f, 6.5f)
+                    lineTo(23.0f, 7.5f)
+                    lineTo(20.5f, 8.5f)
+                    lineTo(19.5f, 11.0f)
+                    lineTo(18.5f, 8.5f)
+                    lineTo(16.0f, 7.5f)
+                    lineTo(18.5f, 6.5f)
                     close()
                 }
             }.build()
@@ -766,6 +760,7 @@ object AppIcons {
         }
     private var _keyboardArrowUp: ImageVector? = null
 
+    /** Today dashboard — bold house with visible door for nav legibility. */
     val Home: ImageVector
         get() {
             if (_home != null) return _home!!
@@ -777,18 +772,13 @@ object AppIcons {
                 viewportHeight = 24f,
             ).apply {
                 path {
-                    moveTo(10.0f, 20.0f)
-                    verticalLineTo(14.0f)
-                    horizontalLineTo(14.0f)
+                    moveTo(12.0f, 3.0f)
+                    lineTo(3.0f, 11.0f)
+                    horizontalLineTo(6.0f)
                     verticalLineTo(20.0f)
-                    horizontalLineTo(19.0f)
-                    verticalLineTo(12.0f)
-                    horizontalLineTo(22.0f)
-                    lineTo(12.0f, 3.0f)
-                    lineTo(2.0f, 12.0f)
-                    horizontalLineTo(5.0f)
-                    verticalLineTo(20.0f)
-                    horizontalLineTo(10.0f)
+                    horizontalLineTo(18.0f)
+                    verticalLineTo(11.0f)
+                    horizontalLineTo(21.0f)
                     close()
                 }
             }.build()
@@ -993,7 +983,7 @@ object AppIcons {
         }
     private var _dragHandle: ImageVector? = null
 
-    /** Weekly meal plan — calendar with plate and utensils (distinct from generic date range). */
+    /** Weekly meal plan — calendar grid with bold plate (distinct from generic date range). */
     val MealPlan: ImageVector
         get() {
             if (_mealPlan != null) return _mealPlan!!
@@ -1005,55 +995,62 @@ object AppIcons {
                 viewportHeight = 24f,
             ).apply {
                 path {
-                    moveTo(16.0f, 1.0f)
-                    verticalLineToRelative(2.0f)
-                    horizontalLineTo(8.0f)
-                    verticalLineTo(1.0f)
-                    horizontalLineTo(6.0f)
-                    verticalLineToRelative(2.0f)
+                    moveTo(7.0f, 2.0f)
+                    horizontalLineTo(9.0f)
+                    verticalLineTo(4.0f)
+                    horizontalLineTo(15.0f)
+                    verticalLineTo(2.0f)
+                    horizontalLineTo(17.0f)
+                    verticalLineTo(4.0f)
+                    horizontalLineTo(19.0f)
+                    curveTo(20.1f, 4.0f, 21.0f, 4.9f, 21.0f, 6.0f)
+                    verticalLineTo(20.0f)
+                    curveTo(21.0f, 21.1f, 20.1f, 22.0f, 19.0f, 22.0f)
                     horizontalLineTo(5.0f)
-                    curveToRelative(-1.11f, 0.0f, -1.99f, 0.9f, -1.99f, 2.0f)
-                    lineTo(3.0f, 19.0f)
-                    curveToRelative(0.0f, 1.1f, 0.89f, 2.0f, 2.0f, 2.0f)
-                    horizontalLineToRelative(14.0f)
-                    curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
-                    verticalLineTo(5.0f)
-                    curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
-                    horizontalLineToRelative(-1.0f)
-                    verticalLineTo(1.0f)
-                    horizontalLineToRelative(-2.0f)
+                    curveTo(3.9f, 22.0f, 3.0f, 21.1f, 3.0f, 20.0f)
+                    verticalLineTo(6.0f)
+                    curveTo(3.0f, 4.9f, 3.9f, 4.0f, 5.0f, 4.0f)
+                    horizontalLineTo(7.0f)
                     close()
-                    moveTo(19.0f, 19.0f)
+                    moveTo(5.0f, 9.0f)
+                    horizontalLineTo(19.0f)
+                    verticalLineTo(20.0f)
                     horizontalLineTo(5.0f)
-                    verticalLineTo(8.0f)
-                    horizontalLineToRelative(14.0f)
-                    verticalLineToRelative(11.0f)
                     close()
                 }
                 path {
-                    moveTo(10.5f, 12.5f)
-                    curveTo(9.67f, 12.5f, 9.0f, 13.17f, 9.0f, 14.0f)
-                    reflectiveCurveTo(9.67f, 15.5f, 10.5f, 15.5f)
-                    reflectiveCurveTo(12.0f, 14.83f, 12.0f, 14.0f)
-                    reflectiveCurveTo(11.33f, 12.5f, 10.5f, 12.5f)
+                    moveTo(7.0f, 11.0f)
+                    horizontalLineTo(9.5f)
+                    verticalLineTo(13.5f)
+                    horizontalLineTo(7.0f)
                     close()
-                    moveTo(13.5f, 11.0f)
-                    verticalLineToRelative(5.0f)
-                    horizontalLineToRelative(1.0f)
-                    verticalLineTo(11.0f)
-                    horizontalLineToRelative(-1.0f)
+                    moveTo(10.75f, 11.0f)
+                    horizontalLineTo(13.25f)
+                    verticalLineTo(13.5f)
+                    horizontalLineTo(10.75f)
                     close()
-                    moveTo(15.5f, 10.0f)
-                    verticalLineToRelative(6.0f)
-                    horizontalLineToRelative(1.0f)
-                    verticalLineTo(10.0f)
-                    horizontalLineToRelative(-1.0f)
+                    moveTo(14.5f, 11.0f)
+                    horizontalLineTo(17.0f)
+                    verticalLineTo(13.5f)
+                    horizontalLineTo(14.5f)
                     close()
-                    moveTo(17.5f, 11.0f)
-                    verticalLineToRelative(4.0f)
-                    horizontalLineToRelative(1.0f)
-                    verticalLineTo(11.0f)
-                    horizontalLineToRelative(-1.0f)
+                    moveTo(7.0f, 15.0f)
+                    horizontalLineTo(9.5f)
+                    verticalLineTo(17.5f)
+                    horizontalLineTo(7.0f)
+                    close()
+                    moveTo(14.5f, 15.0f)
+                    horizontalLineTo(17.0f)
+                    verticalLineTo(17.5f)
+                    horizontalLineTo(14.5f)
+                    close()
+                }
+                path {
+                    moveTo(12.0f, 14.25f)
+                    curveTo(10.07f, 14.25f, 8.5f, 15.82f, 8.5f, 17.75f)
+                    reflectiveCurveTo(10.07f, 21.25f, 12.0f, 21.25f)
+                    reflectiveCurveTo(15.5f, 19.68f, 15.5f, 17.75f)
+                    reflectiveCurveTo(13.93f, 14.25f, 12.0f, 14.25f)
                     close()
                 }
             }.build()
@@ -1061,7 +1058,7 @@ object AppIcons {
         }
     private var _mealPlan: ImageVector? = null
 
-    /** Shared grocery checklist — clipboard with checked and pending rows. */
+    /** Shared grocery checklist — bold clipboard rows with visible checkmark. */
     val GroceryList: ImageVector
         get() {
             if (_groceryList != null) return _groceryList!!
@@ -1074,76 +1071,57 @@ object AppIcons {
             ).apply {
                 path {
                     moveTo(8.0f, 2.0f)
-                    horizontalLineToRelative(2.0f)
-                    verticalLineToRelative(2.0f)
-                    horizontalLineTo(8.0f)
+                    horizontalLineTo(10.0f)
+                    verticalLineTo(4.0f)
+                    horizontalLineTo(14.0f)
                     verticalLineTo(2.0f)
-                    close()
-                    moveTo(5.0f, 4.0f)
-                    curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
-                    verticalLineToRelative(14.0f)
-                    curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f)
-                    horizontalLineToRelative(12.0f)
-                    curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
-                    verticalLineTo(6.0f)
-                    curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
-                    horizontalLineToRelative(-1.0f)
+                    horizontalLineTo(16.0f)
                     verticalLineTo(4.0f)
-                    horizontalLineToRelative(-2.0f)
-                    verticalLineToRelative(2.0f)
-                    horizontalLineTo(8.0f)
-                    verticalLineTo(4.0f)
+                    horizontalLineTo(18.0f)
+                    curveTo(19.1f, 4.0f, 20.0f, 4.9f, 20.0f, 6.0f)
+                    verticalLineTo(20.0f)
+                    curveTo(20.0f, 21.1f, 19.1f, 22.0f, 18.0f, 22.0f)
                     horizontalLineTo(6.0f)
-                    verticalLineTo(4.0f)
-                    horizontalLineTo(5.0f)
+                    curveTo(4.9f, 22.0f, 4.0f, 21.1f, 4.0f, 20.0f)
+                    verticalLineTo(6.0f)
+                    curveTo(4.0f, 4.9f, 4.9f, 4.0f, 6.0f, 4.0f)
+                    horizontalLineTo(8.0f)
                     close()
                 }
                 path {
-                    moveTo(7.0f, 10.0f)
-                    curveToRelative(0.0f, 0.55f, 0.45f, 1.0f, 1.0f, 1.0f)
-                    reflectiveCurveTo(9.0f, 10.55f, 9.0f, 10.0f)
-                    reflectiveCurveTo(8.55f, 9.0f, 8.0f, 9.0f)
-                    reflectiveCurveTo(7.0f, 9.45f, 7.0f, 10.0f)
+                    moveTo(7.0f, 9.0f)
+                    lineTo(8.5f, 10.5f)
+                    lineTo(11.5f, 7.5f)
+                    lineTo(10.5f, 6.5f)
+                    lineTo(8.5f, 8.5f)
+                    lineTo(8.0f, 8.0f)
                     close()
-                    moveTo(10.0f, 9.5f)
-                    horizontalLineToRelative(7.0f)
-                    verticalLineToRelative(1.0f)
-                    horizontalLineToRelative(-7.0f)
-                    verticalLineTo(9.5f)
+                    moveTo(13.0f, 8.0f)
+                    horizontalLineTo(18.0f)
+                    verticalLineTo(10.0f)
+                    horizontalLineTo(13.0f)
                     close()
-                    moveTo(7.0f, 14.0f)
-                    curveToRelative(0.0f, 0.55f, 0.45f, 1.0f, 1.0f, 1.0f)
-                    reflectiveCurveTo(9.0f, 14.55f, 9.0f, 14.0f)
-                    reflectiveCurveTo(8.55f, 13.0f, 8.0f, 13.0f)
-                    reflectiveCurveTo(7.0f, 13.45f, 7.0f, 14.0f)
+                    moveTo(7.5f, 12.5f)
+                    curveTo(8.33f, 12.5f, 9.0f, 13.17f, 9.0f, 14.0f)
+                    reflectiveCurveTo(8.33f, 15.5f, 7.5f, 15.5f)
+                    reflectiveCurveTo(6.0f, 14.83f, 6.0f, 14.0f)
+                    reflectiveCurveTo(6.67f, 12.5f, 7.5f, 12.5f)
                     close()
-                    moveTo(10.0f, 13.5f)
-                    horizontalLineToRelative(7.0f)
-                    verticalLineToRelative(1.0f)
-                    horizontalLineToRelative(-7.0f)
-                    verticalLineTo(13.5f)
+                    moveTo(13.0f, 13.0f)
+                    horizontalLineTo(18.0f)
+                    verticalLineTo(15.0f)
+                    horizontalLineTo(13.0f)
                     close()
-                    moveTo(7.0f, 18.0f)
-                    curveToRelative(0.0f, 0.55f, 0.45f, 1.0f, 1.0f, 1.0f)
-                    reflectiveCurveTo(9.0f, 18.55f, 9.0f, 18.0f)
-                    reflectiveCurveTo(8.55f, 17.0f, 8.0f, 17.0f)
-                    reflectiveCurveTo(7.0f, 17.45f, 7.0f, 18.0f)
+                    moveTo(7.5f, 17.5f)
+                    curveTo(8.33f, 17.5f, 9.0f, 18.17f, 9.0f, 19.0f)
+                    reflectiveCurveTo(8.33f, 20.5f, 7.5f, 20.5f)
+                    reflectiveCurveTo(6.0f, 19.83f, 6.0f, 19.0f)
+                    reflectiveCurveTo(6.67f, 17.5f, 7.5f, 17.5f)
                     close()
-                    moveTo(10.0f, 17.5f)
-                    horizontalLineToRelative(7.0f)
-                    verticalLineToRelative(1.0f)
-                    horizontalLineToRelative(-7.0f)
-                    verticalLineTo(17.5f)
-                    close()
-                }
-                path {
-                    moveTo(7.5f, 9.75f)
-                    lineTo(8.0f, 10.25f)
-                    lineTo(9.25f, 9.0f)
-                    lineTo(8.75f, 8.5f)
-                    lineTo(8.0f, 9.25f)
-                    lineTo(7.75f, 9.0f)
-                    lineTo(7.5f, 9.75f)
+                    moveTo(13.0f, 18.0f)
+                    horizontalLineTo(18.0f)
+                    verticalLineTo(20.0f)
+                    horizontalLineTo(13.0f)
                     close()
                 }
             }.build()
@@ -1240,4 +1218,187 @@ object AppIcons {
             return _personAdd!!
         }
     private var _personAdd: ImageVector? = null
+
+    /** Keep grocery screen awake while shopping. */
+    val KeepScreenOn: ImageVector
+        get() {
+            if (_keepScreenOn != null) return _keepScreenOn!!
+            _keepScreenOn = ImageVector.Builder(
+                name = "Filled.KeepScreenOn",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(8.0f, 4.0f)
+                    horizontalLineTo(16.0f)
+                    curveTo(17.1f, 4.0f, 18.0f, 4.9f, 18.0f, 6.0f)
+                    verticalLineTo(18.0f)
+                    curveTo(18.0f, 19.1f, 17.1f, 20.0f, 16.0f, 20.0f)
+                    horizontalLineTo(8.0f)
+                    curveTo(6.9f, 20.0f, 6.0f, 19.1f, 6.0f, 18.0f)
+                    verticalLineTo(6.0f)
+                    curveTo(6.0f, 4.9f, 6.9f, 4.0f, 8.0f, 4.0f)
+                    close()
+                    moveTo(12.0f, 17.0f)
+                    curveTo(13.1f, 17.0f, 14.0f, 16.1f, 14.0f, 15.0f)
+                    reflectiveCurveTo(13.1f, 13.0f, 12.0f, 13.0f)
+                    reflectiveCurveTo(10.0f, 13.9f, 10.0f, 15.0f)
+                    reflectiveCurveTo(10.9f, 17.0f, 12.0f, 17.0f)
+                    close()
+                }
+                path {
+                    moveTo(12.0f, 1.0f)
+                    lineTo(13.5f, 4.0f)
+                    horizontalLineTo(17.0f)
+                    lineTo(14.25f, 6.0f)
+                    lineTo(15.25f, 9.5f)
+                    lineTo(12.0f, 7.5f)
+                    lineTo(8.75f, 9.5f)
+                    lineTo(9.75f, 6.0f)
+                    lineTo(7.0f, 4.0f)
+                    horizontalLineTo(10.5f)
+                    close()
+                }
+            }.build()
+            return _keepScreenOn!!
+        }
+    private var _keepScreenOn: ImageVector? = null
+
+    /** Sync changes waiting to upload. */
+    val SyncPending: ImageVector
+        get() {
+            if (_syncPending != null) return _syncPending!!
+            _syncPending = ImageVector.Builder(
+                name = "Filled.SyncPending",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(6.5f, 16.0f)
+                    curveTo(4.57f, 14.27f, 4.0f, 11.66f, 5.0f, 9.35f)
+                    curveTo(6.24f, 6.47f, 9.23f, 4.5f, 12.5f, 4.5f)
+                    curveTo(14.24f, 4.5f, 15.86f, 5.13f, 17.1f, 6.2f)
+                    lineTo(15.5f, 7.8f)
+                    curveTo(14.58f, 7.05f, 13.4f, 6.6f, 12.1f, 6.6f)
+                    curveTo(9.55f, 6.6f, 7.45f, 8.4f, 6.85f, 10.75f)
+                    curveTo(6.35f, 12.65f, 6.95f, 14.55f, 8.25f, 15.9f)
+                    lineTo(6.5f, 17.65f)
+                    close()
+                    moveTo(17.5f, 8.0f)
+                    lineTo(19.25f, 6.25f)
+                    curveTo(21.18f, 8.0f, 22.0f, 10.6f, 21.0f, 12.9f)
+                    curveTo(19.76f, 15.78f, 16.77f, 17.75f, 13.5f, 17.75f)
+                    curveTo(11.76f, 17.75f, 10.14f, 17.12f, 8.9f, 16.05f)
+                    lineTo(10.5f, 14.45f)
+                    curveTo(11.42f, 15.2f, 12.6f, 15.65f, 13.9f, 15.65f)
+                    curveTo(16.45f, 15.65f, 18.55f, 13.85f, 19.15f, 11.5f)
+                    curveTo(19.65f, 9.6f, 19.05f, 7.7f, 17.75f, 6.35f)
+                    lineTo(17.5f, 8.0f)
+                    close()
+                }
+                path {
+                    moveTo(12.0f, 9.0f)
+                    verticalLineTo(13.0f)
+                    lineTo(15.0f, 15.5f)
+                    lineTo(13.75f, 17.0f)
+                    lineTo(10.0f, 13.75f)
+                    verticalLineTo(9.0f)
+                    close()
+                }
+            }.build()
+            return _syncPending!!
+        }
+    private var _syncPending: ImageVector? = null
+
+    /** Sync unavailable / offline. */
+    val SyncOffline: ImageVector
+        get() {
+            if (_syncOffline != null) return _syncOffline!!
+            _syncOffline = ImageVector.Builder(
+                name = "Filled.SyncOffline",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(19.35f, 10.04f)
+                    curveTo(18.67f, 6.59f, 15.64f, 4.0f, 12.0f, 4.0f)
+                    curveTo(9.11f, 4.0f, 6.6f, 5.64f, 5.35f, 8.0f)
+                    lineTo(7.3f, 9.95f)
+                    curveTo(8.12f, 8.2f, 9.92f, 7.0f, 12.0f, 7.0f)
+                    curveTo(14.21f, 7.0f, 16.1f, 8.39f, 16.83f, 10.35f)
+                    lineTo(19.35f, 10.04f)
+                    close()
+                    moveTo(4.0f, 5.27f)
+                    lineTo(5.28f, 6.55f)
+                    lineTo(6.73f, 8.0f)
+                    curveTo(5.08f, 9.3f, 4.0f, 11.46f, 4.0f, 14.0f)
+                    curveTo(4.0f, 17.31f, 6.69f, 20.0f, 10.0f, 20.0f)
+                    curveTo(11.55f, 20.0f, 12.97f, 19.41f, 14.05f, 18.45f)
+                    lineTo(15.5f, 19.9f)
+                    lineTo(16.78f, 21.18f)
+                    lineTo(21.0f, 16.96f)
+                    lineTo(4.0f, 5.27f)
+                    close()
+                    moveTo(10.0f, 17.0f)
+                    curveTo(8.34f, 17.0f, 7.0f, 15.66f, 7.0f, 14.0f)
+                    curveTo(7.0f, 12.9f, 7.55f, 11.92f, 8.4f, 11.35f)
+                    lineTo(13.65f, 16.6f)
+                    curveTo(13.08f, 17.45f, 12.1f, 18.0f, 10.0f, 18.0f)
+                    close()
+                }
+            }.build()
+            return _syncOffline!!
+        }
+    private var _syncOffline: ImageVector? = null
+
+    /** Pantry item already on hand — jar with check (not grocery list check). */
+    val PantryHave: ImageVector
+        get() {
+            if (_pantryHave != null) return _pantryHave!!
+            _pantryHave = ImageVector.Builder(
+                name = "Filled.PantryHave",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(8.0f, 4.0f)
+                    horizontalLineTo(16.0f)
+                    verticalLineTo(6.0f)
+                    horizontalLineTo(17.0f)
+                    curveTo(18.1f, 6.0f, 19.0f, 6.9f, 19.0f, 8.0f)
+                    verticalLineTo(18.0f)
+                    curveTo(19.0f, 19.66f, 17.66f, 21.0f, 16.0f, 21.0f)
+                    horizontalLineTo(8.0f)
+                    curveTo(6.34f, 21.0f, 5.0f, 19.66f, 5.0f, 18.0f)
+                    verticalLineTo(8.0f)
+                    curveTo(5.0f, 6.9f, 5.9f, 6.0f, 7.0f, 6.0f)
+                    horizontalLineTo(8.0f)
+                    close()
+                    moveTo(9.0f, 8.0f)
+                    horizontalLineTo(15.0f)
+                    verticalLineTo(6.0f)
+                    horizontalLineTo(9.0f)
+                    close()
+                }
+                path {
+                    moveTo(9.5f, 13.0f)
+                    lineTo(11.0f, 14.5f)
+                    lineTo(14.5f, 11.0f)
+                    lineTo(13.5f, 10.0f)
+                    lineTo(11.0f, 12.5f)
+                    lineTo(10.25f, 11.75f)
+                    close()
+                }
+            }.build()
+            return _pantryHave!!
+        }
+    private var _pantryHave: ImageVector? = null
 }
