@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 60
+version: 61
 updated: 2026-06-26
 
 summary: |
@@ -40,6 +40,7 @@ summary: |
   Global language (v53): globe icon in app headers (auth, onboarding, Home, nutrition screens) plus full picker in account sheet.
   Icon clarity (v59): bolder nav/feature icons (Today, Plan, Groceries); Google/Apple marks on SSO buttons; coming-soon Adventures/Budget row on Today with labeled compass and wallet icons; dedicated sync and keep-screen-on icons.
   Language picker flags (v60): national flag trigger in top-right on auth/login and all headers; dropdown lists flag + language name; Napulitano keeps dialect subtitle.
+  Today hero and nav icons (v61): Plan lunch hero + Plan tab use plate/knife/fork icon; Shopping list hero + Groceries tab use fruit/veg/fish/steak icon.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
   Contextual AI chips E4-11 (v52): Plan empty state and AI helper sheet prepend Use up {ingredient} chips from unchecked grocery + meal history (fallback to protein/budget/veggies when no signals).
@@ -180,6 +181,7 @@ testcases:
     expected:
       - Week context banner shows under This week when nutrition week data is loaded.
       - Hero Plan lunch opens Plan tab; Shopping list opens Groceries tab.
+      - Plan lunch hero and Plan bottom tab show plate/knife/fork icon; Shopping list hero and Groceries tab show fruit/veg/fish/steak icon.
       - Today tab shows timeline rows for tonight's dinner and Shopping list (grocery progress or add-first-item hint).
       - No duplicate This week nutrition card, first-win checklist, or Family hero on Today.
 

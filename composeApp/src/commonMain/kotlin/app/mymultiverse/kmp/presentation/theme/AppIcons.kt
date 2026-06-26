@@ -1625,4 +1625,133 @@ object AppIcons {
             return _budgetWallet!!
         }
     private var _budgetWallet: ImageVector? = null
+
+    /** Plate with knife and fork — Today hero + Plan tab. */
+    val PlanLunchPlaceSetting: ImageVector
+        get() {
+            if (_planLunchPlaceSetting != null) return _planLunchPlaceSetting!!
+            _planLunchPlaceSetting = ImageVector.Builder(
+                name = "Filled.PlanLunchPlaceSetting",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(4.2f, 9.0f)
+                    horizontalLineTo(5.4f)
+                    verticalLineTo(20.0f)
+                    horizontalLineTo(4.2f)
+                    close()
+                    moveTo(3.0f, 9.0f)
+                    horizontalLineTo(6.6f)
+                    verticalLineTo(6.0f)
+                    horizontalLineTo(5.8f)
+                    verticalLineTo(8.0f)
+                    horizontalLineTo(5.2f)
+                    verticalLineTo(6.0f)
+                    horizontalLineTo(4.4f)
+                    verticalLineTo(8.0f)
+                    horizontalLineTo(3.8f)
+                    verticalLineTo(6.0f)
+                    horizontalLineTo(3.0f)
+                    close()
+                }
+                path {
+                    moveTo(19.8f, 5.0f)
+                    lineTo(21.0f, 6.2f)
+                    lineTo(15.2f, 14.0f)
+                    lineTo(14.0f, 12.8f)
+                    close()
+                    moveTo(18.6f, 14.5f)
+                    horizontalLineTo(20.2f)
+                    lineTo(20.8f, 20.0f)
+                    horizontalLineTo(18.0f)
+                    close()
+                }
+                path {
+                    moveTo(12.0f, 11.0f)
+                    curveTo(6.5f, 11.0f, 5.0f, 14.5f, 5.0f, 16.5f)
+                    curveTo(5.0f, 19.0f, 8.0f, 20.5f, 12.0f, 20.5f)
+                    curveTo(16.0f, 20.5f, 19.0f, 19.0f, 19.0f, 16.5f)
+                    curveTo(19.0f, 14.5f, 17.5f, 11.0f, 12.0f, 11.0f)
+                    close()
+                    moveTo(12.0f, 13.0f)
+                    curveTo(15.2f, 13.0f, 16.8f, 14.8f, 16.8f, 16.5f)
+                    curveTo(16.8f, 17.8f, 14.8f, 18.5f, 12.0f, 18.5f)
+                    curveTo(9.2f, 18.5f, 7.2f, 17.8f, 7.2f, 16.5f)
+                    curveTo(7.2f, 14.8f, 8.8f, 13.0f, 12.0f, 13.0f)
+                    close()
+                }
+            }.build()
+            return _planLunchPlaceSetting!!
+        }
+    private var _planLunchPlaceSetting: ImageVector? = null
+
+    /** Apple, carrot, fish, and steak — Today hero + Groceries tab. */
+    val FreshGroceries: ImageVector
+        get() {
+            if (_freshGroceries != null) return _freshGroceries!!
+            _freshGroceries = ImageVector.Builder(
+                name = "Filled.FreshGroceries",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(6.0f, 10.0f)
+                    curveTo(3.8f, 10.0f, 2.8f, 8.2f, 2.8f, 6.5f)
+                    curveTo(2.8f, 4.5f, 4.4f, 3.0f, 6.0f, 3.0f)
+                    curveTo(7.6f, 3.0f, 9.2f, 4.5f, 9.2f, 6.5f)
+                    curveTo(9.2f, 8.2f, 8.2f, 10.0f, 6.0f, 10.0f)
+                    close()
+                    moveTo(7.4f, 2.8f)
+                    lineTo(8.2f, 1.5f)
+                    lineTo(8.8f, 2.5f)
+                    lineTo(7.8f, 3.5f)
+                    close()
+                }
+                path {
+                    moveTo(9.8f, 19.0f)
+                    lineTo(11.8f, 19.0f)
+                    lineTo(11.0f, 10.5f)
+                    horizontalLineTo(10.3f)
+                    close()
+                    moveTo(10.4f, 10.5f)
+                    horizontalLineTo(11.6f)
+                    lineTo(11.9f, 8.0f)
+                    horizontalLineTo(10.1f)
+                    close()
+                }
+                path {
+                    moveTo(15.5f, 9.5f)
+                    curveTo(18.0f, 7.0f, 21.0f, 7.5f, 21.0f, 9.5f)
+                    curveTo(21.0f, 11.5f, 18.0f, 12.0f, 15.5f, 9.5f)
+                    close()
+                    moveTo(20.5f, 9.5f)
+                    lineTo(22.5f, 8.0f)
+                    lineTo(22.5f, 11.0f)
+                    close()
+                }
+                path {
+                    moveTo(14.0f, 18.5f)
+                    curveTo(11.8f, 18.5f, 11.2f, 16.0f, 12.8f, 14.5f)
+                    curveTo(14.8f, 12.8f, 18.5f, 13.5f, 19.0f, 16.0f)
+                    curveTo(19.5f, 18.5f, 16.2f, 19.5f, 14.0f, 18.5f)
+                    close()
+                    moveTo(14.8f, 14.5f)
+                    curveTo(15.8f, 13.5f, 17.0f, 13.8f, 17.0f, 14.8f)
+                    curveTo(17.0f, 15.7f, 15.9f, 15.8f, 14.8f, 14.5f)
+                    close()
+                    moveTo(15.0f, 16.5f)
+                    lineTo(17.2f, 15.6f)
+                    lineTo(16.9f, 16.4f)
+                    lineTo(14.7f, 17.2f)
+                    close()
+                }
+            }.build()
+            return _freshGroceries!!
+        }
+    private var _freshGroceries: ImageVector? = null
 }

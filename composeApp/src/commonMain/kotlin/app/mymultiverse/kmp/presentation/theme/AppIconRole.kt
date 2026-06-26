@@ -51,8 +51,8 @@ enum class AppIconRole {
 
 fun AppIconRole.imageVector(): ImageVector = when (this) {
     AppIconRole.NavHome -> AppIcons.Home
-    AppIconRole.NavMealPlan -> AppIcons.MealPlan
-    AppIconRole.NavGrocery -> AppIcons.GroceryList
+    AppIconRole.NavMealPlan -> AppIcons.PlanLunchPlaceSetting
+    AppIconRole.NavGrocery -> AppIcons.FreshGroceries
     AppIconRole.ChromeBack -> AppIcons.ArrowBack
     AppIconRole.ChromeClose -> AppIcons.Close
     AppIconRole.ChromeOverflow -> AppIcons.MoreVert
