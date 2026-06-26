@@ -359,6 +359,7 @@
     <string name="home_greeting_loading">Chargement de votre semaine…</string>
     <string name="home_greeting_personalized">Bonjour, %1$s</string>
     <string name="home_coming_soon_features">Aventures et budget</string>
+    <string name="home_coming_soon_adventures">Aventures</string>
     <string name="home_section_this_week">Cette semaine</string>
     <string name="home_section_household">Famille</string>
     <string name="home_section_more">Plus</string>

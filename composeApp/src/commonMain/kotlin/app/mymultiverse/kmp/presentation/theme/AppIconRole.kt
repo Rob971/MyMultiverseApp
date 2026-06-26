@@ -28,8 +28,14 @@ enum class AppIconRole {
     GroceryUnchecked,
     AiAccent,
     SyncIdle,
+    SyncPending,
+    SyncOffline,
     SyncSuccess,
     Hint,
+    KeepScreenOn,
+    PantryHave,
+    SsoGoogle,
+    SsoApple,
     FeatureAccent,
     Muted,
     Primary,
@@ -62,12 +68,18 @@ fun AppIconRole.imageVector(): ImageVector = when (this) {
     AppIconRole.GroceryChecked -> AppIcons.CheckCircle
     AppIconRole.GroceryUnchecked -> AppIcons.RadioButtonUnchecked
     AppIconRole.AiAccent -> AppIcons.Sparkles
-    AppIconRole.SyncIdle -> AppIcons.Refresh
-    AppIconRole.SyncSuccess -> AppIcons.CheckCircle
+    AppIconRole.SyncIdle -> AppIcons.SyncPending
+    AppIconRole.SyncPending -> AppIcons.SyncPending
+    AppIconRole.SyncOffline -> AppIcons.SyncOffline
+    AppIconRole.SyncSuccess -> AppIcons.SyncSynced
     AppIconRole.Hint -> AppIcons.Lightbulb
+    AppIconRole.KeepScreenOn -> AppIcons.KeepScreenOn
+    AppIconRole.PantryHave -> AppIcons.PantryHave
+    AppIconRole.SsoGoogle -> AppIcons.Google
+    AppIconRole.SsoApple -> AppIcons.Apple
     AppIconRole.MealSlot -> AppIcons.Restaurant
-    AppIconRole.ComingSoonExplore -> AppIcons.Explore
-    AppIconRole.ComingSoonBudget -> AppIcons.AccountBalance
+    AppIconRole.ComingSoonExplore -> AppIcons.Adventures
+    AppIconRole.ComingSoonBudget -> AppIcons.BudgetWallet
     AppIconRole.Household -> AppIcons.Household
     AppIconRole.InviteMember -> AppIcons.PersonAdd
     AppIconRole.DragHandle -> AppIcons.DragHandle
@@ -92,25 +104,32 @@ fun AppIconRole.resolveTint(accentColor: Color? = null): Color = when (this) {
     AppIconRole.ActionAdd,
     AppIconRole.ActionEdit,
     AppIconRole.SyncIdle,
+    AppIconRole.SyncPending,
+    AppIconRole.KeepScreenOn,
     AppIconRole.Hint,
+    AppIconRole.ComingSoonBudget,
     -> JourneySemanticColors.brandTeal()
 
     AppIconRole.ChromeClose,
     AppIconRole.ChromeOverflow,
     AppIconRole.Muted,
-    AppIconRole.DragHandle,
     AppIconRole.ChromeExpand,
     AppIconRole.GroceryUnchecked,
-    AppIconRole.ComingSoonExplore,
-    AppIconRole.ComingSoonBudget,
     AppIconRole.Household,
+    AppIconRole.SyncOffline,
     -> JourneySemanticColors.inkMuted()
+
+    AppIconRole.ComingSoonExplore,
+    -> JourneySemanticColors.brandTerracotta()
+
+    AppIconRole.DragHandle,
+    -> JourneySemanticColors.inkSecondary()
 
     AppIconRole.InviteMember -> JourneySemanticColors.brandTeal()
 
     AppIconRole.ChromeChevronRight,
     AppIconRole.ChromeChevronLeft,
-    -> JourneySemanticColors.inkMuted().copy(alpha = 0.7f)
+    -> JourneySemanticColors.inkSecondary()
 
     AppIconRole.Account -> JourneySemanticColors.brandTeal()
 
@@ -121,10 +140,13 @@ fun AppIconRole.resolveTint(accentColor: Color? = null): Color = when (this) {
     AppIconRole.ActionConfirm,
     AppIconRole.GroceryChecked,
     AppIconRole.SyncSuccess,
+    AppIconRole.PantryHave,
     -> JourneySemanticColors.successAccent()
 
     AppIconRole.AiAccent -> JourneySemanticColors.brandTerracotta()
 
+    AppIconRole.SsoGoogle,
+    AppIconRole.SsoApple,
     AppIconRole.FeatureAccent,
     AppIconRole.MealSlot,
     -> accentColor ?: JourneySemanticColors.brandTeal()

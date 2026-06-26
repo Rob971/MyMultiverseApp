@@ -306,7 +306,7 @@ fun GroceryShoppingScreen(
                     modifier = Modifier.testTag(GroceryListTestTags.KEEP_SCREEN_ON_TOGGLE),
                 ) {
                     JourneyIcon(
-                        role = AppIconRole.Hint,
+                        role = AppIconRole.KeepScreenOn,
                         contentDescription = if (keepScreenOn) keepScreenOffLabel else keepScreenOnLabel,
                         tint = if (keepScreenOn) {
                             JourneySemanticColors.brandTeal()

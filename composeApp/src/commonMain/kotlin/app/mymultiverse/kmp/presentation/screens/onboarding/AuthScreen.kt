@@ -30,12 +30,14 @@ import androidx.compose.foundation.layout.Row
 import app.mymultiverse.kmp.presentation.components.GlobalLanguageStyle
 import app.mymultiverse.kmp.presentation.components.GlobalLanguageAction
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
+import app.mymultiverse.kmp.presentation.components.JourneySsoButtonLabel
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
 import app.mymultiverse.kmp.presentation.screens.auth.LoginError
 import app.mymultiverse.kmp.presentation.screens.auth.LoginMessage
 import app.mymultiverse.kmp.presentation.screens.auth.isScreenLevelOnly
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_apple
@@ -148,6 +150,7 @@ fun AuthScreen(
 
             OnboardingSsoButton(
                 text = stringResource(Res.string.auth_continue_google),
+                provider = AppIconRole.SsoGoogle,
                 onClick = screenModel::signInWithGoogle,
                 enabled = !uiState.isLoading && !showConfigMissing,
                 isLoading = uiState.isLoading,
@@ -157,6 +160,7 @@ fun AuthScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 OnboardingSsoButton(
                     text = stringResource(Res.string.auth_continue_apple),
+                    provider = AppIconRole.SsoApple,
                     onClick = screenModel::signInWithApple,
                     enabled = !uiState.isLoading && !showConfigMissing,
                     isLoading = false,
@@ -193,6 +197,7 @@ fun AuthScreen(
 @Composable
 private fun OnboardingSsoButton(
     text: String,
+    provider: AppIconRole,
     onClick: () -> Unit,
     enabled: Boolean,
     isLoading: Boolean,
@@ -216,7 +221,11 @@ private fun OnboardingSsoButton(
                 color = MaterialTheme.colorScheme.onPrimary,
             )
         } else {
-            Text(text)
+            JourneySsoButtonLabel(
+                text = text,
+                provider = provider,
+                useContentColor = true,
+            )
         }
     }
 }

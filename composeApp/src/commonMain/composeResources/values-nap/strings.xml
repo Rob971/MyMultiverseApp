@@ -359,6 +359,7 @@
     <string name="home_greeting_loading">Sto caricanno 'a semmana toja…</string>
     <string name="home_greeting_personalized">Ciao, %1$s</string>
     <string name="home_coming_soon_features">Avventure e budget</string>
+    <string name="home_coming_soon_adventures">Avventure</string>
     <string name="home_section_this_week">Chesta semmana</string>
     <string name="home_section_household">Famiglia</string>
     <string name="home_section_more">De cchiù</string>

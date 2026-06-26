@@ -359,6 +359,7 @@
     <string name="home_greeting_loading">جاري تحميل أسبوعك…</string>
     <string name="home_greeting_personalized">مرحباً، %1$s</string>
     <string name="home_coming_soon_features">المغامرات والميزانية</string>
+    <string name="home_coming_soon_adventures">المغامرات</string>
     <string name="home_section_this_week">هذا الأسبوع</string>
     <string name="home_section_household">العائلة</string>
     <string name="home_section_more">المزيد</string>

@@ -24,6 +24,16 @@ class AppIconsTest {
         assertNotEquals(AppIcons.PersonAdd.name, AppIcons.Person.name)
         assertNotEquals(AppIcons.PersonAdd.name, AppIcons.Household.name)
         assertNotEquals(AppIcons.GroceryList.name, AppIcons.Check.name)
+        assertNotEquals(AppIcons.KeepScreenOn.name, AppIcons.Lightbulb.name)
+        assertNotEquals(AppIcons.SyncPending.name, AppIcons.Refresh.name)
+        assertNotEquals(AppIcons.SyncOffline.name, AppIcons.SyncPending.name)
+        assertNotEquals(AppIcons.PantryHave.name, AppIcons.CheckCircle.name)
+        assertNotEquals(AppIcons.SyncSynced.name, AppIcons.CheckCircle.name)
+        assertNotEquals(AppIcons.SyncSynced.name, AppIcons.SyncPending.name)
+        assertNotEquals(AppIcons.Google.name, AppIcons.Apple.name)
+        assertNotEquals(AppIcons.Adventures.name, AppIcons.Explore.name)
+        assertNotEquals(AppIcons.BudgetWallet.name, AppIcons.AccountBalance.name)
+        assertNotEquals(AppIcons.Adventures.name, AppIcons.BudgetWallet.name)
     }
 
     @Test
@@ -39,6 +49,30 @@ class AppIconsTest {
         assertNotEquals(
             AppIconRole.Language.imageVector().name,
             AppIconRole.ChromeBack.imageVector().name,
+        )
+        assertNotEquals(
+            AppIconRole.KeepScreenOn.imageVector().name,
+            AppIconRole.Hint.imageVector().name,
+        )
+        assertNotEquals(
+            AppIconRole.SyncPending.imageVector().name,
+            AppIconRole.SyncOffline.imageVector().name,
+        )
+        assertNotEquals(
+            AppIconRole.SyncSuccess.imageVector().name,
+            AppIconRole.GroceryChecked.imageVector().name,
+        )
+        assertNotEquals(
+            AppIconRole.PantryHave.imageVector().name,
+            AppIconRole.GroceryChecked.imageVector().name,
+        )
+        assertNotEquals(
+            AppIconRole.SsoGoogle.imageVector().name,
+            AppIconRole.SsoApple.imageVector().name,
+        )
+        assertNotEquals(
+            AppIconRole.ComingSoonExplore.imageVector().name,
+            AppIconRole.ComingSoonBudget.imageVector().name,
         )
     }
 }

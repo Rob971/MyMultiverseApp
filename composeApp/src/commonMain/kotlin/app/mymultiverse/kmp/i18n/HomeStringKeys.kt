@@ -92,6 +92,10 @@ object HomeStringKeys {
         "home_delete_account_success",
         "home_delete_account_error_owner",
         "home_delete_account_error_generic",
+        "home_coming_soon_adventures",
+        "home_coming_soon_features",
+        "home_coming_soon_hint",
+        "home_logistics_coming_soon",
         "action_back",
     )
 

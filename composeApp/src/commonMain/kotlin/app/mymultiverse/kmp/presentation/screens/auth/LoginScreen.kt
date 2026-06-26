@@ -23,6 +23,7 @@ import app.mymultiverse.kmp.presentation.components.JourneyTextFieldDefaults
 import app.mymultiverse.kmp.presentation.components.JourneyButtonLabel
 import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.kmp.presentation.components.JourneySecondaryButton
+import app.mymultiverse.kmp.presentation.components.JourneySsoButtonLabel
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -182,7 +183,11 @@ fun LoginScreen(
                         .fillMaxWidth()
                         .testTag(LoginTestTags.GOOGLE_BUTTON),
                 ) {
-                    Text(stringResource(Res.string.auth_continue_google))
+                    JourneySsoButtonLabel(
+                        text = stringResource(Res.string.auth_continue_google),
+                        provider = AppIconRole.SsoGoogle,
+                        useContentColor = true,
+                    )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 JourneySecondaryButton(
@@ -192,7 +197,11 @@ fun LoginScreen(
                         .fillMaxWidth()
                         .testTag(LoginTestTags.APPLE_BUTTON),
                 ) {
-                    Text(stringResource(Res.string.auth_continue_apple))
+                    JourneySsoButtonLabel(
+                        text = stringResource(Res.string.auth_continue_apple),
+                        provider = AppIconRole.SsoApple,
+                        useContentColor = true,
+                    )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
             }
