@@ -1,8 +1,53 @@
 package app.mymultiverse.kmp.presentation.theme
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathBuilder
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
+
+/**
+ * Solid fill applied to every glyph path. Without a non-null [fill] brush the Compose
+ * `path { }` DSL draws nothing, so the [androidx.compose.material3.Icon] tint has no pixels to
+ * recolor and the icon is invisible. The fill colour is irrelevant because callers tint the
+ * whole vector; black mirrors how Material's own `materialPath` builds icons.
+ */
+private val GlyphFill = SolidColor(Color.Black)
+
+/**
+ * Builds a glyph contour with a guaranteed solid fill so the icon is actually rendered.
+ * Use [fillType] = [PathFillType.EvenOdd] for shapes that rely on overlapping/inner contours to
+ * cut holes (frames, outlined cards), so they don't fill into a solid blob.
+ */
+private fun ImageVector.Builder.glyphPath(
+    fillType: PathFillType = PathFillType.NonZero,
+    pathBuilder: PathBuilder.() -> Unit,
+): ImageVector.Builder = path(
+    fill = GlyphFill,
+    pathFillType = fillType,
+    pathBuilder = pathBuilder,
+)
+
+/**
+ * Builds a stroked (outline) contour, tinted like [glyphPath]. Strokes stay crisp at small sizes,
+ * so they suit thin details (utensils, line art) that would turn muddy as tiny filled shapes.
+ */
+private fun ImageVector.Builder.glyphStroke(
+    strokeWidth: Float,
+    cap: StrokeCap = StrokeCap.Round,
+    join: StrokeJoin = StrokeJoin.Round,
+    pathBuilder: PathBuilder.() -> Unit,
+): ImageVector.Builder = path(
+    stroke = GlyphFill,
+    strokeLineWidth = strokeWidth,
+    strokeLineCap = cap,
+    strokeLineJoin = join,
+    pathBuilder = pathBuilder,
+)
 
 object AppIcons {
 
@@ -16,7 +61,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(12.0f, 12.0f)
                     curveTo(14.21f, 12.0f, 16.0f, 10.21f, 16.0f, 8.0f)
                     reflectiveCurveTo(14.21f, 4.0f, 12.0f, 4.0f)
@@ -46,39 +91,40 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(7.0f, 18.0f)
-                    curveTo(5.9f, 18.0f, 5.01f, 18.9f, 5.01f, 20.0f)
+                    curveToRelative(-1.1f, 0.0f, -1.99f, 0.9f, -1.99f, 2.0f)
                     reflectiveCurveTo(5.9f, 22.0f, 7.0f, 22.0f)
-                    reflectiveCurveTo(9.0f, 21.1f, 9.0f, 20.0f)
-                    reflectiveCurveTo(8.1f, 18.0f, 7.0f, 18.0f)
+                    reflectiveCurveToRelative(2.0f, -0.9f, 2.0f, -2.0f)
+                    reflectiveCurveToRelative(-0.9f, -2.0f, -2.0f, -2.0f)
                     close()
-                    moveTo(1.0f, 1.0f)
-                    horizontalLineTo(3.0f)
-                    lineTo(3.2f, 3.0f)
-                    lineTo(19.0f, 3.0f)
-                    curveTo(20.1f, 3.0f, 20.8f, 3.78f, 20.95f, 4.8f)
-                    lineTo(22.3f, 14.8f)
-                    curveTo(22.45f, 15.92f, 21.65f, 17.0f, 20.53f, 17.0f)
-                    horizontalLineTo(5.5f)
-                    lineTo(5.0f, 7.0f)
-                    horizontalLineTo(21.0f)
-                    lineTo(19.7f, 15.0f)
-                    horizontalLineTo(7.0f)
-                    curveTo(5.9f, 15.0f, 5.01f, 15.9f, 5.01f, 17.0f)
-                    reflectiveCurveTo(5.9f, 19.0f, 7.0f, 19.0f)
-                    horizontalLineTo(20.0f)
-                    verticalLineTo(17.0f)
-                    horizontalLineTo(7.82f)
-                    lineTo(7.1f, 5.0f)
-                    horizontalLineTo(2.0f)
-                    lineTo(1.0f, 1.0f)
+                    moveTo(1.0f, 2.0f)
+                    verticalLineToRelative(2.0f)
+                    horizontalLineToRelative(2.0f)
+                    lineToRelative(3.6f, 7.59f)
+                    lineToRelative(-1.35f, 2.45f)
+                    curveToRelative(-0.16f, 0.28f, -0.25f, 0.61f, -0.25f, 0.96f)
+                    curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f)
+                    horizontalLineToRelative(12.0f)
+                    verticalLineToRelative(-2.0f)
+                    horizontalLineTo(7.42f)
+                    curveToRelative(-0.14f, 0.0f, -0.25f, -0.11f, -0.25f, -0.25f)
+                    lineToRelative(0.03f, -0.12f)
+                    lineTo(8.1f, 13.0f)
+                    horizontalLineToRelative(7.45f)
+                    curveToRelative(0.75f, 0.0f, 1.41f, -0.41f, 1.75f, -1.03f)
+                    lineToRelative(3.58f, -6.49f)
+                    curveTo(20.95f, 5.34f, 21.0f, 5.17f, 21.0f, 5.0f)
+                    curveToRelative(0.0f, -0.55f, -0.45f, -1.0f, -1.0f, -1.0f)
+                    horizontalLineTo(5.21f)
+                    lineToRelative(-0.94f, -2.0f)
+                    horizontalLineTo(1.0f)
                     close()
                     moveTo(17.0f, 18.0f)
-                    curveTo(15.9f, 18.0f, 15.01f, 18.9f, 15.01f, 20.0f)
-                    reflectiveCurveTo(15.9f, 22.0f, 17.0f, 22.0f)
-                    reflectiveCurveTo(19.0f, 21.1f, 19.0f, 20.0f)
-                    reflectiveCurveTo(18.1f, 18.0f, 17.0f, 18.0f)
+                    curveToRelative(-1.1f, 0.0f, -1.99f, 0.9f, -1.99f, 2.0f)
+                    reflectiveCurveToRelative(0.89f, 2.0f, 1.99f, 2.0f)
+                    reflectiveCurveToRelative(2.0f, -0.9f, 2.0f, -2.0f)
+                    reflectiveCurveToRelative(-0.9f, -2.0f, -2.0f, -2.0f)
                     close()
                 }
             }.build()
@@ -96,7 +142,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(17.65f, 6.35f)
                     curveTo(16.2f, 4.9f, 14.21f, 4.0f, 12.0f, 4.0f)
                     curveToRelative(-4.42f, 0.0f, -7.99f, 3.58f, -7.99f, 8.0f)
@@ -130,7 +176,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(15.41f, 7.41f)
                     lineTo(14.0f, 6.0f)
                     lineTo(8.0f, 12.0f)
@@ -156,7 +202,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(10.0f, 6.0f)
                     lineTo(8.59f, 7.41f)
                     lineTo(13.17f, 12.0f)
@@ -183,7 +229,7 @@ object AppIcons {
                 viewportHeight = 24f,
                 autoMirror = true,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(20.0f, 11.0f)
                     horizontalLineTo(7.83f)
                     lineToRelative(5.59f, -5.59f)
@@ -213,7 +259,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(19.0f, 13.0f)
                     horizontalLineToRelative(-6.0f)
                     verticalLineToRelative(6.0f)
@@ -246,7 +292,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(6.0f, 19.0f)
                     curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f)
                     horizontalLineToRelative(8.0f)
@@ -283,7 +329,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(3.0f, 17.25f)
                     verticalLineTo(21.0f)
                     horizontalLineToRelative(3.75f)
@@ -317,7 +363,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(12.0f, 2.0f)
                     curveTo(6.48f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
                     reflectiveCurveTo(6.48f, 22.0f, 12.0f, 22.0f)
@@ -350,7 +396,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(12.0f, 2.0f)
                     curveTo(6.48f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
                     reflectiveCurveTo(6.48f, 22.0f, 12.0f, 22.0f)
@@ -381,7 +427,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(12.0f, 22.0f)
                     curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
                     horizontalLineToRelative(-4.0f)
@@ -420,7 +466,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(19.0f, 9.0f)
                     lineTo(20.25f, 6.25f)
                     lineTo(23.0f, 5.0f)
@@ -467,7 +513,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(11.0f, 9.0f)
                     horizontalLineTo(9.0f)
                     verticalLineTo(2.0f)
@@ -520,7 +566,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(12.0f, 2.0f)
                     curveTo(6.48f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
                     reflectiveCurveTo(6.48f, 22.0f, 12.0f, 22.0f)
@@ -561,7 +607,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(4.0f, 10.0f)
                     verticalLineTo(20.0f)
                     horizontalLineTo(8.0f)
@@ -607,7 +653,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(9.0f, 16.17f)
                     lineTo(4.83f, 12.0f)
                     lineTo(3.41f, 13.41f)
@@ -632,7 +678,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(12.0f, 8.0f)
                     curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
                     reflectiveCurveToRelative(-0.9f, -2.0f, -2.0f, -2.0f)
@@ -667,7 +713,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(9.0f, 11.0f)
                     horizontalLineTo(7.0f)
                     verticalLineTo(9.0f)
@@ -726,7 +772,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(7.41f, 8.59f)
                     lineTo(12.0f, 13.17f)
                     lineTo(16.59f, 8.59f)
@@ -751,7 +797,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(7.41f, 15.41f)
                     lineTo(12.0f, 10.83f)
                     lineTo(16.59f, 15.41f)
@@ -776,7 +822,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(10.0f, 20.0f)
                     verticalLineTo(14.0f)
                     horizontalLineTo(14.0f)
@@ -806,7 +852,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(19.0f, 6.41f)
                     lineTo(17.59f, 5.0f)
                     lineTo(12.0f, 10.59f)
@@ -837,7 +883,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(9.0f, 21.0f)
                     curveTo(9.0f, 21.55f, 9.45f, 22.0f, 10.0f, 22.0f)
                     horizontalLineTo(14.0f)
@@ -873,7 +919,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(11.99f, 2.0f)
                     curveTo(6.47f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
                     reflectiveCurveTo(6.47f, 22.0f, 11.99f, 22.0f)
@@ -950,7 +996,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(11.0f, 18.0f)
                     curveTo(11.0f, 19.1f, 10.1f, 20.0f, 9.0f, 20.0f)
                     reflectiveCurveTo(7.0f, 19.1f, 7.0f, 18.0f)
@@ -993,7 +1039,11 @@ object AppIcons {
         }
     private var _dragHandle: ImageVector? = null
 
-    /** Weekly meal plan — calendar with plate and utensils (distinct from generic date range). */
+    /**
+     * Weekly meal plan — a calendar frame with a fork and knife in the body. The utensils are
+     * stroked so they stay legible at navigation-bar size, and the pairing keeps it distinct from
+     * the generic [DateRange] calendar.
+     */
     val MealPlan: ImageVector
         get() {
             if (_mealPlan != null) return _mealPlan!!
@@ -1004,7 +1054,8 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                // Calendar frame with header band; body is hollow via the reverse-wound inner rect.
+                glyphPath {
                     moveTo(16.0f, 1.0f)
                     verticalLineToRelative(2.0f)
                     horizontalLineTo(8.0f)
@@ -1030,38 +1081,32 @@ object AppIcons {
                     verticalLineToRelative(11.0f)
                     close()
                 }
-                path {
-                    moveTo(10.5f, 12.5f)
-                    curveTo(9.67f, 12.5f, 9.0f, 13.17f, 9.0f, 14.0f)
-                    reflectiveCurveTo(9.67f, 15.5f, 10.5f, 15.5f)
-                    reflectiveCurveTo(12.0f, 14.83f, 12.0f, 14.0f)
-                    reflectiveCurveTo(11.33f, 12.5f, 10.5f, 12.5f)
-                    close()
-                    moveTo(13.5f, 11.0f)
-                    verticalLineToRelative(5.0f)
-                    horizontalLineToRelative(1.0f)
-                    verticalLineTo(11.0f)
-                    horizontalLineToRelative(-1.0f)
-                    close()
-                    moveTo(15.5f, 10.0f)
-                    verticalLineToRelative(6.0f)
-                    horizontalLineToRelative(1.0f)
-                    verticalLineTo(10.0f)
-                    horizontalLineToRelative(-1.0f)
-                    close()
-                    moveTo(17.5f, 11.0f)
-                    verticalLineToRelative(4.0f)
-                    horizontalLineToRelative(1.0f)
-                    verticalLineTo(11.0f)
-                    horizontalLineToRelative(-1.0f)
-                    close()
+                // Fork (three tines + handle) and knife, stroked for crisp small-size rendering.
+                glyphStroke(strokeWidth = 1.0f) {
+                    // Fork tines.
+                    moveTo(8.6f, 10.0f)
+                    verticalLineTo(12.6f)
+                    moveTo(9.9f, 10.0f)
+                    verticalLineTo(12.6f)
+                    moveTo(11.2f, 10.0f)
+                    verticalLineTo(12.6f)
+                    // Fork neck + handle.
+                    moveTo(9.9f, 12.6f)
+                    verticalLineTo(17.5f)
+                    // Knife.
+                    moveTo(14.4f, 10.0f)
+                    verticalLineTo(17.5f)
                 }
             }.build()
             return _mealPlan!!
         }
     private var _mealPlan: ImageVector? = null
 
-    /** Shared grocery checklist — clipboard with checked and pending rows. */
+    /**
+     * Shared grocery checklist — a card with three list rows and a check mark (Material
+     * `fact_check`). Drawn with [PathFillType.EvenOdd] so the rows and check read as cut-outs
+     * instead of merging into a solid blob.
+     */
     val GroceryList: ImageVector
         get() {
             if (_groceryList != null) return _groceryList!!
@@ -1072,78 +1117,46 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
-                    moveTo(8.0f, 2.0f)
-                    horizontalLineToRelative(2.0f)
-                    verticalLineToRelative(2.0f)
-                    horizontalLineTo(8.0f)
-                    verticalLineTo(2.0f)
-                    close()
-                    moveTo(5.0f, 4.0f)
-                    curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
+                glyphPath(fillType = PathFillType.EvenOdd) {
+                    // Card body.
+                    moveTo(20.0f, 3.0f)
+                    horizontalLineTo(4.0f)
+                    curveTo(2.9f, 3.0f, 2.0f, 3.9f, 2.0f, 5.0f)
                     verticalLineToRelative(14.0f)
                     curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f)
-                    horizontalLineToRelative(12.0f)
+                    horizontalLineToRelative(16.0f)
                     curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
-                    verticalLineTo(6.0f)
-                    curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
-                    horizontalLineToRelative(-1.0f)
-                    verticalLineTo(4.0f)
-                    horizontalLineToRelative(-2.0f)
-                    verticalLineToRelative(2.0f)
-                    horizontalLineTo(8.0f)
-                    verticalLineTo(4.0f)
-                    horizontalLineTo(6.0f)
-                    verticalLineTo(4.0f)
+                    verticalLineTo(5.0f)
+                    curveTo(22.0f, 3.9f, 21.1f, 3.0f, 20.0f, 3.0f)
+                    close()
+                    // Row 1.
+                    moveTo(10.0f, 9.0f)
                     horizontalLineTo(5.0f)
+                    verticalLineTo(7.0f)
+                    horizontalLineToRelative(5.0f)
+                    verticalLineTo(9.0f)
                     close()
-                }
-                path {
-                    moveTo(7.0f, 10.0f)
-                    curveToRelative(0.0f, 0.55f, 0.45f, 1.0f, 1.0f, 1.0f)
-                    reflectiveCurveTo(9.0f, 10.55f, 9.0f, 10.0f)
-                    reflectiveCurveTo(8.55f, 9.0f, 8.0f, 9.0f)
-                    reflectiveCurveTo(7.0f, 9.45f, 7.0f, 10.0f)
+                    // Row 2.
+                    moveTo(10.0f, 13.0f)
+                    horizontalLineTo(5.0f)
+                    verticalLineToRelative(-2.0f)
+                    horizontalLineToRelative(5.0f)
+                    verticalLineTo(13.0f)
                     close()
-                    moveTo(10.0f, 9.5f)
-                    horizontalLineToRelative(7.0f)
-                    verticalLineToRelative(1.0f)
-                    horizontalLineToRelative(-7.0f)
-                    verticalLineTo(9.5f)
+                    // Row 3.
+                    moveTo(10.0f, 17.0f)
+                    horizontalLineTo(5.0f)
+                    verticalLineToRelative(-2.0f)
+                    horizontalLineToRelative(5.0f)
+                    verticalLineTo(17.0f)
                     close()
-                    moveTo(7.0f, 14.0f)
-                    curveToRelative(0.0f, 0.55f, 0.45f, 1.0f, 1.0f, 1.0f)
-                    reflectiveCurveTo(9.0f, 14.55f, 9.0f, 14.0f)
-                    reflectiveCurveTo(8.55f, 13.0f, 8.0f, 13.0f)
-                    reflectiveCurveTo(7.0f, 13.45f, 7.0f, 14.0f)
-                    close()
-                    moveTo(10.0f, 13.5f)
-                    horizontalLineToRelative(7.0f)
-                    verticalLineToRelative(1.0f)
-                    horizontalLineToRelative(-7.0f)
-                    verticalLineTo(13.5f)
-                    close()
-                    moveTo(7.0f, 18.0f)
-                    curveToRelative(0.0f, 0.55f, 0.45f, 1.0f, 1.0f, 1.0f)
-                    reflectiveCurveTo(9.0f, 18.55f, 9.0f, 18.0f)
-                    reflectiveCurveTo(8.55f, 17.0f, 8.0f, 17.0f)
-                    reflectiveCurveTo(7.0f, 17.45f, 7.0f, 18.0f)
-                    close()
-                    moveTo(10.0f, 17.5f)
-                    horizontalLineToRelative(7.0f)
-                    verticalLineToRelative(1.0f)
-                    horizontalLineToRelative(-7.0f)
-                    verticalLineTo(17.5f)
-                    close()
-                }
-                path {
-                    moveTo(7.5f, 9.75f)
-                    lineTo(8.0f, 10.25f)
-                    lineTo(9.25f, 9.0f)
-                    lineTo(8.75f, 8.5f)
-                    lineTo(8.0f, 9.25f)
-                    lineTo(7.75f, 9.0f)
-                    lineTo(7.5f, 9.75f)
+                    // Check mark.
+                    moveTo(14.82f, 15.0f)
+                    lineTo(12.0f, 12.16f)
+                    lineToRelative(1.41f, -1.41f)
+                    lineToRelative(1.41f, 1.42f)
+                    lineTo(17.99f, 9.0f)
+                    lineToRelative(1.42f, 1.42f)
                     close()
                 }
             }.build()
@@ -1162,7 +1175,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(16.0f, 11.0f)
                     curveToRelative(1.66f, 0.0f, 2.99f, -1.34f, 2.99f, -3.0f)
                     reflectiveCurveTo(17.66f, 5.0f, 16.0f, 5.0f)
@@ -1207,7 +1220,7 @@ object AppIcons {
                 viewportWidth = 24f,
                 viewportHeight = 24f,
             ).apply {
-                path {
+                glyphPath {
                     moveTo(15.0f, 12.0f)
                     curveToRelative(2.21f, 0.0f, 4.0f, -1.79f, 4.0f, -4.0f)
                     reflectiveCurveTo(17.21f, 4.0f, 15.0f, 4.0f)
