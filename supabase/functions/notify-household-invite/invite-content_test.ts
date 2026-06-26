@@ -1,11 +1,13 @@
 import {
   buildAndroidIntentLink,
+  buildBrandLogoImgHtml,
   buildInviteDeepLink,
   buildInviteEmailHtml,
   buildInviteEmailSubject,
   buildInviteEmailText,
   buildInviteOpenPageHtml,
   buildInviteWebLink,
+  BRAND_LOGO_URL,
   escapeHtml,
   resolveInviteOpenLinkBase,
 } from "./invite-content.ts";
@@ -85,6 +87,8 @@ Deno.test("buildInviteEmailHtml uses HTTPS web link for CTA", () => {
   assertIncludes(html, 'href="https://example.com/invite-open?token=secret-token"', "https cta href");
   assertIncludes(html, "https://example.com/invite-open?token=secret-token", "https fallback link");
   assertIncludes(html, "maria@example.com", "invitee email");
+  assertIncludes(html, BRAND_LOGO_URL, "brand logo url");
+  assertIncludes(html, 'alt="Ammò logo"', "brand logo alt");
 });
 
 Deno.test("buildInviteEmailText includes HTTPS web link", () => {
@@ -102,6 +106,7 @@ Deno.test("buildInviteOpenPageHtml redirects to custom scheme", () => {
   const html = buildInviteOpenPageHtml("app.mymultiverse.kmp://invite?token=secret-token");
   assertIncludes(html, "app.mymultiverse.kmp://invite?token=secret-token", "deep link");
   assertIncludes(html, "Open Ammò", "open button");
+  assertIncludes(html, BRAND_LOGO_URL, "brand logo url");
 });
 
 Deno.test("buildAndroidIntentLink targets app package", () => {

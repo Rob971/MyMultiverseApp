@@ -4,6 +4,14 @@ export const ANDROID_APP_PACKAGE = "app.mymultiverse.kmp";
 export const DEFAULT_INVITE_OPEN_PATH = "/functions/v1/invite-open";
 export const APP_BRAND_NAME = "Ammò";
 export const DEFAULT_INVITE_FROM_EMAIL = `Ammò <invites@mymultiverse.app>`;
+/** Hosted on mymultiverse.app — keep in sync with website `public/brand/`. */
+export const BRAND_LOGO_URL = "https://mymultiverse.app/brand/ammo-round-logo-256.png";
+
+export function buildBrandLogoImgHtml(sizePx = 96): string {
+  const url = escapeHtml(BRAND_LOGO_URL);
+  const alt = escapeHtml(`${APP_BRAND_NAME} logo`);
+  return `<img src="${url}" width="${sizePx}" height="${sizePx}" alt="${alt}" style="display:block;margin:0 auto 16px;border-radius:50%;" />`;
+}
 
 export type InviteEmailContent = {
   inviterName: string;
@@ -60,6 +68,7 @@ export function buildInviteOpenPageHtml(inviteDeepLink: string): string {
 </head>
 <body style="margin:0;padding:32px 16px;background:#f6f1ea;font-family:Helvetica,Arial,sans-serif;color:#2c241c;text-align:center;">
   <div style="max-width:420px;margin:0 auto;background:#ffffff;border-radius:16px;padding:32px 24px;">
+    ${buildBrandLogoImgHtml(96)}
     <p style="margin:0 0 8px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#c45c26;">${APP_BRAND_NAME}</p>
     <h1 style="margin:0 0 12px;font-size:24px;line-height:1.25;">Open your invitation</h1>
     <p style="margin:0 0 24px;font-size:16px;line-height:1.5;color:#5c5348;">
@@ -116,6 +125,7 @@ export function buildInviteEmailHtml(content: InviteEmailContent): string {
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#ffffff;border-radius:16px;padding:32px 28px;">
           <tr>
             <td>
+              ${buildBrandLogoImgHtml(96)}
               <p style="margin:0 0 8px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#c45c26;">${APP_BRAND_NAME}</p>
               <h1 style="margin:0 0 12px;font-size:28px;line-height:1.2;color:#2c241c;">Join ${household}</h1>
               <p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#5c5348;">

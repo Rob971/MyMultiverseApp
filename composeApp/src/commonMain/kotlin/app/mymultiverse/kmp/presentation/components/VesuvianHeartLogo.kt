@@ -11,7 +11,7 @@ import kmpvoyagercleanarchitecture.composeapp.generated.resources.ammo_round_log
 import org.jetbrains.compose.resources.painterResource
 
 /**
- * Round Ammò disc logo (terracotta seal with gold wordmark).
+ * Round Ammò disc logo (gold-framed terracotta seal with wordmark).
  */
 @Composable
 fun VesuvianHeartLogo(modifier: Modifier = Modifier.size(64.dp)) {

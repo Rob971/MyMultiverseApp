@@ -6,6 +6,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import app.mymultiverse.kmp.MainActivity
+import app.mymultiverse.kmp.R
 import app.mymultiverse.kmp.data.invite.InvitePushPayload
 import app.mymultiverse.kmp.data.platform.AndroidNotificationChannels
 import com.google.firebase.messaging.RemoteMessage
@@ -62,7 +63,7 @@ object HouseholdPushNotificationHandler {
         )
 
         val notification = NotificationCompat.Builder(context, AndroidNotificationChannels.HOUSEHOLD_UPDATES)
-            .setSmallIcon(android.R.drawable.sym_def_app_icon)
+            .setSmallIcon(R.drawable.ic_stat_household)
             .setContentTitle(title)
             .setContentText(body)
             .setAutoCancel(true)

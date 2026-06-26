@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 62
+version: 63
 updated: 2026-06-26
 
 summary: |
@@ -40,7 +40,7 @@ summary: |
   Global language (v53): globe icon in app headers (auth, onboarding, Home, nutrition screens) plus full picker in account sheet.
   Icon clarity (v59): bolder nav/feature icons (Today, Plan, Groceries); Google/Apple marks on SSO buttons; coming-soon Adventures/Budget row on Today with labeled compass and wallet icons; dedicated sync and keep-screen-on icons.
   Language picker flags (v60): national flag trigger in top-right on auth/login and all headers; dropdown lists flag + language name; Napulitano keeps dialect subtitle.
-  Brand logo (v62): round terracotta Ammò disc on auth/onboarding/invite screens and as Android/iOS launcher icon.
+  Brand logo (v62): gold-framed round terracotta Ammò disc in-app (WebP), on auth/onboarding/invite screens, Android/iOS launcher icons, household push notifications, invite emails, and mymultiverse.app brand assets.
   Today hero and nav icons (v61): Plan lunch hero + Plan tab use plate/knife/fork icon; Shopping list hero + Groceries tab use fruit/veg/fish/steak icon.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
@@ -952,7 +952,9 @@ testcases:
       - Return to the device home screen and observe the Ammò app icon.
       - Reopen the app and spot-check invite or household creation screens if reachable.
     expected:
-      - In-app logo is the round terracotta Ammò disc with gold beaded frame (gold wordmark, volcano, pizza ò) — not the old vector heart.
+      - In-app logo is the gold-framed round terracotta Ammò disc (gold wordmark, volcano, pizza ò) — not the old vector heart.
+      - Launcher icon and household push notification icon match the same round disc.
+      - Invite email and /invite landing page show the hosted logo from mymultiverse.app/brand/.
       - Launcher icon matches the same round disc on the home screen (Android adaptive / iOS).
       - Logo scales cleanly at auth (~96dp) and banner (~64dp) sizes in light and dark theme.
 
