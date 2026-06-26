@@ -1,0 +1,2 @@
+# Consumed by the KMP CI release job when a push commit message contains [trigger-release].
+version_bump=patch

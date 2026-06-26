@@ -384,14 +384,22 @@ jobs:
     if: >-
       ${{ always() &&
           needs.ci-gate.outputs.run == 'true' &&
-          github.event_name == 'workflow_dispatch' &&
           (
-            github.event.inputs.job == 'release' ||
             (
-              github.event.inputs.job == 'all' &&
-              needs.android-ci.result == 'success' &&
-              (needs.android-instrumented-tests.result == 'success' ||
-                needs.android-instrumented-tests.result == 'skipped')
+              github.event_name == 'workflow_dispatch' &&
+              (
+                github.event.inputs.job == 'release' ||
+                (
+                  github.event.inputs.job == 'all' &&
+                  needs.android-ci.result == 'success' &&
+                  (needs.android-instrumented-tests.result == 'success' ||
+                    needs.android-instrumented-tests.result == 'skipped')
+                )
+              )
+            ) ||
+            (
+              github.event_name == 'push' &&
+              contains(github.event.head_commit.message, '[trigger-release]')
             )
           ) }}
     permissions:
@@ -408,6 +416,9 @@ jobs:
         run: |
           chmod +x ./scripts/bump-app-version.sh
           BUMP="${{ github.event.inputs.version_bump }}"
+          if [[ "${{ github.event_name }}" == "push" && -f .github/release-request ]]; then
+            BUMP="$(grep '^version_bump=' .github/release-request | cut -d= -f2- || true)"
+          fi
           BUMP="${BUMP:-patch}"
           OUTPUT="$(./scripts/bump-app-version.sh "$BUMP")"
           echo "$OUTPUT"
