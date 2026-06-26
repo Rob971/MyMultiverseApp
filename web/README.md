@@ -10,8 +10,8 @@ That repo owns company pages, `/privacy`, `/terms`, `/invite`, `/.well-known/*` 
 
 | Location | Purpose |
 |----------|---------|
-| `composeApp/.../drawable/ammo_round_logo.xml` | Shared in-app vector logo (~2.4 KB) |
-| `iosApp/.../app-icon-1024.png` | iOS launcher generated from flat vector (~35 KB) |
+| `composeApp/.../drawable/ammo_round_logo.webp` | Rich in-app badge (~100 KB) |
+| `iosApp/.../app-icon-1024.png` | iOS launcher generated from rich badge (~1.8 MB) |
 | `composeApp/src/androidMain/res/` | Android launcher + notification icons |
 | **`web/brand/`** (this repo) | Copy into website `public/brand/` before deploy |
 | `web/site-updates/` | Reference copies of HTML/CSS/script changes for the website repo |
