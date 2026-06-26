@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.components.JourneyDestructiveOutlinedButton
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
-import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
+import app.mymultiverse.kmp.presentation.components.AmmoRoundLogo
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_pending_invites_email_mismatch
@@ -49,7 +49,7 @@ fun InviteEmailMismatchScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            VesuvianHeartLogo(modifier = Modifier.size(88.dp))
+            AmmoRoundLogo(modifier = Modifier.size(88.dp))
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = stringResource(Res.string.invite_join_email_mismatch_title),

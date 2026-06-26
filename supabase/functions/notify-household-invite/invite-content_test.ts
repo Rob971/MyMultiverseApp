@@ -1,7 +1,9 @@
 import {
   buildAndroidIntentLink,
   buildBrandLogoImgHtml,
+  buildInvalidInvitePageHtml,
   buildInviteDeepLink,
+  buildInviteEmailFallbackHtml,
   buildInviteEmailHtml,
   buildInviteEmailSubject,
   buildInviteEmailText,
@@ -100,6 +102,18 @@ Deno.test("buildInviteEmailText includes HTTPS web link", () => {
     inviteDeepLink: "app.mymultiverse.kmp://invite?token=secret-token",
   });
   assertIncludes(text, "Accept invitation: https://example.com/invite-open?token=secret-token", "plain text link");
+});
+
+Deno.test("buildInviteEmailFallbackHtml includes brand logo", () => {
+  const html = buildInviteEmailFallbackHtml("Marco", "Rossi family", "maria@example.com");
+  assertIncludes(html, BRAND_LOGO_URL, "brand logo url");
+  assertIncludes(html, "Open the Ammò app", "fallback instructions");
+});
+
+Deno.test("buildInvalidInvitePageHtml includes brand logo", () => {
+  const html = buildInvalidInvitePageHtml();
+  assertIncludes(html, BRAND_LOGO_URL, "brand logo url");
+  assertIncludes(html, "Invitation link invalid", "invalid title");
 });
 
 Deno.test("buildInviteOpenPageHtml redirects to custom scheme", () => {

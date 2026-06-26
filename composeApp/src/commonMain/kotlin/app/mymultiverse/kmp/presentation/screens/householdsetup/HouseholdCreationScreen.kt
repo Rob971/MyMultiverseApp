@@ -39,7 +39,7 @@ import app.mymultiverse.kmp.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.kmp.presentation.components.JourneyTextField
 import app.mymultiverse.kmp.presentation.components.JourneyTextFieldDefaults
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
-import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
+import app.mymultiverse.kmp.presentation.components.AmmoRoundLogo
 import app.mymultiverse.kmp.presentation.screens.home.HouseholdNameAvailability
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
@@ -120,7 +120,7 @@ fun HouseholdCreationScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            VesuvianHeartLogo(modifier = Modifier.size(88.dp))
+            AmmoRoundLogo(modifier = Modifier.size(88.dp))
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = stringResource(Res.string.household_gate_title),

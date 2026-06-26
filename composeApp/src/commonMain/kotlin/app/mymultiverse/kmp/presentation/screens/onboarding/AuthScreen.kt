@@ -35,7 +35,7 @@ import app.mymultiverse.kmp.presentation.components.JourneyBanner
 import app.mymultiverse.kmp.presentation.components.JourneySsoButtonLabel
 import app.mymultiverse.kmp.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
-import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
+import app.mymultiverse.kmp.presentation.components.AmmoRoundLogo
 import app.mymultiverse.kmp.presentation.screens.auth.LoginError
 import app.mymultiverse.kmp.presentation.screens.auth.LoginMessage
 import app.mymultiverse.kmp.presentation.screens.auth.isScreenLevelOnly
@@ -116,7 +116,7 @@ fun AuthScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            VesuvianHeartLogo(modifier = Modifier.size(96.dp))
+            AmmoRoundLogo(modifier = Modifier.size(96.dp))
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = stringResource(Res.string.auth_title),

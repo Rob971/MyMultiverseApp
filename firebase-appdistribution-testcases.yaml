@@ -954,7 +954,7 @@ testcases:
     expected:
       - In-app logo is the gold-framed round terracotta Ammò disc (gold wordmark, volcano, pizza ò) — not the old vector heart.
       - Launcher icon and household push notification icon match the same round disc.
-      - Invite email and /invite landing page show the hosted logo from mymultiverse.app/brand/.
+      - Invite email (with token and fallback), invite-open landing, and invalid invite pages show the hosted logo.
       - Launcher icon matches the same round disc on the home screen (Android adaptive / iOS).
       - Logo scales cleanly at auth (~96dp) and banner (~64dp) sizes in light and dark theme.
 

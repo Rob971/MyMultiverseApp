@@ -35,7 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.components.JourneySsoButtonLabel
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
-import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
+import app.mymultiverse.kmp.presentation.components.AmmoRoundLogo
 import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
@@ -203,7 +203,7 @@ private fun JoinHouseholdContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        VesuvianHeartLogo(modifier = Modifier.size(88.dp))
+        AmmoRoundLogo(modifier = Modifier.size(88.dp))
         Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = stringResource(Res.string.invite_join_title, preview.householdName),

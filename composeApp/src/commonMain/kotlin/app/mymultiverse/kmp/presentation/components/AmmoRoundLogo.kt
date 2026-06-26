@@ -8,17 +8,23 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.ammo_round_logo
+import kmpvoyagercleanarchitecture.composeapp.generated.resources.app_brand_name
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Round Ammò disc logo (gold-framed terracotta seal with wordmark).
  */
 @Composable
-fun VesuvianHeartLogo(modifier: Modifier = Modifier.size(64.dp)) {
+fun AmmoRoundLogo(modifier: Modifier = Modifier.size(64.dp)) {
     Image(
         painter = painterResource(Res.drawable.ammo_round_logo),
-        contentDescription = null,
+        contentDescription = stringResource(Res.string.app_brand_name),
         modifier = modifier,
         contentScale = ContentScale.Fit,
     )
 }
+
+/** @deprecated Use [AmmoRoundLogo] — kept for incremental migration. */
+@Composable
+fun VesuvianHeartLogo(modifier: Modifier = Modifier) = AmmoRoundLogo(modifier = modifier)

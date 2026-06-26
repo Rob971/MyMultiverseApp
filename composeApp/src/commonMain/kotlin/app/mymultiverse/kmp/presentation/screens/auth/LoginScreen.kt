@@ -40,7 +40,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
-import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
+import app.mymultiverse.kmp.presentation.components.AmmoRoundLogo
 import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.AppIcons
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
@@ -143,7 +143,7 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            VesuvianHeartLogo(modifier = Modifier.size(96.dp))
+            AmmoRoundLogo(modifier = Modifier.size(96.dp))
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = stringResource(Res.string.auth_title),

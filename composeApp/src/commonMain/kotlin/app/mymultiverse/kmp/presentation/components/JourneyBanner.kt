@@ -55,7 +55,7 @@ fun JourneyBanner(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                VesuvianHeartLogo(modifier = Modifier.size(64.dp))
+                AmmoRoundLogo(modifier = Modifier.size(64.dp))
 
                 Column(
                     modifier = Modifier.fillMaxWidth(),

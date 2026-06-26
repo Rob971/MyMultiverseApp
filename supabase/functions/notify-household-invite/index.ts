@@ -4,6 +4,7 @@ import { isDeliverableAndroidToken, sendAndroidInvitePush } from "./fcm.ts";
 import {
   APP_BRAND_NAME,
   buildInviteDeepLink,
+  buildInviteEmailFallbackHtml,
   buildInviteEmailHtml,
   buildInviteEmailSubject,
   buildInviteEmailText,
@@ -162,7 +163,7 @@ async function processHouseholdInvite(
             from: fromEmail,
             to: [inviteeEmail],
             subject: `${inviterName} invited you to ${householdName}`,
-            html: `<p>${inviterName} invited you to join <strong>${householdName}</strong> on ${APP_BRAND_NAME}.</p><p>Open the app and sign in with <strong>${inviteeEmail}</strong> to accept.</p>`,
+            html: buildInviteEmailFallbackHtml(inviterName, householdName, inviteeEmail),
             text: [
               `${inviterName} invited you to join ${householdName} on ${APP_BRAND_NAME}.`,
               `Open the app and sign in with ${inviteeEmail} to accept.`,
