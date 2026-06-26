@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -119,7 +120,7 @@ fun HouseholdCreationScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            VesuvianHeartLogo(modifier = Modifier.height(88.dp))
+            VesuvianHeartLogo(modifier = Modifier.size(88.dp))
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = stringResource(Res.string.household_gate_title),

@@ -16,7 +16,7 @@ import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 
 /**
- * 'Napolitan Heart' Banner: Custom Logo and vibrant gradients.
+ * 'Napolitan Heart' Banner: Ammò round disc logo and vibrant gradients.
  */
 @Composable
 fun JourneyBanner(
