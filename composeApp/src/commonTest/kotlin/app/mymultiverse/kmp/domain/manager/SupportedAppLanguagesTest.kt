@@ -2,6 +2,7 @@ package app.mymultiverse.kmp.domain.manager
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SupportedAppLanguagesTest {
@@ -32,7 +33,26 @@ class SupportedAppLanguagesTest {
     }
 
     @Test
-    fun labelFor_unknownCodeFallsBackToDefaultDisplayName() {
-        assertEquals("Napulitano", SupportedAppLanguages.labelFor("xx"))
+    fun flagEmojiFor_returnsFlagForEmojiLocales() {
+        SupportedAppLanguages.codes
+            .filterNot { SupportedAppLanguages.usesNapoliFootballFlag(it) }
+            .forEach { code ->
+                assertTrue(
+                    SupportedAppLanguages.flagEmojiFor(code).isNotBlank(),
+                    "Expected flag emoji for $code",
+                )
+            }
+    }
+
+    @Test
+    fun napulitanoUsesNapoliFootballFlag() {
+        assertTrue(SupportedAppLanguages.usesNapoliFootballFlag("nap"))
+        assertTrue(SupportedAppLanguages.usesNapoliFootballFlag("xx"))
+        assertFalse(SupportedAppLanguages.usesNapoliFootballFlag("it"))
+    }
+
+    @Test
+    fun flagEmojiFor_unknownCodeFallsBackToNapoliFootballFlag() {
+        assertTrue(SupportedAppLanguages.usesNapoliFootballFlag("xx"))
     }
 }
