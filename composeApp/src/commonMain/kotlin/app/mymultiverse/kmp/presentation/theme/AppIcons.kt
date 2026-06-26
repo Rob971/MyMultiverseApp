@@ -1401,4 +1401,228 @@ object AppIcons {
             return _pantryHave!!
         }
     private var _pantryHave: ImageVector? = null
+
+    /** Cloud with check — household nutrition sync complete. */
+    val SyncSynced: ImageVector
+        get() {
+            if (_syncSynced != null) return _syncSynced!!
+            _syncSynced = ImageVector.Builder(
+                name = "Filled.SyncSynced",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(19.35f, 10.04f)
+                    curveTo(18.67f, 6.59f, 15.64f, 4.0f, 12.0f, 4.0f)
+                    curveTo(9.11f, 4.0f, 6.6f, 5.64f, 5.35f, 8.0f)
+                    lineTo(7.3f, 9.95f)
+                    curveTo(8.12f, 8.2f, 9.92f, 7.0f, 12.0f, 7.0f)
+                    curveTo(14.76f, 7.0f, 17.05f, 8.84f, 17.85f, 11.25f)
+                    lineTo(19.35f, 10.04f)
+                    close()
+                    moveTo(6.5f, 16.0f)
+                    curveTo(4.57f, 14.27f, 4.0f, 11.66f, 5.0f, 9.35f)
+                    curveTo(5.5f, 8.15f, 6.35f, 7.1f, 7.4f, 6.3f)
+                    lineTo(5.65f, 4.55f)
+                    lineTo(4.0f, 6.2f)
+                    curveTo(2.07f, 8.0f, 1.0f, 10.6f, 1.25f, 13.25f)
+                    curveTo(1.55f, 16.65f, 4.2f, 19.45f, 7.55f, 20.05f)
+                    curveTo(10.9f, 20.65f, 14.2f, 19.0f, 15.85f, 16.2f)
+                    lineTo(14.1f, 14.45f)
+                    curveTo(12.95f, 16.35f, 10.75f, 17.5f, 8.45f, 17.1f)
+                    curveTo(6.85f, 16.85f, 5.55f, 15.75f, 6.5f, 16.0f)
+                    close()
+                }
+                path {
+                    moveTo(9.5f, 13.5f)
+                    lineTo(11.0f, 15.0f)
+                    lineTo(14.5f, 11.5f)
+                    lineTo(13.5f, 10.5f)
+                    lineTo(11.0f, 13.0f)
+                    lineTo(10.25f, 12.25f)
+                    close()
+                }
+            }.build()
+            return _syncSynced!!
+        }
+    private var _syncSynced: ImageVector? = null
+
+    /** Google sign-in — bold G mark (monochrome for buttons). */
+    val Google: ImageVector
+        get() {
+            if (_google != null) return _google!!
+            _google = ImageVector.Builder(
+                name = "Brand.Google",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(12.0f, 4.0f)
+                    curveTo(14.45f, 4.0f, 16.65f, 4.95f, 18.2f, 6.55f)
+                    lineTo(21.0f, 3.75f)
+                    curveTo(18.75f, 1.65f, 15.55f, 0.25f, 12.0f, 0.25f)
+                    curveTo(7.35f, 0.25f, 3.3f, 2.85f, 1.35f, 6.65f)
+                    lineTo(4.55f, 9.05f)
+                    curveTo(5.55f, 6.15f, 8.55f, 4.0f, 12.0f, 4.0f)
+                    close()
+                    moveTo(22.8f, 12.25f)
+                    curveTo(22.8f, 11.45f, 22.7f, 10.7f, 22.55f, 10.0f)
+                    horizontalLineTo(12.0f)
+                    verticalLineTo(14.25f)
+                    horizontalLineTo(18.05f)
+                    curveTo(17.75f, 15.65f, 16.95f, 16.85f, 15.75f, 17.65f)
+                    lineTo(18.95f, 20.15f)
+                    curveTo(21.35f, 17.95f, 22.8f, 15.3f, 22.8f, 12.25f)
+                    close()
+                    moveTo(4.55f, 14.95f)
+                    curveTo(4.15f, 13.95f, 3.95f, 12.85f, 3.95f, 11.75f)
+                    reflectiveCurveTo(4.15f, 9.55f, 4.55f, 8.55f)
+                    lineTo(1.35f, 6.15f)
+                    curveTo(0.45f, 7.95f, 0.0f, 9.8f, 0.0f, 11.75f)
+                    reflectiveCurveTo(0.45f, 15.55f, 1.35f, 17.35f)
+                    lineTo(4.55f, 14.95f)
+                    close()
+                    moveTo(12.0f, 23.25f)
+                    curveTo(15.25f, 23.25f, 17.95f, 22.2f, 19.95f, 20.45f)
+                    lineTo(16.75f, 17.95f)
+                    curveTo(15.65f, 18.75f, 14.0f, 19.25f, 12.0f, 19.25f)
+                    curveTo(8.55f, 19.25f, 5.55f, 17.1f, 4.55f, 14.2f)
+                    lineTo(1.35f, 16.6f)
+                    curveTo(3.3f, 20.4f, 7.35f, 23.25f, 12.0f, 23.25f)
+                    close()
+                }
+            }.build()
+            return _google!!
+        }
+    private var _google: ImageVector? = null
+
+    /** Apple sign-in — apple silhouette (monochrome for buttons). */
+    val Apple: ImageVector
+        get() {
+            if (_apple != null) return _apple!!
+            _apple = ImageVector.Builder(
+                name = "Brand.Apple",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(16.7f, 12.65f)
+                    curveTo(16.72f, 15.05f, 18.75f, 15.95f, 18.8f, 16.0f)
+                    curveTo(18.45f, 17.05f, 17.75f, 18.1f, 16.85f, 19.0f)
+                    curveTo(15.65f, 20.2f, 14.35f, 21.0f, 12.95f, 21.0f)
+                    curveTo(11.65f, 21.0f, 11.25f, 20.25f, 9.75f, 20.25f)
+                    curveTo(8.2f, 20.25f, 7.65f, 21.0f, 6.45f, 21.0f)
+                    curveTo(5.0f, 21.0f, 3.55f, 20.1f, 2.35f, 18.85f)
+                    curveTo(-0.05f, 16.35f, -0.55f, 12.05f, 1.85f, 9.55f)
+                    curveTo(3.05f, 8.3f, 4.65f, 7.55f, 6.35f, 7.55f)
+                    curveTo(7.75f, 7.55f, 9.05f, 8.4f, 9.95f, 8.4f)
+                    curveTo(10.8f, 8.4f, 12.3f, 7.45f, 13.95f, 7.6f)
+                    curveTo(14.55f, 7.62f, 16.45f, 7.85f, 17.75f, 9.45f)
+                    curveTo(17.65f, 9.52f, 15.55f, 10.65f, 15.6f, 13.35f)
+                    curveTo(15.65f, 13.4f, 16.68f, 13.45f, 16.7f, 12.65f)
+                    close()
+                    moveTo(13.65f, 5.25f)
+                    curveTo(14.45f, 4.3f, 14.95f, 3.0f, 14.85f, 1.7f)
+                    curveTo(13.75f, 1.75f, 12.35f, 2.45f, 11.5f, 3.35f)
+                    curveTo(10.75f, 4.15f, 10.15f, 5.45f, 10.3f, 6.7f)
+                    curveTo(11.55f, 6.8f, 12.85f, 6.15f, 13.65f, 5.25f)
+                    close()
+                }
+            }.build()
+            return _apple!!
+        }
+    private var _apple: ImageVector? = null
+
+    /** Adventures (trips/outings) — compass for coming-soon row. */
+    val Adventures: ImageVector
+        get() {
+            if (_adventures != null) return _adventures!!
+            _adventures = ImageVector.Builder(
+                name = "Filled.Adventures",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(12.0f, 2.0f)
+                    curveTo(6.48f, 2.0f, 2.0f, 6.48f, 2.0f, 12.0f)
+                    reflectiveCurveTo(6.48f, 22.0f, 12.0f, 22.0f)
+                    reflectiveCurveTo(22.0f, 17.52f, 22.0f, 12.0f)
+                    reflectiveCurveTo(17.52f, 2.0f, 12.0f, 2.0f)
+                    close()
+                    moveTo(12.0f, 20.0f)
+                    curveTo(7.59f, 20.0f, 4.0f, 16.41f, 4.0f, 12.0f)
+                    reflectiveCurveTo(7.59f, 4.0f, 12.0f, 4.0f)
+                    reflectiveCurveTo(20.0f, 7.59f, 20.0f, 12.0f)
+                    reflectiveCurveTo(16.41f, 20.0f, 12.0f, 20.0f)
+                    close()
+                }
+                path {
+                    moveTo(12.0f, 6.0f)
+                    lineTo(14.5f, 14.5f)
+                    lineTo(12.0f, 12.0f)
+                    lineTo(9.5f, 14.5f)
+                    close()
+                    moveTo(12.0f, 5.0f)
+                    lineTo(12.0f, 7.0f)
+                    moveTo(12.0f, 17.0f)
+                    lineTo(12.0f, 19.0f)
+                    moveTo(5.0f, 12.0f)
+                    lineTo(7.0f, 12.0f)
+                    moveTo(17.0f, 12.0f)
+                    lineTo(19.0f, 12.0f)
+                }
+            }.build()
+            return _adventures!!
+        }
+    private var _adventures: ImageVector? = null
+
+    /** Shared household budget — wallet for coming-soon row. */
+    val BudgetWallet: ImageVector
+        get() {
+            if (_budgetWallet != null) return _budgetWallet!!
+            _budgetWallet = ImageVector.Builder(
+                name = "Filled.BudgetWallet",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(6.0f, 5.0f)
+                    horizontalLineTo(18.0f)
+                    verticalLineTo(7.0f)
+                    horizontalLineTo(6.0f)
+                    verticalLineTo(5.0f)
+                    close()
+                    moveTo(4.0f, 7.0f)
+                    horizontalLineTo(20.0f)
+                    curveTo(21.1f, 7.0f, 22.0f, 7.9f, 22.0f, 9.0f)
+                    verticalLineTo(18.0f)
+                    curveTo(22.0f, 19.1f, 21.1f, 20.0f, 20.0f, 20.0f)
+                    horizontalLineTo(4.0f)
+                    curveTo(2.9f, 20.0f, 2.0f, 19.1f, 2.0f, 18.0f)
+                    verticalLineTo(9.0f)
+                    curveTo(2.0f, 7.9f, 2.9f, 7.0f, 4.0f, 7.0f)
+                    close()
+                }
+                path {
+                    moveTo(16.5f, 13.0f)
+                    curveTo(17.88f, 13.0f, 19.0f, 14.12f, 19.0f, 15.5f)
+                    reflectiveCurveTo(17.88f, 18.0f, 16.5f, 18.0f)
+                    reflectiveCurveTo(14.0f, 16.88f, 14.0f, 15.5f)
+                    reflectiveCurveTo(15.12f, 13.0f, 16.5f, 13.0f)
+                    close()
+                }
+            }.build()
+            return _budgetWallet!!
+        }
+    private var _budgetWallet: ImageVector? = null
 }

@@ -42,6 +42,22 @@ fun RowScope.JourneyButtonLabel(
 }
 
 @Composable
+fun RowScope.JourneySsoButtonLabel(
+    text: String,
+    provider: AppIconRole,
+    useContentColor: Boolean = true,
+) {
+    JourneyIcon(
+        role = provider,
+        contentDescription = null,
+        modifier = Modifier.size(20.dp),
+        useContentColor = useContentColor,
+    )
+    Spacer(Modifier.width(10.dp))
+    Text(text)
+}
+
+@Composable
 fun JourneyPrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,

@@ -1,7 +1,7 @@
 package app.mymultiverse.kmp.presentation.components
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,19 +21,23 @@ import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 
 object HomeComingSoonTestTags {
     const val ROW = "home_coming_soon_row"
+    const val ADVENTURES = "home_coming_soon_adventures"
+    const val BUDGET = "home_coming_soon_budget"
 }
 
 @Composable
 fun HomeComingSoonRow(
     label: String,
     badge: String,
+    adventuresLabel: String,
+    budgetLabel: String,
     hint: String? = null,
     modifier: Modifier = Modifier,
 ) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .alpha(0.85f)
+            .alpha(0.92f)
             .testTag(HomeComingSoonTestTags.ROW),
         shape = FamilyLogisticsDesign.cardShape,
         color = JourneySemanticColors.cardSurface(),
@@ -42,31 +46,19 @@ fun HomeComingSoonRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                JourneyIcon(
-                    role = AppIconRole.ComingSoonExplore,
-                    contentDescription = null,
-                    tint = JourneySemanticColors.brandTerracotta().copy(alpha = 0.7f),
-                    modifier = Modifier.size(22.dp),
-                )
-                JourneyIcon(
-                    role = AppIconRole.ComingSoonBudget,
-                    contentDescription = null,
-                    tint = JourneySemanticColors.brandTeal().copy(alpha = 0.7f),
-                    modifier = Modifier.size(22.dp),
-                )
                 Text(
                     text = label,
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = JourneySemanticColors.inkMuted(),
-                    fontWeight = FontWeight.Medium,
+                    color = JourneySemanticColors.inkDeep(),
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Surface(
                     shape = MaterialTheme.shapes.small,
@@ -81,6 +73,22 @@ fun HomeComingSoonRow(
                     )
                 }
             }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ComingSoonFeatureChip(
+                    role = AppIconRole.ComingSoonExplore,
+                    label = adventuresLabel,
+                    modifier = Modifier.testTag(HomeComingSoonTestTags.ADVENTURES),
+                )
+                ComingSoonFeatureChip(
+                    role = AppIconRole.ComingSoonBudget,
+                    label = budgetLabel,
+                    modifier = Modifier.testTag(HomeComingSoonTestTags.BUDGET),
+                )
+            }
             if (hint != null) {
                 Text(
                     text = hint,
@@ -89,5 +97,30 @@ fun HomeComingSoonRow(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ComingSoonFeatureChip(
+    role: AppIconRole,
+    label: String,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        JourneyIcon(
+            role = role,
+            contentDescription = label,
+            modifier = Modifier.size(24.dp),
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = JourneySemanticColors.inkSecondary(),
+            fontWeight = FontWeight.SemiBold,
+        )
     }
 }

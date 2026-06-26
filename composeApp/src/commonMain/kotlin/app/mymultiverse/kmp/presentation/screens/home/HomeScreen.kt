@@ -51,6 +51,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import app.mymultiverse.kmp.presentation.components.HomeComingSoonRow
 import app.mymultiverse.kmp.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.kmp.presentation.components.GlobalLanguageAction
 import app.mymultiverse.kmp.presentation.components.JourneyBanner
@@ -709,6 +710,14 @@ fun HomeWelcomeContent(
                 nutritionSummary = nutritionSummary,
                 onOpenMealPlan = onOpenMealPlan,
                 onOpenGrocery = onOpenGrocery,
+            )
+
+            HomeComingSoonRow(
+                label = stringResource(Res.string.home_coming_soon_features),
+                badge = stringResource(Res.string.home_logistics_coming_soon),
+                adventuresLabel = stringResource(Res.string.home_coming_soon_adventures),
+                budgetLabel = stringResource(Res.string.task_label_budget),
+                hint = stringResource(Res.string.home_coming_soon_hint),
             )
         }
     }

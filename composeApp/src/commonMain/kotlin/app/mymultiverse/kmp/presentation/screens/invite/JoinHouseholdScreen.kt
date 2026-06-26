@@ -32,8 +32,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.kmp.presentation.components.JourneySsoButtonLabel
 import app.mymultiverse.kmp.presentation.components.ScreenLayout
 import app.mymultiverse.kmp.presentation.components.VesuvianHeartLogo
+import app.mymultiverse.kmp.presentation.theme.AppIconRole
 import app.mymultiverse.kmp.presentation.theme.JourneySemanticColors
 import app.mymultiverse.kmp.presentation.theme.SharedJourneyColors
 import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
@@ -418,7 +420,11 @@ private fun JoinHouseholdSocialSignIn(
             .fillMaxWidth()
             .testTag(JoinHouseholdTestTags.GOOGLE_BUTTON),
     ) {
-        Text(stringResource(Res.string.auth_continue_google))
+        JourneySsoButtonLabel(
+            text = stringResource(Res.string.auth_continue_google),
+            provider = AppIconRole.SsoGoogle,
+            useContentColor = true,
+        )
     }
 
     if (uiState.showAppleSignIn) {
@@ -430,7 +436,11 @@ private fun JoinHouseholdSocialSignIn(
                 .fillMaxWidth()
                 .testTag(JoinHouseholdTestTags.APPLE_BUTTON),
         ) {
-            Text(stringResource(Res.string.auth_continue_apple))
+            JourneySsoButtonLabel(
+                text = stringResource(Res.string.auth_continue_apple),
+                provider = AppIconRole.SsoApple,
+                useContentColor = true,
+            )
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(

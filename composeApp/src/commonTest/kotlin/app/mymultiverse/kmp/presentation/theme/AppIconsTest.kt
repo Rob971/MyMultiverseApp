@@ -28,6 +28,12 @@ class AppIconsTest {
         assertNotEquals(AppIcons.SyncPending.name, AppIcons.Refresh.name)
         assertNotEquals(AppIcons.SyncOffline.name, AppIcons.SyncPending.name)
         assertNotEquals(AppIcons.PantryHave.name, AppIcons.CheckCircle.name)
+        assertNotEquals(AppIcons.SyncSynced.name, AppIcons.CheckCircle.name)
+        assertNotEquals(AppIcons.SyncSynced.name, AppIcons.SyncPending.name)
+        assertNotEquals(AppIcons.Google.name, AppIcons.Apple.name)
+        assertNotEquals(AppIcons.Adventures.name, AppIcons.Explore.name)
+        assertNotEquals(AppIcons.BudgetWallet.name, AppIcons.AccountBalance.name)
+        assertNotEquals(AppIcons.Adventures.name, AppIcons.BudgetWallet.name)
     }
 
     @Test
@@ -53,8 +59,20 @@ class AppIconsTest {
             AppIconRole.SyncOffline.imageVector().name,
         )
         assertNotEquals(
+            AppIconRole.SyncSuccess.imageVector().name,
+            AppIconRole.GroceryChecked.imageVector().name,
+        )
+        assertNotEquals(
             AppIconRole.PantryHave.imageVector().name,
             AppIconRole.GroceryChecked.imageVector().name,
+        )
+        assertNotEquals(
+            AppIconRole.SsoGoogle.imageVector().name,
+            AppIconRole.SsoApple.imageVector().name,
+        )
+        assertNotEquals(
+            AppIconRole.ComingSoonExplore.imageVector().name,
+            AppIconRole.ComingSoonBudget.imageVector().name,
         )
     }
 }

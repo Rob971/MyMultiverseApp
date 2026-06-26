@@ -34,6 +34,8 @@ enum class AppIconRole {
     Hint,
     KeepScreenOn,
     PantryHave,
+    SsoGoogle,
+    SsoApple,
     FeatureAccent,
     Muted,
     Primary,
@@ -69,13 +71,15 @@ fun AppIconRole.imageVector(): ImageVector = when (this) {
     AppIconRole.SyncIdle -> AppIcons.SyncPending
     AppIconRole.SyncPending -> AppIcons.SyncPending
     AppIconRole.SyncOffline -> AppIcons.SyncOffline
-    AppIconRole.SyncSuccess -> AppIcons.CheckCircle
+    AppIconRole.SyncSuccess -> AppIcons.SyncSynced
     AppIconRole.Hint -> AppIcons.Lightbulb
     AppIconRole.KeepScreenOn -> AppIcons.KeepScreenOn
     AppIconRole.PantryHave -> AppIcons.PantryHave
+    AppIconRole.SsoGoogle -> AppIcons.Google
+    AppIconRole.SsoApple -> AppIcons.Apple
     AppIconRole.MealSlot -> AppIcons.Restaurant
-    AppIconRole.ComingSoonExplore -> AppIcons.Explore
-    AppIconRole.ComingSoonBudget -> AppIcons.AccountBalance
+    AppIconRole.ComingSoonExplore -> AppIcons.Adventures
+    AppIconRole.ComingSoonBudget -> AppIcons.BudgetWallet
     AppIconRole.Household -> AppIcons.Household
     AppIconRole.InviteMember -> AppIcons.PersonAdd
     AppIconRole.DragHandle -> AppIcons.DragHandle
@@ -103,6 +107,7 @@ fun AppIconRole.resolveTint(accentColor: Color? = null): Color = when (this) {
     AppIconRole.SyncPending,
     AppIconRole.KeepScreenOn,
     AppIconRole.Hint,
+    AppIconRole.ComingSoonBudget,
     -> JourneySemanticColors.brandTeal()
 
     AppIconRole.ChromeClose,
@@ -110,11 +115,12 @@ fun AppIconRole.resolveTint(accentColor: Color? = null): Color = when (this) {
     AppIconRole.Muted,
     AppIconRole.ChromeExpand,
     AppIconRole.GroceryUnchecked,
-    AppIconRole.ComingSoonExplore,
-    AppIconRole.ComingSoonBudget,
     AppIconRole.Household,
     AppIconRole.SyncOffline,
     -> JourneySemanticColors.inkMuted()
+
+    AppIconRole.ComingSoonExplore,
+    -> JourneySemanticColors.brandTerracotta()
 
     AppIconRole.DragHandle,
     -> JourneySemanticColors.inkSecondary()
@@ -139,6 +145,8 @@ fun AppIconRole.resolveTint(accentColor: Color? = null): Color = when (this) {
 
     AppIconRole.AiAccent -> JourneySemanticColors.brandTerracotta()
 
+    AppIconRole.SsoGoogle,
+    AppIconRole.SsoApple,
     AppIconRole.FeatureAccent,
     AppIconRole.MealSlot,
     -> accentColor ?: JourneySemanticColors.brandTeal()
