@@ -952,7 +952,7 @@ testcases:
       - Return to the device home screen and observe the Ammò app icon.
       - Reopen the app and spot-check invite or household creation screens if reachable.
     expected:
-      - In-app logo is the round terracotta Ammò disc (gold wordmark, volcano, pizza ò) — not the old vector heart.
+      - In-app logo is the round terracotta Ammò disc with gold beaded frame (gold wordmark, volcano, pizza ò) — not the old vector heart.
       - Launcher icon matches the same round disc on the home screen (Android adaptive / iOS).
       - Logo scales cleanly at auth (~96dp) and banner (~64dp) sizes in light and dark theme.
 
