@@ -26,6 +26,7 @@ on:
           - android-instrumented-tests
           - supabase-migrations
           - release
+          - firebase-cleanup-releases
       version_bump:
         description: "Semver bump when running release or all (patch/minor/none)."
         required: false
@@ -35,6 +36,19 @@ on:
           - patch
           - minor
           - none
+      keep_releases:
+        description: "Firebase App Distribution releases to keep when running firebase-cleanup-releases."
+        required: false
+        default: "10"
+        type: string
+      cleanup_dry_run:
+        description: "Preview Firebase release deletions without deleting (true/false)."
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 concurrency:
   group: kmp-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -486,3 +500,41 @@ jobs:
           git tag "$TAG_NAME"
           git push
           git push origin "$TAG_NAME"
+
+  firebase-cleanup-releases:
+    name: Firebase App Distribution cleanup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: >-
+      ${{ github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.job == 'firebase-cleanup-releases' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install google-auth requests
+
+      - name: Prune older App Distribution releases
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          KEEP_RELEASES: ${{ github.event.inputs.keep_releases }}
+          CLEANUP_DRY_RUN: ${{ github.event.inputs.cleanup_dry_run }}
+        run: |
+          if [[ -z "${FIREBASE_SERVICE_ACCOUNT_JSON}" ]]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT_JSON is not set."
+            exit 1
+          fi
+          args=(--keep "${KEEP_RELEASES:-10}")
+          if [[ "${CLEANUP_DRY_RUN}" == "true" ]]; then
+            args+=(--dry-run)
+          fi
+          python3 scripts/cleanup-firebase-appdistribution-releases.py "${args[@]}"
