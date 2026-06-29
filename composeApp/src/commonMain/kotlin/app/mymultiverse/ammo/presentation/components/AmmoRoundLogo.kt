@@ -6,9 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.ammo_round_logo
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.app_brand_name
+import ammo.composeapp.generated.resources.Res
+import ammo.composeapp.generated.resources.ammo_round_logo
+import ammo.composeapp.generated.resources.app_brand_name
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 

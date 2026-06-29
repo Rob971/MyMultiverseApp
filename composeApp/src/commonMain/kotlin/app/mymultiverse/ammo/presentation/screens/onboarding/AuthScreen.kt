@@ -41,16 +41,16 @@ import app.mymultiverse.ammo.presentation.screens.auth.LoginMessage
 import app.mymultiverse.ammo.presentation.screens.auth.isScreenLevelOnly
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_apple
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_google
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_continue_with_email
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_error_config_missing
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_error_generic
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_provider_coming_soon
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_subtitle
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_title
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.onboarding_auth_invite_banner
+import ammo.composeapp.generated.resources.Res
+import ammo.composeapp.generated.resources.auth_continue_apple
+import ammo.composeapp.generated.resources.auth_continue_google
+import ammo.composeapp.generated.resources.auth_continue_with_email
+import ammo.composeapp.generated.resources.auth_error_config_missing
+import ammo.composeapp.generated.resources.auth_error_generic
+import ammo.composeapp.generated.resources.auth_provider_coming_soon
+import ammo.composeapp.generated.resources.auth_subtitle
+import ammo.composeapp.generated.resources.auth_title
+import ammo.composeapp.generated.resources.onboarding_auth_invite_banner
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 

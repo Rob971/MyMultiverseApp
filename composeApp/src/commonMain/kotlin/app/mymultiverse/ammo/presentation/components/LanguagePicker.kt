@@ -35,10 +35,10 @@ import androidx.compose.ui.unit.sp
 import app.mymultiverse.ammo.domain.manager.LanguageManager
 import app.mymultiverse.ammo.domain.manager.SupportedAppLanguages
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.home_settings_language
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.language_napulitano_subtitle
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.language_picker_current
+import ammo.composeapp.generated.resources.Res
+import ammo.composeapp.generated.resources.home_settings_language
+import ammo.composeapp.generated.resources.language_napulitano_subtitle
+import ammo.composeapp.generated.resources.language_picker_current
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 

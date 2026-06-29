@@ -22,10 +22,10 @@ import app.mymultiverse.ammo.presentation.components.JourneyDestructiveOutlinedB
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.AmmoRoundLogo
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.Res
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.auth_pending_invites_email_mismatch
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.invite_join_email_mismatch_title
-import kmpvoyagercleanarchitecture.composeapp.generated.resources.invite_join_sign_out_retry
+import ammo.composeapp.generated.resources.Res
+import ammo.composeapp.generated.resources.auth_pending_invites_email_mismatch
+import ammo.composeapp.generated.resources.invite_join_email_mismatch_title
+import ammo.composeapp.generated.resources.invite_join_sign_out_retry
 import org.jetbrains.compose.resources.stringResource
 
 object InviteEmailMismatchTestTags {
