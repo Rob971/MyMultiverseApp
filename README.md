@@ -1,6 +1,6 @@
-# MyMultiverse (KMP)
+# Ammò (MyMultiverse)
 
-Kotlin Multiplatform **family logistics** app: shared grocery lists, weekly meal plans, and a local AI nutrition assistant. Built with **Compose Multiplatform**, **Voyager-style navigation**, **Koin** DI, and **Supabase** (Auth, Postgres, Realtime).
+Kotlin Multiplatform **family logistics** app (`app.mymultiverse.ammo`): shared grocery lists, weekly meal plans, and a local AI nutrition assistant. Built with **Compose Multiplatform**, custom **AppNavigator** routing, **Koin** DI, and **Supabase** (Auth, Postgres, Realtime).
 
 Android and iOS share one UI and domain layer; platform code is limited to `androidMain` / `iosMain` bindings.
 
@@ -108,7 +108,7 @@ When a household is active, opening Nutrition activates sync for that `household
 
 ## Architecture (technical)
 
-Clean architecture under `composeApp/src/commonMain/kotlin/app/mymultiverse/kmp/`:
+Clean architecture under `composeApp/src/commonMain/kotlin/app/mymultiverse/ammo/`:
 
 | Layer | Package | Responsibility |
 |-------|---------|----------------|
@@ -146,7 +146,7 @@ The mobile app talks to **Supabase Auth** (sessions, OAuth) and **PostgREST** (t
 
 | Concern | Implementation |
 |---------|----------------|
-| **Auth** | Email/password, Google, Apple; redirect `app.mymultiverse.kmp://auth/callback` |
+| **Auth** | Email/password, Google, Apple; redirect `app.mymultiverse.ammo://auth/callback` |
 | **Profiles** | `profiles` row per `auth.users`; bootstrap via `ensure_current_profile()` |
 | **Household lifecycle** | RPCs: `create_household`, `rename_household`, `check_household_name_available`, `leave_household`, `dissolve_household`, `transfer_household_ownership` |
 | **Invites** | `invite_household_member`, `accept_household_invite`, `list_my_pending_household_invites` |
@@ -188,7 +188,7 @@ After migrations deploy, CI runs `scripts/configure-household-notification-deliv
 
 | Function | Trigger | Purpose |
 |----------|---------|---------|
-| `notify-household-invite` | **Automatic:** `AFTER INSERT` trigger on `household_notification_outbox` (`pg_net` → edge function) | Process outbox rows; send branded invite email with `app.mymultiverse.kmp://invite?token=…` when `RESEND_API_KEY` is set |
+| `notify-household-invite` | **Automatic:** `AFTER INSERT` trigger on `household_notification_outbox` (`pg_net` → edge function) | Process outbox rows; send branded invite email with `app.mymultiverse.ammo://invite?token=…` when `RESEND_API_KEY` is set |
 | `delete-account` | App Home → delete account | `prepare_account_deletion` RPC then `auth.admin.deleteUser` (service role) |
 
 **GitHub repository secrets** (for [`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)):
@@ -205,13 +205,27 @@ After migrations deploy, CI runs `scripts/configure-household-notification-deliv
 | `INVITE_FROM_EMAIL` | Resend `from` address | Optional (defaults to `invites@mymultiverse.app`) |
 | `FCM_SERVICE_ACCOUNT_JSON` | FCM HTTP v1 push from `notify-household-invite` (Firebase service account JSON) | Optional (Android push skipped when unset) |
 | `APNS_KEY_ID` / `APNS_TEAM_ID` / `APNS_PRIVATE_KEY` | APNs HTTP/2 push for iOS device tokens (`.p8` key contents) | Optional (iOS push skipped when unset) |
-| `APNS_BUNDLE_ID` | APNs topic (defaults to `app.mymultiverse.kmp`) | Optional |
+| `APNS_BUNDLE_ID` | APNs topic (defaults to `app.mymultiverse.ammo`) | Optional |
 | `APNS_USE_SANDBOX` | `true` for debug/simulator tokens, `false` for TestFlight/App Store | Optional (defaults to `true`) |
 | `INVITE_OPEN_LINK_BASE` | HTTPS base for invite email CTAs (defaults to `https://mymultiverse.app/invite`) | Optional |
 
-**Android push (client):** copy `composeApp/google-services.json.example` → `google-services.json` (same file as Crashlytics). When present, the app registers a real FCM token on Home refresh and requests `POST_NOTIFICATIONS` on API 33+.
+**Android push (client):** `app.mymultiverse.ammo` is registered in Firebase (`1:37917280954:android:a0c28d6a257baf50f91083`). Local builds use `androidApp/google-services.json`; CI uses the `GOOGLE_SERVICES_JSON` GitHub secret (ammo-only JSON).
 
-**iOS push (client):** enable **Push Notifications** capability in Xcode for `iosApp`, use a physical device or sandbox APNs, sign in so Home refresh registers the token. Export share uses the system share sheet (`UIActivityViewController`).
+Re-fetch config anytime:
+
+```bash
+./scripts/setup-firebase-ammo-android.sh   # requires: firebase login
+```
+
+When present, the app registers a real FCM token on Home refresh and requests `POST_NOTIFICATIONS` on API 33+.
+
+**iOS Firebase (Crashlytics / messaging prep):** copy `iosApp/iosApp/GoogleService-Info.plist.example` → `GoogleService-Info.plist`, or run:
+
+```bash
+./scripts/setup-firebase-ammo-ios.sh
+```
+
+Crashlytics on iOS still uses `NoOpCrashReporter` until Firebase iOS SDK is linked in Xcode.
 
 Set function secrets manually (one-off or when not using CI):
 
@@ -225,7 +239,7 @@ supabase secrets set \
   APNS_KEY_ID="$APNS_KEY_ID" \
   APNS_TEAM_ID="$APNS_TEAM_ID" \
   APNS_PRIVATE_KEY="$APNS_PRIVATE_KEY" \
-  APNS_BUNDLE_ID="app.mymultiverse.kmp" \
+  APNS_BUNDLE_ID="app.mymultiverse.ammo" \
   APNS_USE_SANDBOX="true" \
   INVITE_OPEN_LINK_BASE="https://mymultiverse.app/invite"
 supabase functions deploy notify-household-invite --project-ref "$SUPABASE_PROJECT_REF"
@@ -236,10 +250,17 @@ supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
 
 | Field | Value |
 |-------|--------|
+| **Custom domain** | `ammo.mymultiverse.app` (CNAME → `ivjdzreazvkrrirecznk.supabase.co`; apex `mymultiverse.app` stays on Firebase Hosting) |
 | **Site URL** | `https://mymultiverse.app` (plain URL only — no markdown) |
-| **Redirect URLs** | `app.mymultiverse.kmp://auth/callback` |
+| **Redirect URLs** | `app.mymultiverse.ammo://auth`, `app.mymultiverse.ammo://auth/callback` |
 
-Enable Google/Apple providers for OAuth. Ensure **Realtime** is enabled (Database → Replication).
+Apply via Management API (uses `supabase login` token or `SUPABASE_ACCESS_TOKEN`):
+
+```bash
+./scripts/configure-supabase-auth-redirects.sh
+```
+
+Enable Google/Apple providers for OAuth. Add provider redirect URI `https://ammo.mymultiverse.app/auth/v1/callback` (Google Cloud + Apple Sign in with Apple). Ensure **Realtime** is enabled (Database → Replication).
 
 ### App Links / Universal Links (`mymultiverse.app`)
 
@@ -253,8 +274,14 @@ Enable Google/Apple providers for OAuth. Ensure **Realtime** is enabled (Databas
 2. `chmod +x scripts/print-android-apk-fingerprint.sh scripts/check-app-links-dns.sh`
 3. `./scripts/check-app-links-dns.sh` — confirms apex is off Squarespace before you verify hosting.
 4. **Deploy site:** [mymultiverse-website](https://github.com/Rob971/mymultiverse-website) → Actions → **Deploy hosting** (set secrets `FIREBASE_SERVICE_ACCOUNT_JSON`, `ANDROID_SHA256_FINGERPRINT`). Paste the service account JSON as **one minified line** (see website repo README). Or locally in that repo: `./scripts/deploy.sh`.
-5. Fingerprint for hosting: `ANDROID_SHA256_FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)"`
-6. Verify in website repo: `./scripts/verify-hosting.sh` — HTTP 200 for `assetlinks.json`, AASA, `/invite`, homepage, and `/privacy/`.
+5. Fingerprint for hosting (must match **app.mymultiverse.ammo** debug/release APK): `ANDROID_SHA256_FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh androidApp/build/outputs/apk/debug/androidApp-debug.apk)"`
+6. Verify in website repo: `./scripts/verify-hosting.sh` — HTTP 200 for `assetlinks.json` with `"package_name": "app.mymultiverse.ammo"`, AASA, `/invite`, homepage, and `/privacy/`.
+
+Local readiness check (source, Firebase, Supabase domain, auth redirects, live assetlinks):
+
+```bash
+./scripts/verify-ammo-release-readiness.sh
+```
 
 Release CI prints `ANDROID_SHA256_FINGERPRINT` for copying into the website repo secret when the signing cert changes.
 
@@ -364,7 +391,7 @@ contact_groups ──1:N── group_members ──► profiles
 ./gradlew :composeApp:testDebugUnitTest
 
 # Instrumented UI tests (Android emulator required)
-./gradlew :composeApp:connectedDebugAndroidTest
+./gradlew :androidApp:connectedDebugAndroidTest
 ```
 
 CI runs unit tests on every push; instrumented + iOS on PR / `main`.
@@ -391,7 +418,7 @@ cp local.properties.example local.properties
 Edit `local.properties`:
 
 ```properties
-supabase.url=https://your-project.supabase.co
+supabase.url=https://ammo.mymultiverse.app
 supabase.anonKey=your_supabase_anon_or_publishable_key_here
 ```
 
@@ -402,9 +429,9 @@ Gradle task `generateSupabaseSecrets` embeds values into `commonMain` at compile
 | Local file | Template | Purpose |
 |------------|----------|---------|
 | `local.properties` | `local.properties.example` | Supabase URL + anon key |
-| `composeApp/google-services.json` | `composeApp/google-services.json.example` | Firebase (Crashlytics + App Distribution) |
+| `androidApp/google-services.json` | `androidApp/google-services.json.example` | Firebase (Crashlytics + App Distribution) |
 
-CI uses GitHub Secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GOOGLE_SERVICES_JSON`. Optional `SUPABASE_TEST_EMAIL` + `SUPABASE_TEST_PASSWORD` enable authenticated Supabase smoke tests in CI (`verify-supabase-household.sh`).
+CI uses GitHub Secrets `SUPABASE_URL` (`https://ammo.mymultiverse.app`), `SUPABASE_ANON_KEY`, and `GOOGLE_SERVICES_JSON`. Optional `SUPABASE_TEST_EMAIL` + `SUPABASE_TEST_PASSWORD` enable authenticated Supabase smoke tests in CI (`verify-supabase-household.sh`).
 
 Production migration deploy requires `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`.
 
@@ -423,7 +450,7 @@ Or Supabase Dashboard SQL editor for ad-hoc applies. Remote field QA needs migra
 **Android**
 
 ```bash
-./gradlew :composeApp:assembleDebug
+./gradlew :androidApp:assembleDebug
 ```
 
 **iOS** (macOS)
@@ -444,13 +471,15 @@ GitHub Actions: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml)
 |---------|------|
 | **PR** to `main` | Android CI + Supabase Migrations + instrumented (merge gate; no Firebase Release) |
 | **Push** to `main` | Same as PR (tests only; no automatic Firebase or version bump) |
-| **Manual dispatch** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `release` (iOS disabled) |
+| **Manual dispatch** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, `release`, `play-store-bundle` (iOS disabled) |
 
 `chore(version): … [skip ci]` pushes skip heavy jobs via the CI gate. Feature branches validate through a PR only (one run per push).
 
 **Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push` and P2 edge functions deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change; also `workflow_dispatch`.
 
 Firebase App Distribution runs only via **manual dispatch** (`release` or `all`).
+
+**Google Play (signed AAB):** manual dispatch → `play-store-bundle` builds `androidApp-release.aab` and uploads it as a workflow artifact. Requires GitHub secrets `AMMO_UPLOAD_KEYSTORE_BASE64` (base64 `.jks`), `AMMO_UPLOAD_STORE_PASSWORD`, `AMMO_UPLOAD_KEY_ALIAS`, `AMMO_UPLOAD_KEY_PASSWORD`. Local builds: copy [`keystore.properties.example`](keystore.properties.example) → `keystore.properties`, place `ammo-upload.jks` at repo root, then `./gradlew :androidApp:bundleRelease`. After switching from debug to release signing, update `ANDROID_SHA256_FINGERPRINT` in [mymultiverse-website](https://github.com/Rob971/mymultiverse-website) using `./scripts/print-android-keystore-fingerprint.sh`.
 
 ---
 
@@ -476,12 +505,13 @@ Merges to `main` do **not** change the version automatically.
 ## Project layout
 
 ```
-composeApp/
+androidApp/           Android application (MainActivity, manifest, signing, UI tests)
+composeApp/           KMP shared library + iOS framework
   src/commonMain/     Shared UI, domain, data, resources (8 locales)
-  src/androidMain/    Android entry, Koin platform module
+  src/androidMain/    Android platform actuals (push, FCM, deeplinks)
   src/iosMain/        iOS entry, Koin platform module
   src/commonTest/     Unit tests
-  src/androidInstrumentedTest/  UI tests
+androidApp/src/androidInstrumentedTest/  Compose UI instrumented tests
 docs/                 Product specs (household-collaboration.md, household-collaboration-p2.md, p2-staging-qa-checklist.md, qa-signoff-v14-home-onboarding.md)
 supabase/migrations/  Postgres schema + RLS + Realtime + RPCs
 .github/workflows/    CI pipelines

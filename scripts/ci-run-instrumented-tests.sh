@@ -5,10 +5,10 @@ set -euo pipefail
 
 APK_DIR="${1:-apks}"
 TEST_RUNNER="${TEST_RUNNER:-androidx.test.runner.AndroidJUnitRunner}"
-TEST_PACKAGE="${TEST_PACKAGE:-app.mymultiverse.kmp.test}"
+TEST_PACKAGE="${TEST_PACKAGE:-app.mymultiverse.ammo.test}"
 
-APP_PACKAGE="${APP_PACKAGE:-app.mymultiverse.kmp}"
-TEST_PACKAGE_ID="${TEST_PACKAGE_ID:-app.mymultiverse.kmp.test}"
+APP_PACKAGE="${APP_PACKAGE:-app.mymultiverse.ammo}"
+TEST_PACKAGE_ID="${TEST_PACKAGE_ID:-app.mymultiverse.ammo.test}"
 
 APP_APK="$(find "$APK_DIR" -type f -name '*.apk' ! -name '*androidTest*' | head -n 1)"
 TEST_APK="$(find "$APK_DIR" -type f -name '*androidTest*.apk' | head -n 1)"

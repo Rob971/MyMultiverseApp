@@ -1,4 +1,4 @@
-rootProject.name = "KmpVoyagerCleanArchitecture"
+rootProject.name = "ammo"
 
 pluginManagement {
     repositories {
@@ -19,3 +19,4 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+include(":androidApp")

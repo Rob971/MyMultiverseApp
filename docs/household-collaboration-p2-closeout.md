@@ -74,7 +74,7 @@ Work in order where dependencies apply. Each PR should be independently mergeabl
 
 | Task | Status |
 |------|--------|
-| `firebase-messaging` + `AndroidFcmTokenProvider` + `MyMultiverseFirebaseMessagingService` | Done |
+| `firebase-messaging` + `AndroidFcmTokenProvider` + `AmmoFirebaseMessagingService` | Done |
 | `POST_NOTIFICATIONS` + default notification channel | Done |
 | Edge function FCM HTTP v1 send (`FCM_SERVICE_ACCOUNT_JSON`) | Done |
 | Set `FCM_SERVICE_ACCOUNT_JSON` in GitHub + manual invite push QA | **Ops / QA** |

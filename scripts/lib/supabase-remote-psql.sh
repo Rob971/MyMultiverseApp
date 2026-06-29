@@ -4,7 +4,11 @@
 
 _supabase_can_query_linked() {
   command -v supabase >/dev/null 2>&1 &&
-    { [[ -n "${SUPABASE_ACCESS_TOKEN:-}" ]] || [[ -f ".supabase/project-ref" ]]; }
+    {
+      [[ -n "${SUPABASE_ACCESS_TOKEN:-}" ]] ||
+        [[ -f ".supabase/project-ref" ]] ||
+        [[ -f "supabase/.temp/project-ref" ]]
+    }
 }
 
 escape_sql_literal() {

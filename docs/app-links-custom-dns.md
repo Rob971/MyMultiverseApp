@@ -61,7 +61,7 @@ Or locally (clone website repo, service account JSON required):
 
 ```bash
 ./scripts/check-app-links-dns.sh   # from MyMultiverseApp
-ANDROID_SHA256_FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh composeApp/build/outputs/apk/debug/composeApp-debug.apk)" \
+ANDROID_SHA256_FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh androidApp/build/outputs/apk/debug/androidApp-debug.apk)" \
   GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json \
   ./scripts/deploy.sh                # from mymultiverse-website
 ```

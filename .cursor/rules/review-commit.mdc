@@ -19,7 +19,7 @@ Apply on every implementation task, code review, and when the user asks for a co
 6. **Tests** — Unit tests for domain/screen model changes; instrumented only for critical UI paths; fakes implement full interfaces.
 7. **QA YAML** — Update `firebase-appdistribution-testcases.yaml` (bump `version`) when user-facing flows change.
 8. **Secrets** — No credentials, `local.properties` values, or `google-services.json` in commits.
-9. **Gradle** — Run `:composeApp:testDebugUnitTest` (and instrumented compile if UI touched) before done.
+9. **Gradle** — Run `:composeApp:testDebugUnitTest` (and `:androidApp:assembleDebugAndroidTest` if UI touched) before done.
 
 ## PR checklist
 

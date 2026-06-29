@@ -1,0 +1,244 @@
+package app.mymultiverse.ammo.presentation.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import app.mymultiverse.ammo.domain.manager.LanguageManager
+import app.mymultiverse.ammo.domain.manager.SupportedAppLanguages
+import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
+import ammo.composeapp.generated.resources.Res
+import ammo.composeapp.generated.resources.home_settings_language
+import ammo.composeapp.generated.resources.language_napulitano_subtitle
+import ammo.composeapp.generated.resources.language_picker_current
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+
+object LanguagePickerTestTags {
+    const val ROOT = "settings_language_picker"
+    const val TRIGGER = "settings_language_trigger"
+    const val GLOBAL_TRIGGER = "global_language_trigger"
+    const val GLOBAL_CHIP = "global_language_chip"
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GlobalLanguageAction(
+    modifier: Modifier = Modifier,
+) {
+    val languageManager = koinInject<LanguageManager>()
+    val currentLanguage by languageManager.currentLanguage.collectAsState()
+    var expanded by remember { mutableStateOf(false) }
+    val currentLabel = SupportedAppLanguages.labelFor(currentLanguage)
+    val pickerDescription = stringResource(Res.string.language_picker_current, currentLabel)
+
+    Box(modifier = modifier) {
+        LanguageFlagTrigger(
+            languageCode = currentLanguage,
+            onClick = { expanded = true },
+            modifier = Modifier
+                .testTag(LanguagePickerTestTags.GLOBAL_TRIGGER)
+                .semantics {
+                    contentDescription = pickerDescription
+                },
+        )
+        LanguageDropdownMenu(
+            expanded = expanded,
+            currentLanguage = currentLanguage,
+            onDismissRequest = { expanded = false },
+            onLanguageSelected = { code ->
+                languageManager.changeLanguage(code)
+                expanded = false
+            },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LanguagePicker(modifier: Modifier = Modifier) {
+    val languageManager = koinInject<LanguageManager>()
+    val currentLanguage by languageManager.currentLanguage.collectAsState()
+    var expanded by remember { mutableStateOf(false) }
+    val currentLabel = SupportedAppLanguages.labelFor(currentLanguage)
+    val pickerDescription = stringResource(Res.string.language_picker_current, currentLabel)
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag(LanguagePickerTestTags.ROOT),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = stringResource(Res.string.home_settings_language),
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = JourneySemanticColors.inkDeep(),
+        )
+        Box {
+            TextButton(
+                onClick = { expanded = true },
+                modifier = Modifier
+                    .testTag(LanguagePickerTestTags.TRIGGER)
+                    .semantics {
+                        contentDescription = pickerDescription
+                    },
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    LanguageFlag(
+                        languageCode = currentLanguage,
+                        flagHeight = 22.dp,
+                    )
+                    Text(
+                        text = currentLabel,
+                        fontWeight = FontWeight.Bold,
+                        color = JourneySemanticColors.brandTeal(),
+                    )
+                }
+            }
+            LanguageDropdownMenu(
+                expanded = expanded,
+                currentLanguage = currentLanguage,
+                onDismissRequest = { expanded = false },
+                onLanguageSelected = { code ->
+                    languageManager.changeLanguage(code)
+                    expanded = false
+                },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LanguageFlagTrigger(
+    languageCode: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.size(FamilyLogisticsDesign.minTouchTarget),
+        shape = RoundedCornerShape(12.dp),
+        color = JourneySemanticColors.elevatedSurface(),
+        shadowElevation = 4.dp,
+        tonalElevation = 2.dp,
+        border = BorderStroke(
+            width = 1.5.dp,
+            color = JourneySemanticColors.brandTeal(),
+        ),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(6.dp),
+        ) {
+            LanguageFlag(
+                languageCode = languageCode,
+                flagHeight = 24.dp,
+            )
+        }
+    }
+}
+
+@Composable
+private fun LanguageFlag(
+    languageCode: String,
+    flagHeight: Dp,
+    modifier: Modifier = Modifier,
+) {
+    if (SupportedAppLanguages.usesNapoliFootballFlag(languageCode)) {
+        NapoliFootballFlag(
+            modifier = modifier,
+            height = flagHeight,
+        )
+    } else {
+        Text(
+            text = SupportedAppLanguages.flagEmojiFor(languageCode),
+            fontSize = flagHeight.value.sp,
+            modifier = modifier,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LanguageDropdownMenu(
+    expanded: Boolean,
+    currentLanguage: String,
+    onDismissRequest: () -> Unit,
+    onLanguageSelected: (String) -> Unit,
+) {
+    val napulitanoSubtitle = stringResource(Res.string.language_napulitano_subtitle)
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = Modifier.background(JourneySemanticColors.elevatedSurface()),
+    ) {
+        SupportedAppLanguages.options.forEach { (code, name) ->
+            DropdownMenuItem(
+                text = {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        LanguageFlag(
+                            languageCode = code,
+                            flagHeight = 22.dp,
+                        )
+                        Column {
+                            Text(
+                                text = name,
+                                color = if (code == currentLanguage) {
+                                    JourneySemanticColors.brandTeal()
+                                } else {
+                                    JourneySemanticColors.inkDeep()
+                                },
+                            )
+                            if (code == SupportedAppLanguages.DEFAULT_CODE) {
+                                Text(
+                                    text = napulitanoSubtitle,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = JourneySemanticColors.inkMuted(),
+                                    modifier = Modifier.padding(top = 2.dp),
+                                )
+                            }
+                        }
+                    }
+                },
+                onClick = { onLanguageSelected(code) },
+            )
+        }
+    }
+}

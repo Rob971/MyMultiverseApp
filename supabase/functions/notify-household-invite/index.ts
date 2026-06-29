@@ -269,7 +269,7 @@ Deno.serve(async (req) => {
     const apnsKeyId = Deno.env.get("APNS_KEY_ID") ?? "";
     const apnsTeamId = Deno.env.get("APNS_TEAM_ID") ?? "";
     const apnsPrivateKey = Deno.env.get("APNS_PRIVATE_KEY") ?? "";
-    const apnsBundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "app.mymultiverse.kmp";
+    const apnsBundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "app.mymultiverse.ammo";
     const apnsUseSandbox = (Deno.env.get("APNS_USE_SANDBOX") ?? "true").toLowerCase() !== "false";
     const inviteOpenLinkBase = resolveInviteOpenLinkBase(
       Deno.env.get("INVITE_OPEN_LINK_BASE"),

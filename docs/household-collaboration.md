@@ -131,7 +131,7 @@ Show pending invites even when affiliated. Accept opens confirmation:
 
 ### 4. Invitee login flow
 
-**Target (invite deep link):** Email/push tap → `app.mymultiverse.kmp://invite?token=…` → preview invite → OTP/OAuth with invited email → accept → **home** + snackbar “You joined **{name}**”.
+**Target (invite deep link):** Email/push tap → `app.mymultiverse.ammo://invite?token=…` → preview invite → OTP/OAuth with invited email → accept → **home** + snackbar “You joined **{name}**”.
 
 **Legacy (no deep link):** Sign in → **Home onboarding** (if unaffiliated) → accept invite → **welcome Home** + snackbar.
 

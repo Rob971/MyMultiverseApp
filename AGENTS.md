@@ -1,4 +1,4 @@
-# Agent guidelines (MyMultiverse KMP)
+# Agent guidelines (Ammò / MyMultiverse)
 
 > ## MANDATORY FOR ALL AGENTS
 >
@@ -47,10 +47,10 @@ Cursor rules in `.cursor/rules/` define how to plan, implement, test, review, co
 | Backend | Supabase Kotlin 3.5.0 + Postgres RLS + Deno edge functions |
 | Network | Ktor 3.4.0 |
 | Persistence | `NutritionLocalStore`, multiplatform-settings, sync outbox |
-| Android | AGP 9.2.1, minSdk 24, Firebase Crashlytics/Messaging |
+| Android | AGP 9.2.1, `:androidApp` application + `:composeApp` KMP library, minSdk 24, compileSdk 36 |
 | iOS | Compose MP + iosApp; CI compile disabled (local/manual) |
 | i18n | 8 locales via `composeResources` |
-| QA | commonTest + androidInstrumentedTest + Firebase YAML |
+| QA | `composeApp` commonTest + `androidApp` instrumented tests + Firebase YAML |
 
 **Not used:** Voyager navigation (catalog only), SQLDelight.
 
@@ -66,7 +66,10 @@ Cursor rules in `.cursor/rules/` define how to plan, implement, test, review, co
 ./gradlew :composeApp:testDebugUnitTest
 
 # Instrumented compile (when UI changed)
-./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid
+./gradlew :androidApp:assembleDebugAndroidTest
+
+# Release AAB (signed; requires keystore.properties)
+./gradlew :androidApp:bundleRelease
 
 # iOS compile (local)
 ./gradlew :composeApp:compileKotlinIosSimulatorArm64

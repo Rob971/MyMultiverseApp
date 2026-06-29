@@ -40,4 +40,4 @@ runs:
       env:
         GOOGLE_SERVICES_JSON: ${{ inputs.google-services-json }}
       run: |
-        printf '%s' "$GOOGLE_SERVICES_JSON" > composeApp/google-services.json
+        printf '%s' "$GOOGLE_SERVICES_JSON" > androidApp/google-services.json

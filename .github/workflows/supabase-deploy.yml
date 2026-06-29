@@ -168,7 +168,7 @@ jobs:
         run: |
           invite_from="${INVITE_FROM_EMAIL:-Ammò <invites@mymultiverse.app>}"
           invite_open_base="${INVITE_OPEN_LINK_BASE:-https://mymultiverse.app/invite}"
-          apns_bundle="${APNS_BUNDLE_ID:-app.mymultiverse.kmp}"
+          apns_bundle="${APNS_BUNDLE_ID:-app.mymultiverse.ammo}"
           apns_sandbox="${APNS_USE_SANDBOX:-true}"
           supabase secrets set \
             "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}" \

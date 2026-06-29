@@ -1,0 +1,58 @@
+name: Android release signing setup
+description: Decode Play upload keystore and write keystore.properties for bundleRelease
+
+inputs:
+  keystore-base64:
+    description: Base64-encoded upload keystore (.jks)
+    required: true
+  store-password:
+    description: Keystore store password
+    required: true
+  key-alias:
+    description: Upload key alias
+    required: true
+  key-password:
+    description: Upload key password
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Validate release signing secrets
+      shell: bash
+      env:
+        KEYSTORE_BASE64: ${{ inputs.keystore-base64 }}
+        STORE_PASSWORD: ${{ inputs.store-password }}
+        KEY_ALIAS: ${{ inputs.key-alias }}
+        KEY_PASSWORD: ${{ inputs.key-password }}
+      run: |
+        set -euo pipefail
+        for name in KEYSTORE_BASE64 STORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+          if [[ -z "${!name}" ]]; then
+            echo "::error::Release signing secret ${name} is not set."
+            exit 1
+          fi
+        done
+
+    - name: Install upload keystore and keystore.properties
+      shell: bash
+      env:
+        KEYSTORE_BASE64: ${{ inputs.keystore-base64 }}
+        STORE_PASSWORD: ${{ inputs.store-password }}
+        KEY_ALIAS: ${{ inputs.key-alias }}
+        KEY_PASSWORD: ${{ inputs.key-password }}
+        KEYSTORE_PATH: ${{ runner.temp }}/ammo-upload.jks
+      run: |
+        set -euo pipefail
+        printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_PATH"
+        if ! keytool -list -keystore "$KEYSTORE_PATH" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null 2>&1; then
+          echo "::error::Upload keystore, store password, or key alias did not validate."
+          exit 1
+        fi
+        {
+          echo "storeFile=${KEYSTORE_PATH}"
+          echo "storePassword=${STORE_PASSWORD}"
+          echo "keyAlias=${KEY_ALIAS}"
+          echo "keyPassword=${KEY_PASSWORD}"
+        } > keystore.properties
+        echo "AMMO_UPLOAD_STORE_FILE=${KEYSTORE_PATH}" >> "$GITHUB_ENV"

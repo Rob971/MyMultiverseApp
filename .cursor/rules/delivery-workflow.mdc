@@ -29,7 +29,7 @@ Every task—planning, review, fix, test, or implementation—must follow this s
 - **Instrumented** (`androidInstrumentedTest`): critical UX with `testTag`s; `Instrumented*Fakes`, not production network.
 - **Supabase** (when touching invites/migrations): `scripts/verify-supabase-household.sh`, edge Deno tests if helpers change.
 - Update `firebase-appdistribution-testcases.yaml` when user-facing flows change (bump `version`).
-- Run before done: `./gradlew :composeApp:testDebugUnitTest` (+ `compileDebugAndroidTestKotlinAndroid` if UI changed).
+- Run before done: `./gradlew :composeApp:testDebugUnitTest` (+ `:androidApp:assembleDebugAndroidTest` if UI changed).
 
 ## 4. Review
 

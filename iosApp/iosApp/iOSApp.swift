@@ -37,7 +37,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 		      !token.isEmpty else {
 			return
 		}
-		let url = "app.mymultiverse.kmp://invite?token=\(token)"
+		let url = "app.mymultiverse.ammo://invite?token=\(token)"
 		InviteRedirectBridge.shared.handle(url: url)
 	}
 }
