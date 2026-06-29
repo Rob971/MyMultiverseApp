@@ -2,7 +2,7 @@ package app.mymultiverse.ammo.push
 
 import android.content.Context
 
-internal object PushTokenRefreshStore {
+object PushTokenRefreshStore {
     private const val PREFS_NAME = "push_token_refresh"
     private const val KEY_TOKEN = "pending_fcm_token"
 

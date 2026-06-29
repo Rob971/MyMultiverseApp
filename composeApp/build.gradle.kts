@@ -26,7 +26,7 @@ val generateFirebaseBuildFlags = tasks.register("generateFirebaseBuildFlags") {
             """
             package app.mymultiverse.ammo.data.observability
 
-            internal object FirebaseBuildFlags {
+            object FirebaseBuildFlags {
                 const val CRASHLYTICS_ENABLED: Boolean = $firebaseCrashlyticsEnabled
                 const val PUSH_ENABLED: Boolean = $firebaseCrashlyticsEnabled
             }
@@ -157,9 +157,11 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.androidx.appcompat)
             implementation(libs.ktor.client.android)
-            implementation(libs.firebase.crashlytics)
-            implementation(libs.firebase.messaging)
-            implementation(libs.kotlinx.coroutines.play.services)
+            if (firebaseCrashlyticsEnabled) {
+                implementation(libs.firebase.crashlytics)
+                implementation(libs.firebase.messaging)
+                implementation(libs.kotlinx.coroutines.play.services)
+            }
         }
         androidMain {
             kotlin.srcDir(layout.buildDirectory.dir("generated/firebase/kotlin"))

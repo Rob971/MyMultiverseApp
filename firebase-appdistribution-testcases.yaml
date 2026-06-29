@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 65
-updated: 2026-06-26
+version: 66
+updated: 2026-06-29
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -41,6 +41,7 @@ summary: |
   Icon clarity (v59): bolder nav/feature icons (Today, Plan, Groceries); Google/Apple marks on SSO buttons; coming-soon Adventures/Budget row on Today with labeled compass and wallet icons; dedicated sync and keep-screen-on icons.
   Language picker flags (v60): national flag trigger in top-right on auth/login and all headers; dropdown lists flag + language name; Napulitano keeps dialect subtitle.
   Brand logo (v65): richer gold-framed Ammò badge restored in-app, launcher icons, invite emails, and mymultiverse.app brand assets; Android keeps a simplified monochrome notification icon for status bar compliance.
+  Launcher safe zone (v66): Android adaptive icon foreground scaled to the 66% center circle so Ammò wordmark is not clipped on home screen.
   Today hero and nav icons (v61): Plan lunch hero + Plan tab use plate/knife/fork icon; Shopping list hero + Groceries tab use fruit/veg/fish/steak icon.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
@@ -953,9 +954,9 @@ testcases:
       - Reopen the app and spot-check invite or household creation screens if reachable.
     expected:
       - In-app logo is the richer gold-framed terracotta Ammò badge (gold wordmark, Vesuvius, pizza ò) — not the old vector heart or oversimplified flat badge.
-      - Launcher icons match the richer badge; household push notification uses the simplified monochrome ring required by Android status bar rules.
+      - Launcher icons match the richer badge with the full Ammò wordmark visible (not clipped by the circular mask); household push notification uses the simplified monochrome ring required by Android status bar rules.
       - Invite email (with token and fallback), invite-open landing, and invalid invite pages show the hosted logo.
-      - Android adaptive launcher uses the richer raster foreground (`ic_launcher_foreground`) on API 26+; iOS and website PNGs are generated from the same gold-framed badge source.
+      - Android adaptive launcher uses the richer raster foreground (`ic_launcher_foreground`) scaled to the 66% safe zone on API 26+; iOS and website PNGs are generated from the same gold-framed badge source.
       - Logo scales cleanly at auth (~96dp) and banner (~64dp) sizes in light and dark theme.
 
   - id: supabase-persistence-smoke

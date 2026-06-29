@@ -6,13 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.LaunchedEffect
+import app.mymultiverse.ammo.di.androidFirebasePlatformModule
 import app.mymultiverse.ammo.data.observability.FirebaseBuildFlags
 import app.mymultiverse.ammo.data.platform.AndroidNotificationChannels
 import app.mymultiverse.ammo.data.invite.InviteRedirectEvents
 import app.mymultiverse.ammo.data.invite.InviteRedirectUrls
 import app.mymultiverse.ammo.data.invite.extractInvitePushRedirectUrl
 import app.mymultiverse.ammo.data.supabase.AuthRedirectEvents
-import app.mymultiverse.ammo.push.HouseholdPushNotificationHandler
+import app.mymultiverse.ammo.push.InvitePushIntentDelivery
 import app.mymultiverse.ammo.presentation.App
 import app.mymultiverse.ammo.presentation.di.appModule
 import org.koin.android.ext.koin.androidContext
@@ -24,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         if (FirebaseBuildFlags.PUSH_ENABLED) {
             AndroidNotificationChannels.ensureCreated(this)
-            HouseholdPushNotificationHandler.deliverIntentPayload(intent)
+            InvitePushIntentDelivery.deliverIntentPayload(intent)
         }
         val launchAuthRedirectUrl = intent?.data?.toString()
             ?.takeIf(AuthRedirectEvents::isAuthRedirect)
@@ -34,7 +35,14 @@ class MainActivity : AppCompatActivity() {
         setContent {
             KoinApplication(application = {
                 androidContext(this@MainActivity)
-                modules(appModule)
+                modules(
+                    buildList {
+                        add(appModule)
+                        if (FirebaseBuildFlags.PUSH_ENABLED) {
+                            add(androidFirebasePlatformModule())
+                        }
+                    },
+                )
             }) {
                 App()
                 if (launchAuthRedirectUrl != null) {
@@ -67,6 +75,6 @@ class MainActivity : AppCompatActivity() {
             ?.takeIf(InviteRedirectUrls::isInviteRedirect)
             ?.let(InviteRedirectEvents::emit)
         intent?.extractInvitePushRedirectUrl()?.let(InviteRedirectEvents::emit)
-        HouseholdPushNotificationHandler.deliverIntentPayload(intent)
+        InvitePushIntentDelivery.deliverIntentPayload(intent)
     }
 }

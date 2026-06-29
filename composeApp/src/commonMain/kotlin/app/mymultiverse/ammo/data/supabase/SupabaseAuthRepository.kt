@@ -41,9 +41,11 @@ class SupabaseAuthRepository(
     }
 
     override suspend fun restoreSession() {
-        client.auth.awaitInitialization()
-        AuthRedirectEvents.consumePending()?.let { processOAuthRedirect(it) }
-        syncAuthStateFromCurrentSession()
+        runCatching {
+            client.auth.awaitInitialization()
+            AuthRedirectEvents.consumePending()?.let { processOAuthRedirect(it) }
+            syncAuthStateFromCurrentSession()
+        }
         if (_authState.value == AuthState.Loading && currentAuthUser() == null) {
             _authState.value = AuthState.Unauthenticated
         }
