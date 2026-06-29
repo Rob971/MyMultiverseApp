@@ -1,0 +1,53 @@
+package app.mymultiverse.ammo.presentation.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import app.mymultiverse.ammo.presentation.theme.AppIconRole
+import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun UserAvatarButton(
+    initials: String,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    showPersonFallback: Boolean = initials == "?",
+) {
+    JourneyIconButton(
+        onClick = onClick,
+        modifier = modifier,
+    ) {
+        if (showPersonFallback) {
+            JourneyIcon(
+                role = AppIconRole.Account,
+                contentDescription = contentDescription,
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(JourneySemanticColors.brandTeal()),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = initials,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                )
+            }
+        }
+    }
+}

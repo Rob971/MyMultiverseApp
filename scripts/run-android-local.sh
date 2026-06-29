@@ -17,10 +17,10 @@ echo "Devices:"
 adb devices
 echo
 echo "Building debug APK..."
-./gradlew :composeApp:assembleDebug
+./gradlew :androidApp:assembleDebug
 
 echo
 echo "Installing on connected device/emulator..."
-./gradlew :composeApp:installDebug
+./gradlew :androidApp:installDebug
 
-echo "Done. Launch the app (app.mymultiverse.kmp) from the launcher."
+echo "Done. Launch the app (app.mymultiverse.ammo) from the launcher."

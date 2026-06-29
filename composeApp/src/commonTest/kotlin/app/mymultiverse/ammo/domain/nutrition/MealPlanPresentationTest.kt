@@ -1,0 +1,117 @@
+package app.mymultiverse.ammo.domain.nutrition
+
+import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+class MealPlanPresentationTest {
+
+    @Test
+    fun isPlanned_whenLunchOrDinnerPresent() {
+        assertFalse(MealPlanPresentation.isPlanned(DayMeals()))
+        assertTrue(MealPlanPresentation.isPlanned(DayMeals(lunch = "Soup")))
+        assertTrue(MealPlanPresentation.isPlanned(DayMeals(dinner = "Fish")))
+    }
+
+    @Test
+    fun summaryText_joinsMealsOrReturnsFallback() {
+        val day = DayMeals(lunch = "Pasta", dinner = "Salad")
+        assertEquals(
+            "Pasta · Salad",
+            MealPlanPresentation.summaryText(
+                day = day,
+                notPlannedLabel = "Empty",
+                unplannedSlotLabel = "Unplanned",
+                lunchLabel = "Lunch",
+                dinnerLabel = "Dinner",
+            ),
+        )
+
+        assertEquals(
+            "Empty",
+            MealPlanPresentation.summaryText(
+                day = DayMeals(),
+                notPlannedLabel = "Empty",
+                unplannedSlotLabel = "Unplanned",
+                lunchLabel = "Lunch",
+                dinnerLabel = "Dinner",
+            ),
+        )
+    }
+
+    @Test
+    fun summaryText_marksMissingSlotAsUnplanned() {
+        val day = DayMeals(lunch = "Soup", dinner = "")
+
+        assertEquals(
+            "Soup · Dinner: Unplanned",
+            MealPlanPresentation.summaryText(
+                day = day,
+                notPlannedLabel = "Empty",
+                unplannedSlotLabel = "Unplanned",
+                lunchLabel = "Lunch",
+                dinnerLabel = "Dinner",
+            ),
+        )
+    }
+
+    @Test
+    fun plannedMeals_listsNonBlankSlots() {
+        val days = listOf(
+            DayMeals(lunch = "Soup", dinner = "Fish"),
+            DayMeals(),
+        ) + List(5) { DayMeals() }
+
+        val planned = MealPlanPresentation.plannedMeals(days)
+
+        assertEquals(2, planned.size)
+        assertEquals(MealSlot.Lunch, planned.first().slot)
+        assertEquals("Soup", planned.first().text)
+    }
+
+    @Test
+    fun groceryAiCriteriaSeed_joinsDistinctPlannedMeals() {
+        val days = List(7) { DayMeals() }.toMutableList()
+        days[0] = DayMeals(lunch = "Pasta", dinner = "Salad")
+        days[1] = DayMeals(lunch = "pasta", dinner = "Soup")
+
+        val seed = MealPlanPresentation.groceryAiCriteriaSeed(days)
+
+        assertEquals("Pasta, Salad, Soup", seed)
+    }
+
+    @Test
+    fun tomorrowIndex_wrapsWithinWeek() {
+        assertEquals(1, MealPlanPresentation.tomorrowIndex(0))
+        assertEquals(null, MealPlanPresentation.tomorrowIndex(6))
+    }
+
+    @Test
+    fun mealLabelSuggestions_filtersByQueryAndExcludesExactMatch() {
+        val days = listOf(
+            DayMeals(lunch = "Pasta carbonara", dinner = "Caesar salad"),
+            DayMeals(lunch = "Pasta primavera", dinner = ""),
+        ) + List(5) { DayMeals() }
+
+        assertEquals(
+            listOf("Pasta carbonara", "Pasta primavera"),
+            MealPlanPresentation.mealLabelSuggestions(days, "pas"),
+        )
+        assertTrue(MealPlanPresentation.mealLabelSuggestions(days, "Pasta carbonara").isEmpty())
+        assertTrue(MealPlanPresentation.mealLabelSuggestions(days, "p").isEmpty())
+    }
+
+    @Test
+    fun mealLabelSuggestions_deduplicatesCaseInsensitive() {
+        val days = listOf(
+            DayMeals(lunch = "Soup", dinner = "SOUP"),
+        ) + List(6) { DayMeals() }
+
+        assertEquals(
+            listOf("Soup"),
+            MealPlanPresentation.mealLabelSuggestions(days, "so"),
+        )
+    }
+}

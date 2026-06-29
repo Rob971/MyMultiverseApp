@@ -70,7 +70,7 @@ testcases:
     title: Google or Apple OAuth redirect
     steps:
       - From the auth screen (SSO buttons only), tap Google or Apple (providers enabled in Supabase Dashboard).
-      - Complete provider sign-in in the browser; app reopens via app.mymultiverse.kmp://auth/callback.
+      - Complete provider sign-in in the browser; app reopens via app.mymultiverse.ammo://auth/callback.
     expected:
       - New users see the family name setup screen (keyboard focused on the name field), then Today after Create family.
       - Returning users with an active family land on Today without staying on auth.

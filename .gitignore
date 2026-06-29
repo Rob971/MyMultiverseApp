@@ -40,6 +40,7 @@ firebase-adminsdk-*.json
 
 # Firebase (download from console; keep *.example templates in repo)
 composeApp/google-services.json
+androidApp/google-services.json
 iosApp/iosApp/GoogleService-Info.plist
 
 # Supabase

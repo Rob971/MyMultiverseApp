@@ -34,7 +34,7 @@ if ! gh auth status >/dev/null 2>&1; then
   exit 1
 fi
 
-REPO_NAME="${1:-KmpVoyagerCleanArchitecture}"
+REPO_NAME="${1:-ammo}"
 VISIBILITY="${2:-public}"
 
 if git remote get-url origin >/dev/null 2>&1; then

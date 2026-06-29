@@ -33,7 +33,7 @@ alwaysApply: false
 - Build-time secrets: `local.properties` → generated `SupabaseSecrets.kt` (never commit keys).
 - Modules: auth, postgrest, realtime, functions.
 - `Unconfigured*` repositories when URL/key missing — UI shows configuration gate.
-- Auth: email/password, OAuth deeplink `app.mymultiverse.kmp://auth/callback`.
+- Auth: email/password, OAuth deeplink `app.mymultiverse.ammo://auth/callback`.
 - Map Supabase errors to domain failures; no raw exception messages in UI.
 
 ## Invite & collaboration

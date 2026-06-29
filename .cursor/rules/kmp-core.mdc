@@ -26,9 +26,10 @@ alwaysApply: true
 
 ## Architecture & packages
 
-- Base: `app.mymultiverse.kmp`
+- Base: `app.mymultiverse.ammo`
 - `domain/` → `data/` → `presentation/` (see `architecture-clean.mdc`)
-- Single module: `:composeApp`
+- **`:composeApp`** — KMP shared library (commonMain, androidMain actuals, iOS framework)
+- **`:androidApp`** — Android application entry (`MainActivity`, manifest, signing, instrumented tests)
 
 ## Navigation (custom, not Voyager)
 

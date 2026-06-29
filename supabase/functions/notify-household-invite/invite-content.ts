@@ -1,6 +1,6 @@
-export const INVITE_DEEP_LINK_SCHEME = "app.mymultiverse.kmp";
+export const INVITE_DEEP_LINK_SCHEME = "app.mymultiverse.ammo";
 export const INVITE_DEEP_LINK_HOST = "invite";
-export const ANDROID_APP_PACKAGE = "app.mymultiverse.kmp";
+export const ANDROID_APP_PACKAGE = "app.mymultiverse.ammo";
 export const DEFAULT_INVITE_OPEN_PATH = "/functions/v1/invite-open";
 export const APP_BRAND_NAME = "Ammò";
 export const DEFAULT_INVITE_FROM_EMAIL = `Ammò <invites@mymultiverse.app>`;

@@ -10,7 +10,7 @@ alwaysApply: false
 
 ## Source set
 
-- `composeApp/src/iosMain/kotlin/app/mymultiverse/kmp/`
+- `composeApp/src/iosMain/kotlin/app/mymultiverse/ammo/`
 - Shared UI in `commonMain` — iosMain is platform adapters only.
 
 ## expect/actual in this project
@@ -39,7 +39,7 @@ alwaysApply: false
 
 - Same `AppTheme`, navigation, and i18n resources from `commonMain`.
 - Haptics: wire `JourneyHaptics.ios.kt` when UIKit feedback is ready (Android already has light click).
-- OAuth deeplink: same scheme `app.mymultiverse.kmp://auth/callback`.
+- OAuth deeplink: same scheme `app.mymultiverse.ammo://auth/callback`.
 - Push: APNs token upload parallels FCM on Android.
 
 ## Testing

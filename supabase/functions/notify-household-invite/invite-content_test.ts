@@ -29,7 +29,7 @@ function assertIncludes(haystack: string, needle: string, message: string) {
 Deno.test("buildInviteDeepLink encodes token query param", () => {
   assertEquals(
     buildInviteDeepLink("abc 123"),
-    "app.mymultiverse.kmp://invite?token=abc%20123",
+    "app.mymultiverse.ammo://invite?token=abc%20123",
     "deep link",
   );
 });
@@ -72,7 +72,7 @@ Deno.test("buildInviteEmailSubject uses inviter and household", () => {
     householdName: "Rossi family",
     inviteeEmail: "maria@example.com",
     inviteWebLink: "https://example.com/invite-open?token=t",
-    inviteDeepLink: "app.mymultiverse.kmp://invite?token=t",
+    inviteDeepLink: "app.mymultiverse.ammo://invite?token=t",
   });
   assertEquals(subject, "Marco invited you to Rossi family", "subject");
 });
@@ -83,7 +83,7 @@ Deno.test("buildInviteEmailHtml uses HTTPS web link for CTA", () => {
     householdName: "Rossi family",
     inviteeEmail: "maria@example.com",
     inviteWebLink: "https://example.com/invite-open?token=secret-token",
-    inviteDeepLink: "app.mymultiverse.kmp://invite?token=secret-token",
+    inviteDeepLink: "app.mymultiverse.ammo://invite?token=secret-token",
   });
   assertIncludes(html, "Accept invitation", "cta label");
   assertIncludes(html, 'href="https://example.com/invite-open?token=secret-token"', "https cta href");
@@ -99,7 +99,7 @@ Deno.test("buildInviteEmailText includes HTTPS web link", () => {
     householdName: "Rossi family",
     inviteeEmail: "maria@example.com",
     inviteWebLink: "https://example.com/invite-open?token=secret-token",
-    inviteDeepLink: "app.mymultiverse.kmp://invite?token=secret-token",
+    inviteDeepLink: "app.mymultiverse.ammo://invite?token=secret-token",
   });
   assertIncludes(text, "Accept invitation: https://example.com/invite-open?token=secret-token", "plain text link");
 });
@@ -117,16 +117,16 @@ Deno.test("buildInvalidInvitePageHtml includes brand logo", () => {
 });
 
 Deno.test("buildInviteOpenPageHtml redirects to custom scheme", () => {
-  const html = buildInviteOpenPageHtml("app.mymultiverse.kmp://invite?token=secret-token");
-  assertIncludes(html, "app.mymultiverse.kmp://invite?token=secret-token", "deep link");
+  const html = buildInviteOpenPageHtml("app.mymultiverse.ammo://invite?token=secret-token");
+  assertIncludes(html, "app.mymultiverse.ammo://invite?token=secret-token", "deep link");
   assertIncludes(html, "Open Ammò", "open button");
   assertIncludes(html, BRAND_LOGO_URL, "brand logo url");
 });
 
 Deno.test("buildAndroidIntentLink targets app package", () => {
   assertIncludes(
-    buildAndroidIntentLink("app.mymultiverse.kmp://invite?token=abc"),
-    "package=app.mymultiverse.kmp",
+    buildAndroidIntentLink("app.mymultiverse.ammo://invite?token=abc"),
+    "package=app.mymultiverse.ammo",
     "android package",
   );
 });

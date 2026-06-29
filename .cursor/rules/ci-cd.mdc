@@ -23,7 +23,7 @@ alwaysApply: false
 |-------|------|
 | **PR / push `main`** | CI gate, Android CI (unit + APK), Android Instrumented UI Tests, Supabase Migrations |
 | **PR / push `main`** | No automatic release or version bump |
-| **Manual `workflow_dispatch`** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, **`release`** |
+| **Manual `workflow_dispatch`** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, **`release`**, **`play-store-bundle`** |
 | **iOS** | Job disabled (`if: false`); compile locally: `./gradlew :composeApp:compileKotlinIosSimulatorArm64` |
 
 ### Release job (manual only)
@@ -36,6 +36,23 @@ Flow: bump `gradle/app-version.properties` → build debug APK → Firebase App 
 
 `version_bump`: `patch` | `minor` | `none`.
 
+### Play Store bundle job (manual only)
+
+Builds a **signed release AAB** for Google Play upload (does not distribute to Firebase).
+
+```bash
+gh workflow run "KMP CI" --ref main -f job=play-store-bundle
+```
+
+Flow: decode upload keystore from secrets → `bundleRelease` → upload `androidApp-release-aab` artifact (30-day retention) → log release `ANDROID_SHA256_FINGERPRINT` for website `assetlinks.json`.
+
+**Local build** (after `keystore.properties` or `local.properties` upload keys):
+
+```bash
+./gradlew :androidApp:bundleRelease
+# Output: androidApp/build/outputs/bundle/release/androidApp-release.aab
+```
+
 Watch: `gh pr checks N --watch --interval 15` on PRs.
 
 ## Secrets (GitHub — never commit)
@@ -47,6 +64,7 @@ Watch: `gh pr checks N --watch --interval 15` on PRs.
 | `SUPABASE_SERVICE_ROLE_KEY` | Edge functions, smoke scripts |
 | `GOOGLE_SERVICES_JSON` | Crashlytics in CI APK |
 | Firebase App Distribution tokens | Release job composite action |
+| `AMMO_UPLOAD_KEYSTORE_BASE64`, `AMMO_UPLOAD_STORE_PASSWORD`, `AMMO_UPLOAD_KEY_ALIAS`, `AMMO_UPLOAD_KEY_PASSWORD` | Play Store `play-store-bundle` job |
 
 ## Supabase in CI
 
@@ -67,7 +85,7 @@ Watch: `gh pr checks N --watch --interval 15` on PRs.
 
 - Parallel merge-gate jobs; Gradle cache; shallow checkout; pinned `firebase-tools`; AVD snapshot for instrumented.
 - **Android CI** builds debug + `androidTest` APKs once (`assembleDebugAndroidTest`); **instrumented** job downloads them and runs `scripts/ci-run-instrumented-tests.sh` via `adb` (no Gradle compile on the emulator runner).
-- **Path filters** (`ci-changes` + `dorny/paths-filter`): skip instrumented when the diff does not touch `composeApp/**`, Gradle, or Android CI workflow files; manual `workflow_dispatch` always runs instrumented when selected.
+- **Path filters** (`ci-changes` + `dorny/paths-filter`): skip instrumented when the diff does not touch `composeApp/**`, `androidApp/**`, Gradle, or Android CI workflow files; manual `workflow_dispatch` always runs instrumented when selected.
 
 ## Current release line
 

@@ -8,7 +8,7 @@ alwaysApply: true
 ## Test pyramid
 
 1. **Unit** (`composeApp/src/commonTest`) — fast, deterministic; fake repositories/services.
-2. **Instrumented** (`androidInstrumentedTest`) — Compose UI smoke on critical paths.
+2. **Instrumented** (`androidApp/src/androidInstrumentedTest`) — Compose UI smoke on critical paths.
 3. **Manual** (`firebase-appdistribution-testcases.yaml`) — Firebase App Distribution testers (currently **v55**).
 
 ## Unit tests
@@ -34,7 +34,7 @@ alwaysApply: true
 - Deep CRUD rules belong in `NutritionScreenModelTest` / domain unit tests.
 
 ```bash
-./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid
+./gradlew :androidApp:assembleDebugAndroidTest
 ```
 
 CI runs instrumented on PR and `main` push; local optional via emulator.

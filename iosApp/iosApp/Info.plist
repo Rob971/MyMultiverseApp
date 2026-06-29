@@ -52,10 +52,10 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>app.mymultiverse.kmp.auth</string>
+			<string>app.mymultiverse.ammo.auth</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>app.mymultiverse.kmp</string>
+				<string>app.mymultiverse.ammo</string>
 			</array>
 		</dict>
 	</array>

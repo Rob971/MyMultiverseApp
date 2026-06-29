@@ -70,7 +70,7 @@ Use a **disposable** test account (not the shared CI smoke user).
 |------|------|
 | Phone A invites Phone B by email | ☐ |
 | B receives invite email (Resend configured) | ☐ |
-| Email contains **Accept invitation** button and `app.mymultiverse.kmp://invite?token=…` link | ☐ |
+| Email contains **Accept invitation** button and `app.mymultiverse.ammo://invite?token=…` link | ☐ |
 | Outbox row gets `processed_at` without manual function invoke | ☐ |
 | B sees pending invite on **Home onboarding** (existing flow) | ☐ |
 | Tap email link opens app with invite token (after client deep-link branch merges) | ☐ N/A |

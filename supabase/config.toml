@@ -2,7 +2,7 @@
 # API must stay enabled so CI can smoke-test preview_household_invite via PostgREST.
 # Production deploy: .github/workflows/supabase-deploy.yml (db push on main only).
 
-project_id = "kmp-voyager-local"
+project_id = "ammo-local"
 
 [api]
 enabled = true

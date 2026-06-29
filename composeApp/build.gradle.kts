@@ -4,21 +4,17 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
 }
 
-val googleServicesFile = layout.projectDirectory.file("google-services.json").asFile
+val googleServicesFile = rootProject.layout.projectDirectory.file("androidApp/google-services.json").asFile
 val firebaseCrashlyticsEnabled = googleServicesFile.exists()
-if (firebaseCrashlyticsEnabled) {
-    apply(plugin = libs.plugins.google.services.get().pluginId)
-    apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
-}
 
 val generateFirebaseBuildFlags = tasks.register("generateFirebaseBuildFlags") {
-    val outputDir = layout.buildDirectory.dir("generated/firebase/kotlin/app/mymultiverse/kmp/data/observability")
+    val outputDir = layout.buildDirectory.dir("generated/firebase/kotlin/app/mymultiverse/ammo/data/observability")
 
     inputs.property("crashlyticsEnabled", firebaseCrashlyticsEnabled)
     outputs.dir(outputDir)
@@ -28,7 +24,7 @@ val generateFirebaseBuildFlags = tasks.register("generateFirebaseBuildFlags") {
         dir.mkdirs()
         dir.resolve("FirebaseBuildFlags.kt").writeText(
             """
-            package app.mymultiverse.kmp.data.observability
+            package app.mymultiverse.ammo.data.observability
 
             internal object FirebaseBuildFlags {
                 const val CRASHLYTICS_ENABLED: Boolean = $firebaseCrashlyticsEnabled
@@ -39,7 +35,7 @@ val generateFirebaseBuildFlags = tasks.register("generateFirebaseBuildFlags") {
     }
 }
 
-val defaultSupabaseUrl = "https://ivjdzreazvkrrirecznk.supabase.co"
+val defaultSupabaseUrl = "https://ammo.mymultiverse.app"
 
 val appVersionProperties = Properties().apply {
     val versionFile = rootProject.file("gradle/app-version.properties")
@@ -58,7 +54,7 @@ val appVersionName = if (appVersionPrerelease.isEmpty()) {
 
 val generateAppBuildInfo = tasks.register("generateAppBuildInfo") {
     val versionFile = rootProject.layout.projectDirectory.file("gradle/app-version.properties")
-    val outputDir = layout.buildDirectory.dir("generated/appinfo/kotlin/app/mymultiverse/kmp/domain")
+    val outputDir = layout.buildDirectory.dir("generated/appinfo/kotlin/app/mymultiverse/ammo/domain")
 
     inputs.file(versionFile).withPathSensitivity(PathSensitivity.NONE)
     outputs.dir(outputDir)
@@ -68,7 +64,7 @@ val generateAppBuildInfo = tasks.register("generateAppBuildInfo") {
         dir.mkdirs()
         dir.resolve("AppBuildInfo.kt").writeText(
             """
-            package app.mymultiverse.kmp.domain
+            package app.mymultiverse.ammo.domain
 
             internal object AppBuildInfo {
                 const val VERSION_NAME: String = ${appVersionName.quoteForKotlin()}
@@ -82,7 +78,7 @@ val generateAppBuildInfo = tasks.register("generateAppBuildInfo") {
 
 val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
     val localPropsFile = rootProject.layout.projectDirectory.file("local.properties")
-    val outputDir = layout.buildDirectory.dir("generated/supabase/kotlin/app/mymultiverse/kmp/data/supabase")
+    val outputDir = layout.buildDirectory.dir("generated/supabase/kotlin/app/mymultiverse/ammo/data/supabase")
 
     inputs.files(localPropsFile).optional().withPathSensitivity(PathSensitivity.NONE)
     outputs.dir(outputDir)
@@ -103,7 +99,7 @@ val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
         dir.mkdirs()
         dir.resolve("SupabaseSecrets.kt").writeText(
             """
-            package app.mymultiverse.kmp.data.supabase
+            package app.mymultiverse.ammo.data.supabase
 
             internal object SupabaseSecrets {
                 const val URL: String = ${supabaseUrl.quoteForKotlin()}
@@ -139,6 +135,9 @@ configurations.configureEach {
 
 kotlin {
     androidTarget {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
     }
 
     listOf(
@@ -197,18 +196,6 @@ kotlin {
             implementation(libs.multiplatform.settings.test)
             implementation(libs.koin.test)
         }
-        val androidInstrumentedTest by getting {
-            dependencies {
-                implementation(libs.androidx.appcompat)
-                implementation(kotlin("test"))
-                implementation(libs.androidx.test.ext.junit)
-                implementation(libs.androidx.test.runner)
-                implementation(libs.androidx.compose.ui.test.junit4)
-                implementation(libs.androidx.compose.ui.test.manifest)
-                implementation(libs.koin.compose)
-                implementation(libs.multiplatform.settings.test)
-            }
-        }
     }
 
     sourceSets.named("commonMain") {
@@ -223,28 +210,10 @@ tasks.matching { it.name.contains("compile", ignoreCase = true) && it.name.conta
     }
 
 android {
-    namespace = "app.mymultiverse.kmp"
-    compileSdk = 35
+    namespace = "app.mymultiverse.ammo.shared"
+    compileSdk = 36
     defaultConfig {
-        applicationId = "app.mymultiverse.kmp"
         minSdk = 24
-        targetSdk = 35
-        versionCode = appVersionCode
-        versionName = appVersionName
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-    testOptions {
-        animationsDisabled = true
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -253,6 +222,5 @@ android {
 }
 
 dependencies {
-    // Merges ComponentActivity into the debug app manifest for Compose UI tests.
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

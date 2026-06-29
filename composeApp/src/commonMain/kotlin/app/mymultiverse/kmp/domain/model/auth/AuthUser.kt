@@ -1,7 +1,0 @@
-package app.mymultiverse.kmp.domain.model.auth
-
-data class AuthUser(
-    val id: String,
-    val email: String?,
-    val displayName: String?,
-)

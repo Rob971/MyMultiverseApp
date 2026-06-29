@@ -30,7 +30,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 PROJECT_NUMBER = "37917280954"
-FIREBASE_APP_ID = "1:37917280954:android:f25a8ccc787de9f3f91083"
+FIREBASE_APP_ID = os.environ.get(
+    "FIREBASE_APP_ID",
+    "1:37917280954:android:a0c28d6a257baf50f91083",
+)
 API_BASE = "https://firebaseappdistribution.googleapis.com/v1"
 SCOPE = "https://www.googleapis.com/auth/cloud-platform"
 
