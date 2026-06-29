@@ -35,7 +35,7 @@ object HouseholdPushNotificationHandler {
 
     fun deliverIntentPayload(intent: Intent?) {
         val data = intent?.extras?.keySet()
-            ?.mapNotNull { key -> intent.extras?.getString(key)?.let { key to it } }
+            ?.mapNotNull { key -> intent.extras?.getString(key)?.let { value -> key to value } }
             ?.toMap()
             .orEmpty()
         if (data.isNotEmpty()) {

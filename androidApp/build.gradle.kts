@@ -110,6 +110,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    sourceSets {
+        getByName("main") {
+            if (firebaseCrashlyticsEnabled) {
+                java.srcDir("src/firebase/kotlin")
+            }
+        }
+    }
 }
 
 dependencies {
@@ -117,6 +124,11 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(compose.preview)
     implementation(libs.koin.android)
+    if (firebaseCrashlyticsEnabled) {
+        implementation(libs.firebase.crashlytics)
+        implementation(libs.firebase.messaging)
+        implementation(libs.kotlinx.coroutines.play.services)
+    }
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     androidTestImplementation(libs.androidx.appcompat)
