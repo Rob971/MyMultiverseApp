@@ -129,6 +129,7 @@ android {
 
 dependencies {
     implementation(project(":composeApp"))
+    implementation(libs.kotlinx.datetime)
     implementation(libs.androidx.activity.compose)
     implementation(compose.preview)
     implementation(libs.koin.android)
