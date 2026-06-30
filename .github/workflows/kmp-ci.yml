@@ -243,6 +243,11 @@ jobs:
           ./gradlew :composeApp:testDebugUnitTest :androidApp:assembleDebug
           :androidApp:assembleDebugAndroidTest ${{ env.GRADLE_BUILD_ARGS }}
 
+      - name: Verify launcher activity is packaged in debug APK
+        run: |
+          chmod +x ./scripts/verify-android-apk-entrypoint.sh
+          ./scripts/verify-android-apk-entrypoint.sh androidApp/build/outputs/apk/debug/androidApp-debug.apk
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
@@ -455,6 +460,11 @@ jobs:
 
       - name: Build debug APK for release
         run: ./gradlew :androidApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
+
+      - name: Verify launcher activity is packaged in debug APK
+        run: |
+          chmod +x ./scripts/verify-android-apk-entrypoint.sh
+          ./scripts/verify-android-apk-entrypoint.sh androidApp/build/outputs/apk/debug/androidApp-debug.apk
 
       - name: Print Android App Links fingerprint (debug APK)
         id: app_links_fingerprint
