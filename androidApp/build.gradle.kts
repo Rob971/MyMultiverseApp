@@ -1,9 +1,17 @@
 import java.util.Properties
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
 }
 
 val googleServicesFile = layout.projectDirectory.file("google-services.json").asFile
@@ -124,6 +132,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(compose.preview)
     implementation(libs.koin.android)
+    implementation(libs.koin.compose)
     if (firebaseCrashlyticsEnabled) {
         implementation(libs.firebase.crashlytics)
         implementation(libs.firebase.messaging)
