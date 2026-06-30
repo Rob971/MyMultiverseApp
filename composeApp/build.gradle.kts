@@ -165,6 +165,9 @@ kotlin {
         }
         androidMain {
             kotlin.srcDir(layout.buildDirectory.dir("generated/firebase/kotlin"))
+            if (firebaseCrashlyticsEnabled) {
+                kotlin.srcDir("src/androidFirebase/kotlin")
+            }
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
