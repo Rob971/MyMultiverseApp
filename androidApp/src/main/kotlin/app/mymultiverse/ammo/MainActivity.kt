@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.LaunchedEffect
 import app.mymultiverse.ammo.di.androidFirebasePlatformModule
+import app.mymultiverse.ammo.di.androidNoFirebasePlatformModule
 import app.mymultiverse.ammo.data.observability.FirebaseBuildFlags
 import app.mymultiverse.ammo.data.platform.AndroidNotificationChannels
 import app.mymultiverse.ammo.data.invite.InviteRedirectEvents
@@ -40,6 +41,8 @@ class MainActivity : AppCompatActivity() {
                         add(appModule)
                         if (FirebaseBuildFlags.PUSH_ENABLED) {
                             add(androidFirebasePlatformModule())
+                        } else {
+                            add(androidNoFirebasePlatformModule())
                         }
                     },
                 )
