@@ -42,4 +42,9 @@ interface HouseholdCollaborationRepository {
     suspend fun addDependant(householdId: String, displayName: String): Result<Unit>
 
     suspend fun removeDependant(dependantId: String): Result<Unit>
+
+    suspend fun nudgePartnersToUpdateGroceryList(
+        householdId: String,
+        weekKey: String,
+    ): Result<Unit>
 }

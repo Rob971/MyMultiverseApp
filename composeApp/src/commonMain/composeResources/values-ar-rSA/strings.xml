@@ -145,6 +145,13 @@
     <string name="nutrition_grocery_toggle_item">تحديد كمشترى</string>
     <string name="nutrition_grocery_keep_screen_on">إبقاء الشاشة مضاءة أثناء التسوق</string>
     <string name="nutrition_grocery_keep_screen_off">السماح بإطفاء الشاشة</string>
+    <string name="nutrition_grocery_partner_nudge_title">متجه إلى المتجر؟</string>
+    <string name="nutrition_grocery_partner_nudge_body">ذكّر عائلتك بإضافة ما ينقص قبل أن تتسوق.</string>
+    <string name="nutrition_grocery_partner_nudge_action">تذكير الشركاء</string>
+    <string name="nutrition_grocery_partner_nudge_toolbar">تذكير الشركاء بتحديث القائمة</string>
+    <string name="nutrition_grocery_partner_nudge_success">تم إخطار الشركاء بتحديث القائمة</string>
+    <string name="nutrition_grocery_partner_nudge_cooldown">لقد ذكّرت شركاءك مؤخرًا. حاول مرة أخرى بعد ساعة.</string>
+    <string name="nutrition_grocery_partner_nudge_error">تعذّر إرسال التذكير. حاول مرة أخرى.</string>
     <string name="nutrition_grocery_empty_active">تم تحديد كل العناصر. أضف المزيد أو امسح المكتمل أدناه.</string>
     <string name="nutrition_ai_try_again">ابدأ من جديد</string>
     <string name="nutrition_ai_suggestions_title">اختيارات سريعة</string>

@@ -179,6 +179,24 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
 
     override suspend fun removeDependant(dependantId: String): Result<Unit> = removeMember(dependantId)
 
+    var nudgePartnersResult: Result<Unit> = Result.success(Unit)
+    var nudgePartnersCalls: Int = 0
+        private set
+    var lastNudgeHouseholdId: String? = null
+        private set
+    var lastNudgeWeekKey: String? = null
+        private set
+
+    override suspend fun nudgePartnersToUpdateGroceryList(
+        householdId: String,
+        weekKey: String,
+    ): Result<Unit> {
+        nudgePartnersCalls += 1
+        lastNudgeHouseholdId = householdId
+        lastNudgeWeekKey = weekKey
+        return nudgePartnersResult
+    }
+
     private fun membersFlow(householdId: String): MutableStateFlow<List<HouseholdMember>> =
         membersByHousehold.getOrPut(householdId) { MutableStateFlow(emptyList()) }
 

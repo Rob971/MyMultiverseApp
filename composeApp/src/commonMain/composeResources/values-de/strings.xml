@@ -145,6 +145,13 @@
     <string name="nutrition_grocery_toggle_item">Als gekauft markieren</string>
     <string name="nutrition_grocery_keep_screen_on">Bildschirm beim Einkaufen eingeschaltet lassen</string>
     <string name="nutrition_grocery_keep_screen_off">Bildschirm ausschalten erlauben</string>
+    <string name="nutrition_grocery_partner_nudge_title">Auf dem Weg zum Supermarkt?</string>
+    <string name="nutrition_grocery_partner_nudge_body">Erinnere deine Familie, fehlende Artikel hinzuzufügen, bevor du einkaufst.</string>
+    <string name="nutrition_grocery_partner_nudge_action">Partner erinnern</string>
+    <string name="nutrition_grocery_partner_nudge_toolbar">Partner an Aktualisierung der Liste erinnern</string>
+    <string name="nutrition_grocery_partner_nudge_success">Partner wurden erinnert, die Liste zu aktualisieren</string>
+    <string name="nutrition_grocery_partner_nudge_cooldown">Du hast deine Partner kürzlich schon erinnert. Versuche es in einer Stunde erneut.</string>
+    <string name="nutrition_grocery_partner_nudge_error">Erinnerung konnte nicht gesendet werden. Bitte erneut versuchen.</string>
     <string name="nutrition_grocery_empty_active">Alles ist erledigt. Füge Artikel hinzu oder lösche erledigte unten.</string>
     <string name="nutrition_ai_try_again">Neu beginnen</string>
     <string name="nutrition_ai_suggestions_title">Schnellvorschläge</string>

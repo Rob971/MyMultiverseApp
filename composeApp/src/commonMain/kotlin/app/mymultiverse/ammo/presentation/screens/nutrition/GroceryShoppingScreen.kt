@@ -55,8 +55,15 @@ import ammo.composeapp.generated.resources.nutrition_grocery_empty
 import ammo.composeapp.generated.resources.nutrition_grocery_empty_active
 import ammo.composeapp.generated.resources.nutrition_grocery_empty_cta
 import ammo.composeapp.generated.resources.nutrition_grocery_empty_title
-import ammo.composeapp.generated.resources.nutrition_grocery_keep_screen_off
+import ammo.composeapp.generated.resources.nutrition_grocery_partner_nudge_action
+import ammo.composeapp.generated.resources.nutrition_grocery_partner_nudge_body
+import ammo.composeapp.generated.resources.nutrition_grocery_partner_nudge_cooldown
+import ammo.composeapp.generated.resources.nutrition_grocery_partner_nudge_error
+import ammo.composeapp.generated.resources.nutrition_grocery_partner_nudge_success
+import ammo.composeapp.generated.resources.nutrition_grocery_partner_nudge_title
+import ammo.composeapp.generated.resources.nutrition_grocery_partner_nudge_toolbar
 import ammo.composeapp.generated.resources.nutrition_grocery_keep_screen_on
+import ammo.composeapp.generated.resources.nutrition_grocery_keep_screen_off
 import ammo.composeapp.generated.resources.nutrition_grocery_hide_checked
 import ammo.composeapp.generated.resources.nutrition_grocery_show_checked
 import ammo.composeapp.generated.resources.nutrition_grocery_progress
@@ -80,7 +87,9 @@ import app.mymultiverse.ammo.presentation.components.JourneyIconButton
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.ammo.presentation.components.WeekSelectorBanner
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsSectionHeader
+import app.mymultiverse.ammo.presentation.components.GroceryPartnerNudgeCard
 import app.mymultiverse.ammo.presentation.components.GroceryGhostPairingBanner
+import app.mymultiverse.ammo.presentation.components.GroceryPartnerNudgeTestTags
 import app.mymultiverse.ammo.presentation.components.GroceryInputBar
 import app.mymultiverse.ammo.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.ammo.presentation.components.GroceryItemRow
@@ -111,6 +120,7 @@ object GroceryListTestTags {
     /** @deprecated Use [TO_BUY_SECTION] */
     const val UPDATE_LIST_SECTION = TO_BUY_SECTION
     const val KEEP_SCREEN_ON_TOGGLE = "grocery_keep_screen_on_toggle"
+    const val PARTNER_NUDGE_ACTION = "grocery_partner_nudge_action"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -124,6 +134,9 @@ fun GroceryShoppingScreen(
     val collaborationSnackbar by screenModel.collaborationSnackbar.collectAsState()
     val ghostPairingOffer by screenModel.ghostPairingOffer.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
+    val showPartnerNudge by screenModel.showGroceryPartnerNudge.collectAsState()
+    val isNudgingPartners by screenModel.isNudgingPartners.collectAsState()
+    val groceryPartnerNudgeResult by screenModel.groceryPartnerNudgeResult.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val weekOffset by screenModel.weekOffset.collectAsState()
     var newItemText by rememberSaveable { mutableStateOf("") }
@@ -187,6 +200,20 @@ fun GroceryShoppingScreen(
     )
     val clearCheckedMessage = stringResource(Res.string.nutrition_grocery_clear_checked_undo)
     val collaborationActorUnknown = stringResource(Res.string.nutrition_collaboration_actor_unknown)
+    val partnerNudgeTitle = stringResource(Res.string.nutrition_grocery_partner_nudge_title)
+    val partnerNudgeBody = stringResource(Res.string.nutrition_grocery_partner_nudge_body)
+    val partnerNudgeAction = stringResource(Res.string.nutrition_grocery_partner_nudge_action)
+    val partnerNudgeToolbar = stringResource(Res.string.nutrition_grocery_partner_nudge_toolbar)
+    val partnerNudgeSuccess = stringResource(Res.string.nutrition_grocery_partner_nudge_success)
+    val partnerNudgeCooldown = stringResource(Res.string.nutrition_grocery_partner_nudge_cooldown)
+    val partnerNudgeError = stringResource(Res.string.nutrition_grocery_partner_nudge_error)
+
+    val partnerNudgeSnackbarMessage = when (groceryPartnerNudgeResult) {
+        NutritionScreenModel.GroceryPartnerNudgeResult.Success -> partnerNudgeSuccess
+        NutritionScreenModel.GroceryPartnerNudgeResult.Cooldown -> partnerNudgeCooldown
+        NutritionScreenModel.GroceryPartnerNudgeResult.Error -> partnerNudgeError
+        null -> null
+    }
 
     val collaborationSnackbarMessage = collaborationSnackbar?.let { event ->
         val actor = event.actorName.ifBlank { collaborationActorUnknown }
@@ -213,6 +240,12 @@ fun GroceryShoppingScreen(
         val message = collaborationSnackbarMessage ?: return@LaunchedEffect
         snackbarHostState.showSnackbar(message)
         screenModel.consumeCollaborationSnackbar()
+    }
+
+    LaunchedEffect(partnerNudgeSnackbarMessage) {
+        val message = partnerNudgeSnackbarMessage ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(message)
+        screenModel.consumeGroceryPartnerNudgeResult()
     }
 
     fun showMessage(message: String) {
@@ -301,6 +334,18 @@ fun GroceryShoppingScreen(
             onBack = onBack,
             showBackButton = !embeddedInTabs,
             actions = {
+                if (showPartnerNudge) {
+                    JourneyIconButton(
+                        onClick = screenModel::nudgePartnersToUpdateGroceryList,
+                        enabled = !isNudgingPartners,
+                        modifier = Modifier.testTag(GroceryListTestTags.PARTNER_NUDGE_ACTION),
+                    ) {
+                        JourneyIcon(
+                            role = AppIconRole.NotifyPartners,
+                            contentDescription = partnerNudgeToolbar,
+                        )
+                    }
+                }
                 JourneyIconButton(
                     onClick = { keepScreenOn = !keepScreenOn },
                     modifier = Modifier.testTag(GroceryListTestTags.KEEP_SCREEN_ON_TOGGLE),
@@ -399,6 +444,12 @@ fun GroceryShoppingScreen(
                         pendingScrollLabel = labels.firstOrNull()
                     },
                     onDismissGhostPairing = screenModel::dismissGhostPairing,
+                    showPartnerNudge = showPartnerNudge,
+                    partnerNudgeTitle = partnerNudgeTitle,
+                    partnerNudgeBody = partnerNudgeBody,
+                    partnerNudgeAction = partnerNudgeAction,
+                    isNudgingPartners = isNudgingPartners,
+                    onNudgePartners = screenModel::nudgePartnersToUpdateGroceryList,
                 )
             }
 
@@ -518,6 +569,12 @@ private fun LazyListScope.groceryShoppingListItems(
     ghostPairingOffer: GroceryGhostPairing.Offer? = null,
     onAcceptGhostPairing: (List<String>) -> Unit = {},
     onDismissGhostPairing: () -> Unit = {},
+    showPartnerNudge: Boolean = false,
+    partnerNudgeTitle: String = "",
+    partnerNudgeBody: String = "",
+    partnerNudgeAction: String = "",
+    isNudgingPartners: Boolean = false,
+    onNudgePartners: () -> Unit = {},
 ) {
     item(key = "week-selector") {
         WeekSelectorBanner(
@@ -529,6 +586,18 @@ private fun LazyListScope.groceryShoppingListItems(
             onPreviousWeek = { screenModel.selectWeekOffset(weekOffset - 1) },
             onNextWeek = { screenModel.selectWeekOffset(weekOffset + 1) },
         )
+    }
+
+    if (showPartnerNudge) {
+        item(key = "partner-nudge") {
+            GroceryPartnerNudgeCard(
+                title = partnerNudgeTitle,
+                body = partnerNudgeBody,
+                actionLabel = partnerNudgeAction,
+                onNudgePartners = onNudgePartners,
+                loading = isNudgingPartners,
+            )
+        }
     }
 
     item(key = "to-buy-header") {

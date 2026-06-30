@@ -145,6 +145,13 @@
     <string name="nutrition_grocery_toggle_item">Mark item bought</string>
     <string name="nutrition_grocery_keep_screen_on">Keep screen on while shopping</string>
     <string name="nutrition_grocery_keep_screen_off">Allow screen to sleep</string>
+    <string name="nutrition_grocery_partner_nudge_title">Heading to the store?</string>
+    <string name="nutrition_grocery_partner_nudge_body">Remind your family to add anything missing before you shop.</string>
+    <string name="nutrition_grocery_partner_nudge_action">Remind partners</string>
+    <string name="nutrition_grocery_partner_nudge_toolbar">Remind partners to update the list</string>
+    <string name="nutrition_grocery_partner_nudge_success">Partners notified to update the list</string>
+    <string name="nutrition_grocery_partner_nudge_cooldown">You already reminded your partners recently. Try again in an hour.</string>
+    <string name="nutrition_grocery_partner_nudge_error">Could not send reminder. Try again.</string>
     <string name="nutrition_grocery_empty_active">Everything is checked off. Add more items or clear checked items below.</string>
     <string name="nutrition_ai_try_again">Start over</string>
     <string name="nutrition_ai_suggestions_title">Quick picks</string>

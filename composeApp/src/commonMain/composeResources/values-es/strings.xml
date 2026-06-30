@@ -145,6 +145,13 @@
     <string name="nutrition_grocery_toggle_item">Marcar como comprado</string>
     <string name="nutrition_grocery_keep_screen_on">Mantener la pantalla encendida mientras compras</string>
     <string name="nutrition_grocery_keep_screen_off">Permitir que la pantalla se apague</string>
+    <string name="nutrition_grocery_partner_nudge_title">¿Vas al supermercado?</string>
+    <string name="nutrition_grocery_partner_nudge_body">Recuerda a tu familia que añada lo que falte antes de ir de compras.</string>
+    <string name="nutrition_grocery_partner_nudge_action">Recordar a los compañeros</string>
+    <string name="nutrition_grocery_partner_nudge_toolbar">Recordar a los compañeros que actualicen la lista</string>
+    <string name="nutrition_grocery_partner_nudge_success">Se avisó a los compañeros para actualizar la lista</string>
+    <string name="nutrition_grocery_partner_nudge_cooldown">Ya recordaste a tus compañeros hace poco. Inténtalo de nuevo en una hora.</string>
+    <string name="nutrition_grocery_partner_nudge_error">No se pudo enviar el recordatorio. Inténtalo de nuevo.</string>
     <string name="nutrition_grocery_empty_active">Todo está marcado. Añade más artículos o borra los marcados abajo.</string>
     <string name="nutrition_ai_try_again">Empezar de nuevo</string>
     <string name="nutrition_ai_suggestions_title">Sugerencias rápidas</string>
