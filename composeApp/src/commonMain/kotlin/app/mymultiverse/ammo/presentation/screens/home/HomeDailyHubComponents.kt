@@ -80,7 +80,7 @@ fun HomeDailyHubCircularActions(
         HomeCircularHubCta(
             ringColor = colorScheme.primary,
             containerColor = colorScheme.primaryContainer,
-            iconTint = colorScheme.onPrimaryContainer,
+            iconTint = colorScheme.primary,
             icon = AppIcons.PlanLunchPlaceSetting,
             label = stringResource(Res.string.home_dashboard_plan_lunch),
             onClick = onOpenMealPlan,
@@ -89,7 +89,7 @@ fun HomeDailyHubCircularActions(
         HomeCircularHubCta(
             ringColor = colorScheme.secondary,
             containerColor = colorScheme.secondaryContainer,
-            iconTint = colorScheme.onSecondaryContainer,
+            iconTint = colorScheme.secondary,
             icon = AppIcons.FreshGroceries,
             label = stringResource(Res.string.home_dashboard_shopping_list),
             onClick = onOpenGrocery,

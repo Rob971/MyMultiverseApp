@@ -2,6 +2,7 @@ package app.mymultiverse.ammo.presentation.navigation
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -60,6 +61,7 @@ fun MainTabShell(
                                     role = AppIconRole.NavHome,
                                     contentDescription = homeTabLabel,
                                     useContentColor = true,
+                                    modifier = Modifier.size(24.dp),
                                 )
                             },
                             label = { Text(homeTabLabel) },
@@ -74,6 +76,7 @@ fun MainTabShell(
                                     role = AppIconRole.NavMealPlan,
                                     contentDescription = mealPlanTabLabel,
                                     useContentColor = true,
+                                    modifier = Modifier.size(24.dp),
                                 )
                             },
                             label = { Text(mealPlanTabLabel) },
@@ -88,6 +91,7 @@ fun MainTabShell(
                                     role = AppIconRole.NavGrocery,
                                     contentDescription = groceryTabLabel,
                                     useContentColor = true,
+                                    modifier = Modifier.size(24.dp),
                                 )
                             },
                             label = { Text(groceryTabLabel) },

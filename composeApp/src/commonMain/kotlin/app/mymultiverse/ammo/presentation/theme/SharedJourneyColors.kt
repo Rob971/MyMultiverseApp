@@ -57,6 +57,9 @@ object SharedJourneyColors {
     @Deprecated("Use DarkTextSecondary", ReplaceWith("DarkTextSecondary"))
     val InkSecondaryOnDark = DarkTextSecondary
     val SageSoft = Color(0xFF8DAA91)
+    /** Light hero / tab containers — mint and gold tints (not Material default purple). */
+    val LightMintContainer = Color(0xFFD8EDE3)
+    val LightGoldContainer = Color(0xFFF5E8C8)
 
     /** Brighter teal for outlines, nav, and links on dark surfaces. */
     val MediterraneanTealOnDark = AccentMintTeal
@@ -75,8 +78,12 @@ object SharedJourneyColors {
 fun sharedJourneyLightScheme() = lightColorScheme(
     primary = SharedJourneyColors.TerracottaOrange,
     onPrimary = Color.White,
+    primaryContainer = SharedJourneyColors.LightMintContainer,
+    onPrimaryContainer = SharedJourneyColors.MediterraneanTeal,
     secondary = SharedJourneyColors.MediterraneanTeal,
     onSecondary = Color.White,
+    secondaryContainer = SharedJourneyColors.LightGoldContainer,
+    onSecondaryContainer = SharedJourneyColors.MediterraneanTeal,
     tertiary = SharedJourneyColors.LemonZestYellow,
     onTertiary = SharedJourneyColors.InkDeep,
     background = SharedJourneyColors.ParchmentWarm,
