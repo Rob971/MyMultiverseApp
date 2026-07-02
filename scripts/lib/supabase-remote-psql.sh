@@ -60,9 +60,11 @@ supabase_remote_query_scalar() {
   local sql="$1"
   if _supabase_can_query_linked; then
     local json
-    json="$(supabase db query --linked --output json "${sql}")"
-    PYTHON_JSON="${json}" python3 -c 'import json, os; row=json.loads(os.environ["PYTHON_JSON"])[0]; print(next(iter(row.values())))'
-    return
+    if json="$(supabase db query --linked --output json "${sql}" 2>/dev/null)"; then
+      PYTHON_JSON="${json}" python3 -c 'import json, os; row=json.loads(os.environ["PYTHON_JSON"])[0]; print(next(iter(row.values())))'
+      return
+    fi
+    echo "WARN: supabase db query --linked unavailable; falling back to psql" >&2
   fi
 
   if ! command -v psql >/dev/null 2>&1; then

@@ -78,7 +78,7 @@ jobs:
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v2
         with:
-          version: 2.39.2
+          version: 2.109.0
 
       - name: Link project and push migrations
         env:
@@ -164,7 +164,7 @@ jobs:
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v2
         with:
-          version: 2.39.2
+          version: 2.109.0
 
       - name: Link project
         env:
