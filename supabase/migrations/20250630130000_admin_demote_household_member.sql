@@ -1,5 +1,6 @@
 -- Allow household admins to change any non-owner member role (including demoting other admins).
 -- Promoting to admin remains owner-only.
+-- Shipped with app release 1.1.x (household role UX).
 
 create or replace function public.update_household_member_role(
     p_member_id uuid,

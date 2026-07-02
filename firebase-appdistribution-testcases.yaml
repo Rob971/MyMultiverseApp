@@ -46,6 +46,7 @@ summary: |
   Today hero and nav icons (v61): Plan lunch hero + Plan tab use plate/knife/fork icon; Shopping list hero + Groceries tab use fruit/veg/fish/steak icon.
   Hero icon render fix (v69): rewritten vectors and Napolitan light containers so meal/grocery icons are visible on Today circles and bottom nav.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
+  Family members role change (v71): Change role button and tappable badge on member rows; role updates show immediately after save.
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
   Contextual AI chips E4-11 (v52): Plan empty state and AI helper sheet prepend Use up {ingredient} chips from unchecked grocery + meal history (fallback to protein/budget/veggies when no signals).
   Grocery simplification (v54): Groceries tab focuses on Update list (week selector → list CRUD); removed build-from-meals chip, pantry check, and AI suggestion sections from grocery screen; drag handle reorders active items; swipe gestures unchanged.

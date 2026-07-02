@@ -135,6 +135,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 object HouseholdMembersTestTags {
+    /** Row-level tags for instrumented household member management flows. */
     const val INVITE_BUTTON = "household_members_invite"
     /** @deprecated Use [INVITE_BUTTON] */
     const val ADD_PERSON_BUTTON = INVITE_BUTTON
