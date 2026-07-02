@@ -78,9 +78,11 @@ jobs:
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v2
         with:
-          version: 2.33.7
+          version: 2.39.2
 
       - name: Link project and push migrations
+        env:
+          SUPABASE_DB_PASSWORD: ""
         run: |
           chmod +x ./scripts/supabase-link-remote.sh
           ./scripts/supabase-link-remote.sh
@@ -162,9 +164,11 @@ jobs:
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v2
         with:
-          version: 2.33.7
+          version: 2.39.2
 
       - name: Link project
+        env:
+          SUPABASE_DB_PASSWORD: ""
         run: |
           chmod +x ./scripts/supabase-link-remote.sh
           ./scripts/supabase-link-remote.sh
