@@ -116,11 +116,11 @@ class HouseholdMembersScreenModel(
         ownerDisplayName: String,
         currentUserId: String?,
     ) {
-        if (activeHouseholdId == householdId &&
-            activeHouseholdName == householdName &&
-            activeOwnerId == ownerId &&
-            activeOwnerDisplayName == ownerDisplayName
-        ) {
+        val identityChanged = activeHouseholdId != householdId ||
+            activeOwnerId != ownerId ||
+            activeOwnerDisplayName != ownerDisplayName
+        val metadataChanged = identityChanged || activeHouseholdName != householdName
+        if (!metadataChanged) {
             return
         }
         activeHouseholdId = householdId
@@ -128,6 +128,13 @@ class HouseholdMembersScreenModel(
         activeOwnerId = ownerId
         activeOwnerDisplayName = ownerDisplayName
 
+        if (identityChanged) {
+            startObserving(householdId)
+            refresh(householdId)
+        }
+    }
+
+    private fun startObserving(householdId: String) {
         observeJob?.cancel()
         observeJob = scope.launch {
             launch {
@@ -155,7 +162,6 @@ class HouseholdMembersScreenModel(
                 }
             }
         }
-        refresh(householdId)
     }
 
     private fun applyMembershipRole(role: HouseholdMemberRole?) {
@@ -276,11 +282,24 @@ class HouseholdMembersScreenModel(
     fun confirmRoleChange(householdId: String) {
         val member = _uiState.value.roleChangeTarget ?: return
         val role = _uiState.value.selectedMemberRole
+        if (role == member.role) {
+            dismissRoleChangeDialog()
+            return
+        }
         scope.launch {
-            _uiState.update { it.copy(isUpdatingRole = true, dialogError = null, error = null) }
+            val previousMembers = _uiState.value.members
+            _uiState.update { state ->
+                state.copy(
+                    isUpdatingRole = true,
+                    dialogError = null,
+                    error = null,
+                    members = state.members.map { current ->
+                        if (current.id == member.id) current.copy(role = role) else current
+                    },
+                )
+            }
             collaborationRepository.updateMemberRole(member.id, role)
                 .onSuccess {
-                    collaborationRepository.refreshMembers(householdId, activeOwnerId, activeOwnerDisplayName)
                     _uiState.update {
                         it.copy(
                             isUpdatingRole = false,
@@ -294,6 +313,7 @@ class HouseholdMembersScreenModel(
                     _uiState.update {
                         it.copy(
                             isUpdatingRole = false,
+                            members = previousMembers,
                             dialogError = mapFailure(throwable),
                         )
                     }

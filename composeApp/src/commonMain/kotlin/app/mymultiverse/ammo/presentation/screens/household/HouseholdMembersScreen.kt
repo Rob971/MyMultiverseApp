@@ -212,7 +212,7 @@ fun HouseholdMembersScreen(
         )
     }
 
-    LaunchedEffect(household.id, household.ownerId, household.ownerDisplayName, currentUserId) {
+    LaunchedEffect(household.id, household.name, household.ownerId, household.ownerDisplayName, currentUserId) {
         screenModel.bindHousehold(
             householdId = household.id,
             householdName = household.name,

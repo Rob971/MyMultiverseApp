@@ -21,6 +21,8 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
     var addMemberFailure: Throwable? = null
     var addDependantFailure: Throwable? = null
     var emailsAlreadyInAnotherHousehold: Set<String> = emptySet()
+    var refreshMembersCalls: Int = 0
+        private set
 
     private fun createInvite(householdId: String, email: String, role: HouseholdMemberRole): HouseholdInvite {
         val token = "test-invite-token-${email.lowercase().hashCode()}"
@@ -44,6 +46,7 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
         outboundInvitesFlow(householdId).asStateFlow()
 
     override suspend fun refreshMembers(householdId: String, ownerId: String, ownerDisplayName: String) {
+        refreshMembersCalls++
         val current = membersFlow(householdId).value.filterNot { it.id.startsWith("owner-") }
         membersFlow(householdId).value = listOf(
             HouseholdMember(

@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 70
+version: 71
 updated: 2026-06-30
 
 summary: |
@@ -269,7 +269,7 @@ testcases:
       - Member rows show name and a role chip (Owner terracotta, others muted); Change role is visible on editable rows (not buried in overflow).
       - Admin can invite members and change any non-owner role except promoting to admin.
       - Admin cannot transfer ownership or dissolve.
-      - Role updated snackbar appears after save.
+      - Role updated snackbar appears after save; the member row badge updates immediately (no pull-to-refresh needed).
 
   - id: nutrition-household-bootstrap
     title: Open nutrition after household is active

@@ -169,6 +169,7 @@ class HouseholdMembersScreenModelTest {
         model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         advanceUntilIdle()
 
+        val refreshCallsAfterBind = repository.refreshMembersCalls
         val member = model.uiState.value.members.single { it.role == HouseholdMemberRole.Editor }
         model.openRoleChangeDialog(member)
         model.onMemberRoleChange(HouseholdMemberRole.Admin)
@@ -180,6 +181,43 @@ class HouseholdMembersScreenModelTest {
             HouseholdMemberRole.Admin,
             model.uiState.value.members.single { it.id == "member-1" }.role,
         )
+        assertEquals(refreshCallsAfterBind, repository.refreshMembersCalls)
+        assertFalse(model.uiState.value.showRoleChangeDialog)
+    }
+
+    @Test
+    fun confirmRoleChange_updatesMemberRoleWithoutRefreshingMembers() = runTest(testDispatcher) {
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Partner",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "partner-id",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold(
+            householdId = "household-1",
+            householdName = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            currentUserId = "owner",
+        )
+        advanceUntilIdle()
+
+        val refreshCallsAfterBind = repository.refreshMembersCalls
+        val member = model.uiState.value.members.single { it.role == HouseholdMemberRole.Editor }
+        model.openRoleChangeDialog(member)
+        model.onMemberRoleChange(HouseholdMemberRole.Viewer)
+        model.confirmRoleChange("household-1")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMemberRole.Viewer, model.uiState.value.members.single { it.id == "member-1" }.role)
+        assertEquals(refreshCallsAfterBind, repository.refreshMembersCalls)
     }
 
     @Test
