@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.presentation.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -8,6 +9,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
@@ -77,10 +82,24 @@ fun HouseholdRoleBadge(
     role: HouseholdMemberRole,
     modifier: Modifier = Modifier,
     kind: HouseholdMemberKind = HouseholdMemberKind.Person,
+    onClick: (() -> Unit)? = null,
+    clickLabel: String? = null,
 ) {
     val colors = householdRoleBadgeColors(role = role, kind = kind)
+    val interactiveModifier = if (onClick != null) {
+        modifier
+            .clickable(onClick = onClick)
+            .semantics {
+                this.role = Role.Button
+                if (clickLabel != null) {
+                    contentDescription = clickLabel
+                }
+            }
+    } else {
+        modifier
+    }
     Surface(
-        modifier = modifier,
+        modifier = interactiveModifier,
         shape = RoundedCornerShape(8.dp),
         color = colors.container,
     ) {

@@ -241,6 +241,7 @@ class HouseholdMembersScreenModel(
     }
 
     fun openRoleChangeDialog(member: HouseholdMember) {
+        if (member.kind != HouseholdMemberKind.Person) return
         val actorRole = _uiState.value.currentUserRole ?: return
         if (!actorRole.canChangeRoleOf(member.role)) return
         _uiState.update {

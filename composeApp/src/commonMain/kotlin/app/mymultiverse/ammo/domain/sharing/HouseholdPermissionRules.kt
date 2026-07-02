@@ -19,8 +19,7 @@ fun HouseholdMemberRole.canAssignAdminRole(): Boolean =
 fun HouseholdMemberRole.canChangeRoleOf(target: HouseholdMemberRole): Boolean =
     when (this) {
         HouseholdMemberRole.Owner -> target != HouseholdMemberRole.Owner
-        HouseholdMemberRole.Admin ->
-            target == HouseholdMemberRole.Editor || target == HouseholdMemberRole.Viewer
+        HouseholdMemberRole.Admin -> target != HouseholdMemberRole.Owner
         else -> false
     }
 

@@ -19,6 +19,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import app.mymultiverse.ammo.presentation.components.JourneySecondaryButton
+import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -153,6 +154,8 @@ object HouseholdMembersTestTags {
     const val PENDING_INVITE_SHARE = "household_members_pending_invite_share"
     const val MEMBER_ROW_OVERFLOW = "household_members_row_overflow"
     const val MEMBER_CHANGE_ROLE_MENU = "household_members_change_role_menu"
+    const val MEMBER_CHANGE_ROLE_BUTTON = "household_members_change_role_button"
+    const val MEMBER_CHANGE_ROLE_BADGE = "household_members_change_role_badge"
     const val MEMBER_REMOVE_MENU = "household_members_remove_menu"
     const val HOUSEHOLD_ACTIONS_OVERFLOW = "household_members_household_actions_overflow"
     const val HOUSEHOLD_TRANSFER_MENU = "household_members_transfer_menu"
@@ -773,12 +776,14 @@ private fun MemberRow(
     onChangeRole: () -> Unit,
 ) {
     val canChangeRole = canManage &&
+        member.kind == HouseholdMemberKind.Person &&
         member.role != HouseholdMemberRole.Owner &&
         actorRole?.canChangeRoleOf(member.role) == true
     val canRemove = canManage &&
         member.role != HouseholdMemberRole.Owner &&
         actorRole?.canRemoveMember(member.role) == true
-    val showOverflow = canChangeRole || canRemove
+    val showOverflow = canRemove
+    val changeRoleLabel = stringResource(Res.string.sharing_members_change_role)
     var menuExpanded by remember { mutableStateOf(false) }
 
     FamilyLogisticsCardSurface(
@@ -803,10 +808,31 @@ private fun MemberRow(
                     fontWeight = FontWeight.SemiBold,
                     color = JourneySemanticColors.inkDeep(),
                 )
-                HouseholdRoleBadge(
-                    role = member.role,
-                    kind = member.kind,
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    HouseholdRoleBadge(
+                        role = member.role,
+                        kind = member.kind,
+                        onClick = if (canChangeRole) onChangeRole else null,
+                        clickLabel = if (canChangeRole) changeRoleLabel else null,
+                        modifier = if (canChangeRole) {
+                            Modifier.testTag("${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BADGE}_${member.id}")
+                        } else {
+                            Modifier
+                        },
+                    )
+                    if (canChangeRole) {
+                        JourneyTertiaryButton(
+                            onClick = onChangeRole,
+                            label = changeRoleLabel,
+                            modifier = Modifier.testTag(
+                                "${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BUTTON}_${member.id}",
+                            ),
+                        )
+                    }
+                }
             }
             if (showOverflow) {
                 JourneyIconButton(
@@ -823,16 +849,6 @@ private fun MemberRow(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
                 ) {
-                    if (canChangeRole) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(Res.string.sharing_members_change_role)) },
-                            onClick = {
-                                menuExpanded = false
-                                onChangeRole()
-                            },
-                            modifier = Modifier.testTag(HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_MENU),
-                        )
-                    }
                     if (canRemove) {
                         DropdownMenuItem(
                             text = {

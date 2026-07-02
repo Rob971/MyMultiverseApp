@@ -183,6 +183,50 @@ class HouseholdMembersScreenModelTest {
     }
 
     @Test
+    fun admin_canDemoteAdminToViewer() = runTest(testDispatcher) {
+        householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Admin)
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "admin-2",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Other Admin",
+                role = HouseholdMemberRole.Admin,
+                referenceId = "admin-2-ref",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold(
+            householdId = "household-1",
+            householdName = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            currentUserId = "admin-1",
+        )
+        advanceUntilIdle()
+
+        val otherAdmin = model.uiState.value.members.single { it.id == "admin-2" }
+        model.openRoleChangeDialog(otherAdmin)
+        model.onMemberRoleChange(HouseholdMemberRole.Viewer)
+        model.confirmRoleChange("household-1")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersSuccess.RoleUpdated, model.uiState.value.successMessageKey)
+        assertEquals(
+            HouseholdMemberRole.Viewer,
+            model.uiState.value.members.single { it.id == "admin-2" }.role,
+        )
+    }
+
+    @Test
     fun admin_cannotInviteAsAdmin() = runTest(testDispatcher) {
         householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Admin)
         model = HouseholdMembersScreenModel(

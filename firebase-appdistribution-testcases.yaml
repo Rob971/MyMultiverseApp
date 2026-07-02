@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 69
+version: 70
 updated: 2026-06-30
 
 summary: |
@@ -262,13 +262,13 @@ testcases:
     title: Owner promotes member to household admin
     steps:
       - Sign in as owner; open Household members.
-      - On an editor member row, tap ⋮ (more actions) → Change role → Family admin → confirm promotion.
+      - On an editor member row, tap Change role (or the role badge) → Family admin → confirm promotion.
       - Observe role badges on member rows (owner terracotta, admin teal, editor teal container, viewer muted).
-      - Sign in as the promoted admin on another device or account.
+      - Sign in as the promoted admin on another device or account; demote another admin to viewer via Change role.
     expected:
-      - Member rows show name, email, and a role chip (Owner terracotta, others muted).
-      - Admin can invite members and change editor/viewer roles; cannot transfer ownership or dissolve.
-      - Admin cannot promote others to admin or change another admin's role.
+      - Member rows show name and a role chip (Owner terracotta, others muted); Change role is visible on editable rows (not buried in overflow).
+      - Admin can invite members and change any non-owner role except promoting to admin.
+      - Admin cannot transfer ownership or dissolve.
       - Role updated snackbar appears after save.
 
   - id: nutrition-household-bootstrap
