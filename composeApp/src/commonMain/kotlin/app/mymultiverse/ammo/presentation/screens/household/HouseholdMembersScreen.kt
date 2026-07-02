@@ -272,7 +272,7 @@ fun HouseholdMembersScreen(
                         )
                     }
                 }
-                if (uiState.canManageMembers) {
+                if (uiState.canManageMembers && !showSoloInviteEmpty) {
                     item {
                         JourneyPrimaryButton(
                             onClick = screenModel::openInviteChooser,
@@ -320,6 +320,7 @@ fun HouseholdMembersScreen(
                             onPrimaryAction = screenModel::openInviteChooser,
                             primaryActionIcon = AppIcons.PersonAdd,
                             primaryActionIconRole = AppIconRole.OnAccent,
+                            primaryActionTestTag = HouseholdMembersTestTags.INVITE_BUTTON,
                             testTag = HouseholdMembersTestTags.SOLO_EMPTY_STATE,
                         )
                     }
