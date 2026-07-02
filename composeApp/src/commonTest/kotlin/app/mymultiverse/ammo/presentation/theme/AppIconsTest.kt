@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.presentation.theme
 
+import androidx.compose.ui.unit.dp
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -54,6 +55,22 @@ class AppIconsTest {
             assertTrue(icon.viewportHeight > 0f)
             assertTrue(icon.name.isNotBlank())
         }
+    }
+
+    @Test
+    fun heroIcons_haveStandardDefaultSize() {
+        listOf(AppIcons.PlanLunchPlaceSetting, AppIcons.FreshGroceries).forEach { icon ->
+            assertEquals(24.dp, icon.defaultWidth)
+            assertEquals(24.dp, icon.defaultHeight)
+        }
+    }
+
+    @Test
+    fun heroIcons_doNotAliasLegacyNutritionVectors() {
+        assertNotEquals(AppIcons.MealPlan.name, AppIcons.PlanLunchPlaceSetting.name)
+        assertNotEquals(AppIcons.GroceryList.name, AppIcons.FreshGroceries.name)
+        assertNotEquals(AppIcons.ShoppingCart.name, AppIcons.FreshGroceries.name)
+        assertNotEquals(AppIcons.Restaurant.name, AppIcons.PlanLunchPlaceSetting.name)
     }
 
     @Test
