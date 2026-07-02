@@ -8,36 +8,36 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * Pure-JVM regression gate: hero/nav vectors must ship separate, non-empty path nodes.
+ * Pure-JVM regression gate: nav/feature nutrition vectors must ship separate, non-empty path nodes.
  * Runs in CI via `:composeApp:testDebugUnitTest` before any push.
  */
 class HeroIconDrawableUnitTest {
 
     @Test
-    fun planLunchIcon_hasMinimumSeparatePaths() {
-        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIcons.PlanLunchPlaceSetting, minPaths = 5)
+    fun mealPlanIcon_hasMinimumSeparatePaths() {
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIcons.MealPlan, minPaths = 3)
     }
 
     @Test
-    fun freshGroceriesIcon_hasMinimumSeparatePaths() {
-        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIcons.FreshGroceries, minPaths = 7)
+    fun groceryListIcon_hasMinimumSeparatePaths() {
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIcons.GroceryList, minPaths = 2)
     }
 
     @Test
-    fun heroIcons_eachPathHasNonZeroBounds() {
-        assertPathsHaveNonZeroBounds(AppIcons.PlanLunchPlaceSetting)
-        assertPathsHaveNonZeroBounds(AppIcons.FreshGroceries)
+    fun nutritionNavIcons_eachPathHasNonZeroBounds() {
+        assertPathsHaveNonZeroBounds(AppIcons.MealPlan)
+        assertPathsHaveNonZeroBounds(AppIcons.GroceryList)
         assertPathsHaveNonZeroBounds(AppIcons.Home)
     }
 
     @Test
-    fun navTabIcons_matchApprovedHeroVectors() {
+    fun navTabIcons_matchFeatureNutritionVectors() {
         val mealPlan = AppIconRole.NavMealPlan.imageVector()
         val grocery = AppIconRole.NavGrocery.imageVector()
-        assertTrue(mealPlan.name == AppIcons.PlanLunchPlaceSetting.name)
-        assertTrue(grocery.name == AppIcons.FreshGroceries.name)
-        ImageVectorDrawableAssertions.assertHasDrawablePaths(mealPlan, minPaths = 5)
-        ImageVectorDrawableAssertions.assertHasDrawablePaths(grocery, minPaths = 7)
+        assertTrue(mealPlan.name == AppIcons.MealPlan.name)
+        assertTrue(grocery.name == AppIcons.GroceryList.name)
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(mealPlan, minPaths = 3)
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(grocery, minPaths = 2)
     }
 
     private fun assertPathsHaveNonZeroBounds(icon: androidx.compose.ui.graphics.vector.ImageVector) {

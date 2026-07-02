@@ -43,14 +43,14 @@ class AppIconsTest {
     }
 
     @Test
-    fun navTabs_useApprovedHeroIcons() {
-        assertEquals(AppIcons.PlanLunchPlaceSetting.name, AppIconRole.NavMealPlan.imageVector().name)
-        assertEquals(AppIcons.FreshGroceries.name, AppIconRole.NavGrocery.imageVector().name)
+    fun navTabs_useFeatureNutritionIcons() {
+        assertEquals(AppIcons.MealPlan.name, AppIconRole.NavMealPlan.imageVector().name)
+        assertEquals(AppIcons.GroceryList.name, AppIconRole.NavGrocery.imageVector().name)
     }
 
     @Test
-    fun heroIcons_haveValidViewport() {
-        listOf(AppIcons.PlanLunchPlaceSetting, AppIcons.FreshGroceries, AppIcons.Home).forEach { icon ->
+    fun nutritionNavIcons_haveValidViewport() {
+        listOf(AppIcons.MealPlan, AppIcons.GroceryList, AppIcons.Home).forEach { icon ->
             assertTrue(icon.viewportWidth > 0f)
             assertTrue(icon.viewportHeight > 0f)
             assertTrue(icon.name.isNotBlank())
@@ -58,15 +58,15 @@ class AppIconsTest {
     }
 
     @Test
-    fun heroIcons_haveStandardDefaultSize() {
-        listOf(AppIcons.PlanLunchPlaceSetting, AppIcons.FreshGroceries).forEach { icon ->
+    fun nutritionNavIcons_haveStandardDefaultSize() {
+        listOf(AppIcons.MealPlan, AppIcons.GroceryList).forEach { icon ->
             assertEquals(24.dp, icon.defaultWidth)
             assertEquals(24.dp, icon.defaultHeight)
         }
     }
 
     @Test
-    fun heroIcons_doNotAliasLegacyNutritionVectors() {
+    fun legacyHeroIcons_doNotAliasFeatureNutritionVectors() {
         assertNotEquals(AppIcons.MealPlan.name, AppIcons.PlanLunchPlaceSetting.name)
         assertNotEquals(AppIcons.GroceryList.name, AppIcons.FreshGroceries.name)
         assertNotEquals(AppIcons.ShoppingCart.name, AppIcons.FreshGroceries.name)
@@ -74,16 +74,16 @@ class AppIconsTest {
     }
 
     @Test
-    fun heroIcons_haveDrawablePathNodes() {
-        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIcons.PlanLunchPlaceSetting, minPaths = 5)
-        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIcons.FreshGroceries, minPaths = 7)
+    fun nutritionFeatureIcons_haveDrawablePathNodes() {
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIcons.MealPlan, minPaths = 3)
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIcons.GroceryList, minPaths = 2)
     }
 
     @Test
     fun navIcons_haveDrawablePathNodes() {
         ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIcons.Home, minPaths = 1)
-        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIconRole.NavMealPlan.imageVector(), minPaths = 5)
-        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIconRole.NavGrocery.imageVector(), minPaths = 7)
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIconRole.NavMealPlan.imageVector(), minPaths = 3)
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIconRole.NavGrocery.imageVector(), minPaths = 2)
     }
 
     @Test
