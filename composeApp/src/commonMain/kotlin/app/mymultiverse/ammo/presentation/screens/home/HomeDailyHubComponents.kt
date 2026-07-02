@@ -43,6 +43,7 @@ import app.mymultiverse.ammo.presentation.components.WeekContextBanner
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.AppIcons
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
+import app.mymultiverse.ammo.presentation.theme.isAppInDarkTheme
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.home_daily_meal_plan_title
 import ammo.composeapp.generated.resources.home_dashboard_plan_lunch
@@ -70,6 +71,16 @@ fun HomeDailyHubCircularActions(
     modifier: Modifier = Modifier,
 ) {
     val colorScheme = MaterialTheme.colorScheme
+    val planIconTint = if (isAppInDarkTheme()) {
+        JourneySemanticColors.onAccentButton()
+    } else {
+        colorScheme.primary
+    }
+    val groceryIconTint = if (isAppInDarkTheme()) {
+        JourneySemanticColors.onAccentButton()
+    } else {
+        colorScheme.secondary
+    }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -80,7 +91,7 @@ fun HomeDailyHubCircularActions(
         HomeCircularHubCta(
             ringColor = colorScheme.primary,
             containerColor = colorScheme.primaryContainer,
-            iconTint = colorScheme.primary,
+            iconTint = planIconTint,
             icon = AppIcons.PlanLunchPlaceSetting,
             label = stringResource(Res.string.home_dashboard_plan_lunch),
             onClick = onOpenMealPlan,
@@ -89,7 +100,7 @@ fun HomeDailyHubCircularActions(
         HomeCircularHubCta(
             ringColor = colorScheme.secondary,
             containerColor = colorScheme.secondaryContainer,
-            iconTint = colorScheme.secondary,
+            iconTint = groceryIconTint,
             icon = AppIcons.FreshGroceries,
             label = stringResource(Res.string.home_dashboard_shopping_list),
             onClick = onOpenGrocery,

@@ -74,6 +74,19 @@ class AppIconsTest {
     }
 
     @Test
+    fun heroIcons_haveDrawablePathNodes() {
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIcons.PlanLunchPlaceSetting, minPaths = 5)
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIcons.FreshGroceries, minPaths = 7)
+    }
+
+    @Test
+    fun navIcons_haveDrawablePathNodes() {
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIcons.Home, minPaths = 1)
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIconRole.NavMealPlan.imageVector(), minPaths = 5)
+        ImageVectorDrawableAssertions.assertHasDrawablePaths(AppIconRole.NavGrocery.imageVector(), minPaths = 7)
+    }
+
+    @Test
     fun featureRoles_mapToDistinctVectors() {
         assertNotEquals(
             AppIconRole.NavGrocery.imageVector().name,

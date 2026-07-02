@@ -84,9 +84,11 @@ fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    MaterialTheme(
-        colorScheme = if (darkTheme) sharedJourneyDarkScheme() else sharedJourneyLightScheme(),
-        typography = SharedJourneyTypography,
-        content = content,
-    )
+    ProvideAppDarkTheme(darkTheme) {
+        MaterialTheme(
+            colorScheme = if (darkTheme) sharedJourneyDarkScheme() else sharedJourneyLightScheme(),
+            typography = SharedJourneyTypography,
+            content = content,
+        )
+    }
 }

@@ -60,7 +60,11 @@ fun MainTabShell(
                                 JourneyIcon(
                                     role = AppIconRole.NavHome,
                                     contentDescription = homeTabLabel,
-                                    useContentColor = true,
+                                    tint = if (selectedTab == AppMainTab.Home) {
+                                        JourneySemanticColors.brandTeal()
+                                    } else {
+                                        JourneySemanticColors.inkMuted()
+                                    },
                                     modifier = Modifier.size(24.dp),
                                 )
                             },
@@ -75,7 +79,11 @@ fun MainTabShell(
                                 JourneyIcon(
                                     role = AppIconRole.NavMealPlan,
                                     contentDescription = mealPlanTabLabel,
-                                    useContentColor = true,
+                                    tint = if (selectedTab == AppMainTab.MealPlan) {
+                                        JourneySemanticColors.brandTeal()
+                                    } else {
+                                        JourneySemanticColors.inkMuted()
+                                    },
                                     modifier = Modifier.size(24.dp),
                                 )
                             },
@@ -90,7 +98,11 @@ fun MainTabShell(
                                 JourneyIcon(
                                     role = AppIconRole.NavGrocery,
                                     contentDescription = groceryTabLabel,
-                                    useContentColor = true,
+                                    tint = if (selectedTab == AppMainTab.Grocery) {
+                                        JourneySemanticColors.brandTeal()
+                                    } else {
+                                        JourneySemanticColors.inkMuted()
+                                    },
                                     modifier = Modifier.size(24.dp),
                                 )
                             },

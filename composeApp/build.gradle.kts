@@ -200,6 +200,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.multiplatform.settings.test)
             implementation(libs.koin.test)
+            implementation(compose.ui)
         }
     }
 
@@ -223,6 +224,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
     }
 }
 
