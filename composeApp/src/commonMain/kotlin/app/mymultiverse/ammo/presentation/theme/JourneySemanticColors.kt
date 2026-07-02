@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.presentation.theme
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
@@ -62,6 +63,36 @@ object JourneySemanticColors {
     /** Icons and labels on filled accent buttons (teal / gold circles). */
     @Composable
     fun onAccentButton(): Color = SharedJourneyColors.SunDrenchedWhite
+
+    /** Today hero plan-lunch icon — readable on mint primaryContainer in light and dark. */
+    @Composable
+    fun heroPlanIconTint(): Color {
+        val scheme = MaterialTheme.colorScheme
+        return if (isDark()) {
+            onAccentButton()
+        } else {
+            scheme.onPrimaryContainer
+        }
+    }
+
+    /** Today hero grocery icon — readable on gold secondaryContainer in light and dark. */
+    @Composable
+    fun heroGroceryIconTint(): Color {
+        val scheme = MaterialTheme.colorScheme
+        return if (isDark()) {
+            onAccentButton()
+        } else {
+            scheme.onSecondaryContainer
+        }
+    }
+
+    /** Bottom-nav tab icons — selected teal; unselected ink with light-theme contrast boost. */
+    @Composable
+    fun navTabIconTint(selected: Boolean): Color = when {
+        selected -> brandTeal()
+        isDark() -> inkMuted()
+        else -> inkDeep()
+    }
 
     /** Grocery checked state and sync success — readable on light and dark surfaces. */
     @Composable

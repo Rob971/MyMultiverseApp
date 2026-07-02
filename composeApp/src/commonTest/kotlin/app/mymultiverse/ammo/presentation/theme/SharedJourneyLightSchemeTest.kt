@@ -22,8 +22,14 @@ class SharedJourneyLightSchemeTest {
     }
 
     @Test
-    fun lightScheme_primaryContainer_isNotMaterialDefaultPurple() {
-        val materialDefaultPurple = Color(0xFFEADDFF)
-        assertNotEquals(materialDefaultPurple, sharedJourneyLightScheme().primaryContainer)
+    fun lightScheme_onContainerTints_contrastWithHeroContainers() {
+        val scheme = sharedJourneyLightScheme()
+
+        assertNotEquals(scheme.primaryContainer, scheme.onPrimaryContainer)
+        assertNotEquals(scheme.secondaryContainer, scheme.onSecondaryContainer)
+        assertEquals(SharedJourneyColors.MediterraneanTeal, scheme.onPrimaryContainer)
+        assertEquals(SharedJourneyColors.MediterraneanTeal, scheme.onSecondaryContainer)
+        assertNotEquals(scheme.primary, scheme.onPrimaryContainer)
+        assertNotEquals(scheme.secondary, scheme.secondaryContainer)
     }
 }

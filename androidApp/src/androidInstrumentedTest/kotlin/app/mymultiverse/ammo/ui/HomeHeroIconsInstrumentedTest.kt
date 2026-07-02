@@ -26,6 +26,43 @@ class HomeHeroIconsInstrumentedTest {
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     @Test
+    fun homeDailyHubCircularActions_lightTheme_displayHeroCtasWithIcons() {
+        composeRule.setContent {
+            AppTheme(darkTheme = false) {
+                HomeDailyHubCircularActions(
+                    onOpenMealPlan = {},
+                    onOpenGrocery = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.PLAN).assertIsDisplayed()
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.GROCERY).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("PLAN LUNCH").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("SHOPPING LIST").assertIsDisplayed()
+    }
+
+    @Test
+    fun mainTabShell_lightTheme_navTabs_displayHeroIcons() {
+        composeRule.setContent {
+            AppTheme(darkTheme = false) {
+                MainTabShell(
+                    selectedTab = AppMainTab.Home,
+                    onTabSelected = {},
+                    showBottomBar = true,
+                ) { modifier ->
+                    Text("content", modifier = modifier)
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(NavigationTestTags.TAB_MEAL_PLAN).assertIsDisplayed()
+        composeRule.onNodeWithTag(NavigationTestTags.TAB_GROCERY).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Plan").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Groceries").assertIsDisplayed()
+    }
+
+    @Test
     fun homeDailyHubCircularActions_displayHeroCtasWithIcons() {
         composeRule.setContent {
             AppTheme {
@@ -74,6 +111,26 @@ class HomeHeroIconsInstrumentedTest {
 
         composeRule.onNodeWithTag(HomePrimaryActionsTestTags.GROCERY).performClick()
         assertTrue(groceryClicked)
+    }
+
+    @Test
+    fun mainTabShell_darkTheme_navTabs_displayHeroIcons() {
+        composeRule.setContent {
+            AppTheme(darkTheme = true) {
+                MainTabShell(
+                    selectedTab = AppMainTab.Home,
+                    onTabSelected = {},
+                    showBottomBar = true,
+                ) { modifier ->
+                    Text("content", modifier = modifier)
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(NavigationTestTags.TAB_MEAL_PLAN).assertIsDisplayed()
+        composeRule.onNodeWithTag(NavigationTestTags.TAB_GROCERY).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Plan").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Groceries").assertIsDisplayed()
     }
 
     @Test

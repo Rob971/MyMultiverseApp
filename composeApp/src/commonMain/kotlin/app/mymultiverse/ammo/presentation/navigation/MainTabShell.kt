@@ -60,11 +60,9 @@ fun MainTabShell(
                                 JourneyIcon(
                                     role = AppIconRole.NavHome,
                                     contentDescription = homeTabLabel,
-                                    tint = if (selectedTab == AppMainTab.Home) {
-                                        JourneySemanticColors.brandTeal()
-                                    } else {
-                                        JourneySemanticColors.inkMuted()
-                                    },
+                                    tint = JourneySemanticColors.navTabIconTint(
+                                        selected = selectedTab == AppMainTab.Home,
+                                    ),
                                     modifier = Modifier.size(24.dp),
                                 )
                             },
@@ -79,11 +77,9 @@ fun MainTabShell(
                                 JourneyIcon(
                                     role = AppIconRole.NavMealPlan,
                                     contentDescription = mealPlanTabLabel,
-                                    tint = if (selectedTab == AppMainTab.MealPlan) {
-                                        JourneySemanticColors.brandTeal()
-                                    } else {
-                                        JourneySemanticColors.inkMuted()
-                                    },
+                                    tint = JourneySemanticColors.navTabIconTint(
+                                        selected = selectedTab == AppMainTab.MealPlan,
+                                    ),
                                     modifier = Modifier.size(24.dp),
                                 )
                             },
@@ -98,11 +94,9 @@ fun MainTabShell(
                                 JourneyIcon(
                                     role = AppIconRole.NavGrocery,
                                     contentDescription = groceryTabLabel,
-                                    tint = if (selectedTab == AppMainTab.Grocery) {
-                                        JourneySemanticColors.brandTeal()
-                                    } else {
-                                        JourneySemanticColors.inkMuted()
-                                    },
+                                    tint = JourneySemanticColors.navTabIconTint(
+                                        selected = selectedTab == AppMainTab.Grocery,
+                                    ),
                                     modifier = Modifier.size(24.dp),
                                 )
                             },

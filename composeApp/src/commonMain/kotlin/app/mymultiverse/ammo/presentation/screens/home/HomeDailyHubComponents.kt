@@ -43,7 +43,6 @@ import app.mymultiverse.ammo.presentation.components.WeekContextBanner
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.AppIcons
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
-import app.mymultiverse.ammo.presentation.theme.isAppInDarkTheme
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.home_daily_meal_plan_title
 import ammo.composeapp.generated.resources.home_dashboard_plan_lunch
@@ -71,16 +70,8 @@ fun HomeDailyHubCircularActions(
     modifier: Modifier = Modifier,
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val planIconTint = if (isAppInDarkTheme()) {
-        JourneySemanticColors.onAccentButton()
-    } else {
-        colorScheme.primary
-    }
-    val groceryIconTint = if (isAppInDarkTheme()) {
-        JourneySemanticColors.onAccentButton()
-    } else {
-        colorScheme.secondary
-    }
+    val planIconTint = JourneySemanticColors.heroPlanIconTint()
+    val groceryIconTint = JourneySemanticColors.heroGroceryIconTint()
     Row(
         modifier = modifier
             .fillMaxWidth()
