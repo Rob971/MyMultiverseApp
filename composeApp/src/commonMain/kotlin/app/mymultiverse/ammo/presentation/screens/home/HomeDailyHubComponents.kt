@@ -78,18 +78,18 @@ fun HomeDailyHubCircularActions(
         verticalAlignment = Alignment.Top,
     ) {
         HomeCircularHubCta(
-            accentColor = colorScheme.primary,
             ringColor = colorScheme.primary,
             containerColor = colorScheme.primaryContainer,
+            iconTint = colorScheme.onPrimaryContainer,
             icon = AppIcons.PlanLunchPlaceSetting,
             label = stringResource(Res.string.home_dashboard_plan_lunch),
             onClick = onOpenMealPlan,
             modifier = Modifier.testTag(HomePrimaryActionsTestTags.PLAN),
         )
         HomeCircularHubCta(
-            accentColor = colorScheme.secondary,
             ringColor = colorScheme.secondary,
             containerColor = colorScheme.secondaryContainer,
+            iconTint = colorScheme.onSecondaryContainer,
             icon = AppIcons.FreshGroceries,
             label = stringResource(Res.string.home_dashboard_shopping_list),
             onClick = onOpenGrocery,
@@ -100,9 +100,9 @@ fun HomeDailyHubCircularActions(
 
 @Composable
 private fun HomeCircularHubCta(
-    accentColor: Color,
     ringColor: Color,
     containerColor: Color,
+    iconTint: Color,
     icon: ImageVector,
     label: String,
     onClick: () -> Unit,
@@ -124,9 +124,9 @@ private fun HomeCircularHubCta(
                 JourneyIcon(
                     imageVector = icon,
                     role = AppIconRole.FeatureAccent,
-                    contentDescription = null,
-                    accentColor = accentColor,
-                    modifier = Modifier.size(40.dp),
+                    contentDescription = label,
+                    tint = iconTint,
+                    modifier = Modifier.size(48.dp),
                 )
             }
         }

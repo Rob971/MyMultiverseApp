@@ -1,6 +1,7 @@
 package app.mymultiverse.ammo.presentation.theme
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
 class AppIconsTest {
@@ -37,6 +38,12 @@ class AppIconsTest {
         assertNotEquals(AppIcons.Adventures.name, AppIcons.Explore.name)
         assertNotEquals(AppIcons.BudgetWallet.name, AppIcons.AccountBalance.name)
         assertNotEquals(AppIcons.Adventures.name, AppIcons.BudgetWallet.name)
+    }
+
+    @Test
+    fun navTabs_useApprovedHeroIcons() {
+        assertEquals(AppIcons.PlanLunchPlaceSetting.name, AppIconRole.NavMealPlan.imageVector().name)
+        assertEquals(AppIcons.FreshGroceries.name, AppIconRole.NavGrocery.imageVector().name)
     }
 
     @Test
