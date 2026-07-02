@@ -242,6 +242,9 @@ private fun AuthenticatedMainApp() {
                 )
             }
         }
+        HouseholdPushEvents.consumePendingGroceryListNudge()?.let {
+            selectedTab = AppMainTab.Grocery
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -251,6 +254,12 @@ private fun AuthenticatedMainApp() {
                     AppRoute.HouseholdMembers(household = resolvedHousehold ?: nutritionContext),
                 )
             }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        HouseholdPushEvents.groceryListNudges.collect {
+            selectedTab = AppMainTab.Grocery
         }
     }
 

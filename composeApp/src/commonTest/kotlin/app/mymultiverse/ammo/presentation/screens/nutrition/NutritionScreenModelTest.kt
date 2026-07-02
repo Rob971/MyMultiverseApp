@@ -5,6 +5,8 @@ import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
+import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
+import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.ammo.presentation.di.FakeHouseholdCollaborationRepository
 import app.mymultiverse.ammo.presentation.di.FakeHouseholdRepository
@@ -593,6 +595,57 @@ class NutritionScreenModelTest {
         model.addGroceryItem("Tacos")
         advanceUntilIdle()
         assertNull(model.ghostPairingOffer.value)
+    }
+
+    @Test
+    fun nudgePartnersToUpdateGroceryList_emitsSuccessWhenRepositorySucceeds() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val collaborationRepository = FakeHouseholdCollaborationRepository()
+        collaborationRepository.seedMember(
+            householdId = "test-household",
+            member = HouseholdMember(
+                id = "member-2",
+                householdId = "test-household",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Partner",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "partner-1",
+            ),
+            ownerId = "owner-1",
+            ownerDisplayName = "Owner",
+        )
+        val model = nutritionScreenModel(
+            repository = repository,
+            collaborationRepository = collaborationRepository,
+            scope = modelScope,
+        )
+        advanceUntilIdle()
+
+        model.nudgePartnersToUpdateGroceryList()
+        advanceUntilIdle()
+
+        assertEquals(1, collaborationRepository.nudgePartnersCalls)
+        assertEquals("test-household", collaborationRepository.lastNudgeHouseholdId)
+        assertEquals(weekKey, collaborationRepository.lastNudgeWeekKey)
+        assertEquals(NutritionScreenModel.GroceryPartnerNudgeResult.Success, model.groceryPartnerNudgeResult.value)
+    }
+
+    @Test
+    fun nudgePartnersToUpdateGroceryList_mapsCooldownError() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val collaborationRepository = FakeHouseholdCollaborationRepository().apply {
+            nudgePartnersResult = Result.failure(IllegalStateException("grocery_nudge_cooldown"))
+        }
+        val model = nutritionScreenModel(
+            repository = repository,
+            collaborationRepository = collaborationRepository,
+            scope = modelScope,
+        )
+
+        model.nudgePartnersToUpdateGroceryList()
+        advanceUntilIdle()
+
+        assertEquals(NutritionScreenModel.GroceryPartnerNudgeResult.Cooldown, model.groceryPartnerNudgeResult.value)
     }
 }
 

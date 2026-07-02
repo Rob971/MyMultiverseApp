@@ -24,6 +24,8 @@ object CollaborationErrorCodes {
     const val HOUSEHOLD_NAME_REQUIRED = "household_name_required"
     const val CANNOT_ASSIGN_OWNER_ROLE = "cannot_assign_owner_role"
     const val MEMBER_NOT_FOUND = "member_not_found"
+    const val GROCERY_NUDGE_COOLDOWN = "grocery_nudge_cooldown"
+    const val GROCERY_NUDGE_NO_PARTNERS = "grocery_nudge_no_partners"
 
     fun messageContains(code: String, message: String?): Boolean =
         message?.contains(code, ignoreCase = true) == true

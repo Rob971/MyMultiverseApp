@@ -53,4 +53,20 @@ class InvitePushPayloadTest {
 
         assertEquals("household-1", householdId)
     }
+
+    @Test
+    fun groceryListNudgeFromData_readsGroceryNudgePayload() {
+        val nudge = InvitePushPayload.groceryListNudgeFromData(
+            mapOf(
+                InvitePushPayload.KEY_TYPE to InvitePushPayload.TYPE_GROCERY_LIST_NUDGE,
+                InvitePushPayload.KEY_HOUSEHOLD_ID to "household-1",
+                InvitePushPayload.KEY_WEEK_KEY to "2026-06-30",
+                InvitePushPayload.KEY_NUDGER_NAME to "Alex",
+            ),
+        )
+
+        assertEquals("household-1", nudge?.householdId)
+        assertEquals("2026-06-30", nudge?.weekKey)
+        assertEquals("Alex", nudge?.nudgerName)
+    }
 }

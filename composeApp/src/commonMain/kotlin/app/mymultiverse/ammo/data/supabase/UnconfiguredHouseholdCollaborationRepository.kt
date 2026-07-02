@@ -52,4 +52,9 @@ class UnconfiguredHouseholdCollaborationRepository : HouseholdCollaborationRepos
 
     override suspend fun removeDependant(dependantId: String): Result<Unit> =
         Result.failure(IllegalStateException("supabase_not_configured"))
+
+    override suspend fun nudgePartnersToUpdateGroceryList(
+        householdId: String,
+        weekKey: String,
+    ): Result<Unit> = Result.failure(IllegalStateException("supabase_not_configured"))
 }

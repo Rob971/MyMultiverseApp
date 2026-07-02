@@ -81,6 +81,10 @@ object HouseholdPushNotificationHandler {
                 val memberName = data[InvitePushPayload.KEY_MEMBER_NAME].orEmpty().ifBlank { "Someone" }
                 "$memberName joined"
             }
+            InvitePushPayload.TYPE_GROCERY_LIST_NUDGE -> {
+                val nudgerName = data[InvitePushPayload.KEY_NUDGER_NAME].orEmpty().ifBlank { "Someone" }
+                "$nudgerName is heading to the store"
+            }
             else -> null
         }
 
@@ -88,6 +92,8 @@ object HouseholdPushNotificationHandler {
         when (data[InvitePushPayload.KEY_TYPE]) {
             InvitePushPayload.TYPE_HOUSEHOLD_INVITE -> "Open Ammò to accept"
             InvitePushPayload.TYPE_MEMBER_JOINED -> "Open Ammò to see your household"
+            InvitePushPayload.TYPE_GROCERY_LIST_NUDGE ->
+                "Add anything missing to the grocery list before they shop"
             else -> null
         }
 
@@ -95,6 +101,8 @@ object HouseholdPushNotificationHandler {
         when (data[InvitePushPayload.KEY_TYPE]) {
             InvitePushPayload.TYPE_MEMBER_JOINED ->
                 data[InvitePushPayload.KEY_HOUSEHOLD_ID].hashCode()
+            InvitePushPayload.TYPE_GROCERY_LIST_NUDGE ->
+                data[InvitePushPayload.KEY_HOUSEHOLD_ID].hashCode() xor data[InvitePushPayload.KEY_WEEK_KEY].hashCode()
             else ->
                 data[InvitePushPayload.KEY_INVITE_TOKEN]?.hashCode()
                     ?: data.hashCode()

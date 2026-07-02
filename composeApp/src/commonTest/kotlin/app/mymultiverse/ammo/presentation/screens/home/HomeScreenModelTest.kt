@@ -718,6 +718,11 @@ private class HangingHouseholdCollaborationRepository : HouseholdCollaborationRe
     override suspend fun removeDependant(dependantId: String): Result<Unit> =
         Result.failure(UnsupportedOperationException())
 
+    override suspend fun nudgePartnersToUpdateGroceryList(
+        householdId: String,
+        weekKey: String,
+    ): Result<Unit> = Result.failure(UnsupportedOperationException())
+
     override suspend fun updateMemberRole(
         memberId: String,
         role: HouseholdMemberRole,

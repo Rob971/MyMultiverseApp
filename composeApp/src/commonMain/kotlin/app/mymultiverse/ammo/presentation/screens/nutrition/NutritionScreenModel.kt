@@ -6,6 +6,7 @@ import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.nutrition.GroceryGhostPairing
 import app.mymultiverse.ammo.domain.nutrition.GroceryListPresentation
+import app.mymultiverse.ammo.domain.nutrition.GroceryPartnerNudge
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.MealPlanPresentation
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
@@ -18,6 +19,7 @@ import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
+import app.mymultiverse.ammo.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.ammo.domain.sharing.canWriteHouseholdData
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivityKind
@@ -26,6 +28,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -100,6 +103,7 @@ class NutritionScreenModel(
     private val _displaySyncStatus = MutableStateFlow<NutritionSyncStatus>(NutritionSyncStatus.Idle)
     private var syncPulseJob: Job? = null
     private var cachedHouseholdMembers: List<HouseholdMember> = emptyList()
+    private val _householdMembers = MutableStateFlow<List<HouseholdMember>>(emptyList())
     private val pendingCollaborationActivities = mutableListOf<app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivity>()
     private var collaborationDebounceJob: Job? = null
 
@@ -114,6 +118,19 @@ class NutritionScreenModel(
 
     private val _collaborationSnackbar = MutableStateFlow<CollaborationSnackbarEvent?>(null)
     val collaborationSnackbar: StateFlow<CollaborationSnackbarEvent?> = _collaborationSnackbar.asStateFlow()
+
+    sealed class GroceryPartnerNudgeResult {
+        data object Success : GroceryPartnerNudgeResult()
+        data object Cooldown : GroceryPartnerNudgeResult()
+        data object Error : GroceryPartnerNudgeResult()
+    }
+
+    private val _groceryPartnerNudgeResult = MutableStateFlow<GroceryPartnerNudgeResult?>(null)
+    val groceryPartnerNudgeResult: StateFlow<GroceryPartnerNudgeResult?> =
+        _groceryPartnerNudgeResult.asStateFlow()
+
+    private val _isNudgingPartners = MutableStateFlow(false)
+    val isNudgingPartners: StateFlow<Boolean> = _isNudgingPartners.asStateFlow()
 
     private val _ghostPairingOffer = MutableStateFlow<GroceryGhostPairing.Offer?>(null)
     val ghostPairingOffer: StateFlow<GroceryGhostPairing.Offer?> = _ghostPairingOffer.asStateFlow()
@@ -131,6 +148,7 @@ class NutritionScreenModel(
                 }
                 .collect { members ->
                     cachedHouseholdMembers = members
+                    _householdMembers.value = members
                 }
         }
         scope.launch {
@@ -172,6 +190,18 @@ class NutritionScreenModel(
             }
         }
         .stateIn(scope, SharingStarted.Eagerly, true)
+
+    val showGroceryPartnerNudge: StateFlow<Boolean> = combine(
+        canWriteHouseholdData,
+        _weekOffset,
+        _householdMembers,
+    ) { canWrite, weekOffset, members ->
+        GroceryPartnerNudge.canShow(
+            members = members,
+            canWrite = canWrite,
+            weekOffset = weekOffset,
+        )
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), false)
 
     suspend fun activateHousehold(householdId: String) {
         _weekOffset.value = 0
@@ -701,6 +731,43 @@ class NutritionScreenModel(
 
     fun consumeCollaborationSnackbar() {
         _collaborationSnackbar.value = null
+    }
+
+    fun consumeGroceryPartnerNudgeResult() {
+        _groceryPartnerNudgeResult.value = null
+    }
+
+    fun nudgePartnersToUpdateGroceryList() {
+        if (_isNudgingPartners.value) return
+        val householdId = repository.householdId?.trim().orEmpty()
+        if (householdId.isEmpty()) {
+            _groceryPartnerNudgeResult.value = GroceryPartnerNudgeResult.Error
+            return
+        }
+        scope.launch {
+            _isNudgingPartners.value = true
+            try {
+                val result = collaborationRepository.nudgePartnersToUpdateGroceryList(
+                    householdId = householdId,
+                    weekKey = weekKey,
+                )
+                _groceryPartnerNudgeResult.value = result.fold(
+                    onSuccess = { GroceryPartnerNudgeResult.Success },
+                    onFailure = { error ->
+                        when {
+                            CollaborationErrorCodes.messageContains(
+                                CollaborationErrorCodes.GROCERY_NUDGE_COOLDOWN,
+                                error.message,
+                            ) -> GroceryPartnerNudgeResult.Cooldown
+
+                            else -> GroceryPartnerNudgeResult.Error
+                        }
+                    },
+                )
+            } finally {
+                _isNudgingPartners.value = false
+            }
+        }
     }
 
     private fun onCollaborationActivity(

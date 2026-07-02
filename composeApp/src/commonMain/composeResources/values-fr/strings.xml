@@ -145,6 +145,13 @@
     <string name="nutrition_grocery_toggle_item">Marquer comme acheté</string>
     <string name="nutrition_grocery_keep_screen_on">Garder l'écran allumé pendant les courses</string>
     <string name="nutrition_grocery_keep_screen_off">Autoriser la mise en veille de l'écran</string>
+    <string name="nutrition_grocery_partner_nudge_title">Vous partez faire les courses ?</string>
+    <string name="nutrition_grocery_partner_nudge_body">Rappelez à votre famille d'ajouter ce qui manque avant vos achats.</string>
+    <string name="nutrition_grocery_partner_nudge_action">Rappeler les partenaires</string>
+    <string name="nutrition_grocery_partner_nudge_toolbar">Rappeler aux partenaires de mettre à jour la liste</string>
+    <string name="nutrition_grocery_partner_nudge_success">Les partenaires ont été prévenus de mettre à jour la liste</string>
+    <string name="nutrition_grocery_partner_nudge_cooldown">Vous avez déjà rappelé vos partenaires récemment. Réessayez dans une heure.</string>
+    <string name="nutrition_grocery_partner_nudge_error">Impossible d'envoyer le rappel. Réessayez.</string>
     <string name="nutrition_grocery_empty_active">Tout est coché. Ajoutez des articles ou effacez les cochés ci-dessous.</string>
     <string name="nutrition_ai_try_again">Recommencer</string>
     <string name="nutrition_ai_suggestions_title">Suggestions rapides</string>

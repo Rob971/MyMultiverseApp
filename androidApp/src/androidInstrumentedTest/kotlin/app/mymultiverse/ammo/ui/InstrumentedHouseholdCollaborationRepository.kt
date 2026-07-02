@@ -84,6 +84,11 @@ class InstrumentedHouseholdCollaborationRepository : HouseholdCollaborationRepos
 
     override suspend fun removeDependant(dependantId: String): Result<Unit> = Result.success(Unit)
 
+    override suspend fun nudgePartnersToUpdateGroceryList(
+        householdId: String,
+        weekKey: String,
+    ): Result<Unit> = Result.success(Unit)
+
     private fun membersFlow(householdId: String): MutableStateFlow<List<HouseholdMember>> =
         membersByHousehold.getOrPut(householdId) { MutableStateFlow(emptyList()) }
 }

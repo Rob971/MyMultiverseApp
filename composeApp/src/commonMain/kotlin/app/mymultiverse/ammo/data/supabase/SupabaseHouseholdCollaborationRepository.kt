@@ -292,6 +292,21 @@ class SupabaseHouseholdCollaborationRepository(
         }
     }
 
+    override suspend fun nudgePartnersToUpdateGroceryList(
+        householdId: String,
+        weekKey: String,
+    ): Result<Unit> = runCatching {
+        require(householdId.isNotBlank()) { CollaborationErrorCodes.HOUSEHOLD_NOT_FOUND }
+        require(weekKey.isNotBlank()) { "week_key_required" }
+        client.postgrest.rpc(
+            "nudge_household_grocery_list",
+            buildJsonObject {
+                put("p_household_id", householdId)
+                put("p_week_key", weekKey)
+            },
+        )
+    }
+
     private suspend fun sendOrRefreshInvite(
         householdId: String,
         email: String,

@@ -13,6 +13,7 @@ import {
   resolveInviteOpenLinkBase,
 } from "./invite-content.ts";
 import { buildInvitePushData, inviteTokenFromPayload } from "./invite-token.ts";
+import { buildGroceryListNudgePushData } from "./grocery-list-nudge-token.ts";
 import { buildMemberJoinedPushData } from "./member-joined-token.ts";
 
 const corsHeaders = {
@@ -201,6 +202,60 @@ async function processHouseholdInvite(
   }
 }
 
+async function processGroceryListNudge(
+  admin: SupabaseClient,
+  payload: Record<string, unknown>,
+  fcmServiceAccountJson: string,
+  apnsKeyId: string,
+  apnsTeamId: string,
+  apnsPrivateKey: string,
+  apnsBundleId: string,
+  apnsUseSandbox: boolean,
+): Promise<void> {
+  const householdId = String(payload.household_id ?? "").trim();
+  const nudgerUserId = String(payload.nudger_user_id ?? "").trim();
+  const nudgerName = String(payload.nudger_name ?? "Someone");
+  const householdName = String(payload.household_name ?? "your household");
+
+  if (!householdId || !nudgerUserId) {
+    console.warn("grocery_list_nudge_missing_ids", { householdId, nudgerUserId });
+    return;
+  }
+
+  const { data: members, error } = await admin
+    .from("household_members")
+    .select("user_id")
+    .eq("household_id", householdId)
+    .neq("user_id", nudgerUserId);
+
+  if (error) {
+    console.error("grocery_list_nudge_recipients_failed", error.message);
+    return;
+  }
+
+  const pushTitle = `${nudgerName} is heading to the store`;
+  const pushBody = `Add anything missing to the grocery list in ${householdName}`;
+  const pushData = buildGroceryListNudgePushData(payload);
+
+  for (const member of members ?? []) {
+    const userId = String(member.user_id ?? "").trim();
+    if (!userId) continue;
+    await sendPushToUserTokens(
+      admin,
+      userId,
+      pushTitle,
+      pushBody,
+      pushData,
+      fcmServiceAccountJson,
+      apnsKeyId,
+      apnsTeamId,
+      apnsPrivateKey,
+      apnsBundleId,
+      apnsUseSandbox,
+    );
+  }
+}
+
 async function processMemberJoined(
   admin: SupabaseClient,
   payload: Record<string, unknown>,
@@ -285,7 +340,7 @@ Deno.serve(async (req) => {
       .from("household_notification_outbox")
       .select("id, kind, payload")
       .is("processed_at", null)
-      .in("kind", ["household_invite", "household_member_joined"])
+      .in("kind", ["household_invite", "household_member_joined", "grocery_list_nudge"])
       .order("created_at", { ascending: true })
       .limit(25);
 
@@ -326,6 +381,17 @@ Deno.serve(async (req) => {
         );
       } else if (row.kind === "household_member_joined") {
         await processMemberJoined(
+          admin,
+          payload,
+          fcmServiceAccountJson,
+          apnsKeyId,
+          apnsTeamId,
+          apnsPrivateKey,
+          apnsBundleId,
+          apnsUseSandbox,
+        );
+      } else if (row.kind === "grocery_list_nudge") {
+        await processGroceryListNudge(
           admin,
           payload,
           fcmServiceAccountJson,
