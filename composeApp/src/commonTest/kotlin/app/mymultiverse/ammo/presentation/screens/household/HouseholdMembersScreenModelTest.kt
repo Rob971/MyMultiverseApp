@@ -169,6 +169,7 @@ class HouseholdMembersScreenModelTest {
         model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         advanceUntilIdle()
 
+        val refreshCallsAfterBind = repository.refreshMembersCalls
         val member = model.uiState.value.members.single { it.role == HouseholdMemberRole.Editor }
         model.openRoleChangeDialog(member)
         model.onMemberRoleChange(HouseholdMemberRole.Admin)
@@ -179,6 +180,87 @@ class HouseholdMembersScreenModelTest {
         assertEquals(
             HouseholdMemberRole.Admin,
             model.uiState.value.members.single { it.id == "member-1" }.role,
+        )
+        assertEquals(refreshCallsAfterBind, repository.refreshMembersCalls)
+        assertFalse(model.uiState.value.showRoleChangeDialog)
+    }
+
+    @Test
+    fun confirmRoleChange_updatesMemberRoleWithoutRefreshingMembers() = runTest(testDispatcher) {
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Partner",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "partner-id",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold(
+            householdId = "household-1",
+            householdName = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            currentUserId = "owner",
+        )
+        advanceUntilIdle()
+
+        val refreshCallsAfterBind = repository.refreshMembersCalls
+        val member = model.uiState.value.members.single { it.role == HouseholdMemberRole.Editor }
+        model.openRoleChangeDialog(member)
+        model.onMemberRoleChange(HouseholdMemberRole.Viewer)
+        model.confirmRoleChange("household-1")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMemberRole.Viewer, model.uiState.value.members.single { it.id == "member-1" }.role)
+        assertEquals(refreshCallsAfterBind, repository.refreshMembersCalls)
+    }
+
+    @Test
+    fun admin_canDemoteAdminToViewer() = runTest(testDispatcher) {
+        householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Admin)
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "admin-2",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Other Admin",
+                role = HouseholdMemberRole.Admin,
+                referenceId = "admin-2-ref",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold(
+            householdId = "household-1",
+            householdName = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            currentUserId = "admin-1",
+        )
+        advanceUntilIdle()
+
+        val otherAdmin = model.uiState.value.members.single { it.id == "admin-2" }
+        model.openRoleChangeDialog(otherAdmin)
+        model.onMemberRoleChange(HouseholdMemberRole.Viewer)
+        model.confirmRoleChange("household-1")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersSuccess.RoleUpdated, model.uiState.value.successMessageKey)
+        assertEquals(
+            HouseholdMemberRole.Viewer,
+            model.uiState.value.members.single { it.id == "admin-2" }.role,
         )
     }
 

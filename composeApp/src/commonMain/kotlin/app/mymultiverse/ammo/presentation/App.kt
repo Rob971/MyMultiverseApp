@@ -269,8 +269,13 @@ private fun AuthenticatedMainApp() {
 
     when (val overlayRoute = route) {
         is AppRoute.HouseholdMembers -> {
+            val routeHousehold = overlayRoute.household
+            val liveHousehold = when {
+                routeHousehold != null && nutritionContext?.id == routeHousehold.id -> nutritionContext
+                else -> routeHousehold
+            } ?: nutritionContext
             HouseholdMembersFlow(
-                household = overlayRoute.household,
+                household = liveHousehold,
                 onBack = navigator::navigateBack,
                 onHouseholdReady = { household ->
                     navigator.replaceCurrent(AppRoute.HouseholdMembers(household = household))

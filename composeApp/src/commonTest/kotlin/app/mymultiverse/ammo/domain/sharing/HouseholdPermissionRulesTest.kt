@@ -23,11 +23,14 @@ class HouseholdPermissionRulesTest {
     }
 
     @Test
-    fun adminCannotAssignAdminOrChangeOwner() {
+    fun adminCanChangeNonOwnerRolesButCannotAssignAdmin() {
         assertTrue(HouseholdMemberRole.Owner.canChangeRoleOf(HouseholdMemberRole.Editor))
         assertTrue(HouseholdMemberRole.Owner.canAssignAdminRole())
-        assertFalse(HouseholdMemberRole.Admin.canChangeRoleOf(HouseholdMemberRole.Admin))
-        assertFalse(HouseholdMemberRole.Admin.canAssignAdminRole())
+        assertTrue(HouseholdMemberRole.Admin.canChangeRoleOf(HouseholdMemberRole.Admin))
+        assertTrue(HouseholdMemberRole.Admin.canChangeRoleOf(HouseholdMemberRole.Editor))
         assertTrue(HouseholdMemberRole.Admin.canChangeRoleOf(HouseholdMemberRole.Viewer))
+        assertFalse(HouseholdMemberRole.Admin.canChangeRoleOf(HouseholdMemberRole.Owner))
+        assertFalse(HouseholdMemberRole.Admin.canAssignAdminRole())
+        assertFalse(HouseholdMemberRole.Admin.canInviteWithRole(HouseholdMemberRole.Admin))
     }
 }
