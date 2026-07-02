@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 68
+version: 69
 updated: 2026-06-30
 
 summary: |
@@ -44,6 +44,7 @@ summary: |
   Launcher safe zone (v66): Android adaptive icon foreground scaled to the 66% center circle so Ammò wordmark is not clipped on home screen.
   Launch reliability (v67): Android startup no longer depends on Koin definition overrides between Firebase/no-Firebase bindings; app opens reliably on tester builds.
   Today hero and nav icons (v61): Plan lunch hero + Plan tab use plate/knife/fork icon; Shopping list hero + Groceries tab use fruit/veg/fish/steak icon.
+  Hero icon render fix (v69): rewritten vectors and Napolitan light containers so meal/grocery icons are visible on Today circles and bottom nav.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
   Contextual AI chips E4-11 (v52): Plan empty state and AI helper sheet prepend Use up {ingredient} chips from unchecked grocery + meal history (fallback to protein/budget/veggies when no signals).
