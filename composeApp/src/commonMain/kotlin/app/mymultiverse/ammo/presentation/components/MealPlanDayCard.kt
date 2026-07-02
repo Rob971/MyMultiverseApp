@@ -307,12 +307,10 @@ private fun MealPlanMealField(
                         .testTag(generateGroceryTestTag),
                 ) {
                     if (!isGeneratingGrocery) {
-                        JourneyIcon(
-                            imageVector = AppIcons.GroceryList,
-                            role = AppIconRole.OnAccent,
+                        NutritionFeatureArt(
+                            feature = NutritionFeatureKind.Grocery,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            useContentColor = true,
+                            modifier = Modifier.size(20.dp),
                         )
                         Spacer(Modifier.width(8.dp))
                     }

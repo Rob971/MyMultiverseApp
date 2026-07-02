@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.presentation.components.JourneyIcon
+import app.mymultiverse.ammo.presentation.components.NutritionFeatureArt
+import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import ammo.composeapp.generated.resources.Res
@@ -74,13 +76,10 @@ fun MainTabShell(
                             selected = selectedTab == AppMainTab.MealPlan,
                             onClick = { onTabSelected(AppMainTab.MealPlan) },
                             icon = {
-                                JourneyIcon(
-                                    role = AppIconRole.NavMealPlan,
+                                NutritionFeatureArt(
+                                    feature = NutritionFeatureKind.MealPlan,
                                     contentDescription = mealPlanTabLabel,
-                                    tint = JourneySemanticColors.navTabIconTint(
-                                        selected = selectedTab == AppMainTab.MealPlan,
-                                    ),
-                                    modifier = Modifier.size(24.dp),
+                                    modifier = Modifier.size(26.dp),
                                 )
                             },
                             label = { Text(mealPlanTabLabel) },
@@ -91,13 +90,10 @@ fun MainTabShell(
                             selected = selectedTab == AppMainTab.Grocery,
                             onClick = { onTabSelected(AppMainTab.Grocery) },
                             icon = {
-                                JourneyIcon(
-                                    role = AppIconRole.NavGrocery,
+                                NutritionFeatureArt(
+                                    feature = NutritionFeatureKind.Grocery,
                                     contentDescription = groceryTabLabel,
-                                    tint = JourneySemanticColors.navTabIconTint(
-                                        selected = selectedTab == AppMainTab.Grocery,
-                                    ),
-                                    modifier = Modifier.size(24.dp),
+                                    modifier = Modifier.size(26.dp),
                                 )
                             },
                             label = { Text(groceryTabLabel) },

@@ -20,6 +20,7 @@ import org.jetbrains.compose.resources.stringResource
 import app.mymultiverse.ammo.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticCard
+import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
 import app.mymultiverse.ammo.presentation.components.NutritionScaffold
 import app.mymultiverse.ammo.presentation.components.NutritionSyncStatusBanner
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
@@ -29,7 +30,6 @@ import app.mymultiverse.ammo.presentation.components.screenListPadding
 import app.mymultiverse.ammo.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import app.mymultiverse.ammo.presentation.navigation.NutritionSection
-import app.mymultiverse.ammo.presentation.theme.AppIcons
 import app.mymultiverse.ammo.presentation.theme.SharedJourneyColors
 import org.koin.compose.koinInject
 
@@ -96,7 +96,7 @@ fun NutritionHubScreen(
                         title = stringResource(Res.string.nutrition_grocery_title),
                         description = stringResource(Res.string.nutrition_grocery_description),
                         accentColor = SharedJourneyColors.SageSoft,
-                        icon = AppIcons.GroceryList,
+                        nutritionFeature = NutritionFeatureKind.Grocery,
                         statusLine = groceryStatus,
                         modifier = Modifier.testTag(NutritionHubTestTags.GROCERY_CARD),
                         onClick = { onOpenSection(NutritionSection.Grocery) },
@@ -110,7 +110,7 @@ fun NutritionHubScreen(
                         title = stringResource(Res.string.nutrition_meal_plan_title),
                         description = stringResource(Res.string.nutrition_meal_plan_description),
                         accentColor = SharedJourneyColors.TerracottaOrange,
-                        icon = AppIcons.MealPlan,
+                        nutritionFeature = NutritionFeatureKind.MealPlan,
                         statusLine = mealPlanStatus,
                         modifier = Modifier.testTag(NutritionHubTestTags.MEAL_PLAN_CARD),
                         onClick = { onOpenSection(NutritionSection.MealPlan) },

@@ -45,7 +45,7 @@ fun HomePrimaryActions(
         ) {
             JourneyButtonLabel(
                 text = stringResource(Res.string.home_hero_plan_meals),
-                icon = AppIcons.MealPlan,
+                nutritionFeature = NutritionFeatureKind.MealPlan,
                 role = AppIconRole.OnAccent,
                 useContentColor = true,
             )
@@ -58,7 +58,7 @@ fun HomePrimaryActions(
         ) {
             JourneyButtonLabel(
                 text = stringResource(Res.string.home_hero_grocery_list),
-                icon = AppIcons.GroceryList,
+                nutritionFeature = NutritionFeatureKind.Grocery,
                 role = AppIconRole.Primary,
                 useContentColor = true,
             )

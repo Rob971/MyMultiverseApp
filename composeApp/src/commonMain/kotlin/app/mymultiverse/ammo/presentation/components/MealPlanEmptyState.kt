@@ -52,7 +52,7 @@ fun MealPlanEmptyState(
     JourneyEmptyState(
         title = title,
         body = body,
-        icon = AppIcons.MealPlan,
+        nutritionFeature = NutritionFeatureKind.MealPlan,
         primaryActionLabel = planWithAiLabel,
         onPrimaryAction = onPlanWithAi,
         primaryActionIcon = AppIcons.Sparkles,

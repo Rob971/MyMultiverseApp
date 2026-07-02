@@ -45,6 +45,7 @@ import app.mymultiverse.ammo.presentation.components.FamilyLogisticsCardSurface
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsDesign
 import app.mymultiverse.ammo.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.ammo.presentation.components.JourneyEmptyState
+import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
 import app.mymultiverse.ammo.presentation.components.JourneyTextField
 import app.mymultiverse.ammo.presentation.components.JourneyButtonLabel
 import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
@@ -523,7 +524,7 @@ fun NutritionAiAssistantContent(
                         ) {
                             JourneyButtonLabel(
                                 text = stringResource(Res.string.nutrition_ai_adopt_all_grocery),
-                                icon = AppIcons.GroceryList,
+                                nutritionFeature = NutritionFeatureKind.Grocery,
                                 role = AppIconRole.OnAccent,
                                 useContentColor = true,
                             )

@@ -32,6 +32,7 @@ fun JourneyEmptyState(
     modifier: Modifier = Modifier,
     body: String? = null,
     icon: ImageVector = AppIcons.Restaurant,
+    nutritionFeature: NutritionFeatureKind? = null,
     primaryActionLabel: String? = null,
     onPrimaryAction: (() -> Unit)? = null,
     primaryActionIcon: ImageVector? = null,
@@ -59,12 +60,19 @@ fun JourneyEmptyState(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            JourneyIcon(
-                imageVector = icon,
-                role = AppIconRole.Muted,
-                contentDescription = null,
-                modifier = Modifier.size(40.dp),
-            )
+            when (val feature = nutritionFeature) {
+                null -> JourneyIcon(
+                    imageVector = icon,
+                    role = AppIconRole.Muted,
+                    contentDescription = null,
+                    modifier = Modifier.size(56.dp),
+                )
+                else -> NutritionFeatureArt(
+                    feature = feature,
+                    contentDescription = title,
+                    modifier = Modifier.size(72.dp),
+                )
+            }
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleSmall,

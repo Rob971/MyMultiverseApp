@@ -27,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -38,10 +37,9 @@ import app.mymultiverse.ammo.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsDesign
 import app.mymultiverse.ammo.presentation.components.HomePrimaryActionsTestTags
-import app.mymultiverse.ammo.presentation.components.JourneyIcon
+import app.mymultiverse.ammo.presentation.components.NutritionFeatureArt
+import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
 import app.mymultiverse.ammo.presentation.components.WeekContextBanner
-import app.mymultiverse.ammo.presentation.theme.AppIconRole
-import app.mymultiverse.ammo.presentation.theme.AppIcons
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.home_daily_meal_plan_title
@@ -70,8 +68,6 @@ fun HomeDailyHubCircularActions(
     modifier: Modifier = Modifier,
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val planIconTint = JourneySemanticColors.heroPlanIconTint()
-    val groceryIconTint = JourneySemanticColors.heroGroceryIconTint()
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -82,8 +78,7 @@ fun HomeDailyHubCircularActions(
         HomeCircularHubCta(
             ringColor = colorScheme.primary,
             containerColor = colorScheme.primaryContainer,
-            iconTint = planIconTint,
-            icon = AppIcons.MealPlan,
+            feature = NutritionFeatureKind.MealPlan,
             label = stringResource(Res.string.home_dashboard_plan_lunch),
             onClick = onOpenMealPlan,
             modifier = Modifier.testTag(HomePrimaryActionsTestTags.PLAN),
@@ -91,8 +86,7 @@ fun HomeDailyHubCircularActions(
         HomeCircularHubCta(
             ringColor = colorScheme.secondary,
             containerColor = colorScheme.secondaryContainer,
-            iconTint = groceryIconTint,
-            icon = AppIcons.GroceryList,
+            feature = NutritionFeatureKind.Grocery,
             label = stringResource(Res.string.home_dashboard_shopping_list),
             onClick = onOpenGrocery,
             modifier = Modifier.testTag(HomePrimaryActionsTestTags.GROCERY),
@@ -104,8 +98,7 @@ fun HomeDailyHubCircularActions(
 private fun HomeCircularHubCta(
     ringColor: Color,
     containerColor: Color,
-    iconTint: Color,
-    icon: ImageVector,
+    feature: NutritionFeatureKind,
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -123,12 +116,10 @@ private fun HomeCircularHubCta(
             modifier = Modifier.size(96.dp),
         ) {
             Box(contentAlignment = Alignment.Center) {
-                JourneyIcon(
-                    imageVector = icon,
-                    role = AppIconRole.FeatureAccent,
+                NutritionFeatureArt(
+                    feature = feature,
                     contentDescription = label,
-                    tint = iconTint,
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(64.dp),
                 )
             }
         }

@@ -45,6 +45,7 @@ import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.ammo.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.ammo.presentation.components.JourneyEmptyState
+import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
 import app.mymultiverse.ammo.presentation.components.JourneySnackbarHost
 import app.mymultiverse.ammo.presentation.components.MealPlanDayCard
 import app.mymultiverse.ammo.presentation.components.MealPlanEmptyStateTestTags
@@ -408,7 +409,7 @@ private fun WeeklyMealPlanScreenContent(
                             JourneyEmptyState(
                                 title = stringResource(Res.string.nutrition_meal_plan_empty_title),
                                 body = stringResource(Res.string.nutrition_meal_plan_empty_body),
-                                icon = AppIcons.MealPlan,
+                                nutritionFeature = NutritionFeatureKind.MealPlan,
                                 primaryActionLabel = stringResource(
                                     Res.string.nutrition_meal_plan_empty_cta_manual,
                                 ),

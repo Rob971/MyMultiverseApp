@@ -85,7 +85,7 @@ fun HomeSundayPlanNudgeCard(
             ) {
                 JourneyButtonLabel(
                     text = actionLabel,
-                    icon = AppIcons.MealPlan,
+                    nutritionFeature = NutritionFeatureKind.MealPlan,
                     role = AppIconRole.OnAccent,
                     useContentColor = true,
                 )
