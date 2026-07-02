@@ -25,18 +25,29 @@ import app.mymultiverse.ammo.presentation.theme.SharedJourneyColors
 fun RowScope.JourneyButtonLabel(
     text: String,
     icon: ImageVector? = null,
+    nutritionFeature: NutritionFeatureKind? = null,
     role: AppIconRole = AppIconRole.Primary,
     useContentColor: Boolean = true,
 ) {
-    if (icon != null) {
-        JourneyIcon(
-            imageVector = icon,
-            role = role,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-            useContentColor = useContentColor,
-        )
-        Spacer(Modifier.width(8.dp))
+    when {
+        nutritionFeature != null -> {
+            NutritionFeatureArt(
+                feature = nutritionFeature,
+                contentDescription = null,
+                modifier = Modifier.size(22.dp),
+            )
+            Spacer(Modifier.width(8.dp))
+        }
+        icon != null -> {
+            JourneyIcon(
+                imageVector = icon,
+                role = role,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                useContentColor = useContentColor,
+            )
+            Spacer(Modifier.width(8.dp))
+        }
     }
     Text(text)
 }

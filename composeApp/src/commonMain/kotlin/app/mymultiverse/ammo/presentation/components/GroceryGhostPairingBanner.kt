@@ -85,7 +85,7 @@ fun GroceryGhostPairingBanner(
             ) {
                 JourneyButtonLabel(
                     text = actionLabel,
-                    icon = AppIcons.GroceryList,
+                    nutritionFeature = NutritionFeatureKind.Grocery,
                     role = AppIconRole.OnAccent,
                     useContentColor = true,
                 )

@@ -36,13 +36,17 @@ fun FamilyLogisticCard(
     title: String,
     description: String,
     accentColor: Color,
-    icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     badge: String? = null,
     statusLine: String? = null,
+    icon: ImageVector? = null,
+    nutritionFeature: NutritionFeatureKind? = null,
 ) {
+    require(icon != null || nutritionFeature != null) {
+        "FamilyLogisticCard requires icon or nutritionFeature"
+    }
     val cardAlpha = if (enabled) 1f else 0.72f
     val clickModifier = if (enabled) {
         Modifier.clickable(onClick = onClick)
@@ -84,13 +88,20 @@ fun FamilyLogisticCard(
                     .background(accentColor.copy(alpha = 0.18f)),
                 contentAlignment = Alignment.Center,
             ) {
-                JourneyIcon(
-                    imageVector = icon,
-                    role = AppIconRole.FeatureAccent,
-                    contentDescription = null,
-                    accentColor = accentColor,
-                    modifier = Modifier.size(28.dp),
-                )
+                when (val feature = nutritionFeature) {
+                    null -> JourneyIcon(
+                        imageVector = requireNotNull(icon),
+                        role = AppIconRole.FeatureAccent,
+                        contentDescription = null,
+                        accentColor = accentColor,
+                        modifier = Modifier.size(28.dp),
+                    )
+                    else -> NutritionFeatureArt(
+                        feature = feature,
+                        contentDescription = title,
+                        modifier = Modifier.size(36.dp),
+                    )
+                }
             }
 
             Column(

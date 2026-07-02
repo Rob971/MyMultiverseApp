@@ -82,6 +82,7 @@ import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivityKind
 import app.mymultiverse.ammo.domain.nutrition.GroceryListPresentation
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.presentation.components.JourneyEmptyState
+import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
 import app.mymultiverse.ammo.presentation.components.JourneyIcon
 import app.mymultiverse.ammo.presentation.components.JourneyIconButton
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
@@ -657,7 +658,7 @@ private fun LazyListScope.groceryShoppingListItems(
             JourneyEmptyState(
                 title = stringResource(Res.string.nutrition_grocery_empty_title),
                 body = stringResource(Res.string.nutrition_grocery_empty),
-                icon = AppIcons.GroceryList,
+                nutritionFeature = NutritionFeatureKind.Grocery,
                 primaryActionLabel = if (canWrite) {
                     stringResource(Res.string.nutrition_grocery_empty_cta)
                 } else {
