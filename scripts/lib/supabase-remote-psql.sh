@@ -45,8 +45,10 @@ _supabase_remote_psql_conn() {
 supabase_remote_query() {
   local sql="$1"
   if _supabase_can_query_linked; then
-    printf '%s\n' "${sql}" | supabase db query --linked
-    return
+    if printf '%s\n' "${sql}" | supabase db query --linked 2>/dev/null; then
+      return
+    fi
+    echo "WARN: supabase db query --linked unavailable; falling back to psql" >&2
   fi
 
   if ! command -v psql >/dev/null 2>&1; then
