@@ -11,12 +11,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/supabase-remote-psql.sh
 source "${SCRIPT_DIR}/lib/supabase-remote-psql.sh"
 
-for name in SUPABASE_PROJECT_REF SUPABASE_DB_PASSWORD SUPABASE_URL SUPABASE_ANON_KEY; do
+for name in SUPABASE_PROJECT_REF SUPABASE_URL SUPABASE_ANON_KEY; do
   if [[ -z "${!name:-}" ]]; then
     echo "ERROR: ${name} must be set" >&2
     exit 1
   fi
 done
+
+if [[ -z "${SUPABASE_ACCESS_TOKEN:-}" && -z "${SUPABASE_DB_PASSWORD:-}" ]]; then
+  echo "ERROR: SUPABASE_ACCESS_TOKEN or SUPABASE_DB_PASSWORD must be set" >&2
+  exit 1
+fi
 
 project_url="$(escape_sql_literal "${SUPABASE_URL}")"
 bearer_token="$(escape_sql_literal "${SUPABASE_ANON_KEY}")"
