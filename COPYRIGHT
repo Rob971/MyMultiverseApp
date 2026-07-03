@@ -1,0 +1,29 @@
+Copyright (c) 2024-2026 Roberto Cornano (MyMultiverse). All rights reserved.
+
+PROPRIETARY SOFTWARE AND CREATIVE WORKS
+
+This repository and its contents — including but not limited to source code,
+documentation, user-interface designs, localized strings, logos, and brand
+assets — are the exclusive property of Roberto Cornano, operating the MyMultiverse
+studio, unless otherwise stated in writing.
+
+Unauthorized copying, modification, distribution, sublicensing, or commercial
+use of any part of this project is prohibited without prior written permission
+from the rights holder.
+
+Trademarks
+----------
+"MyMultiverse", "Ammò", and "Napolitan Heart" (visual identity) are trademarks
+or trade names of Roberto Cornano / MyMultiverse. Third-party use requires
+written consent.
+
+Third-party components
+----------------------
+Open-source dependencies retain their respective licenses. See Gradle catalogs
+and package manifests for third-party notices.
+
+Contact
+-------
+Legal and licensing inquiries: https://mymultiverse.app/contact/
+
+See also: docs/IP.md

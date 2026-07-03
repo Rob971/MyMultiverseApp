@@ -25,3 +25,19 @@ Invite emails reference `https://mymultiverse.app/brand/ammo-round-logo-256.png`
 3. Run website `scripts/deploy.sh` or the **Deploy hosting** GitHub workflow
 
 APK fingerprint helper: `scripts/print-android-apk-fingerprint.sh`.
+
+## Intellectual property
+
+Copyright and brand assets: [`docs/IP.md`](../docs/IP.md), [`docs/BRAND.md`](../docs/BRAND.md).
+When updating public pages, use footer: `© [year] Roberto Cornano (MyMultiverse). All rights reserved.`
+
+## Legal pages (privacy & terms)
+
+Draft HTML for the website repo — **lawyer review required** before publish:
+
+| File | Deploy to website |
+|------|-------------------|
+| `site-updates/privacy-index.html` | `public/privacy/index.html` |
+| `site-updates/terms-index.html` | `public/terms/index.html` |
+
+See [`docs/legal/website-legal-deploy.md`](../docs/legal/website-legal-deploy.md) for full copy checklist and ownership clauses.
