@@ -38,7 +38,7 @@ import app.mymultiverse.ammo.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsDesign
 import app.mymultiverse.ammo.presentation.components.HomePrimaryActionsTestTags
-import app.mymultiverse.ammo.presentation.components.NutritionFeatureCircleArt
+import app.mymultiverse.ammo.presentation.components.NutritionFeatureIcon
 import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
 import app.mymultiverse.ammo.presentation.components.WeekContextBanner
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
@@ -79,6 +79,7 @@ fun HomeDailyHubCircularActions(
         HomeCircularHubCta(
             ringColor = colorScheme.primary,
             containerColor = colorScheme.primaryContainer,
+            iconTint = JourneySemanticColors.heroPlanIconTint(),
             feature = NutritionFeatureKind.MealPlan,
             label = stringResource(Res.string.home_dashboard_plan_lunch),
             onClick = onOpenMealPlan,
@@ -87,6 +88,7 @@ fun HomeDailyHubCircularActions(
         HomeCircularHubCta(
             ringColor = colorScheme.secondary,
             containerColor = colorScheme.secondaryContainer,
+            iconTint = JourneySemanticColors.heroGroceryIconTint(),
             feature = NutritionFeatureKind.Grocery,
             label = stringResource(Res.string.home_dashboard_shopping_list),
             onClick = onOpenGrocery,
@@ -99,6 +101,7 @@ fun HomeDailyHubCircularActions(
 private fun HomeCircularHubCta(
     ringColor: Color,
     containerColor: Color,
+    iconTint: Color,
     feature: NutritionFeatureKind,
     label: String,
     onClick: () -> Unit,
@@ -116,10 +119,17 @@ private fun HomeCircularHubCta(
             border = BorderStroke(2.dp, ringColor.copy(alpha = 0.55f)),
             modifier = Modifier.size(96.dp),
         ) {
-            NutritionFeatureCircleArt(
-                feature = feature,
-                contentDescription = label,
-            )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                NutritionFeatureIcon(
+                    feature = feature,
+                    contentDescription = label,
+                    tint = iconTint,
+                    modifier = Modifier.size(52.dp),
+                )
+            }
         }
         Text(
             text = label,

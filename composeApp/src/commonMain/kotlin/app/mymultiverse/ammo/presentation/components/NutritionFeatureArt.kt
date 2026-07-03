@@ -1,20 +1,22 @@
 package app.mymultiverse.ammo.presentation.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.nutrition_grocery_list
 import ammo.composeapp.generated.resources.nutrition_meal_plan
+import app.mymultiverse.ammo.presentation.theme.AppIconRole
+import app.mymultiverse.ammo.presentation.theme.AppIcons
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
-/** Shared grocery list and weekly meal plan — raster art for reliable visibility on all devices. */
+/** Shared grocery list and weekly meal plan feature visuals. */
 enum class NutritionFeatureKind {
     MealPlan,
     Grocery,
@@ -25,6 +27,31 @@ fun NutritionFeatureKind.drawable(): DrawableResource = when (this) {
     NutritionFeatureKind.Grocery -> Res.drawable.nutrition_grocery_list
 }
 
+fun NutritionFeatureKind.icon(): ImageVector = when (this) {
+    NutritionFeatureKind.MealPlan -> AppIcons.MealPlan
+    NutritionFeatureKind.Grocery -> AppIcons.GroceryList
+}
+
+/** Vector icon — use in circular hero buttons and badges (not rectangular raster art). */
+@Composable
+fun NutritionFeatureIcon(
+    feature: NutritionFeatureKind,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    tint: Color? = null,
+    accentColor: Color? = null,
+) {
+    JourneyIcon(
+        imageVector = feature.icon(),
+        role = AppIconRole.FeatureAccent,
+        contentDescription = contentDescription,
+        accentColor = accentColor,
+        tint = tint,
+        modifier = modifier,
+    )
+}
+
+/** Small raster thumbnail — bottom nav tabs and compact labels only. */
 @Composable
 fun NutritionFeatureArt(
     feature: NutritionFeatureKind,
@@ -40,21 +67,5 @@ fun NutritionFeatureArt(
             if (clipShape != null) Modifier.clip(clipShape) else Modifier,
         ),
         contentScale = contentScale,
-    )
-}
-
-/** Fills a circular hero or badge container without letterboxed rectangular margins. */
-@Composable
-fun NutritionFeatureCircleArt(
-    feature: NutritionFeatureKind,
-    contentDescription: String?,
-    modifier: Modifier = Modifier,
-) {
-    NutritionFeatureArt(
-        feature = feature,
-        contentDescription = contentDescription,
-        modifier = modifier.fillMaxSize(),
-        contentScale = ContentScale.Crop,
-        clipShape = CircleShape,
     )
 }
