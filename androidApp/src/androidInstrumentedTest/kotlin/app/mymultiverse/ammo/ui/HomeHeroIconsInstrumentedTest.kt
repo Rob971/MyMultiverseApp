@@ -1,7 +1,15 @@
 package app.mymultiverse.ammo.ui
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -21,6 +29,10 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class HomeHeroIconsInstrumentedTest {
+    private companion object {
+        const val TEST_TOGGLE_THEME = "home-hero-theme-toggle"
+    }
+
 
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
@@ -131,6 +143,63 @@ class HomeHeroIconsInstrumentedTest {
         composeRule.onNodeWithTag(NavigationTestTags.TAB_GROCERY).assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Plan").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Groceries").assertIsDisplayed()
+    }
+
+    @Test
+    fun homeAndNavIcons_surviveRuntimeThemeToggle() {
+        var selectedTab: AppMainTab = AppMainTab.Home
+        var planClicks = 0
+        var groceryClicks = 0
+
+        composeRule.setContent {
+            var darkTheme by remember { mutableStateOf(false) }
+            AppTheme(darkTheme = darkTheme) {
+                Column {
+                    Button(
+                        onClick = { darkTheme = !darkTheme },
+                        modifier = Modifier.testTag(TEST_TOGGLE_THEME),
+                    ) {
+                        Text("toggle")
+                    }
+                    HomeDailyHubCircularActions(
+                        onOpenMealPlan = { planClicks += 1 },
+                        onOpenGrocery = { groceryClicks += 1 },
+                    )
+                    MainTabShell(
+                        selectedTab = selectedTab,
+                        onTabSelected = { selectedTab = it },
+                        showBottomBar = true,
+                    ) { modifier ->
+                        Text("content", modifier = modifier)
+                    }
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.PLAN).assertIsDisplayed()
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.GROCERY).assertIsDisplayed()
+        composeRule.onNodeWithTag(NavigationTestTags.TAB_MEAL_PLAN).assertIsDisplayed()
+        composeRule.onNodeWithTag(NavigationTestTags.TAB_GROCERY).assertIsDisplayed()
+
+        composeRule.onNodeWithTag(TEST_TOGGLE_THEME).performClick()
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.PLAN).assertIsDisplayed()
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.GROCERY).assertIsDisplayed()
+        composeRule.onNodeWithTag(NavigationTestTags.TAB_MEAL_PLAN).assertIsDisplayed()
+        composeRule.onNodeWithTag(NavigationTestTags.TAB_GROCERY).assertIsDisplayed()
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.PLAN).performClick()
+        composeRule.onNodeWithTag(NavigationTestTags.TAB_GROCERY).performClick()
+
+        composeRule.onNodeWithTag(TEST_TOGGLE_THEME).performClick()
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag(HomePrimaryActionsTestTags.GROCERY).performClick()
+        composeRule.onNodeWithTag(NavigationTestTags.TAB_MEAL_PLAN).performClick()
+
+        assertTrue(planClicks > 0)
+        assertTrue(groceryClicks > 0)
+        assertTrue(selectedTab == AppMainTab.MealPlan)
     }
 
     @Test
