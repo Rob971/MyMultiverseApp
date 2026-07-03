@@ -544,6 +544,13 @@ See [`AGENTS.md`](AGENTS.md) and [`.cursor/rules/`](.cursor/rules/) for delivery
 
 ---
 
-## License
+## License & intellectual property
 
-Private project — all rights reserved unless otherwise noted by the repository owner.
+**Proprietary — all rights reserved.** Copyright © 2024–2026 Roberto Cornano (MyMultiverse).
+
+- [`COPYRIGHT`](COPYRIGHT) — legal notice for this repository
+- [`docs/IP.md`](docs/IP.md) — asset inventory, ownership, registration checklist
+- [`docs/BRAND.md`](docs/BRAND.md) — logo paths and public-site sync
+- [`docs/legal/website-legal-deploy.md`](docs/legal/website-legal-deploy.md) — privacy/terms drafts for website repo
+
+Unauthorized copying, distribution, or commercial use without written permission is prohibited.
