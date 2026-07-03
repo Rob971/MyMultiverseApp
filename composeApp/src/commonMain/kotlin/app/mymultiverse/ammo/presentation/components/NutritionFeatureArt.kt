@@ -1,8 +1,12 @@
 package app.mymultiverse.ammo.presentation.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.nutrition_grocery_list
@@ -26,11 +30,31 @@ fun NutritionFeatureArt(
     feature: NutritionFeatureKind,
     contentDescription: String?,
     modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Fit,
+    clipShape: Shape? = null,
 ) {
     Image(
         painter = painterResource(feature.drawable()),
         contentDescription = contentDescription,
-        modifier = modifier,
-        contentScale = ContentScale.Fit,
+        modifier = modifier.then(
+            if (clipShape != null) Modifier.clip(clipShape) else Modifier,
+        ),
+        contentScale = contentScale,
+    )
+}
+
+/** Fills a circular hero or badge container without letterboxed rectangular margins. */
+@Composable
+fun NutritionFeatureCircleArt(
+    feature: NutritionFeatureKind,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+) {
+    NutritionFeatureArt(
+        feature = feature,
+        contentDescription = contentDescription,
+        modifier = modifier.fillMaxSize(),
+        contentScale = ContentScale.Crop,
+        clipShape = CircleShape,
     )
 }

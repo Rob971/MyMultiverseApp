@@ -96,10 +96,10 @@ fun FamilyLogisticCard(
                         accentColor = accentColor,
                         modifier = Modifier.size(28.dp),
                     )
-                    else -> NutritionFeatureArt(
+                    else -> NutritionFeatureCircleArt(
                         feature = feature,
                         contentDescription = title,
-                        modifier = Modifier.size(36.dp),
+                        modifier = Modifier.size(52.dp),
                     )
                 }
             }
