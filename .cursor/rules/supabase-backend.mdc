@@ -33,7 +33,7 @@ alwaysApply: false
 ## Kotlin client (supabase-kt 3.5.0)
 
 - Build-time secrets: `local.properties` → generated `SupabaseSecrets.kt` (never commit keys).
-- Modules: auth, postgrest, realtime, functions.
+- Modules: auth, postgrest, realtime, functions, **storage** (member profile photos).
 - `Unconfigured*` repositories when URL/key missing — UI shows configuration gate.
 - Auth: email/password, OAuth deeplink `app.mymultiverse.ammo://auth/callback`.
 - Map Supabase errors to domain failures; no raw exception messages in UI.
@@ -43,6 +43,7 @@ alwaysApply: false
 - Invite preview RPC + edge `invite-open` for deep links.
 - Email on invite must match auth email to accept.
 - Push via outbox + `notify-household-invite` (FCM Android, APNs iOS).
+- **Member avatars:** `member-avatars` bucket (public read); paths `profiles/{user_id}` and `dependants/{dependant_id}`; RLS in `20250703000000_member_avatars.sql`; `can_upload_dependant_avatar()` helper.
 
 ## Testing & verification
 

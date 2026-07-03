@@ -41,12 +41,13 @@ alwaysApply: true
 ## Concurrency & platform
 
 - `kotlinx-coroutines` only; no platform threads in shared code.
-- `expect`/`actual` for: haptics, auth deeplinks, language manager, personal export, push tokens.
+- `expect`/`actual` for: haptics, auth deeplinks, language manager, personal export, push tokens, **avatar image picker** (Android gallery).
 
 ## UI & resources
 
 - Compose: `org.jetbrains.compose` + Material 3.
 - Strings/drawables: `Res.string.*` / `Res.drawable.*` from `composeResources` — never Android `R.string` in shared UI.
+- **Tab/hero icons:** transparent WebP via `MainTabIconArt` (`nav_today`, `nutrition_meal_plan`, `nutrition_grocery_list`).
 - Theme: wrap screens in `AppTheme` (system light/dark).
 - i18n: `i18n-multilingual.mdc`; format in composables, not screen models.
 

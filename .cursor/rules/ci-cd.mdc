@@ -89,4 +89,4 @@ Watch: `gh pr checks N --watch --interval 15` on PRs.
 
 ## Current release line
 
-Check `gradle/app-version.properties` on `main` for `version.name` / `version.code` (e.g. 1.0.25 / 73).
+Check `gradle/app-version.properties` on `main` for `version.name` / `version.code` (e.g. 1.1.6 / 114).

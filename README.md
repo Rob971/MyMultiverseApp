@@ -63,7 +63,7 @@ Supported UI languages: English, French, Spanish, German, Italian, Arabic (incl.
 |--------|---------|---------|----------------|
 | **Login** | `presentation/screens/auth/` | Sign up, sign in, OAuth; contextual sign-in vs sign-up subtitle | — |
 | **Home** | `presentation/screens/home/` | Onboarding (no household) or welcome hub; rename chip; topic cards | `home_nutrition_card`, `home_household_card`, `home_onboarding_create_name`, `home_household_name_edit` |
-| **Household members** | `presentation/screens/household/` | List members, pending invites, add by email, admin role, leave / transfer / dissolve | `household_members_add_person`, `household_members_row_*` |
+| **Household members** | `presentation/screens/household/` | List members, pending invites, add by email, admin role, leave / transfer / dissolve; **profile photos** per member (`MemberAvatar`) | `household_members_add_person`, `household_members_row_*` |
 | **Nutrition hub** | `presentation/screens/nutrition/` | Week context, sync banner, cards for grocery / meal plan / AI | `nutrition_hub_grocery`, `nutrition_hub_meal_plan`, `nutrition_hub_ai` |
 | **Grocery** | `presentation/screens/nutrition/` | Editable list + read-only AI suggestions | — |
 | **Weekly meal plan** | `presentation/screens/nutrition/` | Lunch/dinner per day; per-meal AI grocery | — |
@@ -378,8 +378,7 @@ contact_groups ──1:N── group_members ──► profiles
 - **Home onboarding** — create household, pending invite layout, accept on Home, unique name validation
 - **Home welcome** — rename household (owner/admin), topic cards after household active
 - **Members / admin** — promote to household admin, admin member management limits
-- **Invites** — two-phone flow, blocked if already in household, email mismatch
-- **Members** — invite from Home, transfer ownership + leave, max members note
+- **Members** — invite from Home, transfer ownership + leave, max members note, **member profile photos** (`household-member-avatar`)
 - **Nutrition** — hub navigation, grocery CRUD, meal plan, AI modes, AI read-only sections
 - **Sync** — status banner, two-phone shared grocery, Supabase persistence smoke
 - **GDPR** — export personal data from Home
