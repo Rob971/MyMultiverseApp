@@ -181,7 +181,10 @@ fun HouseholdMembersScreen(
     val uiState by screenModel.uiState.collectAsState()
     val authState by authRepository.authState.collectAsState()
     val ownerFallback = stringResource(Res.string.sharing_members_owner_fallback)
-    val personMemberCount = uiState.members.count { it.kind == HouseholdMemberKind.Person }
+    val personMemberCount = uiState.members
+        .filter { it.kind == HouseholdMemberKind.Person }
+        .distinctBy { it.referenceId }
+        .size
     val showSoloInviteEmpty = !uiState.isLoading &&
         personMemberCount <= 1 &&
         uiState.outboundInvites.isEmpty()

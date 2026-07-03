@@ -8,6 +8,7 @@ import app.mymultiverse.ammo.domain.repository.NutritionRepository
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
+import app.mymultiverse.ammo.presentation.navigation.HouseholdContext
 import app.mymultiverse.ammo.presentation.di.FakeHouseholdCollaborationRepository
 import app.mymultiverse.ammo.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.ammo.presentation.di.FakeNutritionSessionCoordinator
@@ -22,6 +23,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -390,22 +392,60 @@ class NutritionScreenModelTest {
     }
 
     @Test
-    fun activateHousehold_delegatesToSessionCoordinator() = runTest(testDispatcher) {
+    fun activateHousehold_delegatesToSessionCoordinatorAndRefreshesMembers() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val session = nutritionSession(repository)
+        val collaborationRepository = FakeHouseholdCollaborationRepository()
         val model = NutritionScreenModel(
             session = session,
             householdRepository = FakeHouseholdRepository(),
-            collaborationRepository = FakeHouseholdCollaborationRepository(),
+            collaborationRepository = collaborationRepository,
             aiAssistant = FakeNutritionAdviceService(),
             ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
             scope = modelScope,
         )
+        val household = HouseholdContext(
+            id = "household-99",
+            name = "Cornano",
+            ownerId = "owner-carola",
+            ownerDisplayName = "Carola Zeno",
+        )
 
-        model.activateHousehold("household-99")
+        model.activateHousehold(household)
         advanceUntilIdle()
 
         assertEquals("household-99", session.activatedHouseholdId)
+        assertEquals(1, collaborationRepository.refreshMembersCalls)
+    }
+
+    @Test
+    fun showGroceryPartnerNudge_trueWhenTwoMembersAreLoaded() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val collaborationRepository = FakeHouseholdCollaborationRepository()
+        collaborationRepository.seedMember(
+            householdId = "test-household",
+            member = HouseholdMember(
+                id = "member-2",
+                householdId = "test-household",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Partner",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "partner-1",
+            ),
+            ownerId = "owner-1",
+            ownerDisplayName = "Owner",
+        )
+        val model = nutritionScreenModel(
+            repository = repository,
+            collaborationRepository = collaborationRepository,
+            scope = modelScope,
+        )
+        val showGroceryNudge = async { model.showGroceryPartnerNudge.first { it } }
+        val showMealPlanNudge = async { model.showMealPlanPartnerNudge.first { it } }
+        advanceUntilIdle()
+
+        assertTrue(showGroceryNudge.await())
+        assertTrue(showMealPlanNudge.await())
     }
 
     @Test

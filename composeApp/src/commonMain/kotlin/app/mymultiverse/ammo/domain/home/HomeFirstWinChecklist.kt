@@ -9,7 +9,10 @@ object HomeFirstWinChecklist {
         members: List<HouseholdMember>,
         outboundInviteCount: Int,
     ): Boolean {
-        val personCount = members.count { it.kind == HouseholdMemberKind.Person }
+        val personCount = members
+            .filter { it.kind == HouseholdMemberKind.Person }
+            .distinctBy { it.referenceId }
+            .size
         return personCount >= 2 || outboundInviteCount > 0
     }
 

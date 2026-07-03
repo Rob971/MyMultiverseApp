@@ -705,12 +705,11 @@ class HomeScreenModel(
 
     private fun refreshCollaborationSnapshot(household: Household) {
         scope.launch {
-            val auth = authRepository.authState.value as? AuthState.Authenticated ?: return@launch
             runCatching {
                 collaborationRepository.refreshMembers(
                     householdId = household.id,
-                    ownerId = auth.user.id,
-                    ownerDisplayName = auth.user.resolvedDisplayName().orEmpty(),
+                    ownerId = household.ownerId,
+                    ownerDisplayName = household.ownerDisplayName.orEmpty(),
                 )
                 collaborationRepository.refreshOutboundInvites(household.id)
             }

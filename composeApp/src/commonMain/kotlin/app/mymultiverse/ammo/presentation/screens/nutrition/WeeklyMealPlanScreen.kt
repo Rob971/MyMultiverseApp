@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -115,6 +116,8 @@ fun WeeklyMealPlanScreen(
     onOpenSection: (NutritionSection, NutritionAiMode?) -> Unit,
     onOpenAiSheet: (AiHelperLaunchContext) -> Unit = {},
     showBackButton: Boolean = true,
+    embeddedInTabs: Boolean = false,
+    modifier: Modifier = Modifier,
     screenModel: NutritionScreenModel = koinInject(),
 ) {
     val languageManager = koinInject<LanguageManager>()
@@ -126,6 +129,8 @@ fun WeeklyMealPlanScreen(
             onOpenSection = onOpenSection,
             onOpenAiSheet = onOpenAiSheet,
             showBackButton = showBackButton,
+            embeddedInTabs = embeddedInTabs,
+            modifier = modifier,
             screenModel = screenModel,
         )
     }
@@ -138,6 +143,8 @@ private fun WeeklyMealPlanScreenContent(
     onOpenSection: (NutritionSection, NutritionAiMode?) -> Unit,
     onOpenAiSheet: (AiHelperLaunchContext) -> Unit,
     showBackButton: Boolean,
+    embeddedInTabs: Boolean,
+    modifier: Modifier,
     screenModel: NutritionScreenModel,
 ) {
     val mealPlan by screenModel.mealPlan.collectAsState()
@@ -363,6 +370,7 @@ private fun WeeklyMealPlanScreenContent(
         title = stringResource(Res.string.nutrition_meal_plan_title),
         onBack = onBack,
         showBackButton = showBackButton,
+        modifier = modifier.fillMaxSize(),
         snackbarHost = { JourneySnackbarHost(hostState = snackbarHostState) },
         actions = {
             if (showPartnerNudge) {
@@ -414,7 +422,13 @@ private fun WeeklyMealPlanScreenContent(
                         .fillMaxWidth()
                         .testTag(MealPlanTestTags.SCROLL_LIST),
                     state = listState,
-                    contentPadding = screenListPadding(),
+                    contentPadding = screenListPadding(
+                        extraBottom = if (embeddedInTabs) {
+                            ScreenLayout.sectionSpacing
+                        } else {
+                            ScreenLayout.contentBottomPadding
+                        },
+                    ),
                     verticalArrangement = Arrangement.spacedBy(ScreenLayout.listItemSpacing),
                 ) {
                     item(key = "week-selector") {

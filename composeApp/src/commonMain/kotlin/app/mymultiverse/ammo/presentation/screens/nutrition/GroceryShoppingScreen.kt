@@ -130,6 +130,7 @@ object GroceryListTestTags {
 fun GroceryShoppingScreen(
     onBack: () -> Unit,
     embeddedInTabs: Boolean = false,
+    modifier: Modifier = Modifier,
     screenModel: NutritionScreenModel = koinInject(),
 ) {
     val items by screenModel.groceryItems.collectAsState()
@@ -306,7 +307,7 @@ fun GroceryShoppingScreen(
         }
     }
 
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val isWideLayout = maxWidth >= ScreenLayout.expandedMinWidth
         val showPhoneStickyInput = canWrite && !isWideLayout
 

@@ -25,6 +25,8 @@ import app.mymultiverse.ammo.domain.sharing.canWriteHouseholdData
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivityKind
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
+import app.mymultiverse.ammo.presentation.navigation.HouseholdContext
+import app.mymultiverse.ammo.presentation.navigation.toNavigationContext
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -215,7 +217,7 @@ class NutritionScreenModel(
             canWrite = canWrite,
             weekOffset = weekOffset,
         )
-    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), false)
+    }.stateIn(scope, SharingStarted.Eagerly, false)
 
     val showMealPlanPartnerNudge: StateFlow<Boolean> = combine(
         canWriteHouseholdData,
@@ -227,11 +229,22 @@ class NutritionScreenModel(
             canWrite = canWrite,
             weekOffset = weekOffset,
         )
-    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), false)
+    }.stateIn(scope, SharingStarted.Eagerly, false)
 
-    suspend fun activateHousehold(householdId: String) {
+    suspend fun activateHousehold(household: HouseholdContext) {
         _weekOffset.value = 0
-        session.activateHousehold(householdId)
+        session.activateHousehold(household.id)
+        refreshHouseholdMembers(household)
+    }
+
+    private suspend fun refreshHouseholdMembers(household: HouseholdContext) {
+        runCatching {
+            collaborationRepository.refreshMembers(
+                householdId = household.id,
+                ownerId = household.ownerId,
+                ownerDisplayName = household.ownerDisplayName.orEmpty(),
+            )
+        }
     }
 
     fun selectWeekOffset(offset: Int) {
@@ -255,6 +268,13 @@ class NutritionScreenModel(
             _isRefreshing.value = true
             try {
                 repository.refreshFromRemote()
+                householdRepository.refreshMembership()
+                    .getOrNull()
+                    ?.let { status ->
+                        if (status is HouseholdMembershipStatus.Active) {
+                            refreshHouseholdMembers(status.household.toNavigationContext())
+                        }
+                    }
             } finally {
                 _isRefreshing.value = false
             }

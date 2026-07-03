@@ -30,12 +30,14 @@ fun NutritionFlow(
     onOpenSection: (NutritionSection, NutritionAiMode?) -> Unit,
     onHouseholdSelected: (HouseholdContext) -> Unit,
     embeddedInTabs: Boolean = false,
+    modifier: Modifier = Modifier,
 ) {
     if (household == null) {
         if (embeddedInTabs) {
             NutritionEntryAwaitingHousehold(
                 onBack = onBack,
                 showBackButton = false,
+                modifier = modifier,
             )
             return
         }
@@ -78,7 +80,7 @@ fun NutritionFlow(
     when (section) {
         NutritionSection.Hub -> {
             LaunchedEffect(household.id) {
-                nutritionScreenModel.activateHousehold(household.id)
+                nutritionScreenModel.activateHousehold(household)
             }
             NutritionHubScreen(
                 householdName = household.name,
@@ -90,30 +92,33 @@ fun NutritionFlow(
 
         NutritionSection.Grocery -> {
             LaunchedEffect(household.id) {
-                nutritionScreenModel.activateHousehold(household.id)
+                nutritionScreenModel.activateHousehold(household)
             }
             GroceryShoppingScreen(
                 onBack = onBack,
                 embeddedInTabs = embeddedInTabs,
+                modifier = modifier,
             )
         }
 
         NutritionSection.MealPlan -> {
             LaunchedEffect(household.id) {
-                nutritionScreenModel.activateHousehold(household.id)
+                nutritionScreenModel.activateHousehold(household)
             }
             WeeklyMealPlanScreen(
                 onBack = onBack,
                 onOpenSection = { target, mode -> onOpenSection(target, mode) },
                 onOpenAiSheet = ::openAiSheet,
                 showBackButton = showBack,
+                embeddedInTabs = embeddedInTabs,
+                modifier = modifier,
             )
             AiHelperSheetHost()
         }
 
         NutritionSection.AiAdvice -> {
             LaunchedEffect(household.id) {
-                nutritionScreenModel.activateHousehold(household.id)
+                nutritionScreenModel.activateHousehold(household)
             }
             // Fallback / deep-link only — default flows use AiHelperSheetHost on Plan and Groceries.
             NutritionAiAdviceScreen(
@@ -128,11 +133,13 @@ fun NutritionFlow(
 private fun NutritionEntryAwaitingHousehold(
     onBack: () -> Unit,
     showBackButton: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     NutritionScaffold(
         title = stringResource(Res.string.nutrition_hub_title),
         onBack = onBack,
         showBackButton = showBackButton,
+        modifier = modifier.fillMaxSize(),
     ) { padding ->
         JourneyLoadingContent(
             message = stringResource(Res.string.nutrition_entry_loading),

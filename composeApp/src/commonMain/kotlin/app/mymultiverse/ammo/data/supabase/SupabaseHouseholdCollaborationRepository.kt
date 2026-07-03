@@ -59,9 +59,10 @@ class SupabaseHouseholdCollaborationRepository(
                 filter { eq("household_id", householdId) }
             }
             .decodeList<HouseholdMemberRow>()
-            .filter { it.userId != null }
+            .filter { it.userId != null && it.leftAt == null }
 
-        val profileIds = (rows.mapNotNull { it.userId } + ownerId).distinct()
+        val currentUserId = runCatching { requireUserId() }.getOrNull()
+        val profileIds = (rows.mapNotNull { it.userId } + ownerId + listOfNotNull(currentUserId)).distinct()
         val profiles = if (profileIds.isEmpty()) {
             emptyMap()
         } else {
@@ -73,34 +74,29 @@ class SupabaseHouseholdCollaborationRepository(
                 .associateBy { it.id }
         }
 
-        val mapped = rows.map { row ->
-            val userId = requireNotNull(row.userId)
-            val profile = profiles[userId]
-            HouseholdMember(
-                id = row.id,
-                householdId = row.householdId,
-                kind = HouseholdMemberKind.Person,
-                displayName = profile?.displayName ?: profile?.email ?: userId,
-                role = row.role.toHouseholdMemberRole(),
-                referenceId = userId,
-                avatarUrl = profile?.avatarUrl,
-            )
+        val mapped = rows.map { row -> row.toPersonMember(profiles) }
+
+        val currentUserMember = if (
+            currentUserId != null &&
+            currentUserId != ownerId &&
+            mapped.none { it.referenceId == currentUserId }
+        ) {
+            fetchActiveMemberRow(householdId, currentUserId)
+                ?.toPersonMember(profiles)
+        } else {
+            null
         }
 
-        val ownerAlreadyListed = mapped.any { it.referenceId == ownerId }
         val ownerProfile = profiles[ownerId]
-        val withOwner = if (ownerAlreadyListed) {
-            mapped
-        } else {
-            listOf(
-                ownerMember(
-                    householdId = householdId,
-                    ownerId = ownerId,
-                    ownerDisplayName = ownerDisplayName,
-                    avatarUrl = ownerProfile?.avatarUrl,
-                ),
-            ) + mapped
-        }
+        val withOwner = mergeHouseholdPersonMembers(
+            householdId = householdId,
+            personMembers = mapped,
+            ownerId = ownerId,
+            ownerDisplayName = ownerDisplayName,
+            ownerAvatarUrl = ownerProfile?.avatarUrl,
+            currentUserId = currentUserId,
+            currentUserMember = currentUserMember,
+        )
 
         val dependantRows = client.postgrest["household_dependants"]
             .select(Columns.ALL) {
@@ -214,7 +210,8 @@ class SupabaseHouseholdCollaborationRepository(
 
         when {
             row.result == "added" -> {
-                refreshMembers(householdId, currentUserId, currentProfileDisplayName(currentUserId))
+                val (householdOwnerId, householdOwnerDisplayName) = loadHouseholdOwner(householdId)
+                refreshMembers(householdId, householdOwnerId, householdOwnerDisplayName)
                 AddMemberResult.Added
             }
             row.result == "invited" || !row.inviteId.isNullOrBlank() -> {
@@ -498,28 +495,59 @@ class SupabaseHouseholdCollaborationRepository(
     private fun outboundInvitesFlow(householdId: String): MutableStateFlow<List<HouseholdInvite>> =
         outboundInvitesByHousehold.getOrPut(householdId) { MutableStateFlow(emptyList()) }
 
+    private suspend fun fetchActiveMemberRow(
+        householdId: String,
+        userId: String,
+    ): HouseholdMemberRow? =
+        client.postgrest["household_members"]
+            .select(Columns.ALL) {
+                filter {
+                    eq("household_id", householdId)
+                    eq("user_id", userId)
+                }
+            }
+            .decodeList<HouseholdMemberRow>()
+            .firstOrNull { it.leftAt == null && it.userId != null }
+
+    private suspend fun loadHouseholdOwner(householdId: String): Pair<String, String> {
+        val household = client.postgrest["households"]
+            .select(Columns.ALL) {
+                filter { eq("id", householdId) }
+            }
+            .decodeSingle<HouseholdRow>()
+        val ownerProfile = client.postgrest["profiles"]
+            .select(Columns.ALL) {
+                filter { eq("id", household.ownerId) }
+            }
+            .decodeSingleOrNull<ProfileRow>()
+        val ownerDisplayName = ownerProfile?.displayName?.takeIf { it.isNotBlank() }
+            ?: ownerProfile?.email?.takeIf { it.isNotBlank() }
+            ?: household.ownerId
+        return household.ownerId to ownerDisplayName
+    }
+
+    private fun HouseholdMemberRow.toPersonMember(profiles: Map<String, ProfileRow>): HouseholdMember {
+        val userId = requireNotNull(userId)
+        val profile = profiles[userId]
+        return HouseholdMember(
+            id = id,
+            householdId = householdId,
+            kind = HouseholdMemberKind.Person,
+            displayName = profile?.displayName?.takeIf { it.isNotBlank() }
+                ?: profile?.email?.takeIf { it.isNotBlank() }
+                ?: userId,
+            role = role.toHouseholdMemberRole(),
+            referenceId = userId,
+            avatarUrl = profile?.avatarUrl,
+        )
+    }
+
     private suspend fun requireUserId(): String {
         client.auth.awaitInitialization()
         return client.auth.currentUserOrNull()?.id
             ?: client.auth.currentSessionOrNull()?.user?.id
             ?: throw IllegalStateException("auth_required")
     }
-
-    private fun ownerMember(
-        householdId: String,
-        ownerId: String,
-        ownerDisplayName: String,
-        avatarUrl: String? = null,
-    ): HouseholdMember =
-        HouseholdMember(
-            id = "$OWNER_MEMBER_PREFIX$ownerId",
-            householdId = householdId,
-            kind = HouseholdMemberKind.Person,
-            displayName = ownerDisplayName,
-            role = HouseholdMemberRole.Owner,
-            referenceId = ownerId,
-            avatarUrl = avatarUrl,
-        )
 
     private fun HouseholdInviteRow.toHouseholdInvite(householdName: String?): HouseholdInvite =
         HouseholdInvite(
@@ -552,7 +580,6 @@ class SupabaseHouseholdCollaborationRepository(
         runCatching { kotlinx.datetime.Instant.parse(this).toEpochMilliseconds() }.getOrNull()
 
     private companion object {
-        const val OWNER_MEMBER_PREFIX = "owner-"
         const val MEMBER_AVATARS_BUCKET = "member-avatars"
     }
 }

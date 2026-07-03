@@ -366,6 +366,7 @@ private fun AuthenticatedMainApp() {
                 },
                 onHouseholdSelected = { nutritionHousehold = it },
                 embeddedInTabs = true,
+                modifier = contentModifier,
             )
 
             AppMainTab.Grocery -> NutritionFlow(
@@ -375,6 +376,7 @@ private fun AuthenticatedMainApp() {
                 onOpenSection = { _, _ -> },
                 onHouseholdSelected = { nutritionHousehold = it },
                 embeddedInTabs = true,
+                modifier = contentModifier,
             )
         }
     }

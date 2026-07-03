@@ -10,6 +10,7 @@ data class HouseholdMemberRow(
     @SerialName("user_id") val userId: String? = null,
     @SerialName("group_id") val groupId: String? = null,
     val role: String,
+    @SerialName("left_at") val leftAt: String? = null,
 )
 
 @Serializable

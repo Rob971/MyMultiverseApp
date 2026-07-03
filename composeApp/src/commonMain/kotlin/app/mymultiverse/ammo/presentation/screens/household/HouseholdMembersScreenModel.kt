@@ -106,6 +106,7 @@ class HouseholdMembersScreenModel(
     private var activeHouseholdName: String = ""
     private var activeOwnerId: String = ""
     private var activeOwnerDisplayName: String = ""
+    private var activeCurrentUserId: String? = null
     private var activeUserIsOwner: Boolean = false
     private var activeUserRole: HouseholdMemberRole? = null
     private var observeJob: Job? = null
@@ -119,7 +120,8 @@ class HouseholdMembersScreenModel(
     ) {
         val identityChanged = activeHouseholdId != householdId ||
             activeOwnerId != ownerId ||
-            activeOwnerDisplayName != ownerDisplayName
+            activeOwnerDisplayName != ownerDisplayName ||
+            activeCurrentUserId != currentUserId
         val metadataChanged = identityChanged || activeHouseholdName != householdName
         if (!metadataChanged) {
             return
@@ -128,6 +130,7 @@ class HouseholdMembersScreenModel(
         activeHouseholdName = householdName
         activeOwnerId = ownerId
         activeOwnerDisplayName = ownerDisplayName
+        activeCurrentUserId = currentUserId
 
         if (identityChanged) {
             startObserving(householdId)

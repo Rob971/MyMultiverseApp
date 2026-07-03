@@ -4,10 +4,12 @@ import app.mymultiverse.ammo.domain.model.Greeting
 import app.mymultiverse.ammo.domain.model.auth.AuthState
 import app.mymultiverse.ammo.domain.model.auth.AuthUser
 import app.mymultiverse.ammo.domain.model.sharing.AddMemberResult
+import app.mymultiverse.ammo.domain.model.sharing.Household
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
+import app.mymultiverse.ammo.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.ammo.domain.repository.GreetingRepository
 import app.mymultiverse.ammo.domain.repository.HouseholdCollaborationRepository
 import kotlinx.coroutines.flow.Flow
@@ -572,6 +574,45 @@ class HomeScreenModelTest {
     }
 
     @Test
+    fun refreshCollaborationSnapshot_usesHouseholdOwnerNotCurrentUser() = runTest(testDispatcher) {
+        val collaborationRepository = TrackingHouseholdCollaborationRepository()
+        val household = Household(
+            id = "household-1",
+            name = "Cornano",
+            ownerId = "owner-carola",
+            ownerDisplayName = "Carola Zeno",
+            nutritionFeatures = setOf(NutritionSharingFeature.Grocery),
+        )
+        val screenModel = HomeScreenModel(
+            getGreetingUseCase = GetGreetingUseCase(FakeGreetingRepository(Greeting("Welcome home"))),
+            authRepository = FakeAuthRepository(
+                initialState = AuthState.Authenticated(
+                    AuthUser(id = "editor-nico", email = "nico@example.com", displayName = "Nico"),
+                ),
+            ),
+            householdRepository = FakeHouseholdRepository(
+                household = household,
+                role = HouseholdMemberRole.Editor,
+            ),
+            collaborationRepository = collaborationRepository,
+            sessionCoordinator = FakeNutritionSessionCoordinator(
+                initialRepository = NutritionRepositoryImpl(MapSettings()),
+            ),
+            personalDataExporter = FakePersonalDataExporter(),
+            pushNotificationRegistrar = FakePushNotificationRegistrar(),
+            firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
+            weekPlanNudgeStore = HomeWeekPlanNudgeStore(MapSettings()),
+            logger = logger,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+
+        advanceUntilIdle()
+
+        assertTrue(collaborationRepository.refreshMembersOwnerIds.isNotEmpty())
+        assertEquals("owner-carola", collaborationRepository.refreshMembersOwnerIds.last())
+    }
+
+    @Test
     fun nutritionHouseholdContext_emitsActiveHouseholdFromMembership() = runTest(testDispatcher) {
         val householdRepository = FakeHouseholdRepository()
         val screenModel = model(
@@ -756,8 +797,13 @@ private class FakeGreetingRepository(
 private class TrackingHouseholdCollaborationRepository :
     HouseholdCollaborationRepository by FakeHouseholdCollaborationRepository() {
     var refreshPendingInvitesCalls = 0
+    val refreshMembersOwnerIds = mutableListOf<String>()
 
     override suspend fun refreshPendingInvites() {
         refreshPendingInvitesCalls++
+    }
+
+    override suspend fun refreshMembers(householdId: String, ownerId: String, ownerDisplayName: String) {
+        refreshMembersOwnerIds += ownerId
     }
 }

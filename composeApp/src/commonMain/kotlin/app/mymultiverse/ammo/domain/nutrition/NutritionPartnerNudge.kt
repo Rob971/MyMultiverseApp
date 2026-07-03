@@ -10,5 +10,8 @@ object NutritionPartnerNudge {
         weekOffset: Int,
     ): Boolean = canWrite &&
         weekOffset == 0 &&
-        members.count { it.kind == HouseholdMemberKind.Person } >= 2
+        members
+            .filter { it.kind == HouseholdMemberKind.Person }
+            .distinctBy { it.referenceId }
+            .size >= 2
 }

@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 77
+version: 78
 updated: 2026-07-03
 
 summary: |
@@ -308,6 +308,17 @@ testcases:
     expected:
       - Selected photo appears on the member row after upload.
       - Other household members see the updated avatar on refresh.
+
+  - id: household-two-member-list
+    title: Two-person family shows both members (not solo invite)
+    steps:
+      - Two accounts in the same family (owner + editor via invite accept).
+      - On each device, open Family members from Home profile → family row.
+      - Add a grocery item on device A; pull to refresh Groceries on device B.
+    expected:
+      - Both people appear on the members list (no "You are alone here" solo invite card).
+      - Each user sees themselves and their partner with correct roles (one Proprietario, one Editor).
+      - Shared grocery item syncs between devices (same household UUID, not a data leak).
 
   - id: household-transfer-ownership-leave
     title: Owner transfers ownership then leaves
