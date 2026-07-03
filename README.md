@@ -157,7 +157,7 @@ The mobile app talks to **Supabase Auth** (sessions, OAuth) and **PostgREST** (t
 | **Realtime** | `nutrition_household_week_data` in `supabase_realtime` publication |
 | **Storage** | `member-avatars` bucket (public read) for family member profile photos; RLS on `storage.objects` in migration `20250703000000` |
 
-Migrations: `supabase/migrations/` (applied in filename order). **Storage buckets** are declared in `supabase/config.toml` (`[storage.buckets.*]`) and synced via `supabase seed buckets` (local/CI) or `supabase seed buckets --linked` (deploy) — do not `INSERT` into `storage.buckets` in SQL migrations (schema varies across CLI versions). Edge functions: `supabase/functions/`. Deploy on `main` via [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml) (`db push` + `seed buckets` + `functions deploy`).
+Migrations: `supabase/migrations/` (applied in filename order). **Storage buckets** are declared in `supabase/config.toml` (`[storage.buckets.*]`) and synced via `supabase seed buckets --yes` (local/CI) or `supabase seed buckets --linked --yes` (deploy) — do not `INSERT` into `storage.buckets` in SQL migrations (schema varies across CLI versions). Edge functions: `supabase/functions/`. Deploy on `main` via [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml) (`db push` + `seed buckets` + `functions deploy`).
 
 Apply locally or to a linked project:
 

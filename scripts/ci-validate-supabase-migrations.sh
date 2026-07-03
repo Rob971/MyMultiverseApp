@@ -42,7 +42,7 @@ echo "==> Applying migrations locally (supabase start — full stack for RPC smo
 supabase start
 
 echo "==> Seeding storage buckets from supabase/config.toml"
-supabase seed buckets
+supabase seed buckets --yes
 
 if [[ -x "./scripts/ci-test-invite-preview-rpc.sh" ]]; then
   echo "==> Smoke-testing invite preview RPC on local stack"

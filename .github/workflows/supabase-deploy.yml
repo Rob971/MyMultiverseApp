@@ -88,7 +88,7 @@ jobs:
           chmod +x ./scripts/supabase-link-remote.sh
           ./scripts/supabase-link-remote.sh
           supabase db push
-          supabase seed buckets --linked
+          supabase seed buckets --linked --yes
 
       - name: Configure notification outbox delivery
         run: |

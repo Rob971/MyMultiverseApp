@@ -43,6 +43,6 @@ if ! supabase db push; then
 fi
 
 echo "Seeding storage buckets from supabase/config.toml ..."
-supabase seed buckets --linked
+supabase seed buckets --linked --yes
 
 echo "Done. Verify RLS and Realtime in the Supabase dashboard."
