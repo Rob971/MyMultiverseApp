@@ -3,6 +3,7 @@ package app.mymultiverse.ammo.presentation.screens.home
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +38,7 @@ import app.mymultiverse.ammo.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsDesign
 import app.mymultiverse.ammo.presentation.components.HomePrimaryActionsTestTags
-import app.mymultiverse.ammo.presentation.components.NutritionFeatureArt
+import app.mymultiverse.ammo.presentation.components.NutritionFeatureCircleArt
 import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
 import app.mymultiverse.ammo.presentation.components.WeekContextBanner
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
@@ -115,13 +116,10 @@ private fun HomeCircularHubCta(
             border = BorderStroke(2.dp, ringColor.copy(alpha = 0.55f)),
             modifier = Modifier.size(96.dp),
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                NutritionFeatureArt(
-                    feature = feature,
-                    contentDescription = label,
-                    modifier = Modifier.size(64.dp),
-                )
-            }
+            NutritionFeatureCircleArt(
+                feature = feature,
+                contentDescription = label,
+            )
         }
         Text(
             text = label,
