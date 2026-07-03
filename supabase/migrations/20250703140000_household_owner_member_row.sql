@@ -56,7 +56,7 @@ begin
 
     insert into public.household_members (household_id, user_id, role)
     values (v_household_id, v_user_id, 'owner')
-    on conflict (household_id, user_id)
+    on conflict (household_id, user_id) where user_id is not null
     do update set role = 'owner', left_at = null;
 
     select coalesce(json_agg(feature order by feature), '[]'::json)
@@ -86,9 +86,7 @@ where s.topic = 'nutrition'
       where sm.household_id = s.id
         and sm.user_id = s.owner_id
         and sm.left_at is null
-  )
-on conflict (household_id, user_id)
-do update set role = 'owner', left_at = null;
+  );
 
 drop policy if exists space_members_select on public.household_members;
 create policy household_members_select
