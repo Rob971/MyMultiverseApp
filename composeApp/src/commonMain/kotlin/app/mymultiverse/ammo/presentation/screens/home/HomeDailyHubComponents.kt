@@ -38,8 +38,10 @@ import app.mymultiverse.ammo.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsDesign
 import app.mymultiverse.ammo.presentation.components.HomePrimaryActionsTestTags
-import app.mymultiverse.ammo.presentation.components.NutritionFeatureIcon
+import app.mymultiverse.ammo.presentation.components.MainTabIconArt
+import app.mymultiverse.ammo.presentation.components.MainTabIconDefaults
 import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
+import app.mymultiverse.ammo.presentation.components.toMainTabIconKind
 import app.mymultiverse.ammo.presentation.components.WeekContextBanner
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import ammo.composeapp.generated.resources.Res
@@ -79,7 +81,6 @@ fun HomeDailyHubCircularActions(
         HomeCircularHubCta(
             ringColor = colorScheme.primary,
             containerColor = colorScheme.primaryContainer,
-            iconTint = JourneySemanticColors.heroPlanIconTint(),
             feature = NutritionFeatureKind.MealPlan,
             label = stringResource(Res.string.home_dashboard_plan_lunch),
             onClick = onOpenMealPlan,
@@ -88,7 +89,6 @@ fun HomeDailyHubCircularActions(
         HomeCircularHubCta(
             ringColor = colorScheme.secondary,
             containerColor = colorScheme.secondaryContainer,
-            iconTint = JourneySemanticColors.heroGroceryIconTint(),
             feature = NutritionFeatureKind.Grocery,
             label = stringResource(Res.string.home_dashboard_shopping_list),
             onClick = onOpenGrocery,
@@ -101,7 +101,6 @@ fun HomeDailyHubCircularActions(
 private fun HomeCircularHubCta(
     ringColor: Color,
     containerColor: Color,
-    iconTint: Color,
     feature: NutritionFeatureKind,
     label: String,
     onClick: () -> Unit,
@@ -123,11 +122,10 @@ private fun HomeCircularHubCta(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                NutritionFeatureIcon(
-                    feature = feature,
+                MainTabIconArt(
+                    kind = feature.toMainTabIconKind(),
                     contentDescription = label,
-                    tint = iconTint,
-                    modifier = Modifier.size(56.dp),
+                    modifier = Modifier.size(MainTabIconDefaults.heroIconSize),
                 )
             }
         }

@@ -49,6 +49,7 @@ summary: |
   Nutrition hero circle fill (v73): Today hero illustrations crop to fill the circular button (no letterboxed rectangle inside the ring).
   Today hero icons (v74): center Plan lunch / Shopping list circles use large vector icons on tinted rings; bottom nav keeps compact raster thumbnails.
   Nav tab transparent art (v75): Oggi/Plan/Spesa tabs use larger (32dp) WebP glyphs with transparent backgrounds; new Today house-and-sun illustration matches meal/grocery tab style.
+  Today hero raster icons (v76): center Plan lunch / Shopping list circles use the same transparent WebP art as bottom nav (scaled up inside tinted rings).
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Family members role change (v71): Change role button and tappable badge on member rows; role updates show immediately after save.
   Family member photos (v76): each member row shows a circular avatar beside the name; tap your own avatar (or a dependant's if you manage members) to pick a photo from the gallery.
@@ -191,7 +192,7 @@ testcases:
     expected:
       - Week context banner shows under This week when nutrition week data is loaded.
       - Hero Plan lunch opens Plan tab; Shopping list opens Groceries tab.
-      - Plan lunch and Shopping list hero circles show large meal-plan and grocery vector icons centered on tinted rings (not rectangular photos inside the circle).
+      - Plan lunch and Shopping list hero circles show the same transparent meal-plan and grocery WebP art as the bottom nav tabs (scaled up, centered on tinted rings — no white rectangle or vector fallback).
       - Oggi, Piano, and Spesa bottom-nav tabs show matching illustration glyphs with no white backing rectangle (transparent around the artwork); Today tab shows house with sun.
       - Today tab shows timeline rows for tonight's dinner and Shopping list (grocery progress or add-first-item hint).
       - No duplicate This week nutrition card, first-win checklist, or Family hero on Today.

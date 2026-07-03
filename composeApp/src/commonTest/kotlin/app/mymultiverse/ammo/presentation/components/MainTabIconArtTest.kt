@@ -11,6 +11,12 @@ import kotlin.test.assertNotEquals
 class MainTabIconArtTest {
 
     @Test
+    fun nutritionFeatureKind_mapsToMatchingMainTabIconKind() {
+        assertEquals(MainTabIconKind.MealPlan, NutritionFeatureKind.MealPlan.toMainTabIconKind())
+        assertEquals(MainTabIconKind.Grocery, NutritionFeatureKind.Grocery.toMainTabIconKind())
+    }
+
+    @Test
     fun mainTabKinds_mapToDistinctTransparentDrawables() {
         assertEquals(Res.drawable.nav_today, MainTabIconKind.Today.drawable())
         assertEquals(Res.drawable.nutrition_meal_plan, MainTabIconKind.MealPlan.drawable())
