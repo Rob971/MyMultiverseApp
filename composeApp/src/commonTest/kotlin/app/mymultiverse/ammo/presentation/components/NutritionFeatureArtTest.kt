@@ -1,29 +1,19 @@
 package app.mymultiverse.ammo.presentation.components
 
-import ammo.composeapp.generated.resources.Res
-import ammo.composeapp.generated.resources.nutrition_grocery_list
-import ammo.composeapp.generated.resources.nutrition_meal_plan
-import app.mymultiverse.ammo.presentation.theme.AppIcons
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class NutritionFeatureArtTest {
 
     @Test
-    fun featureKinds_mapToDistinctDrawables() {
+    fun nutritionFeatureKinds_mapToLightAndDarkAssetPaths() {
         assertEquals(
-            Res.drawable.nutrition_meal_plan,
-            NutritionFeatureKind.MealPlan.drawable(),
+            NutritionIconAssetPaths.MEAL_PLAN_LIGHT to NutritionIconAssetPaths.MEAL_PLAN_DARK,
+            NutritionFeatureKind.MealPlan.assetPaths(),
         )
         assertEquals(
-            Res.drawable.nutrition_grocery_list,
-            NutritionFeatureKind.Grocery.drawable(),
+            NutritionIconAssetPaths.GROCERY_LIGHT to NutritionIconAssetPaths.GROCERY_DARK,
+            NutritionFeatureKind.Grocery.assetPaths(),
         )
-    }
-
-    @Test
-    fun featureKinds_mapToVectorIcons() {
-        assertEquals(AppIcons.MealPlan.name, NutritionFeatureKind.MealPlan.icon().name)
-        assertEquals(AppIcons.GroceryList.name, NutritionFeatureKind.Grocery.icon().name)
     }
 }

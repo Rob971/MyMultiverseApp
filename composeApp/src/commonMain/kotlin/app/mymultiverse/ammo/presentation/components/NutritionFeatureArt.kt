@@ -8,23 +8,13 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import ammo.composeapp.generated.resources.Res
-import ammo.composeapp.generated.resources.nutrition_grocery_list
-import ammo.composeapp.generated.resources.nutrition_meal_plan
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.AppIcons
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.painterResource
 
 /** Shared grocery list and weekly meal plan feature visuals. */
 enum class NutritionFeatureKind {
     MealPlan,
     Grocery,
-}
-
-fun NutritionFeatureKind.drawable(): DrawableResource = when (this) {
-    NutritionFeatureKind.MealPlan -> Res.drawable.nutrition_meal_plan
-    NutritionFeatureKind.Grocery -> Res.drawable.nutrition_grocery_list
 }
 
 fun NutritionFeatureKind.icon(): ImageVector = when (this) {
@@ -51,7 +41,7 @@ fun NutritionFeatureIcon(
     )
 }
 
-/** Raster thumbnail — bottom nav, Today hero circles, and compact labels. */
+/** Raster thumbnail — bottom nav, Today hero circles, hub cards; light/dark WebP via `drawable-dark/`. */
 @Composable
 fun NutritionFeatureArt(
     feature: NutritionFeatureKind,
@@ -60,8 +50,9 @@ fun NutritionFeatureArt(
     contentScale: ContentScale = ContentScale.Fit,
     clipShape: Shape? = null,
 ) {
+    val (lightPath, darkPath) = feature.assetPaths()
     Image(
-        painter = painterResource(feature.drawable()),
+        painter = rememberThemedNutritionIconPainter(lightPath, darkPath),
         contentDescription = contentDescription,
         modifier = modifier.then(
             if (clipShape != null) Modifier.clip(clipShape) else Modifier,

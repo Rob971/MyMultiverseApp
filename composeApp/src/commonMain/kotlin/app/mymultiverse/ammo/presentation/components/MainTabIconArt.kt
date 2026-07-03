@@ -5,25 +5,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import ammo.composeapp.generated.resources.Res
-import ammo.composeapp.generated.resources.nav_today
-import ammo.composeapp.generated.resources.nutrition_grocery_list
-import ammo.composeapp.generated.resources.nutrition_meal_plan
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.painterResource
 
-/** Bottom navigation tab artwork — transparent WebP glyphs only (no white backing plate). */
+/** Bottom navigation tab artwork — light (`drawable/`) and dark (`drawable-dark/`) WebP variants. */
 enum class MainTabIconKind {
     Today,
     MealPlan,
     Grocery,
 }
 
-fun MainTabIconKind.drawable(): DrawableResource = when (this) {
-    MainTabIconKind.Today -> Res.drawable.nav_today
-    MainTabIconKind.MealPlan -> Res.drawable.nutrition_meal_plan
-    MainTabIconKind.Grocery -> Res.drawable.nutrition_grocery_list
-}
+fun MainTabIconKind.lightAssetPath(): String = assetPaths().first
 
 fun NutritionFeatureKind.toMainTabIconKind(): MainTabIconKind = when (this) {
     NutritionFeatureKind.MealPlan -> MainTabIconKind.MealPlan
@@ -42,8 +32,9 @@ fun MainTabIconArt(
     contentDescription: String?,
     modifier: Modifier = Modifier,
 ) {
+    val (lightPath, darkPath) = kind.assetPaths()
     Image(
-        painter = painterResource(kind.drawable()),
+        painter = rememberThemedNutritionIconPainter(lightPath, darkPath),
         contentDescription = contentDescription,
         modifier = modifier,
         contentScale = ContentScale.Fit,

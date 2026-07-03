@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 78
+version: 79
 updated: 2026-07-03
 
 summary: |
@@ -50,6 +50,7 @@ summary: |
   Today hero icons (v74): center Plan lunch / Shopping list circles use large vector icons on tinted rings; bottom nav keeps compact raster thumbnails.
   Nav tab transparent art (v75): Oggi/Plan/Spesa tabs use larger (32dp) WebP glyphs with transparent backgrounds; new Today house-and-sun illustration matches meal/grocery tab style.
   Today hero raster icons (v76): center Plan lunch / Shopping list circles use the same transparent WebP art as bottom nav (scaled up inside tinted rings).
+  Theme-aware nav art (v79): Today/Plan/Groceries WebP icons use drawable-dark variants when app or system theme is dark (in-app theme picker included).
   Partner nudges (v77): grocery and meal plan tabs show prominent reminder cards (teal on Groceries, terracotta on Plan) plus toolbar bell for multi-member households on the current week.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Family members role change (v71): Change role button and tappable badge on member rows; role updates show immediately after save.
@@ -193,8 +194,9 @@ testcases:
     expected:
       - Week context banner shows under This week when nutrition week data is loaded.
       - Hero Plan lunch opens Plan tab; Shopping list opens Groceries tab.
-      - Plan lunch and Shopping list hero circles show the same transparent meal-plan and grocery WebP art as the bottom nav tabs (scaled up, centered on tinted rings — no white rectangle or vector fallback).
-      - Oggi, Piano, and Spesa bottom-nav tabs show matching illustration glyphs with no white backing rectangle (transparent around the artwork); Today tab shows house with sun.
+      - Plan lunch and Shopping list hero circles show the same meal-plan and grocery WebP art as the bottom nav tabs (scaled up, centered on tinted rings).
+      - Oggi, Piano, and Spesa bottom-nav tabs show matching illustration glyphs; Today tab shows house with sun.
+      - In dark theme (system or in-app Dark), nav and hero icons switch to brighter drawable-dark variants and remain legible on charcoal surfaces.
       - Today tab shows timeline rows for tonight's dinner and Shopping list (grocery progress or add-first-item hint).
       - No duplicate This week nutrition card, first-win checklist, or Family hero on Today.
 
@@ -822,6 +824,7 @@ testcases:
       - Welcome Home first-win card, nutrition status line, household subtitle, member emails, and role chips are legible (no dark-on-dark gray text).
       - Auth, invite join, loading spinners, coming-soon rows, and viewer read-only banner use light primary/muted ink on dark surfaces.
       - Napolitan background illustration is subdued (low alpha); primary terracotta and teal accents remain visible.
+      - Today/Plan/Groceries bottom-nav and Today hero WebP icons use drawable-dark art and stay legible on elevated nav and hero circles.
       - No hardcoded light-only gray text; subtitles and empty states remain legible.
       - Switching light ↔ dark updates visible screens without stale colors after navigation.
 
