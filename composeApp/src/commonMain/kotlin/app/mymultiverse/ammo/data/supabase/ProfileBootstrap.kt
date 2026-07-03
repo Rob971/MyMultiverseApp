@@ -12,20 +12,26 @@ import io.github.jan.supabase.postgrest.query.Columns
 internal suspend fun SupabaseClient.ensureCurrentProfile(userId: String) {
     val rpcResult = runCatching { postgrest.rpc("ensure_current_profile") }
     if (rpcResult.isFailure) {
-        val email = auth.currentUserOrNull()?.email
-            ?: auth.currentSessionOrNull()?.user?.email
-        postgrest["profiles"]
-            .upsert(
-                ProfileInsertRow(
-                    id = userId,
-                    email = email,
-                    displayName = email?.substringBefore("@"),
-                ),
-            ) {
-                onConflict = "id"
-            }
+        upsertProfileFallback(userId)
     }
     restoreDeletedProfileDisplayNameIfNeeded(userId)
+}
+
+private suspend fun SupabaseClient.upsertProfileFallback(userId: String) {
+    val email = auth.currentUserOrNull()?.email
+        ?: auth.currentSessionOrNull()?.user?.email
+    val restoredName = auth.currentUserOrNull()?.toAuthUser()?.resolvedDisplayName()
+        ?: email?.substringBefore("@")?.trim()?.takeIf { it.isNotEmpty() }
+    postgrest["profiles"]
+        .upsert(
+            ProfileInsertRow(
+                id = userId,
+                email = email,
+                displayName = restoredName,
+            ),
+        ) {
+            onConflict = "id"
+        }
 }
 
 private suspend fun SupabaseClient.restoreDeletedProfileDisplayNameIfNeeded(userId: String) {

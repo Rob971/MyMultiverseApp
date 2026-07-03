@@ -3,6 +3,7 @@ package app.mymultiverse.ammo.data.supabase
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdMembershipRpcRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdRpcDecoder
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdRpcRow
+import app.mymultiverse.ammo.domain.auth.resolvedDisplayName
 import app.mymultiverse.ammo.domain.model.sharing.Household
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdGateError
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembership
@@ -34,13 +35,18 @@ class SupabaseHouseholdRepository(
 
     override suspend fun refreshMembership(): Result<HouseholdMembershipStatus> = runCatching {
         client.auth.awaitInitialization()
-        requireUserId()
+        val userId = requireUserId()
+        client.ensureCurrentProfile(userId)
+        val authDisplayName = client.auth.currentUserOrNull()?.toAuthUser()?.resolvedDisplayName()
 
         val row = HouseholdRpcDecoder.decodeMembership(
             client.postgrest.rpc("household_membership_status"),
         )
 
-        row.toMembershipStatus().also { resolved ->
+        row.toMembershipStatus(
+            currentUserId = userId,
+            authDisplayName = authDisplayName,
+        ).also { resolved ->
             membershipStatus.update { resolved }
             when (resolved) {
                 is HouseholdMembershipStatus.Active -> household.update { resolved.household }
@@ -61,7 +67,10 @@ class SupabaseHouseholdRepository(
             ),
         )
 
-        val status = row.toMembershipStatus()
+        val status = row.toMembershipStatus(
+            currentUserId = requireUserId(),
+            authDisplayName = client.auth.currentUserOrNull()?.toAuthUser()?.resolvedDisplayName(),
+        )
         when (status) {
             is HouseholdMembershipStatus.Active -> {
                 membershipStatus.update { status }
@@ -125,13 +134,18 @@ class SupabaseHouseholdRepository(
 
     override suspend fun ensureHousehold(): Result<Household> = runCatching {
         client.auth.awaitInitialization()
-        requireUserId()
+        val userId = requireUserId()
+        client.ensureCurrentProfile(userId)
+        val authDisplayName = client.auth.currentUserOrNull()?.toAuthUser()?.resolvedDisplayName()
 
         val row = HouseholdRpcDecoder.decode(
             client.postgrest.rpc("ensure_household"),
         )
 
-        row.toDomain().also { resolved ->
+        row.toDomain(
+            currentUserId = userId,
+            authDisplayName = authDisplayName,
+        ).also { resolved ->
             household.update { resolved }
         }
     }
@@ -167,10 +181,16 @@ class SupabaseHouseholdRepository(
             ?: client.auth.currentSessionOrNull()?.user?.id
             ?: throw IllegalStateException("auth_required")
 
-    private fun HouseholdMembershipRpcRow.toMembershipStatus(): HouseholdMembershipStatus =
+    private fun HouseholdMembershipRpcRow.toMembershipStatus(
+        currentUserId: String,
+        authDisplayName: String?,
+    ): HouseholdMembershipStatus =
         when (status) {
             "active" -> {
-                val resolvedHousehold = toHousehold()
+                val resolvedHousehold = toHousehold(
+                    currentUserId = currentUserId,
+                    authDisplayName = authDisplayName,
+                )
                     ?: return HouseholdMembershipStatus.Error(HouseholdGateError.Generic)
                 HouseholdMembershipStatus.Active(
                     membership = HouseholdMembership(
@@ -183,27 +203,46 @@ class SupabaseHouseholdRepository(
             else -> HouseholdMembershipStatus.Error(HouseholdGateError.Generic)
         }
 
-    private fun HouseholdMembershipRpcRow.toHousehold(): Household? {
+    private fun HouseholdMembershipRpcRow.toHousehold(
+        currentUserId: String,
+        authDisplayName: String?,
+    ): Household? {
         val resolvedId = householdId ?: return null
         val resolvedName = householdName ?: return null
         val resolvedOwnerId = ownerId ?: return null
+        val resolvedOwnerDisplayName = resolvedProfileLabel(
+            displayName = ownerDisplayName,
+            email = null,
+            userId = resolvedOwnerId,
+            authDisplayName = if (resolvedOwnerId == currentUserId) authDisplayName else null,
+        ).takeIf { it != resolvedOwnerId }
         return Household(
             id = resolvedId,
             name = resolvedName,
             ownerId = resolvedOwnerId,
-            ownerDisplayName = ownerDisplayName?.takeIf { it.isNotBlank() },
+            ownerDisplayName = resolvedOwnerDisplayName,
             nutritionFeatures = (features ?: emptyList()).mapNotNull { it.toNutritionFeature() }.toSet(),
         )
     }
 
-    private fun HouseholdRpcRow.toDomain(): Household =
-        Household(
+    private fun HouseholdRpcRow.toDomain(
+        currentUserId: String,
+        authDisplayName: String?,
+    ): Household {
+        val resolvedOwnerDisplayName = resolvedProfileLabel(
+            displayName = ownerDisplayName,
+            email = null,
+            userId = ownerId,
+            authDisplayName = if (ownerId == currentUserId) authDisplayName else null,
+        ).takeIf { it != ownerId }
+        return Household(
             id = householdId,
             name = householdName,
             ownerId = ownerId,
-            ownerDisplayName = ownerDisplayName?.takeIf { it.isNotBlank() },
+            ownerDisplayName = resolvedOwnerDisplayName,
             nutritionFeatures = (features ?: emptyList()).mapNotNull { it.toNutritionFeature() }.toSet(),
         )
+    }
 
     private fun String.toNutritionFeature(): NutritionSharingFeature? =
         when (this) {

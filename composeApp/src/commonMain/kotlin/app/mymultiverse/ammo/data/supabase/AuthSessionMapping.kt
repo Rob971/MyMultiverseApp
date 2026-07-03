@@ -35,6 +35,5 @@ internal fun io.github.jan.supabase.auth.user.UserInfo.toAuthUser(): AuthUser =
     AuthUser(
         id = id,
         email = email,
-        displayName = userMetadata?.get("full_name")?.toString()
-            ?: userMetadata?.get("name")?.toString(),
+        displayName = authMetadataDisplayName(userMetadata),
     )

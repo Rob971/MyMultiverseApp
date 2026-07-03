@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 class SupabaseAuthRepository(
     private val client: SupabaseClient,
@@ -32,7 +33,12 @@ class SupabaseAuthRepository(
 
     init {
         client.auth.sessionStatus
-            .onEach { status -> _authState.value = mapSessionStatus(status) }
+            .onEach { status ->
+                _authState.value = mapSessionStatus(status)
+                if (status is SessionStatus.Authenticated) {
+                    scope.launch { bootstrapCurrentProfile() }
+                }
+            }
             .launchIn(scope)
 
         AuthRedirectEvents.urls
@@ -133,9 +139,17 @@ class SupabaseAuthRepository(
         syncAuthStateFromCurrentSession()
     }
 
-    private fun syncAuthStateFromCurrentSession() {
+    private suspend fun syncAuthStateFromCurrentSession() {
         val user = currentAuthUser() ?: return
+        bootstrapCurrentProfile()
         _authState.value = AuthState.Authenticated(user)
+    }
+
+    private suspend fun bootstrapCurrentProfile() {
+        val userId = client.auth.currentUserOrNull()?.id
+            ?: client.auth.currentSessionOrNull()?.user?.id
+            ?: return
+        runCatching { client.ensureCurrentProfile(userId) }
     }
 
     private fun mapSessionStatus(status: SessionStatus): AuthState =
