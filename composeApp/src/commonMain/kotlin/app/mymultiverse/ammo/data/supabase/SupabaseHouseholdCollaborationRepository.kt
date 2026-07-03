@@ -1,8 +1,10 @@
 package app.mymultiverse.ammo.data.supabase
 
+import app.mymultiverse.ammo.data.supabase.dto.HouseholdDependantAvatarUpdateRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdDependantRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdRpcDecoder
 import app.mymultiverse.ammo.data.supabase.dto.ProfileInsertRow
+import app.mymultiverse.ammo.data.supabase.dto.ProfileAvatarUpdateRow
 import app.mymultiverse.ammo.data.supabase.dto.ProfileRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdInviteInsertRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdInvitePendingUpdateRow
@@ -25,6 +27,8 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.storage.storage
+import io.ktor.http.ContentType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -57,7 +61,7 @@ class SupabaseHouseholdCollaborationRepository(
             .decodeList<HouseholdMemberRow>()
             .filter { it.userId != null }
 
-        val profileIds = rows.mapNotNull { it.userId }.distinct()
+        val profileIds = (rows.mapNotNull { it.userId } + ownerId).distinct()
         val profiles = if (profileIds.isEmpty()) {
             emptyMap()
         } else {
@@ -79,14 +83,23 @@ class SupabaseHouseholdCollaborationRepository(
                 displayName = profile?.displayName ?: profile?.email ?: userId,
                 role = row.role.toHouseholdMemberRole(),
                 referenceId = userId,
+                avatarUrl = profile?.avatarUrl,
             )
         }
 
         val ownerAlreadyListed = mapped.any { it.referenceId == ownerId }
+        val ownerProfile = profiles[ownerId]
         val withOwner = if (ownerAlreadyListed) {
             mapped
         } else {
-            listOf(ownerMember(householdId, ownerId, ownerDisplayName)) + mapped
+            listOf(
+                ownerMember(
+                    householdId = householdId,
+                    ownerId = ownerId,
+                    ownerDisplayName = ownerDisplayName,
+                    avatarUrl = ownerProfile?.avatarUrl,
+                ),
+            ) + mapped
         }
 
         val dependantRows = client.postgrest["household_dependants"]
@@ -104,6 +117,7 @@ class SupabaseHouseholdCollaborationRepository(
                 displayName = row.displayName,
                 role = HouseholdMemberRole.Viewer,
                 referenceId = row.id,
+                avatarUrl = row.avatarUrl,
             )
         }
 
@@ -307,6 +321,60 @@ class SupabaseHouseholdCollaborationRepository(
         )
     }
 
+    override suspend fun updateMemberAvatar(
+        householdId: String,
+        member: HouseholdMember,
+        imageBytes: ByteArray,
+        contentType: String,
+    ): Result<Unit> = runCatching {
+        require(imageBytes.isNotEmpty()) { "avatar_image_required" }
+        val currentUserId = requireUserId()
+        when (member.kind) {
+            HouseholdMemberKind.Person -> {
+                require(member.referenceId == currentUserId) {
+                    CollaborationErrorCodes.INSUFFICIENT_ROLE
+                }
+            }
+            HouseholdMemberKind.Dependant -> Unit
+            HouseholdMemberKind.Group -> error(CollaborationErrorCodes.INSUFFICIENT_ROLE)
+        }
+
+        val extension = avatarExtensionFor(contentType)
+        val storagePath = when (member.kind) {
+            HouseholdMemberKind.Dependant -> "dependants/${member.referenceId}/avatar.$extension"
+            else -> "profiles/${member.referenceId}/avatar.$extension"
+        }
+
+        val bucket = client.storage.from(MEMBER_AVATARS_BUCKET)
+        bucket.upload(storagePath, imageBytes) {
+            upsert = true
+            this.contentType = ContentType.parse(contentType)
+        }
+        val publicUrl = bucket.publicUrl(storagePath)
+
+        when (member.kind) {
+            HouseholdMemberKind.Dependant -> {
+                client.postgrest["household_dependants"]
+                    .update(HouseholdDependantAvatarUpdateRow(avatarUrl = publicUrl)) {
+                        filter { eq("id", member.referenceId) }
+                    }
+            }
+            else -> {
+                ensureProfile(member.referenceId)
+                client.postgrest["profiles"]
+                    .update(ProfileAvatarUpdateRow(avatarUrl = publicUrl)) {
+                        filter { eq("id", member.referenceId) }
+                    }
+            }
+        }
+
+        membersFlow(householdId).update { members ->
+            members.map { current ->
+                if (current.id == member.id) current.copy(avatarUrl = publicUrl) else current
+            }
+        }
+    }
+
     private suspend fun sendOrRefreshInvite(
         householdId: String,
         email: String,
@@ -422,7 +490,12 @@ class SupabaseHouseholdCollaborationRepository(
             ?: throw IllegalStateException("auth_required")
     }
 
-    private fun ownerMember(householdId: String, ownerId: String, ownerDisplayName: String): HouseholdMember =
+    private fun ownerMember(
+        householdId: String,
+        ownerId: String,
+        ownerDisplayName: String,
+        avatarUrl: String? = null,
+    ): HouseholdMember =
         HouseholdMember(
             id = "$OWNER_MEMBER_PREFIX$ownerId",
             householdId = householdId,
@@ -430,6 +503,7 @@ class SupabaseHouseholdCollaborationRepository(
             displayName = ownerDisplayName,
             role = HouseholdMemberRole.Owner,
             referenceId = ownerId,
+            avatarUrl = avatarUrl,
         )
 
     private fun HouseholdInviteRow.toHouseholdInvite(householdName: String?): HouseholdInvite =
@@ -464,5 +538,13 @@ class SupabaseHouseholdCollaborationRepository(
 
     private companion object {
         const val OWNER_MEMBER_PREFIX = "owner-"
+        const val MEMBER_AVATARS_BUCKET = "member-avatars"
     }
 }
+
+private fun avatarExtensionFor(contentType: String): String =
+    when {
+        contentType.contains("png", ignoreCase = true) -> "png"
+        contentType.contains("webp", ignoreCase = true) -> "webp"
+        else -> "jpg"
+    }

@@ -38,11 +38,14 @@ import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.ammo.domain.sharing.canAssignAdminRole
+import app.mymultiverse.ammo.domain.sharing.canEditMemberAvatar
+import app.mymultiverse.ammo.presentation.platform.rememberMemberPhotoPickerLauncher
 import app.mymultiverse.ammo.domain.sharing.canChangeRoleOf
 import app.mymultiverse.ammo.domain.sharing.canRemoveMember
 import app.mymultiverse.ammo.domain.repository.AuthRepository
 import app.mymultiverse.ammo.data.invite.InviteRedirectUrls
 import app.mymultiverse.ammo.domain.platform.PersonalDataExporter
+import app.mymultiverse.ammo.presentation.components.MemberAvatar
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsCardSurface
 import app.mymultiverse.ammo.presentation.components.HouseholdRoleBadge
 import app.mymultiverse.ammo.presentation.components.HouseholdRoleSelector
@@ -68,6 +71,7 @@ import ammo.composeapp.generated.resources.sharing_members_invite_add_dependent
 import ammo.composeapp.generated.resources.sharing_members_invite_by_email
 import ammo.composeapp.generated.resources.sharing_members_invite_by_email_hint
 import ammo.composeapp.generated.resources.sharing_members_invite_chooser_title
+import ammo.composeapp.generated.resources.sharing_members_avatar_content_description
 import ammo.composeapp.generated.resources.sharing_members_add_dependent
 import ammo.composeapp.generated.resources.sharing_members_add_person
 import ammo.composeapp.generated.resources.sharing_members_cancel
@@ -145,6 +149,7 @@ object HouseholdMembersTestTags {
     const val ADD_PERSON_CONFIRM_BUTTON = "household_members_add_person_confirm"
     const val ADD_PERSON_DIALOG_ERROR = "household_members_add_person_error"
     const val MEMBER_ROW = "household_members_row"
+    const val MEMBER_AVATAR = "household_members_avatar"
     const val PENDING_INVITE_ROW = "household_members_pending_invite"
     const val TRANSFER_OWNERSHIP_BUTTON = "household_members_transfer_ownership"
     const val TRANSFER_DIALOG = "household_members_transfer_dialog"
@@ -202,6 +207,19 @@ fun HouseholdMembersScreen(
         }
     }
     val currentUserId = (authState as? AuthState.Authenticated)?.user?.id
+    var pendingAvatarMember by remember { mutableStateOf<HouseholdMember?>(null) }
+    val launchPhotoPicker = rememberMemberPhotoPickerLauncher { bytes, contentType ->
+        val member = pendingAvatarMember
+        if (member != null) {
+            screenModel.uploadMemberAvatar(
+                householdId = household.id,
+                member = member,
+                imageBytes = bytes,
+                contentType = contentType,
+            )
+        }
+        pendingAvatarMember = null
+    }
 
     val shareTitle = stringResource(Res.string.sharing_members_invite_share_title)
     val pendingSharePayload = uiState.pendingInviteShare
@@ -335,8 +353,14 @@ fun HouseholdMembersScreen(
                             member = member,
                             actorRole = uiState.currentUserRole,
                             canManage = uiState.canManageMembers,
+                            currentUserId = currentUserId,
+                            isUploadingAvatar = uiState.uploadingAvatarMemberId == member.id,
                             onRemove = { screenModel.removeMember(member, household.id) },
                             onChangeRole = { screenModel.openRoleChangeDialog(member) },
+                            onChangeAvatar = {
+                                pendingAvatarMember = member
+                                launchPhotoPicker()
+                            },
                         )
                     }
                 }
@@ -773,8 +797,11 @@ private fun MemberRow(
     member: HouseholdMember,
     actorRole: HouseholdMemberRole?,
     canManage: Boolean,
+    currentUserId: String?,
+    isUploadingAvatar: Boolean,
     onRemove: () -> Unit,
     onChangeRole: () -> Unit,
+    onChangeAvatar: () -> Unit,
 ) {
     val canChangeRole = canManage &&
         member.kind == HouseholdMemberKind.Person &&
@@ -785,6 +812,11 @@ private fun MemberRow(
         actorRole?.canRemoveMember(member.role) == true
     val showOverflow = canRemove
     val changeRoleLabel = stringResource(Res.string.sharing_members_change_role)
+    val avatarDescription = stringResource(
+        Res.string.sharing_members_avatar_content_description,
+        member.displayName,
+    )
+    val canChangeAvatar = canEditMemberAvatar(member, currentUserId, canManage)
     var menuExpanded by remember { mutableStateOf(false) }
 
     FamilyLogisticsCardSurface(
@@ -799,6 +831,14 @@ private fun MemberRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            MemberAvatar(
+                displayName = member.displayName,
+                avatarUrl = member.avatarUrl,
+                contentDescription = avatarDescription,
+                isLoading = isUploadingAvatar,
+                onClick = if (canChangeAvatar) onChangeAvatar else null,
+                modifier = Modifier.testTag("${HouseholdMembersTestTags.MEMBER_AVATAR}_${member.id}"),
+            )
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(6.dp),

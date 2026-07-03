@@ -892,6 +892,8 @@
     <string name="sharing_members_dependent_added">Dependant added.</string>
     <string name="sharing_members_dependent_hint">Children and others without their own login appear here only.</string>
     <string name="sharing_members_kind_dependent">Dependant</string>
+    <string name="sharing_members_avatar_content_description">Profile photo for %1$s</string>
+    <string name="sharing_members_avatar_change">Change photo</string>
         <string name="auth_household_joined_success">You joined %1$s.</string>
 
     <string name="invite_join_title">Join %1$s</string>

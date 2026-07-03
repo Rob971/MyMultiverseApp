@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 75
+version: 76
 updated: 2026-07-03
 
 summary: |
@@ -51,6 +51,7 @@ summary: |
   Nav tab transparent art (v75): Oggi/Plan/Spesa tabs use larger (32dp) WebP glyphs with transparent backgrounds; new Today house-and-sun illustration matches meal/grocery tab style.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Family members role change (v71): Change role button and tappable badge on member rows; role updates show immediately after save.
+  Family member photos (v76): each member row shows a circular avatar beside the name; tap your own avatar (or a dependant's if you manage members) to pick a photo from the gallery.
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
   Contextual AI chips E4-11 (v52): Plan empty state and AI helper sheet prepend Use up {ingredient} chips from unchecked grocery + meal history (fallback to protein/budget/veggies when no signals).
   Grocery simplification (v54): Groceries tab focuses on Update list (week selector → list CRUD); removed build-from-meals chip, pantry check, and AI suggestion sections from grocery screen; drag handle reorders active items; swipe gestures unchanged.
@@ -294,6 +295,17 @@ testcases:
     expected:
       - Members screen opens from the main button tap.
       - Rename dialog opens only from the edit icon when permitted.
+
+  - id: household-member-avatar
+    title: Family member profile photo
+    steps:
+      - Sign in and open Family members from Home.
+      - Confirm each member row shows a circular avatar to the left of the name (initials when no photo yet).
+      - Tap your own avatar and choose a photo from the gallery.
+      - If you manage members, add a dependant and tap their avatar to set a photo for them.
+    expected:
+      - Selected photo appears on the member row after upload.
+      - Other household members see the updated avatar on refresh.
 
   - id: household-transfer-ownership-leave
     title: Owner transfers ownership then leaves
