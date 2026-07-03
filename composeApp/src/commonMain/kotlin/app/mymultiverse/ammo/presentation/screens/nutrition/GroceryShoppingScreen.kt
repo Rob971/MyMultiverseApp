@@ -88,9 +88,9 @@ import app.mymultiverse.ammo.presentation.components.JourneyIconButton
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.ammo.presentation.components.WeekSelectorBanner
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsSectionHeader
-import app.mymultiverse.ammo.presentation.components.GroceryPartnerNudgeCard
-import app.mymultiverse.ammo.presentation.components.GroceryGhostPairingBanner
 import app.mymultiverse.ammo.presentation.components.GroceryPartnerNudgeTestTags
+import app.mymultiverse.ammo.presentation.components.GroceryGhostPairingBanner
+import app.mymultiverse.ammo.presentation.components.PartnerNudgeCard
 import app.mymultiverse.ammo.presentation.components.GroceryInputBar
 import app.mymultiverse.ammo.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.ammo.presentation.components.GroceryItemRow
@@ -104,6 +104,7 @@ import app.mymultiverse.ammo.presentation.components.screenListPadding
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.AppIcons
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
+import app.mymultiverse.ammo.presentation.theme.SharedJourneyColors
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -136,7 +137,7 @@ fun GroceryShoppingScreen(
     val ghostPairingOffer by screenModel.ghostPairingOffer.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val showPartnerNudge by screenModel.showGroceryPartnerNudge.collectAsState()
-    val isNudgingPartners by screenModel.isNudgingPartners.collectAsState()
+    val isNudgingGroceryPartners by screenModel.isNudgingGroceryPartners.collectAsState()
     val groceryPartnerNudgeResult by screenModel.groceryPartnerNudgeResult.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val weekOffset by screenModel.weekOffset.collectAsState()
@@ -338,7 +339,7 @@ fun GroceryShoppingScreen(
                 if (showPartnerNudge) {
                     JourneyIconButton(
                         onClick = screenModel::nudgePartnersToUpdateGroceryList,
-                        enabled = !isNudgingPartners,
+                        enabled = !isNudgingGroceryPartners,
                         modifier = Modifier.testTag(GroceryListTestTags.PARTNER_NUDGE_ACTION),
                     ) {
                         JourneyIcon(
@@ -449,7 +450,7 @@ fun GroceryShoppingScreen(
                     partnerNudgeTitle = partnerNudgeTitle,
                     partnerNudgeBody = partnerNudgeBody,
                     partnerNudgeAction = partnerNudgeAction,
-                    isNudgingPartners = isNudgingPartners,
+                    isNudgingPartners = isNudgingGroceryPartners,
                     onNudgePartners = screenModel::nudgePartnersToUpdateGroceryList,
                 )
             }
@@ -591,12 +592,15 @@ private fun LazyListScope.groceryShoppingListItems(
 
     if (showPartnerNudge) {
         item(key = "partner-nudge") {
-            GroceryPartnerNudgeCard(
+            PartnerNudgeCard(
                 title = partnerNudgeTitle,
                 body = partnerNudgeBody,
                 actionLabel = partnerNudgeAction,
                 onNudgePartners = onNudgePartners,
                 loading = isNudgingPartners,
+                accentColor = SharedJourneyColors.MediterraneanTeal,
+                rootTestTag = GroceryPartnerNudgeTestTags.ROOT,
+                actionTestTag = GroceryPartnerNudgeTestTags.ACTION,
             )
         }
     }

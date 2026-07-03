@@ -183,7 +183,10 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
     override suspend fun removeDependant(dependantId: String): Result<Unit> = removeMember(dependantId)
 
     var nudgePartnersResult: Result<Unit> = Result.success(Unit)
+    var nudgeMealPlanPartnersResult: Result<Unit> = Result.success(Unit)
     var nudgePartnersCalls: Int = 0
+        private set
+    var nudgeMealPlanPartnersCalls: Int = 0
         private set
     var lastNudgeHouseholdId: String? = null
         private set
@@ -198,6 +201,16 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
         lastNudgeHouseholdId = householdId
         lastNudgeWeekKey = weekKey
         return nudgePartnersResult
+    }
+
+    override suspend fun nudgePartnersToUpdateMealPlan(
+        householdId: String,
+        weekKey: String,
+    ): Result<Unit> {
+        nudgeMealPlanPartnersCalls += 1
+        lastNudgeHouseholdId = householdId
+        lastNudgeWeekKey = weekKey
+        return nudgeMealPlanPartnersResult
     }
 
     var updateMemberAvatarResult: Result<Unit> = Result.success(Unit)

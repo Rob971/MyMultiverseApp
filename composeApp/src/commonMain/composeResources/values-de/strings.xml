@@ -85,6 +85,13 @@
     <string name="nutrition_meal_plan_empty_body">Plane Mittag- und Abendessen für deine Familie oder lass die KI einen Ausgangspunkt entwerfen.</string>
     <string name="nutrition_meal_plan_empty_cta_ai">Mit KI planen</string>
     <string name="nutrition_meal_plan_empty_cta_manual">Mahlzeiten unten hinzufügen</string>
+    <string name="nutrition_meal_plan_partner_nudge_title">Die Woche gemeinsam planen?</string>
+    <string name="nutrition_meal_plan_partner_nudge_body">Erinnere deine Familie, Mittag- und Abendessen einzutragen, damit alle wissen, was gekocht wird.</string>
+    <string name="nutrition_meal_plan_partner_nudge_action">Partner erinnern</string>
+    <string name="nutrition_meal_plan_partner_nudge_toolbar">Partner an Aktualisierung des Essensplans erinnern</string>
+    <string name="nutrition_meal_plan_partner_nudge_success">Partner wurden erinnert, den Essensplan zu aktualisieren</string>
+    <string name="nutrition_meal_plan_partner_nudge_cooldown">Du hast deine Partner kürzlich schon erinnert. Versuche es in einer Stunde erneut.</string>
+    <string name="nutrition_meal_plan_partner_nudge_error">Erinnerung konnte nicht gesendet werden. Bitte erneut versuchen.</string>
     <string name="nutrition_meal_plan_plan_with_ai">Woche mit KI planen</string>
     <string name="nutrition_ai_adopt_all_grocery">Alle zur Liste hinzufügen</string>
     <string name="nutrition_ai_adopt_all_grocery_summary">%1$d Artikel zur Liste hinzugefügt</string>

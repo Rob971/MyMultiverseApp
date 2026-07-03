@@ -85,6 +85,13 @@
     <string name="nutrition_meal_plan_empty_body">Pianifica pranzo e cena per la tua famiglia, o lascia che l'IA proponga un punto di partenza.</string>
     <string name="nutrition_meal_plan_empty_cta_ai">Pianifica con l'IA</string>
     <string name="nutrition_meal_plan_empty_cta_manual">Aggiungi pasti sotto</string>
+    <string name="nutrition_meal_plan_partner_nudge_title">Pianifichiamo la settimana insieme?</string>
+    <string name="nutrition_meal_plan_partner_nudge_body">Ricorda alla famiglia di aggiungere pranzi e cene così tutti sanno cosa si cucina.</string>
+    <string name="nutrition_meal_plan_partner_nudge_action">Ricorda i partner</string>
+    <string name="nutrition_meal_plan_partner_nudge_toolbar">Ricorda ai partner di aggiornare il piano pasti</string>
+    <string name="nutrition_meal_plan_partner_nudge_success">I partner sono stati avvisati di aggiornare il piano pasti</string>
+    <string name="nutrition_meal_plan_partner_nudge_cooldown">Hai già ricordato i partner di recente. Riprova tra un'ora.</string>
+    <string name="nutrition_meal_plan_partner_nudge_error">Impossibile inviare il promemoria. Riprova.</string>
     <string name="nutrition_meal_plan_plan_with_ai">Pianifica la settimana con l'IA</string>
     <string name="nutrition_ai_adopt_all_grocery">Aggiungi tutto alla lista</string>
     <string name="nutrition_ai_adopt_all_grocery_summary">Aggiunti %1$d articoli alla lista</string>

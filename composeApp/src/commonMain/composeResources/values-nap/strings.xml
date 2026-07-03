@@ -85,6 +85,13 @@
     <string name="nutrition_meal_plan_empty_body">Planifica pranzo e cena pe' 'a famiglia toja, o lassa ll'IA fà nu punto 'e partenza.</string>
     <string name="nutrition_meal_plan_empty_cta_ai">Pianifica cu' ll'IA</string>
     <string name="nutrition_meal_plan_empty_cta_manual">Azzeccate pasti sotto</string>
+    <string name="nutrition_meal_plan_partner_nudge_title">Pianiammo 'a semmana insieme?</string>
+    <string name="nutrition_meal_plan_partner_nudge_body">Ricorda 'a famiglia 'e mettere pranzo e cena accussì tutti sanno che se cucina.</string>
+    <string name="nutrition_meal_plan_partner_nudge_action">Ricorda 'e partner</string>
+    <string name="nutrition_meal_plan_partner_nudge_toolbar">Ricorda 'e partner 'e aggiornà 'o piano pasti</string>
+    <string name="nutrition_meal_plan_partner_nudge_success">'E partner songo stati avvisati 'e aggiornà 'o piano pasti</string>
+    <string name="nutrition_meal_plan_partner_nudge_cooldown">Hai già ricordato 'e partner de poco. Arprova tra n'ora.</string>
+    <string name="nutrition_meal_plan_partner_nudge_error">Nun s'è pututo mannà 'o ricordo. Arprova.</string>
     <string name="nutrition_meal_plan_plan_with_ai">Pianifica 'a settimana cu' ll'IA</string>
     <string name="nutrition_ai_adopt_all_grocery">Azzecca tutto 'a lista</string>
     <string name="nutrition_ai_adopt_all_grocery_summary">Azzeccati %1$d articuli 'a lista</string>

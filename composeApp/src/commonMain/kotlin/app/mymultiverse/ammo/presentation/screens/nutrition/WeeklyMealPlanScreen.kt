@@ -49,7 +49,8 @@ import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
 import app.mymultiverse.ammo.presentation.components.JourneySnackbarHost
 import app.mymultiverse.ammo.presentation.components.MealPlanDayCard
 import app.mymultiverse.ammo.presentation.components.MealPlanEmptyStateTestTags
-import app.mymultiverse.ammo.presentation.components.MealPlanTestTags
+import app.mymultiverse.ammo.presentation.components.MealPlanPartnerNudgeTestTags
+import app.mymultiverse.ammo.presentation.components.PartnerNudgeCard
 import app.mymultiverse.ammo.presentation.components.NutritionProgressChip
 import app.mymultiverse.ammo.presentation.components.NutritionScaffold
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
@@ -60,7 +61,9 @@ import app.mymultiverse.ammo.presentation.components.screenListPadding
 import app.mymultiverse.ammo.presentation.navigation.NutritionSection
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.AppIcons
+import app.mymultiverse.ammo.presentation.components.MealPlanTestTags
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
+import app.mymultiverse.ammo.presentation.theme.SharedJourneyColors
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.nutrition_grocery_cancel_edit
 import ammo.composeapp.generated.resources.nutrition_meal_clear_field
@@ -81,6 +84,13 @@ import ammo.composeapp.generated.resources.nutrition_meal_plan_empty_cta_manual
 import ammo.composeapp.generated.resources.nutrition_meal_plan_empty_title
 import ammo.composeapp.generated.resources.nutrition_meal_plan_expand_day
 import ammo.composeapp.generated.resources.nutrition_meal_plan_not_planned
+import ammo.composeapp.generated.resources.nutrition_meal_plan_partner_nudge_action
+import ammo.composeapp.generated.resources.nutrition_meal_plan_partner_nudge_body
+import ammo.composeapp.generated.resources.nutrition_meal_plan_partner_nudge_cooldown
+import ammo.composeapp.generated.resources.nutrition_meal_plan_partner_nudge_error
+import ammo.composeapp.generated.resources.nutrition_meal_plan_partner_nudge_success
+import ammo.composeapp.generated.resources.nutrition_meal_plan_partner_nudge_title
+import ammo.composeapp.generated.resources.nutrition_meal_plan_partner_nudge_toolbar
 import ammo.composeapp.generated.resources.nutrition_meal_plan_progress
 import ammo.composeapp.generated.resources.nutrition_meal_plan_section_daily
 import ammo.composeapp.generated.resources.nutrition_meal_plan_section_days
@@ -133,6 +143,9 @@ private fun WeeklyMealPlanScreenContent(
     val mealPlan by screenModel.mealPlan.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
+    val showPartnerNudge by screenModel.showMealPlanPartnerNudge.collectAsState()
+    val isNudgingMealPlanPartners by screenModel.isNudgingMealPlanPartners.collectAsState()
+    val mealPlanPartnerNudgeResult by screenModel.mealPlanPartnerNudgeResult.collectAsState()
     val mealGroceryLoading by screenModel.mealGroceryLoading.collectAsState()
     val mealGroceryResult by screenModel.mealGroceryResult.collectAsState()
     val weekOffset by screenModel.weekOffset.collectAsState()
@@ -169,6 +182,21 @@ private fun WeeklyMealPlanScreenContent(
     val groceryNoneNew = stringResource(Res.string.nutrition_meal_grocery_none_new)
     val groceryError = stringResource(Res.string.nutrition_meal_grocery_error)
 
+    val partnerNudgeTitle = stringResource(Res.string.nutrition_meal_plan_partner_nudge_title)
+    val partnerNudgeBody = stringResource(Res.string.nutrition_meal_plan_partner_nudge_body)
+    val partnerNudgeAction = stringResource(Res.string.nutrition_meal_plan_partner_nudge_action)
+    val partnerNudgeToolbar = stringResource(Res.string.nutrition_meal_plan_partner_nudge_toolbar)
+    val partnerNudgeSuccess = stringResource(Res.string.nutrition_meal_plan_partner_nudge_success)
+    val partnerNudgeCooldown = stringResource(Res.string.nutrition_meal_plan_partner_nudge_cooldown)
+    val partnerNudgeError = stringResource(Res.string.nutrition_meal_plan_partner_nudge_error)
+
+    val partnerNudgeSnackbarMessage = when (mealPlanPartnerNudgeResult) {
+        NutritionScreenModel.MealPlanPartnerNudgeResult.Success -> partnerNudgeSuccess
+        NutritionScreenModel.MealPlanPartnerNudgeResult.Cooldown -> partnerNudgeCooldown
+        NutritionScreenModel.MealPlanPartnerNudgeResult.Error -> partnerNudgeError
+        null -> null
+    }
+
     val mealGrocerySnackbarMessage = mealGroceryResult?.let { result ->
         val slotLabel = when (result.slot) {
             MealSlot.Lunch -> lunchLabel
@@ -190,6 +218,12 @@ private fun WeeklyMealPlanScreenContent(
         val message = mealGrocerySnackbarMessage ?: return@LaunchedEffect
         snackbarHostState.showSnackbar(message)
         screenModel.consumeMealGroceryResult()
+    }
+
+    LaunchedEffect(partnerNudgeSnackbarMessage) {
+        val message = partnerNudgeSnackbarMessage ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(message)
+        screenModel.consumeMealPlanPartnerNudgeResult()
     }
 
     val todayEntry = todayIndex?.let { index -> orderedDays.firstOrNull { it.index == index } }
@@ -331,6 +365,18 @@ private fun WeeklyMealPlanScreenContent(
         showBackButton = showBackButton,
         snackbarHost = { JourneySnackbarHost(hostState = snackbarHostState) },
         actions = {
+            if (showPartnerNudge) {
+                JourneyIconButton(
+                    onClick = screenModel::nudgePartnersToUpdateMealPlan,
+                    enabled = !isNudgingMealPlanPartners,
+                    modifier = Modifier.testTag(MealPlanPartnerNudgeTestTags.TOOLBAR),
+                ) {
+                    JourneyIcon(
+                        role = AppIconRole.NotifyPartners,
+                        contentDescription = partnerNudgeToolbar,
+                    )
+                }
+            }
             if (canWrite) {
                 JourneyIconButton(onClick = { showOverflowMenu = true }) {
                     JourneyIcon(
@@ -394,6 +440,21 @@ private fun WeeklyMealPlanScreenContent(
                                 label = progressLabel,
                                 progress = mealProgress.plannedSlots.toFloat() / mealProgress.totalSlots,
                                 accentColor = JourneySemanticColors.brandTerracotta(),
+                            )
+                        }
+                    }
+
+                    if (showPartnerNudge) {
+                        item(key = "partner-nudge") {
+                            PartnerNudgeCard(
+                                title = partnerNudgeTitle,
+                                body = partnerNudgeBody,
+                                actionLabel = partnerNudgeAction,
+                                onNudgePartners = screenModel::nudgePartnersToUpdateMealPlan,
+                                loading = isNudgingMealPlanPartners,
+                                accentColor = JourneySemanticColors.brandTerracotta(),
+                                rootTestTag = MealPlanPartnerNudgeTestTags.ROOT,
+                                actionTestTag = MealPlanPartnerNudgeTestTags.ACTION,
                             )
                         }
                     }

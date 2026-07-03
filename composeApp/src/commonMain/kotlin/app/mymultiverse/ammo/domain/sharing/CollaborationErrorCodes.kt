@@ -27,6 +27,9 @@ object CollaborationErrorCodes {
     const val GROCERY_NUDGE_COOLDOWN = "grocery_nudge_cooldown"
     const val GROCERY_NUDGE_NO_PARTNERS = "grocery_nudge_no_partners"
 
+    const val MEAL_PLAN_NUDGE_COOLDOWN = "meal_plan_nudge_cooldown"
+    const val MEAL_PLAN_NUDGE_NO_PARTNERS = "meal_plan_nudge_no_partners"
+
     fun messageContains(code: String, message: String?): Boolean =
         message?.contains(code, ignoreCase = true) == true
 }

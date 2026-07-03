@@ -647,6 +647,57 @@ class NutritionScreenModelTest {
 
         assertEquals(NutritionScreenModel.GroceryPartnerNudgeResult.Cooldown, model.groceryPartnerNudgeResult.value)
     }
+
+    @Test
+    fun nudgePartnersToUpdateMealPlan_emitsSuccessWhenRepositorySucceeds() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val collaborationRepository = FakeHouseholdCollaborationRepository()
+        collaborationRepository.seedMember(
+            householdId = "test-household",
+            member = HouseholdMember(
+                id = "member-2",
+                householdId = "test-household",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Partner",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "partner-1",
+            ),
+            ownerId = "owner-1",
+            ownerDisplayName = "Owner",
+        )
+        val model = nutritionScreenModel(
+            repository = repository,
+            collaborationRepository = collaborationRepository,
+            scope = modelScope,
+        )
+        advanceUntilIdle()
+
+        model.nudgePartnersToUpdateMealPlan()
+        advanceUntilIdle()
+
+        assertEquals(1, collaborationRepository.nudgeMealPlanPartnersCalls)
+        assertEquals("test-household", collaborationRepository.lastNudgeHouseholdId)
+        assertEquals(weekKey, collaborationRepository.lastNudgeWeekKey)
+        assertEquals(NutritionScreenModel.MealPlanPartnerNudgeResult.Success, model.mealPlanPartnerNudgeResult.value)
+    }
+
+    @Test
+    fun nudgePartnersToUpdateMealPlan_mapsCooldownError() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val collaborationRepository = FakeHouseholdCollaborationRepository().apply {
+            nudgeMealPlanPartnersResult = Result.failure(IllegalStateException("meal_plan_nudge_cooldown"))
+        }
+        val model = nutritionScreenModel(
+            repository = repository,
+            collaborationRepository = collaborationRepository,
+            scope = modelScope,
+        )
+
+        model.nudgePartnersToUpdateMealPlan()
+        advanceUntilIdle()
+
+        assertEquals(NutritionScreenModel.MealPlanPartnerNudgeResult.Cooldown, model.mealPlanPartnerNudgeResult.value)
+    }
 }
 
 private class FakeNutritionRepository(

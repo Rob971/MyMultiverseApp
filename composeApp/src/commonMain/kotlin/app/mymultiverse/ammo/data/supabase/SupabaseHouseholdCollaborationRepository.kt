@@ -321,6 +321,21 @@ class SupabaseHouseholdCollaborationRepository(
         )
     }
 
+    override suspend fun nudgePartnersToUpdateMealPlan(
+        householdId: String,
+        weekKey: String,
+    ): Result<Unit> = runCatching {
+        require(householdId.isNotBlank()) { CollaborationErrorCodes.HOUSEHOLD_NOT_FOUND }
+        require(weekKey.isNotBlank()) { "week_key_required" }
+        client.postgrest.rpc(
+            "nudge_household_meal_plan",
+            buildJsonObject {
+                put("p_household_id", householdId)
+                put("p_week_key", weekKey)
+            },
+        )
+    }
+
     override suspend fun updateMemberAvatar(
         householdId: String,
         member: HouseholdMember,

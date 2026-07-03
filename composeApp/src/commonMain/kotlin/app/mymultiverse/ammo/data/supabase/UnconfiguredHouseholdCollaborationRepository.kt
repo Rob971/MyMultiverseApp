@@ -58,6 +58,11 @@ class UnconfiguredHouseholdCollaborationRepository : HouseholdCollaborationRepos
         weekKey: String,
     ): Result<Unit> = Result.failure(IllegalStateException("supabase_not_configured"))
 
+    override suspend fun nudgePartnersToUpdateMealPlan(
+        householdId: String,
+        weekKey: String,
+    ): Result<Unit> = Result.failure(IllegalStateException("supabase_not_configured"))
+
     override suspend fun updateMemberAvatar(
         householdId: String,
         member: HouseholdMember,

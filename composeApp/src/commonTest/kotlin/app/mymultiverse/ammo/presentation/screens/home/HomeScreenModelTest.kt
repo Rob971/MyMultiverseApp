@@ -723,6 +723,11 @@ private class HangingHouseholdCollaborationRepository : HouseholdCollaborationRe
         weekKey: String,
     ): Result<Unit> = Result.failure(UnsupportedOperationException())
 
+    override suspend fun nudgePartnersToUpdateMealPlan(
+        householdId: String,
+        weekKey: String,
+    ): Result<Unit> = Result.failure(UnsupportedOperationException())
+
     override suspend fun updateMemberRole(
         memberId: String,
         role: HouseholdMemberRole,

@@ -85,6 +85,13 @@
     <string name="nutrition_meal_plan_empty_body">خطط الغداء والعشاء لعائلتك، أو دع الذكاء الاصطناعي يقترح نقطة بداية.</string>
     <string name="nutrition_meal_plan_empty_cta_ai">خطط بالذكاء الاصطناعي</string>
     <string name="nutrition_meal_plan_empty_cta_manual">أضف الوجبات أدناه</string>
+    <string name="nutrition_meal_plan_partner_nudge_title">نخطط للأسبوع معًا؟</string>
+    <string name="nutrition_meal_plan_partner_nudge_body">ذكّر عائلتك بإضافة الغداء والعشاء حتى يعرف الجميع ما يُطهى.</string>
+    <string name="nutrition_meal_plan_partner_nudge_action">تذكير الشركاء</string>
+    <string name="nutrition_meal_plan_partner_nudge_toolbar">تذكير الشركاء بتحديث خطة الوجبات</string>
+    <string name="nutrition_meal_plan_partner_nudge_success">تم إخطار الشركاء بتحديث خطة الوجبات</string>
+    <string name="nutrition_meal_plan_partner_nudge_cooldown">لقد ذكّرت شركاءك مؤخرًا. حاول مرة أخرى بعد ساعة.</string>
+    <string name="nutrition_meal_plan_partner_nudge_error">تعذّر إرسال التذكير. حاول مرة أخرى.</string>
     <string name="nutrition_meal_plan_plan_with_ai">خطط الأسبوع بالذكاء الاصطناعي</string>
     <string name="nutrition_ai_adopt_all_grocery">أضف الكل إلى القائمة</string>
     <string name="nutrition_ai_adopt_all_grocery_summary">تمت إضافة %1$d عنصر إلى قائمتك</string>

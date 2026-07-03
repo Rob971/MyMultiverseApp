@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 76
+version: 77
 updated: 2026-07-03
 
 summary: |
@@ -50,6 +50,7 @@ summary: |
   Today hero icons (v74): center Plan lunch / Shopping list circles use large vector icons on tinted rings; bottom nav keeps compact raster thumbnails.
   Nav tab transparent art (v75): Oggi/Plan/Spesa tabs use larger (32dp) WebP glyphs with transparent backgrounds; new Today house-and-sun illustration matches meal/grocery tab style.
   Today hero raster icons (v76): center Plan lunch / Shopping list circles use the same transparent WebP art as bottom nav (scaled up inside tinted rings).
+  Partner nudges (v77): grocery and meal plan tabs show prominent reminder cards (teal on Groceries, terracotta on Plan) plus toolbar bell for multi-member households on the current week.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Family members role change (v71): Change role button and tappable badge on member rows; role updates show immediately after save.
   Family member photos (v76): each member row shows a circular avatar beside the name; tap your own avatar (or a dependant's if you manage members) to pick a photo from the gallery.
@@ -896,13 +897,25 @@ testcases:
     title: Remind partners before supermarket run
     steps:
       - With two person members in the same household, open Groceries on the current week as an editor.
-      - Confirm a "Heading to the store?" card appears with Remind partners action and a toolbar bell icon.
+      - Confirm a teal "Heading to the store?" card with bell icon, body text, and Remind partners action; toolbar bell icon also visible.
       - Tap Remind partners; confirm success snackbar.
       - Tap again within one hour; confirm cooldown snackbar.
       - On the partner device (push token registered), confirm a push about heading to the store; tap to open Groceries tab.
     expected:
       - Nudge hidden for solo households, viewers, and future weeks.
       - Partners receive push to update the shared grocery list; sender sees confirmation or cooldown messaging.
+
+  - id: meal-plan-partner-nudge-week-planning
+    title: Remind partners to plan the week
+    steps:
+      - With two person members in the same household, open Plan on the current week as an editor.
+      - Confirm a terracotta "Planning the week together?" card with bell icon, body text, and Remind partners action; toolbar bell icon also visible.
+      - Tap Remind partners; confirm success snackbar.
+      - Tap again within one hour; confirm cooldown snackbar.
+      - On the partner device (push token registered), confirm a push about planning meals; tap to open Plan tab.
+    expected:
+      - Nudge hidden for solo households, viewers, and future weeks.
+      - Partners receive push to update the shared meal plan; sender sees confirmation or cooldown messaging.
 
   - id: s10-meal-suggest-ingredients-sheet
     title: Inline meal suggest → apply → optional ingredients in one sheet

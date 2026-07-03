@@ -7,6 +7,7 @@ import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.nutrition.GroceryGhostPairing
 import app.mymultiverse.ammo.domain.nutrition.GroceryListPresentation
 import app.mymultiverse.ammo.domain.nutrition.GroceryPartnerNudge
+import app.mymultiverse.ammo.domain.nutrition.NutritionPartnerNudge
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.MealPlanPresentation
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
@@ -125,12 +126,25 @@ class NutritionScreenModel(
         data object Error : GroceryPartnerNudgeResult()
     }
 
+    sealed class MealPlanPartnerNudgeResult {
+        data object Success : MealPlanPartnerNudgeResult()
+        data object Cooldown : MealPlanPartnerNudgeResult()
+        data object Error : MealPlanPartnerNudgeResult()
+    }
+
     private val _groceryPartnerNudgeResult = MutableStateFlow<GroceryPartnerNudgeResult?>(null)
     val groceryPartnerNudgeResult: StateFlow<GroceryPartnerNudgeResult?> =
         _groceryPartnerNudgeResult.asStateFlow()
 
-    private val _isNudgingPartners = MutableStateFlow(false)
-    val isNudgingPartners: StateFlow<Boolean> = _isNudgingPartners.asStateFlow()
+    private val _mealPlanPartnerNudgeResult = MutableStateFlow<MealPlanPartnerNudgeResult?>(null)
+    val mealPlanPartnerNudgeResult: StateFlow<MealPlanPartnerNudgeResult?> =
+        _mealPlanPartnerNudgeResult.asStateFlow()
+
+    private val _isNudgingGroceryPartners = MutableStateFlow(false)
+    val isNudgingGroceryPartners: StateFlow<Boolean> = _isNudgingGroceryPartners.asStateFlow()
+
+    private val _isNudgingMealPlanPartners = MutableStateFlow(false)
+    val isNudgingMealPlanPartners: StateFlow<Boolean> = _isNudgingMealPlanPartners.asStateFlow()
 
     private val _ghostPairingOffer = MutableStateFlow<GroceryGhostPairing.Offer?>(null)
     val ghostPairingOffer: StateFlow<GroceryGhostPairing.Offer?> = _ghostPairingOffer.asStateFlow()
@@ -197,6 +211,18 @@ class NutritionScreenModel(
         _householdMembers,
     ) { canWrite, weekOffset, members ->
         GroceryPartnerNudge.canShow(
+            members = members,
+            canWrite = canWrite,
+            weekOffset = weekOffset,
+        )
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), false)
+
+    val showMealPlanPartnerNudge: StateFlow<Boolean> = combine(
+        canWriteHouseholdData,
+        _weekOffset,
+        _householdMembers,
+    ) { canWrite, weekOffset, members ->
+        NutritionPartnerNudge.canShow(
             members = members,
             canWrite = canWrite,
             weekOffset = weekOffset,
@@ -737,15 +763,19 @@ class NutritionScreenModel(
         _groceryPartnerNudgeResult.value = null
     }
 
+    fun consumeMealPlanPartnerNudgeResult() {
+        _mealPlanPartnerNudgeResult.value = null
+    }
+
     fun nudgePartnersToUpdateGroceryList() {
-        if (_isNudgingPartners.value) return
+        if (_isNudgingGroceryPartners.value) return
         val householdId = repository.householdId?.trim().orEmpty()
         if (householdId.isEmpty()) {
             _groceryPartnerNudgeResult.value = GroceryPartnerNudgeResult.Error
             return
         }
         scope.launch {
-            _isNudgingPartners.value = true
+            _isNudgingGroceryPartners.value = true
             try {
                 val result = collaborationRepository.nudgePartnersToUpdateGroceryList(
                     householdId = householdId,
@@ -765,7 +795,40 @@ class NutritionScreenModel(
                     },
                 )
             } finally {
-                _isNudgingPartners.value = false
+                _isNudgingGroceryPartners.value = false
+            }
+        }
+    }
+
+    fun nudgePartnersToUpdateMealPlan() {
+        if (_isNudgingMealPlanPartners.value) return
+        val householdId = repository.householdId?.trim().orEmpty()
+        if (householdId.isEmpty()) {
+            _mealPlanPartnerNudgeResult.value = MealPlanPartnerNudgeResult.Error
+            return
+        }
+        scope.launch {
+            _isNudgingMealPlanPartners.value = true
+            try {
+                val result = collaborationRepository.nudgePartnersToUpdateMealPlan(
+                    householdId = householdId,
+                    weekKey = weekKey,
+                )
+                _mealPlanPartnerNudgeResult.value = result.fold(
+                    onSuccess = { MealPlanPartnerNudgeResult.Success },
+                    onFailure = { error ->
+                        when {
+                            CollaborationErrorCodes.messageContains(
+                                CollaborationErrorCodes.MEAL_PLAN_NUDGE_COOLDOWN,
+                                error.message,
+                            ) -> MealPlanPartnerNudgeResult.Cooldown
+
+                            else -> MealPlanPartnerNudgeResult.Error
+                        }
+                    },
+                )
+            } finally {
+                _isNudgingMealPlanPartners.value = false
             }
         }
     }

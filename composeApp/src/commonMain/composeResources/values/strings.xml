@@ -85,6 +85,13 @@
     <string name="nutrition_meal_plan_empty_body">Plan lunch and dinner for your family, or let AI draft a starting point.</string>
     <string name="nutrition_meal_plan_empty_cta_ai">Plan with AI</string>
     <string name="nutrition_meal_plan_empty_cta_manual">Add meals below</string>
+    <string name="nutrition_meal_plan_partner_nudge_title">Planning the week together?</string>
+    <string name="nutrition_meal_plan_partner_nudge_body">Remind your family to add lunches and dinners so everyone knows what is cooking.</string>
+    <string name="nutrition_meal_plan_partner_nudge_action">Remind partners</string>
+    <string name="nutrition_meal_plan_partner_nudge_toolbar">Remind partners to update the meal plan</string>
+    <string name="nutrition_meal_plan_partner_nudge_success">Partners notified to update the meal plan</string>
+    <string name="nutrition_meal_plan_partner_nudge_cooldown">You already reminded your partners recently. Try again in an hour.</string>
+    <string name="nutrition_meal_plan_partner_nudge_error">Could not send reminder. Try again.</string>
     <string name="nutrition_meal_plan_plan_with_ai">Plan week with AI</string>
     <string name="nutrition_ai_adopt_all_grocery">Add all to list</string>
     <string name="nutrition_ai_adopt_all_grocery_summary">Added %1$d items to your list</string>

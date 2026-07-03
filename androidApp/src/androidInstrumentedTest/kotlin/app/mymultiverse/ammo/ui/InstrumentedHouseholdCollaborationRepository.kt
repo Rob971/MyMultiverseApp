@@ -89,6 +89,11 @@ class InstrumentedHouseholdCollaborationRepository : HouseholdCollaborationRepos
         weekKey: String,
     ): Result<Unit> = Result.success(Unit)
 
+    override suspend fun nudgePartnersToUpdateMealPlan(
+        householdId: String,
+        weekKey: String,
+    ): Result<Unit> = Result.success(Unit)
+
     override suspend fun updateMemberAvatar(
         householdId: String,
         member: HouseholdMember,

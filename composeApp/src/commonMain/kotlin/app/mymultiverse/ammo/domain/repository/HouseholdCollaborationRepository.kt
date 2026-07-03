@@ -48,6 +48,11 @@ interface HouseholdCollaborationRepository {
         weekKey: String,
     ): Result<Unit>
 
+    suspend fun nudgePartnersToUpdateMealPlan(
+        householdId: String,
+        weekKey: String,
+    ): Result<Unit>
+
     suspend fun updateMemberAvatar(
         householdId: String,
         member: HouseholdMember,
