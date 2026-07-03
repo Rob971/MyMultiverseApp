@@ -34,6 +34,8 @@ Product focus: **household nutrition logistics** (grocery + meal plan + local AI
 - Surfaces: `FamilyLogisticsCardSurface`, `FamilyLogisticCard`, `FamilyLogisticsSectionHeader`, `NutritionFeatureHeader`
 - Nutrition: `NutritionScaffold`, `GroceryInputBar`, `GroceryItemRow`, `MealPlanDayCard`, `MealPlanEmptyState`
 - AI read-only: `AiReadOnlyGroceryList`, `AiGrocerySuggestionsSection` — terracotta accent (`AiReadOnlyAccent`), never mixed with editable rows
+- **Tab & hero icons:** `MainTabIconArt` — transparent WebP glyphs shared by bottom nav (`MainTabIconDefaults.tabIconSize` 32dp) and Today hero circles (`heroIconSize` 48dp). Map nutrition features via `NutritionFeatureKind.toMainTabIconKind()`.
+- **Member avatars:** `MemberAvatar` — circular photo or initials on Family members rows; tap-to-upload when permitted (48dp default).
 - Background: `NapolitanBackground` inside `AppTheme`
 - Viewer: `HouseholdViewerReadOnlyNotice` when `canWriteHouseholdData` is false
 

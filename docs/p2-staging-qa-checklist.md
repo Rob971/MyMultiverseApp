@@ -4,7 +4,7 @@ Run on **staging** (Supabase + Firebase tester APK) with **two phones / two acco
 
 **Automated CI:** `scripts/verify-supabase-household.sh` with `SUPABASE_TEST_EMAIL` / `SUPABASE_TEST_PASSWORD` covers household bootstrap, nutrition persistence, GDPR export RPC, and device token registration.
 
-**Manual cases:** [`firebase-appdistribution-testcases.yaml`](../firebase-appdistribution-testcases.yaml) (currently **v48**; ids below).
+**Manual cases:** [`firebase-appdistribution-testcases.yaml`](../firebase-appdistribution-testcases.yaml) (currently **v76**; ids below).
 
 ---
 
@@ -59,6 +59,21 @@ Use a **disposable** test account (not the shared CI smoke user).
 | Dependant badge on list; no email/login | ☐ |
 | Remove dependant works | ☐ |
 | Counts toward 20-member cap (note if at limit) | ☐ |
+
+**Device / build:** _______________ **Tester:** _______________ **Date:** _______________
+
+---
+
+### `household-member-avatar` — Member profile photo (1.1.6+)
+
+Requires migration `20250703000000` and `member-avatars` bucket (`supabase seed buckets --linked`).
+
+| Step | Pass |
+|------|------|
+| Each member row shows circular avatar (initials when no photo) | ☐ |
+| Tap own avatar → gallery → photo appears on row | ☐ |
+| Owner/editor: tap dependant avatar → set photo | ☐ |
+| Second device / refresh: other members see updated avatar | ☐ |
 
 **Device / build:** _______________ **Tester:** _______________ **Date:** _______________
 

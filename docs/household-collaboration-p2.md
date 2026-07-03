@@ -59,6 +59,16 @@ This document locks scope for P2 tracks **A–D**. Adventures/Budget modules rem
 | **Instrumented tests** | Viewer read-only grocery (no input bar, banner visible); transfer ownership covered by unit tests (flaky instrumented test removed) |
 | **Firebase QA** | New cases: `home-export-personal-data`, `home-delete-account`, `household-add-dependant`, `household-invite-notification` (manual push/email) |
 
+## Track E — Member profile photos (post-P2, 1.1.6)
+
+| Item | Decision |
+|------|----------|
+| **Scope** | Circular avatar on each Family members row; initials fallback |
+| **Self-upload** | Any member taps own avatar → gallery picker → `member-avatars/profiles/{user_id}` |
+| **Dependant upload** | Owner/editor taps dependant avatar → `member-avatars/dependants/{dependant_id}` |
+| **Backend** | `household_dependants.avatar_url`; bucket in `config.toml` + `seed buckets`; RLS in `20250703000000` |
+| **QA** | `household-member-avatar` (Firebase YAML v76) |
+
 ---
 
 ## Implementation order

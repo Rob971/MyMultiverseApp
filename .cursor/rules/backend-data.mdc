@@ -36,6 +36,7 @@ KMP client data layer — not server schema (see `supabase-backend.mdc` for SQL/
 - `NutritionStorageCodec` for serialization; unit test encode/decode round-trips.
 - `multiplatform-settings` for preferences where appropriate.
 - Platform storage `expect`/`actual` only when no shared store exists.
+- **Supabase Storage (member avatars):** `SupabaseClientFactory` installs `Storage`; `SupabaseHouseholdCollaborationRepository.updateMemberAvatar()` uploads to `member-avatars` bucket (`profiles/{userId}` or `dependants/{dependantId}`). Bucket declared in `supabase/config.toml`, not SQL migrations — see `supabase-backend.mdc`.
 
 ## Observability
 

@@ -202,6 +202,24 @@ All strings in 8 locales; no `\'` in `strings.xml`; use `%1$s` for names/emails.
 
 ---
 
+### 11. Family member profile photos (v1.1.6)
+
+Each person on the **Family members** screen shows a circular avatar to the left of their name.
+
+| Who | Upload | Storage path |
+|-----|--------|--------------|
+| **Signed-in member** | Tap own avatar → gallery picker | `member-avatars/profiles/{user_id}/…` |
+| **Dependant** | Owner/editor taps dependant avatar | `member-avatars/dependants/{dependant_id}/…` |
+| **Viewer** | Read-only — cannot change photos | — |
+
+**Backend:** `profiles.avatar_url` (existing) and `household_dependants.avatar_url` (migration `20250703000000`). Bucket `member-avatars` is declared in `supabase/config.toml` and synced via `supabase seed buckets` (not SQL `INSERT`). RLS on `storage.objects` scopes uploads to the member’s folder or `can_upload_dependant_avatar()`.
+
+**Client:** `MemberAvatar` composable; `HouseholdCollaborationRepository.updateMemberAvatar()`; Supabase Storage module in `SupabaseClientFactory`.
+
+**Status:** Shipped in **1.1.6** — Firebase QA `household-member-avatar`.
+
+---
+
 ## GDPR on leave (required)
 
 When a user **leaves** a household (or deletes account):
@@ -255,6 +273,7 @@ Household collaboration uses **household-only** terminology in app code, RPCs, a
 | **P2** | GDPR account deletion + export share — **done** |
 | **P2** | Household dependants (no login) — **done** |
 | **P2** | Shared-email child login — **deferred** |
+| **Post-P2** | Family member profile photos (`member-avatars` bucket + Members UI) — **done** (1.1.6) |
 
 ---
 
@@ -276,6 +295,7 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 - `home-export-personal-data` — GDPR export from Home.
 - `home-delete-account` — GDPR account deletion (disposable test account).
 - `household-add-dependant` — add display-only dependant on Members screen.
+- `household-member-avatar` — profile photo on member rows; self-upload and dependant upload for owner/editor (v76 / 1.1.6).
 - `household-invite-notification` — invite email/push (manual; requires Resend + FCM/APNs secrets).
 - `household-gate-create-with-invite` — **deprecated id**; use `household-onboarding-create-with-invite`.
 
@@ -288,7 +308,9 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 - **Deploy hosting** (repo [mymultiverse-website](https://github.com/Rob971/mymultiverse-website)) — `/.well-known/assetlinks.json` on `mymultiverse.app` (manual; after DNS migration).
 
 **Remote Supabase migrations required for field tests:**  
-`20250617130000`, `20250617140000`, `20250618120000`, `20250618140000`, `20250618150000`, `20250618160000`, `20250618161000`, `20250618170000`, `20250618180000`.
+`20250617130000`, `20250617140000`, `20250618120000`, `20250618140000`, `20250618150000`, `20250618160000`, `20250618161000`, `20250618170000`, `20250618180000`, `20250703000000` (member avatars + storage RLS).
+
+**Storage bucket sync:** after `db push`, run `supabase seed buckets --linked` so `member-avatars` exists (see `supabase/config.toml`).
 
 ---
 
@@ -306,6 +328,7 @@ Documented in **`firebase-appdistribution-testcases.yaml`**:
 | 2026-06-18 | P2 A–D shipped on `main` (PR #8); closeout ops/platform/docs in PR #9 (`feature/p2-closeout`) |
 | 2026-06-23 | QA YAML v48: SSO onboarding, App Links tooling, ghost pairing banner; backlog S12/S13 |
 | 2026-06-24 | QA YAML v54–v55: Groceries **Update list** + Plan **Daily planning** simplification; release **1.0.40** |
+| 2026-07-03 | Member profile photos (1.1.6): `member-avatars` bucket via config.toml + seed; QA `household-member-avatar` (v76) |
 
 ---
 

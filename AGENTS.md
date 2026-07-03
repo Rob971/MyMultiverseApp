@@ -47,6 +47,7 @@ Cursor rules in `.cursor/rules/` define how to plan, implement, test, review, co
 | Backend | Supabase Kotlin 3.5.0 + Postgres RLS + Deno edge functions |
 | Network | Ktor 3.4.0 |
 | Persistence | `NutritionLocalStore`, multiplatform-settings, sync outbox |
+| Storage (remote) | Supabase Storage (`member-avatars` bucket for family profile photos) |
 | Android | AGP 9.2.1, `:androidApp` application + `:composeApp` KMP library, minSdk 24, compileSdk 36 |
 | iOS | Compose MP + iosApp; CI compile disabled (local/manual) |
 | i18n | 8 locales via `composeResources` |

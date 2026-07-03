@@ -9,7 +9,7 @@ alwaysApply: true
 
 1. **Unit** (`composeApp/src/commonTest`) — fast, deterministic; fake repositories/services.
 2. **Instrumented** (`androidApp/src/androidInstrumentedTest`) — Compose UI smoke on critical paths.
-3. **Manual** (`firebase-appdistribution-testcases.yaml`) — Firebase App Distribution testers (currently **v55**).
+3. **Manual** (`firebase-appdistribution-testcases.yaml`) — Firebase App Distribution testers (currently **v76**).
 
 ## Unit tests
 
@@ -49,6 +49,7 @@ Update `firebase-appdistribution-testcases.yaml` when user-visible flows change:
 - Wave C cases: `wavec-dark-theme-napolitan`, `wavec-wide-grocery-side-panel`, `wavec-wide-meal-plan-columns`, `wavec-ai-grocery-terracotta-accent`.
 - Hub: grocery + meal plan entry; back returns to hub.
 - Crashlytics: `crashlytics-smoke` on builds with `google-services.json`.
+- Household: `household-member-avatar` — member row photos, self + dependant upload (requires `member-avatars` bucket + migration `20250703000000`).
 
 Release workflow embeds checklist excerpt in Firebase release notes.
 

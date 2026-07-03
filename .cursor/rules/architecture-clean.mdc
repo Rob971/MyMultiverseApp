@@ -35,7 +35,7 @@ alwaysApply: true
 
 | Kind | Domain | Data | Examples |
 |------|--------|------|----------|
-| **Repository** | `domain/repository/` | `data/repository/`, `data/sync/` | `NutritionRepository`, `AuthRepository`, household repos |
+| **Repository** | `domain/repository/` | `data/repository/`, `data/sync/` | `NutritionRepository`, `AuthRepository`, `HouseholdCollaborationRepository` (member avatars via Storage) |
 | **Service** | `domain/service/` | `data/service/` | `NutritionAiAssistantService` (stateless AI capability) |
 
 ## Key data patterns

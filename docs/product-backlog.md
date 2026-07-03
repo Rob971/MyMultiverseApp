@@ -1,8 +1,8 @@
 # Product UX backlog — nutrition logistics & silent-butler AI
 
-**Status:** S12 + E3-9 shipped · Grocery + Plan tab simplification (E2-7, E2-8) · **Updated:** 2026-06-24  
-**App:** MyMultiverse (KMP) · **QA YAML baseline:** v55 · **Release:** 1.0.40 (Firebase distributed)  
-**Current sprint:** Maintenance — tester sign-off (#52 ghost pairing, v54–v55 nutrition UX)
+**Status:** S13 + member avatars + hero raster icons shipped · **Updated:** 2026-07-03  
+**App:** MyMultiverse (KMP) · **QA YAML baseline:** v76 · **Release:** 1.1.6 (Firebase distributed)  
+**Current sprint:** Maintenance — tester sign-off on 1.1.6 (member photos, hero icons)
 
 This backlog synthesizes product thesis, UX roadmap, and AI interaction model for household grocery + meal planning. Use it as the scope razor before building anything new.
 
@@ -42,9 +42,10 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | **S11** | E1-6, E6-2 (+ week banner on Today, tab + AI a11y) |
 | **S12** | E4-9 (+ ghost pairing banner on Groceries), E4-10 (+ pantry check on meal→grocery), E4-11 (+ contextual Use up chips from meal/grocery history) |
 | **Post-S12 maint** | E2-7, E2-8 (+ Groceries **Update list** + drag reorder; Plan **Daily planning**; tab-level AI/pantry/bulk sections removed) — **release 1.0.40** |
+| **Post-S13** | E1-10 (+ Today hero circles use same WebP art as bottom nav), E3-10 (+ family member profile photos on Members screen) — **release 1.1.6** |
 | **Post-S11 releases** | Onboarding v1.0.33–36, App Links tooling, Firebase QA v48 (see below) |
 
-**Next up:** Tester OK on **1.0.40** (v54–v55 QA) · close #52 ghost pairing after device smoke
+**Next up:** Tester OK on **1.1.6** (v76 QA: member avatars, hero raster icons)
 
 ---
 
@@ -79,6 +80,8 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 **Foundation (pre–UX backlog)**
 
 - Bottom tabs: Today / Plan / Groceries (`MainTabShell`, v32)
+- Today hero circles + bottom nav share transparent WebP icons (`MainTabIconArt`, v76 / 1.1.6)
+- Family member profile photos on Members screen (`MemberAvatar`, `member-avatars` bucket, v76 / 1.1.6)
 - Sticky `GroceryInputBar` (phone bottom bar; side panel ≥600dp)
 - First-win checklist on Welcome Home (`HomeFirstWinChecklist`)
 - Guided empty states (grocery, meal plan, solo household)
@@ -170,6 +173,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | E1-7 | Sunday empty-week nudge on Today | P1 | ✅ S8 | `HomeSundayPlanNudgeCard`, `HomeWeekPlanNudgeStore` |
 | E1-8 | Today tab: three hero actions (Plan meals · Grocery list · Family hub); demote duplicate cards | P1 | ✅ S13 | `HomePrimaryActions`, `HomeWelcomeContent` |
 | E1-9 | Family hub in account sheet (profile avatar); remove Family section from Today scroll | P1 | ✅ S13 | `HomeAccountSheet`, `AppRoute.HouseholdMembers` |
+| E1-10 | Today hero circles use same transparent WebP art as bottom nav (`MainTabIconArt` at 48dp) | P1 | ✅ 1.1.6 / QA v76 | `HomeDailyHubComponents`, `MainTabIconArt` |
 
 ## E2 — Grocery at the store
 
@@ -199,6 +203,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 | E3-7 | Silent duplicate merge (e.g. two “Milk” → one line or count) vs error snackbar | P2 | ✅ S10 | Domain + `GroceryShoppingScreen` |
 | E3-8 | Live presence (“Alex is shopping now”) | P3 | Deferred | — |
 | E3-9 | HTTPS App Links hosting on `mymultiverse.app` (Firebase Hosting + custom DNS) | P1 | ✅ S12 | `web/`, `scripts/deploy-app-links-hosting.sh`, `docs/app-links-custom-dns.md` |
+| E3-10 | Family member profile photos (self + dependant upload; `member-avatars` Supabase Storage) | P1 | ✅ 1.1.6 / QA v76 | `MemberAvatar`, `SupabaseHouseholdCollaborationRepository`, migration `20250703000000` |
 
 ## E4 — Silent butler AI
 
@@ -236,7 +241,7 @@ This backlog synthesizes product thesis, UX roadmap, and AI interaction model fo
 |----|-------|---|--------|---------------------|
 | E6-1 | System font scaling on grocery rows + meal plan | P1 | ✅ S10 | `GroceryItemRow`, `MealPlanDayCard` |
 | E6-2 | `contentDescription` audit on tab bar + AI entry points | P2 | ✅ S11 | `MainTabShell`, `AiInlineTriggerButton` |
-| E6-3 | Firebase QA YAML + manual cases for changed flows | P0 | ✅ ongoing | `firebase-appdistribution-testcases.yaml` (currently **v55**) |
+| E6-3 | Firebase QA YAML + manual cases for changed flows | P0 | ✅ ongoing | `firebase-appdistribution-testcases.yaml` (currently **v76**) |
 | E6-4 | Napulitano explicit language label + dialect subtitle in picker (not “NAP” code) | P2 | ✅ S13 | `SupportedAppLanguages`, `LanguagePicker`, 8 locales |
 
 ## Execution plan (12 weeks)
