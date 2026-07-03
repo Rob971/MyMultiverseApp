@@ -32,4 +32,44 @@ class SharedJourneyLightSchemeTest {
         assertNotEquals(scheme.primary, scheme.onPrimaryContainer)
         assertNotEquals(scheme.secondary, scheme.secondaryContainer)
     }
+
+    @Test
+    fun lightScheme_meetsAaContrastForPrimaryTextAndContainers() {
+        val scheme = sharedJourneyLightScheme()
+
+        ColorContrastAssertions.assertAaTextContrast(
+            foreground = scheme.onBackground,
+            background = scheme.background,
+            label = "light onBackground/background",
+        )
+        ColorContrastAssertions.assertAaTextContrast(
+            foreground = scheme.onSurface,
+            background = scheme.surface,
+            label = "light onSurface/surface",
+        )
+        ColorContrastAssertions.assertAaTextContrast(
+            foreground = scheme.onPrimaryContainer,
+            background = scheme.primaryContainer,
+            label = "light onPrimaryContainer/primaryContainer",
+        )
+        ColorContrastAssertions.assertAaTextContrast(
+            foreground = scheme.onSecondaryContainer,
+            background = scheme.secondaryContainer,
+            label = "light onSecondaryContainer/secondaryContainer",
+        )
+    }
+
+    @Test
+    fun lightTokens_keepBottomNavIconsAboveNonTextContrastThreshold() {
+        ColorContrastAssertions.assertAaNonTextContrast(
+            foreground = SharedJourneyColors.MediterraneanTeal,
+            background = SharedJourneyColors.SunDrenchedWhite,
+            label = "light nav selected icon",
+        )
+        ColorContrastAssertions.assertAaNonTextContrast(
+            foreground = SharedJourneyColors.InkMuted,
+            background = SharedJourneyColors.SunDrenchedWhite,
+            label = "light nav unselected icon",
+        )
+    }
 }
