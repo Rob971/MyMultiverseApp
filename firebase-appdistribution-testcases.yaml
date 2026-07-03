@@ -1,13 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-<<<<<<< HEAD
-version: 71
-updated: 2026-06-30
-=======
-version: 70
+version: 72
 updated: 2026-07-02
->>>>>>> cursor/nutrition-feature-images-0fd1
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
