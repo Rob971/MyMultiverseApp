@@ -443,7 +443,7 @@ All SQL files in `supabase/migrations/` (apply in timestamp order). Storage buck
 ./scripts/apply-supabase-migrations.sh
 ```
 
-The script runs `supabase db push` then `supabase seed buckets --linked`.
+The script runs `supabase db push` then `supabase seed buckets --linked --yes`.
 
 Or Supabase Dashboard SQL editor for ad-hoc applies. Remote field QA needs migrations through at least `20250618170000` (`households` rename) and `20250618180000` (grants).
 
