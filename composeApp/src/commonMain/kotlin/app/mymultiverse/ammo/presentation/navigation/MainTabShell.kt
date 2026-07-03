@@ -15,10 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.ammo.presentation.components.JourneyIcon
-import app.mymultiverse.ammo.presentation.components.NutritionFeatureArt
-import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
-import app.mymultiverse.ammo.presentation.theme.AppIconRole
+import app.mymultiverse.ammo.presentation.components.MainTabIconArt
+import app.mymultiverse.ammo.presentation.components.MainTabIconKind
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.nav_tab_grocery
@@ -28,6 +26,7 @@ import org.jetbrains.compose.resources.stringResource
 
 object MainTabDefaults {
     val barHeight = 80.dp
+    val tabIconSize = 32.dp
 }
 
 val LocalMainTabBarVisible = staticCompositionLocalOf { false }
@@ -59,13 +58,10 @@ fun MainTabShell(
                             selected = selectedTab == AppMainTab.Home,
                             onClick = { onTabSelected(AppMainTab.Home) },
                             icon = {
-                                JourneyIcon(
-                                    role = AppIconRole.NavHome,
+                                MainTabIconArt(
+                                    kind = MainTabIconKind.Today,
                                     contentDescription = homeTabLabel,
-                                    tint = JourneySemanticColors.navTabIconTint(
-                                        selected = selectedTab == AppMainTab.Home,
-                                    ),
-                                    modifier = Modifier.size(24.dp),
+                                    modifier = Modifier.size(MainTabDefaults.tabIconSize),
                                 )
                             },
                             label = { Text(homeTabLabel) },
@@ -76,10 +72,10 @@ fun MainTabShell(
                             selected = selectedTab == AppMainTab.MealPlan,
                             onClick = { onTabSelected(AppMainTab.MealPlan) },
                             icon = {
-                                NutritionFeatureArt(
-                                    feature = NutritionFeatureKind.MealPlan,
+                                MainTabIconArt(
+                                    kind = MainTabIconKind.MealPlan,
                                     contentDescription = mealPlanTabLabel,
-                                    modifier = Modifier.size(26.dp),
+                                    modifier = Modifier.size(MainTabDefaults.tabIconSize),
                                 )
                             },
                             label = { Text(mealPlanTabLabel) },
@@ -90,10 +86,10 @@ fun MainTabShell(
                             selected = selectedTab == AppMainTab.Grocery,
                             onClick = { onTabSelected(AppMainTab.Grocery) },
                             icon = {
-                                NutritionFeatureArt(
-                                    feature = NutritionFeatureKind.Grocery,
+                                MainTabIconArt(
+                                    kind = MainTabIconKind.Grocery,
                                     contentDescription = groceryTabLabel,
-                                    modifier = Modifier.size(26.dp),
+                                    modifier = Modifier.size(MainTabDefaults.tabIconSize),
                                 )
                             },
                             label = { Text(groceryTabLabel) },

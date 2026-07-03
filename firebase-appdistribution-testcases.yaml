@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 74
+version: 75
 updated: 2026-07-03
 
 summary: |
@@ -48,6 +48,7 @@ summary: |
   Nutrition feature art (v72): meal plan and grocery use full-color WebP illustrations on Today hero circles, bottom nav tabs, hub cards, and empty states (replaces invisible vector glyphs).
   Nutrition hero circle fill (v73): Today hero illustrations crop to fill the circular button (no letterboxed rectangle inside the ring).
   Today hero icons (v74): center Plan lunch / Shopping list circles use large vector icons on tinted rings; bottom nav keeps compact raster thumbnails.
+  Nav tab transparent art (v75): Oggi/Plan/Spesa tabs use larger (32dp) WebP glyphs with transparent backgrounds; new Today house-and-sun illustration matches meal/grocery tab style.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Family members role change (v71): Change role button and tappable badge on member rows; role updates show immediately after save.
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
@@ -190,7 +191,7 @@ testcases:
       - Week context banner shows under This week when nutrition week data is loaded.
       - Hero Plan lunch opens Plan tab; Shopping list opens Groceries tab.
       - Plan lunch and Shopping list hero circles show large meal-plan and grocery vector icons centered on tinted rings (not rectangular photos inside the circle).
-      - Plan and Groceries bottom-nav tabs keep small full-color illustration thumbnails.
+      - Oggi, Piano, and Spesa bottom-nav tabs show matching illustration glyphs with no white backing rectangle (transparent around the artwork); Today tab shows house with sun.
       - Today tab shows timeline rows for tonight's dinner and Shopping list (grocery progress or add-first-item hint).
       - No duplicate This week nutrition card, first-win checklist, or Family hero on Today.
 

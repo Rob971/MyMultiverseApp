@@ -127,7 +127,7 @@ private fun HomeCircularHubCta(
                     feature = feature,
                     contentDescription = label,
                     tint = iconTint,
-                    modifier = Modifier.size(52.dp),
+                    modifier = Modifier.size(56.dp),
                 )
             }
         }
