@@ -42,4 +42,7 @@ if ! supabase db push; then
   exit 1
 fi
 
+echo "Seeding storage buckets from supabase/config.toml ..."
+supabase seed buckets --linked
+
 echo "Done. Verify RLS and Realtime in the Supabase dashboard."

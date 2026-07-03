@@ -41,6 +41,9 @@ echo "OK: ${migration_count} migration files"
 echo "==> Applying migrations locally (supabase start — full stack for RPC smoke tests)"
 supabase start
 
+echo "==> Seeding storage buckets from supabase/config.toml"
+supabase seed buckets
+
 if [[ -x "./scripts/ci-test-invite-preview-rpc.sh" ]]; then
   echo "==> Smoke-testing invite preview RPC on local stack"
   ./scripts/ci-test-invite-preview-rpc.sh

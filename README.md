@@ -155,8 +155,9 @@ The mobile app talks to **Supabase Auth** (sessions, OAuth) and **PostgREST** (t
 | **GDPR** | `export_my_personal_data`, `prepare_account_deletion`, Edge Function `delete-account` |
 | **Invite notifications** | `household_notification_outbox` + Edge Function `notify-household-invite` (email via Resend) |
 | **Realtime** | `nutrition_household_week_data` in `supabase_realtime` publication |
+| **Storage** | `member-avatars` bucket (public read) for family member profile photos; RLS on `storage.objects` in migration `20250703000000` |
 
-Migrations: `supabase/migrations/` (applied in filename order). Edge functions: `supabase/functions/`. Deploy on `main` via [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml) (`db push` + `functions deploy`).
+Migrations: `supabase/migrations/` (applied in filename order). **Storage buckets** are declared in `supabase/config.toml` (`[storage.buckets.*]`) and synced via `supabase seed buckets` (local/CI) or `supabase seed buckets --linked` (deploy) — do not `INSERT` into `storage.buckets` in SQL migrations (schema varies across CLI versions). Edge functions: `supabase/functions/`. Deploy on `main` via [`.github/workflows/supabase-deploy.yml`](.github/workflows/supabase-deploy.yml) (`db push` + `seed buckets` + `functions deploy`).
 
 Apply locally or to a linked project:
 
@@ -437,11 +438,13 @@ Production migration deploy requires `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSW
 
 ### 2. Apply database migrations
 
-All SQL files in `supabase/migrations/` (apply in timestamp order). Prefer:
+All SQL files in `supabase/migrations/` (apply in timestamp order). Storage buckets are defined in `supabase/config.toml` and seeded after push. Prefer:
 
 ```bash
 ./scripts/apply-supabase-migrations.sh
 ```
+
+The script runs `supabase db push` then `supabase seed buckets --linked`.
 
 Or Supabase Dashboard SQL editor for ad-hoc applies. Remote field QA needs migrations through at least `20250618170000` (`households` rename) and `20250618180000` (grants).
 
@@ -475,7 +478,7 @@ GitHub Actions: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml)
 
 `chore(version): … [skip ci]` pushes skip heavy jobs via the CI gate. Feature branches validate through a PR only (one run per push).
 
-**Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push` and P2 edge functions deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change; also `workflow_dispatch`.
+**Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push`, `supabase seed buckets --linked`, and P2 edge functions deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change; also `workflow_dispatch`.
 
 Firebase App Distribution runs only via **manual dispatch** (`release` or `all`).
 

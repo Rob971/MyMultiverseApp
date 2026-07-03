@@ -11,12 +11,14 @@ alwaysApply: false
 ## Repo layout
 
 - `supabase/migrations/` — ordered SQL (never edit applied migrations; add new files).
+- `supabase/config.toml` — local stack + **storage bucket definitions** (`[storage.buckets.*]`).
 - `supabase/functions/` — Deno edge functions (`notify-household-invite`, `invite-open`, `delete-account`).
 - Client: `composeApp/.../data/supabase/` — factories, repositories, DTOs, `AuthDeeplinkHandler` expect/actual.
 
 ## Migration rules
 
 - Every schema change: new timestamped migration; test locally with `supabase start` / `db reset`.
+- **Storage buckets:** declare in `supabase/config.toml`, sync with `supabase seed buckets` (local/CI) or `supabase seed buckets --linked` (deploy). Put **RLS policies** on `storage.objects` in migrations; do **not** `INSERT` into `storage.buckets` in SQL (CLI/storage schema mismatch breaks CI).
 - **RLS required** on user-facing tables; viewer read-only policies for nutrition data.
 - Household model: `households`, members, invites, roles (owner/admin/editor/viewer).
 - Nutrition sync: week-scoped payloads; realtime channels per household.

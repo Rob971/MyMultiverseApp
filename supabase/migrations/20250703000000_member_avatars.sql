@@ -22,19 +22,9 @@ $$;
 revoke all on function public.can_upload_dependant_avatar(uuid) from public;
 grant execute on function public.can_upload_dependant_avatar(uuid) to authenticated;
 
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values (
-    'member-avatars',
-    'member-avatars',
-    true,
-    5242880,
-    array['image/jpeg', 'image/png', 'image/webp']
-)
-on conflict (id) do update
-set
-    public = excluded.public,
-    file_size_limit = excluded.file_size_limit,
-    allowed_mime_types = excluded.allowed_mime_types;
+-- Bucket row: declared in supabase/config.toml ([storage.buckets.member-avatars])
+-- and applied via `supabase seed buckets` (CI + deploy). Do not INSERT into
+-- storage.buckets here — the column set varies when the storage service is off.
 
 drop policy if exists member_avatars_profile_insert on storage.objects;
 drop policy if exists member_avatars_profile_update on storage.objects;

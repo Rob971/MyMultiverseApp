@@ -85,8 +85,10 @@ Cursor rules in `.cursor/rules/` define how to plan, implement, test, review, co
 | PR checks | `gh pr checks N --watch --interval 15` |
 | Merge | Squash to `main`, delete branch |
 | Release | `gh workflow run "KMP CI" --ref main -f job=release -f version_bump=patch` |
+| Supabase buckets (local) | `supabase seed buckets` after `supabase start` |
+| Supabase buckets (remote) | `supabase seed buckets --linked` (also in deploy workflow) |
 
-PR/push runs Android CI + instrumented + Supabase migration validation. **No auto-release on merge.**
+PR/push runs Android CI + instrumented + Supabase migration validation (`supabase start` + `seed buckets`). **No auto-release on merge.**
 
 ## Definition of done (summary)
 

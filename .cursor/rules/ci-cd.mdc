@@ -68,8 +68,8 @@ Watch: `gh pr checks N --watch --interval 15` on PRs.
 
 ## Supabase in CI
 
-- **Validation:** `supabase start` + migration apply + invite preview RPC smoke (no remote writes in PR CI).
-- **Deploy:** separate workflow on `main` when `supabase/**` changes — not inside KMP CI `db push`.
+- **Validation:** `supabase start` + migration apply + `supabase seed buckets` + invite preview RPC smoke (no remote writes in PR CI). CLI pinned to **2.109.0** in KMP CI (match deploy workflow).
+- **Deploy:** separate workflow on `main` when `supabase/**` changes — `db push` + `supabase seed buckets --linked` + edge functions (not inside KMP CI `db push`).
 
 ## Firebase App Distribution
 
