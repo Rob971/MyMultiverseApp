@@ -26,4 +26,5 @@ data class HouseholdMember(
     val displayName: String,
     val role: HouseholdMemberRole,
     val referenceId: String,
+    val avatarUrl: String? = null,
 )

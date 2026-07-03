@@ -200,6 +200,29 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
         return nudgePartnersResult
     }
 
+    var updateMemberAvatarResult: Result<Unit> = Result.success(Unit)
+
+    override suspend fun updateMemberAvatar(
+        householdId: String,
+        member: HouseholdMember,
+        imageBytes: ByteArray,
+        contentType: String,
+    ): Result<Unit> {
+        val result = updateMemberAvatarResult
+        if (result.isSuccess) {
+            membersFlow(householdId).update { members ->
+                members.map { current ->
+                    if (current.id == member.id) {
+                        current.copy(avatarUrl = "https://example.com/avatar/${member.id}.jpg")
+                    } else {
+                        current
+                    }
+                }
+            }
+        }
+        return result
+    }
+
     private fun membersFlow(householdId: String): MutableStateFlow<List<HouseholdMember>> =
         membersByHousehold.getOrPut(householdId) { MutableStateFlow(emptyList()) }
 

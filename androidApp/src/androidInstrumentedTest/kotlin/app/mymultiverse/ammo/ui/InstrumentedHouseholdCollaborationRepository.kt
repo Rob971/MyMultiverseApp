@@ -89,6 +89,13 @@ class InstrumentedHouseholdCollaborationRepository : HouseholdCollaborationRepos
         weekKey: String,
     ): Result<Unit> = Result.success(Unit)
 
+    override suspend fun updateMemberAvatar(
+        householdId: String,
+        member: HouseholdMember,
+        imageBytes: ByteArray,
+        contentType: String,
+    ): Result<Unit> = Result.success(Unit)
+
     private fun membersFlow(householdId: String): MutableStateFlow<List<HouseholdMember>> =
         membersByHousehold.getOrPut(householdId) { MutableStateFlow(emptyList()) }
 }

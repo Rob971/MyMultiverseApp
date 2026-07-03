@@ -82,6 +82,8 @@ object SharingStringKeys {
         "sharing_members_dependent_added",
         "sharing_members_dependent_hint",
         "sharing_members_kind_dependent",
+        "sharing_members_avatar_content_description",
+        "sharing_members_avatar_change",
     )
 
     val localeDirectories: List<String> = NutritionStringKeys.localeDirectories

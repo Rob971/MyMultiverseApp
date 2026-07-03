@@ -727,6 +727,13 @@ private class HangingHouseholdCollaborationRepository : HouseholdCollaborationRe
         memberId: String,
         role: HouseholdMemberRole,
     ): Result<Unit> = Result.failure(UnsupportedOperationException())
+
+    override suspend fun updateMemberAvatar(
+        householdId: String,
+        member: HouseholdMember,
+        imageBytes: ByteArray,
+        contentType: String,
+    ): Result<Unit> = Result.failure(UnsupportedOperationException())
 }
 
 private class FakeGreetingRepository(

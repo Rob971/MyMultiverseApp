@@ -57,4 +57,11 @@ class UnconfiguredHouseholdCollaborationRepository : HouseholdCollaborationRepos
         householdId: String,
         weekKey: String,
     ): Result<Unit> = Result.failure(IllegalStateException("supabase_not_configured"))
+
+    override suspend fun updateMemberAvatar(
+        householdId: String,
+        member: HouseholdMember,
+        imageBytes: ByteArray,
+        contentType: String,
+    ): Result<Unit> = Result.failure(IllegalStateException("supabase_not_configured"))
 }
