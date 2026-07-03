@@ -3,9 +3,9 @@ package app.mymultiverse.ammo.data.supabase
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdDependantAvatarUpdateRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdDependantRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdRpcDecoder
-import app.mymultiverse.ammo.data.supabase.dto.ProfileInsertRow
 import app.mymultiverse.ammo.data.supabase.dto.ProfileAvatarUpdateRow
 import app.mymultiverse.ammo.data.supabase.dto.ProfileRow
+import app.mymultiverse.ammo.domain.auth.resolvedDisplayName
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdInviteInsertRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdInvitePendingUpdateRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdInviteRow
@@ -54,6 +54,9 @@ class SupabaseHouseholdCollaborationRepository(
         outboundInvitesFlow(householdId).asStateFlow()
 
     override suspend fun refreshMembers(householdId: String, ownerId: String, ownerDisplayName: String) {
+        val currentUserId = runCatching { requireUserId() }.getOrNull()
+        currentUserId?.let { client.ensureCurrentProfile(it) }
+
         val rows = client.postgrest["household_members"]
             .select(Columns.ALL) {
                 filter { eq("household_id", householdId) }
@@ -61,7 +64,7 @@ class SupabaseHouseholdCollaborationRepository(
             .decodeList<HouseholdMemberRow>()
             .filter { it.userId != null && it.leftAt == null }
 
-        val currentUserId = runCatching { requireUserId() }.getOrNull()
+        val authDisplayName = client.auth.currentUserOrNull()?.toAuthUser()?.resolvedDisplayName()
         val profileIds = (rows.mapNotNull { it.userId } + ownerId + listOfNotNull(currentUserId)).distinct()
         val profiles = if (profileIds.isEmpty()) {
             emptyMap()
@@ -74,7 +77,12 @@ class SupabaseHouseholdCollaborationRepository(
                 .associateBy { it.id }
         }
 
-        val mapped = rows.map { row -> row.toPersonMember(profiles) }
+        val mapped = rows.map { row ->
+            row.toPersonMember(
+                profiles = profiles,
+                authDisplayName = if (row.userId == currentUserId) authDisplayName else null,
+            )
+        }
 
         val currentUserMember = if (
             currentUserId != null &&
@@ -82,17 +90,26 @@ class SupabaseHouseholdCollaborationRepository(
             mapped.none { it.referenceId == currentUserId }
         ) {
             fetchActiveMemberRow(householdId, currentUserId)
-                ?.toPersonMember(profiles)
+                ?.toPersonMember(
+                    profiles = profiles,
+                    authDisplayName = authDisplayName,
+                )
         } else {
             null
         }
 
         val ownerProfile = profiles[ownerId]
+        val resolvedOwnerDisplayName = resolvedProfileLabel(
+            displayName = ownerProfile?.displayName ?: ownerDisplayName,
+            email = ownerProfile?.email,
+            userId = ownerId,
+            authDisplayName = if (ownerId == currentUserId) authDisplayName else null,
+        )
         val withOwner = mergeHouseholdPersonMembers(
             householdId = householdId,
             personMembers = mapped,
             ownerId = ownerId,
-            ownerDisplayName = ownerDisplayName,
+            ownerDisplayName = resolvedOwnerDisplayName,
             ownerAvatarUrl = ownerProfile?.avatarUrl,
             currentUserId = currentUserId,
             currentUserMember = currentUserMember,
@@ -128,7 +145,7 @@ class SupabaseHouseholdCollaborationRepository(
             pendingInvites.value = emptyList()
             return
         }
-        ensureProfile(currentUserId)
+        client.ensureCurrentProfile(currentUserId)
 
         val rows = HouseholdRpcDecoder.decodePendingInvites(
             client.postgrest.rpc("list_my_pending_household_invites"),
@@ -195,7 +212,7 @@ class SupabaseHouseholdCollaborationRepository(
         require(role != HouseholdMemberRole.Owner) { CollaborationErrorCodes.INSUFFICIENT_ROLE }
 
         val currentUserId = requireUserId()
-        ensureProfile(currentUserId)
+        client.ensureCurrentProfile(currentUserId)
 
         val row = HouseholdRpcDecoder.decodeInviteResult(
             client.postgrest.rpc(
@@ -263,7 +280,7 @@ class SupabaseHouseholdCollaborationRepository(
 
     override suspend fun acceptInvite(inviteId: String): Result<Unit> = runCatching {
         val currentUserId = requireUserId()
-        ensureProfile(currentUserId)
+        client.ensureCurrentProfile(currentUserId)
         val parameters = buildJsonObject { put("p_invite_id", inviteId) }
         client.postgrest.rpc("accept_household_invite", parameters)
         refreshPendingInvites()
@@ -372,7 +389,7 @@ class SupabaseHouseholdCollaborationRepository(
                     }
             }
             else -> {
-                ensureProfile(member.referenceId)
+                client.ensureCurrentProfile(member.referenceId)
                 client.postgrest["profiles"]
                     .update(ProfileAvatarUpdateRow(avatarUrl = publicUrl)) {
                         filter { eq("id", member.referenceId) }
@@ -435,7 +452,7 @@ class SupabaseHouseholdCollaborationRepository(
     private suspend fun resolveProfileEmail(): String? {
         client.auth.awaitInitialization()
         val userId = requireUserId()
-        ensureProfile(userId)
+        client.ensureCurrentProfile(userId)
         val profileEmail = currentProfile()?.email?.trim().orEmpty()
         if (profileEmail.isNotEmpty()) return profileEmail
 
@@ -456,27 +473,13 @@ class SupabaseHouseholdCollaborationRepository(
 
     private suspend fun currentProfileDisplayName(userId: String): String {
         val profile = currentProfile()
-        return profile?.displayName?.takeIf { it.isNotBlank() }
-            ?: profile?.email?.takeIf { it.isNotBlank() }
-            ?: userId
-    }
-
-    private suspend fun ensureProfile(userId: String) {
-        val rpcResult = runCatching { client.postgrest.rpc("ensure_current_profile") }
-        if (rpcResult.isSuccess) return
-
-        val email = client.auth.currentUserOrNull()?.email
-            ?: client.auth.currentSessionOrNull()?.user?.email
-        client.postgrest["profiles"]
-            .upsert(
-                ProfileInsertRow(
-                    id = userId,
-                    email = email,
-                    displayName = email?.substringBefore("@"),
-                ),
-            ) {
-                onConflict = "id"
-            }
+        val authDisplayName = client.auth.currentUserOrNull()?.toAuthUser()?.resolvedDisplayName()
+        return resolvedProfileLabel(
+            displayName = profile?.displayName,
+            email = profile?.email,
+            userId = userId,
+            authDisplayName = authDisplayName,
+        )
     }
 
     private suspend fun loadHouseholdNames(householdIds: List<String>): Map<String, String> {
@@ -520,22 +523,30 @@ class SupabaseHouseholdCollaborationRepository(
                 filter { eq("id", household.ownerId) }
             }
             .decodeSingleOrNull<ProfileRow>()
-        val ownerDisplayName = ownerProfile?.displayName?.takeIf { it.isNotBlank() }
-            ?: ownerProfile?.email?.takeIf { it.isNotBlank() }
-            ?: household.ownerId
+        val ownerDisplayName = resolvedProfileLabel(
+            displayName = ownerProfile?.displayName,
+            email = ownerProfile?.email,
+            userId = household.ownerId,
+        )
         return household.ownerId to ownerDisplayName
     }
 
-    private fun HouseholdMemberRow.toPersonMember(profiles: Map<String, ProfileRow>): HouseholdMember {
+    private fun HouseholdMemberRow.toPersonMember(
+        profiles: Map<String, ProfileRow>,
+        authDisplayName: String? = null,
+    ): HouseholdMember {
         val userId = requireNotNull(userId)
         val profile = profiles[userId]
         return HouseholdMember(
             id = id,
             householdId = householdId,
             kind = HouseholdMemberKind.Person,
-            displayName = profile?.displayName?.takeIf { it.isNotBlank() }
-                ?: profile?.email?.takeIf { it.isNotBlank() }
-                ?: userId,
+            displayName = resolvedProfileLabel(
+                displayName = profile?.displayName,
+                email = profile?.email,
+                userId = userId,
+                authDisplayName = authDisplayName,
+            ),
             role = role.toHouseholdMemberRole(),
             referenceId = userId,
             avatarUrl = profile?.avatarUrl,

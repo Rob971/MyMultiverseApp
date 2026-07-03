@@ -1,7 +1,7 @@
 package app.mymultiverse.ammo.data.remote.nutrition
 
+import app.mymultiverse.ammo.data.supabase.ensureCurrentProfile
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
-import app.mymultiverse.ammo.data.supabase.dto.ProfileInsertRow
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
@@ -57,19 +57,6 @@ class NutritionRemoteApi(
     }
 
     private suspend fun ensureProfile(userId: String) {
-        val rpcResult = runCatching { client.postgrest.rpc("ensure_current_profile") }
-        if (rpcResult.isSuccess) return
-
-        val email = client.auth.currentUserOrNull()?.email
-        client.postgrest["profiles"]
-            .upsert(
-                ProfileInsertRow(
-                    id = userId,
-                    email = email,
-                    displayName = email?.substringBefore("@"),
-                ),
-            ) {
-                onConflict = "id"
-            }
+        client.ensureCurrentProfile(userId)
     }
 }

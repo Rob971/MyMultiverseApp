@@ -35,6 +35,11 @@ data class ProfileAvatarUpdateRow(
 )
 
 @Serializable
+data class ProfileDisplayNameUpdateRow(
+    @SerialName("display_name") val displayName: String,
+)
+
+@Serializable
 data class HouseholdInviteRow(
     val id: String,
     @SerialName("household_id") val householdId: String,
