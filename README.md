@@ -477,7 +477,7 @@ GitHub Actions: [`.github/workflows/kmp-ci.yml`](.github/workflows/kmp-ci.yml)
 
 `chore(version): … [skip ci]` pushes skip heavy jobs via the CI gate. Feature branches validate through a PR only (one run per push).
 
-**Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push`, `supabase seed buckets --linked`, and P2 edge functions deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change; also `workflow_dispatch`.
+**Supabase deploy** ([`supabase-deploy.yml`](.github/workflows/supabase-deploy.yml)): `db push`, `supabase seed buckets --linked --yes`, and P2 edge functions deploy on `main` when `supabase/migrations/**`, `supabase/config.toml`, or `supabase/functions/**` change; also `workflow_dispatch`.
 
 Firebase App Distribution runs only via **manual dispatch** (`release` or `all`).
 
