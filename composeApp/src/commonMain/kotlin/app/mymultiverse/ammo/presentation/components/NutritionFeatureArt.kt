@@ -32,7 +32,7 @@ fun NutritionFeatureKind.icon(): ImageVector = when (this) {
     NutritionFeatureKind.Grocery -> AppIcons.GroceryList
 }
 
-/** Vector icon — use in circular hero buttons and badges (not rectangular raster art). */
+/** Vector icon — badges and compact accents (hero circles use [MainTabIconArt]). */
 @Composable
 fun NutritionFeatureIcon(
     feature: NutritionFeatureKind,
@@ -51,7 +51,7 @@ fun NutritionFeatureIcon(
     )
 }
 
-/** Small raster thumbnail — bottom nav tabs and compact labels only. */
+/** Raster thumbnail — bottom nav, Today hero circles, and compact labels. */
 @Composable
 fun NutritionFeatureArt(
     feature: NutritionFeatureKind,
