@@ -6,16 +6,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -33,11 +28,8 @@ import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -46,8 +38,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.AmmoRoundLogo
+import app.mymultiverse.ammo.presentation.components.ScreenLayout
+import app.mymultiverse.ammo.presentation.components.keyboardAwareScroll
+import app.mymultiverse.ammo.presentation.components.rememberFieldScrollIntoViewModifier
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.AppIcons
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
@@ -76,7 +70,6 @@ import ammo.composeapp.generated.resources.auth_success_email_confirmation
 import ammo.composeapp.generated.resources.auth_switch_to_sign_in
 import ammo.composeapp.generated.resources.auth_switch_to_sign_up
 import ammo.composeapp.generated.resources.auth_title
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -131,9 +124,8 @@ fun LoginScreen(
         else -> null
     }
     val scrollState = rememberScrollState()
-    val emailBringIntoView = remember { BringIntoViewRequester() }
-    val passwordBringIntoView = remember { BringIntoViewRequester() }
-    val focusScrollScope = rememberCoroutineScope()
+    val emailScrollIntoView = rememberFieldScrollIntoViewModifier()
+    val passwordScrollIntoView = rememberFieldScrollIntoViewModifier()
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -150,9 +142,7 @@ fun LoginScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = ScreenLayout.horizontalPadding)
-                .navigationBarsPadding()
-                .imePadding()
-                .verticalScroll(scrollState)
+                .keyboardAwareScroll(scrollState)
                 .testTag(LoginTestTags.SCREEN),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top,
@@ -236,12 +226,7 @@ fun LoginScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .bringIntoViewRequester(emailBringIntoView)
-                    .onFocusEvent { focusState ->
-                        if (focusState.isFocused) {
-                            focusScrollScope.launch { emailBringIntoView.bringIntoView() }
-                        }
-                    }
+                    .then(emailScrollIntoView)
                     .testTag(LoginTestTags.EMAIL_FIELD),
             )
             Spacer(modifier = Modifier.height(JourneyTextFieldDefaults.fieldSpacing))
@@ -262,12 +247,7 @@ fun LoginScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .bringIntoViewRequester(passwordBringIntoView)
-                    .onFocusEvent { focusState ->
-                        if (focusState.isFocused) {
-                            focusScrollScope.launch { passwordBringIntoView.bringIntoView() }
-                        }
-                    }
+                    .then(passwordScrollIntoView)
                     .testTag(LoginTestTags.PASSWORD_FIELD),
             )
 

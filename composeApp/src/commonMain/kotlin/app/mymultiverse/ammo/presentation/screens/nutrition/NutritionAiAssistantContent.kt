@@ -50,6 +50,7 @@ import app.mymultiverse.ammo.presentation.components.JourneyTextField
 import app.mymultiverse.ammo.presentation.components.JourneyButtonLabel
 import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
+import app.mymultiverse.ammo.presentation.components.rememberFieldScrollIntoViewModifier
 import app.mymultiverse.ammo.presentation.components.NutritionFeatureHeader
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.nutritionDayLabel
@@ -153,6 +154,7 @@ fun NutritionAiAssistantContent(
     val coroutineScope = rememberCoroutineScope()
     val localSnackbar = remember { SnackbarHostState() }
     val snackbar = snackbarHostState ?: localSnackbar
+    val criteriaScrollIntoView = rememberFieldScrollIntoViewModifier()
     var mealPlanApplyRequested by remember { mutableStateOf(false) }
     var showIngredientsStep by remember { mutableStateOf(false) }
     val scopeLocked = launchContext?.mealPlanScope is MealPlanGenerationScope.SingleDay
@@ -443,6 +445,7 @@ fun NutritionAiAssistantContent(
                     onValueChange = { criteria = it },
                     modifier = Modifier
                         .fillMaxWidth()
+                        .then(criteriaScrollIntoView)
                         .testTag(NutritionAiTestTags.CRITERIA_FIELD),
                     placeholder = { Text(stringResource(Res.string.nutrition_ai_criteria_hint)) },
                     singleLine = false,
