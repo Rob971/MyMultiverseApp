@@ -6,8 +6,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,8 +33,11 @@ import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -69,6 +76,7 @@ import ammo.composeapp.generated.resources.auth_success_email_confirmation
 import ammo.composeapp.generated.resources.auth_switch_to_sign_in
 import ammo.composeapp.generated.resources.auth_switch_to_sign_up
 import ammo.composeapp.generated.resources.auth_title
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -122,6 +130,10 @@ fun LoginScreen(
         LoginError.InvalidCredentials -> stringResource(Res.string.auth_error_invalid_credentials)
         else -> null
     }
+    val scrollState = rememberScrollState()
+    val emailBringIntoView = remember { BringIntoViewRequester() }
+    val passwordBringIntoView = remember { BringIntoViewRequester() }
+    val focusScrollScope = rememberCoroutineScope()
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -138,11 +150,14 @@ fun LoginScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = ScreenLayout.horizontalPadding)
-                .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
+                .imePadding()
+                .verticalScroll(scrollState)
                 .testTag(LoginTestTags.SCREEN),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
         ) {
+            Spacer(modifier = Modifier.height(ScreenLayout.contentTopPadding))
             AmmoRoundLogo(modifier = Modifier.size(96.dp))
             Spacer(modifier = Modifier.height(24.dp))
             Text(
@@ -221,6 +236,12 @@ fun LoginScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .bringIntoViewRequester(emailBringIntoView)
+                    .onFocusEvent { focusState ->
+                        if (focusState.isFocused) {
+                            focusScrollScope.launch { emailBringIntoView.bringIntoView() }
+                        }
+                    }
                     .testTag(LoginTestTags.EMAIL_FIELD),
             )
             Spacer(modifier = Modifier.height(JourneyTextFieldDefaults.fieldSpacing))
@@ -241,6 +262,12 @@ fun LoginScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .bringIntoViewRequester(passwordBringIntoView)
+                    .onFocusEvent { focusState ->
+                        if (focusState.isFocused) {
+                            focusScrollScope.launch { passwordBringIntoView.bringIntoView() }
+                        }
+                    }
                     .testTag(LoginTestTags.PASSWORD_FIELD),
             )
 
@@ -293,6 +320,7 @@ fun LoginScreen(
                     },
                 ),
             )
+            Spacer(modifier = Modifier.height(ScreenLayout.contentBottomPadding))
         }
     }
 }
