@@ -198,6 +198,8 @@
     <string name="home_refresh_inspirations">Aggiorna Ispirazioni</string>
     <string name="home_app_version">Versione %1$s</string>
     <string name="home_app_version_rc">Versione %1$s (RC)</string>
+    <string name="home_copyright_notice">© %1$d Roberto Cornano (MyMultiverse). Tutti i diritti riservati.</string>
+    <string name="home_trademark_notice">MyMultiverse™ · Ammò™</string>
     <string name="edit_dream_architect_title">Architetto dei Sogni</string>
     <string name="edit_dream_edit_title">Modifica Sogno</string>
     <string name="action_back">Indietro</string>
@@ -770,8 +772,8 @@
     <string name="longterm_opt_budget_tight">Ridotto / fai-da-te (tutto in autonomia)</string>
     <string name="longterm_opt_budget_moderate">Moderato (un po' di fai-da-te, professionisti per i lavori grossi)</string>
     <string name="longterm_opt_budget_full">Servizio completo (vogliamo assumere fornitori/professionisti)</string>
-    <string name="app_brand_name">Ammò</string>
-    <string name="auth_title">Benvenuto in Ammò</string>
+    <string name="app_brand_name">Ammò™</string>
+    <string name="auth_title">Benvenuto in Ammò™</string>
     <string name="auth_subtitle">Pianifica pasti e spesa insieme alla tua famiglia.</string>
     <string name="onboarding_auth_invite_banner">Sei stato invitato a unirti a %1$s</string>
     <string name="household_setup_default_name">Famiglia di %1$s</string>
@@ -857,7 +859,7 @@
     <string name="sharing_members_invite_sent">Invito inviato a %1$s. Può accettare dopo l'accesso.</string>
     <string name="sharing_members_invite_share_title">Condividi invito</string>
     <string name="sharing_members_invite_share_action">Condividi</string>
-    <string name="sharing_members_invite_share_message">Sei invitato a unirti a %1$s su Ammò! Apri questo link per accettare: %2$s</string>
+    <string name="sharing_members_invite_share_message">Sei invitato a unirti a %1$s su Ammò™! Apri questo link per accettare: %2$s</string>
     <string name="sharing_members_member_added">Membro aggiunto alla tua famiglia.</string>
     <string name="sharing_members_pending_invites_title">Inviti in sospeso</string>
     <string name="sharing_members_pending_invite_label">In sospeso · %1$s</string>

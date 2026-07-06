@@ -81,6 +81,8 @@ object HomeStringKeys {
         "home_rename_household_save",
         "home_app_version",
         "home_app_version_rc",
+        "home_copyright_notice",
+        "home_trademark_notice",
         "home_export_personal_data",
         "home_export_personal_data_success",
         "home_export_personal_data_error",
