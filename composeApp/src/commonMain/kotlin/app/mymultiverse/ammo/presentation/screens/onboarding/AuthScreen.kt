@@ -34,6 +34,7 @@ import app.mymultiverse.ammo.presentation.components.GlobalLanguageAction
 import app.mymultiverse.ammo.presentation.components.JourneyBanner
 import app.mymultiverse.ammo.presentation.components.JourneySsoButtonLabel
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
+import app.mymultiverse.ammo.presentation.components.AdaptiveFormWidth
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.AmmoRoundLogo
 import app.mymultiverse.ammo.presentation.screens.auth.LoginError
@@ -106,16 +107,20 @@ fun AuthScreen(
             )
         },
     ) { padding ->
-        Column(
+        AdaptiveFormWidth(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = ScreenLayout.horizontalPadding)
-                .verticalScroll(rememberScrollState())
-                .testTag(AuthTestTags.SCREEN),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+                .padding(horizontal = ScreenLayout.horizontalPadding),
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .testTag(AuthTestTags.SCREEN),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
             AmmoRoundLogo(modifier = Modifier.size(96.dp))
             Spacer(modifier = Modifier.height(24.dp))
             Text(
@@ -191,6 +196,7 @@ fun AuthScreen(
                         .fillMaxWidth()
                         .testTag(AuthTestTags.ERROR),
                 )
+            }
             }
         }
     }

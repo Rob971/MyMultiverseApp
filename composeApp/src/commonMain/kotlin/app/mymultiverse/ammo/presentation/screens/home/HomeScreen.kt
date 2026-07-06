@@ -43,6 +43,7 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import app.mymultiverse.ammo.presentation.components.screenListPadding
+import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import ammo.composeapp.generated.resources.*
 import app.mymultiverse.ammo.domain.model.Greeting
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdGateError
@@ -104,6 +105,7 @@ object HomeTestTags {
     const val ONBOARDING_CREATE_INVITE_HINT = "home_onboarding_create_invite_hint"
     const val ONBOARDING_NAME_HINT = "home_onboarding_name_hint"
     const val POST_CREATE_INVITE_SNACKBAR = "home_post_create_invite_snackbar"
+    const val WIDE_LAYOUT = "home_wide_layout"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -671,50 +673,98 @@ fun HomeWelcomeContent(
         state = pullRefreshState,
         modifier = modifier.fillMaxSize(),
     ) {
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .keyboardAwareInsets()
                 .padding(screenListPadding()),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = greetingLine,
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = JourneySemanticColors.inkDeep(),
-                    modifier = Modifier.testTag(HomeTestTags.GREETING_LINE),
-                )
-                if (showGreetingLoading) {
+            val isWideLayout = maxWidth >= ScreenLayout.expandedMinWidth
+            val greetingBlock: @Composable () -> Unit = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = loadingLine,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = JourneySemanticColors.inkMuted(),
-                        modifier = Modifier.testTag(HomeTestTags.LOADING_INDICATOR),
+                        text = greetingLine,
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = JourneySemanticColors.inkDeep(),
+                        modifier = Modifier.testTag(HomeTestTags.GREETING_LINE),
                     )
+                    if (showGreetingLoading) {
+                        Text(
+                            text = loadingLine,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = JourneySemanticColors.inkMuted(),
+                            modifier = Modifier.testTag(HomeTestTags.LOADING_INDICATOR),
+                        )
+                    }
                 }
             }
 
-            HomeDailyHubCircularActions(
-                onOpenMealPlan = onOpenMealPlan,
-                onOpenGrocery = onOpenGrocery,
-            )
-
-            HomeDailyMealPlanBlock(
-                nutritionSummary = nutritionSummary,
-                onOpenMealPlan = onOpenMealPlan,
-                onOpenGrocery = onOpenGrocery,
-            )
-
-            HomeComingSoonRow(
-                label = stringResource(Res.string.home_coming_soon_features),
-                badge = stringResource(Res.string.home_logistics_coming_soon),
-                adventuresLabel = stringResource(Res.string.home_coming_soon_adventures),
-                budgetLabel = stringResource(Res.string.task_label_budget),
-                hint = stringResource(Res.string.home_coming_soon_hint),
-            )
+            if (isWideLayout) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(HomeTestTags.WIDE_LAYOUT),
+                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                ) {
+                    greetingBlock()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(ScreenLayout.horizontalPadding),
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(24.dp),
+                        ) {
+                            HomeDailyHubCircularActions(
+                                onOpenMealPlan = onOpenMealPlan,
+                                onOpenGrocery = onOpenGrocery,
+                            )
+                        }
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(24.dp),
+                        ) {
+                            HomeDailyMealPlanBlock(
+                                nutritionSummary = nutritionSummary,
+                                onOpenMealPlan = onOpenMealPlan,
+                                onOpenGrocery = onOpenGrocery,
+                            )
+                            HomeComingSoonRow(
+                                label = stringResource(Res.string.home_coming_soon_features),
+                                badge = stringResource(Res.string.home_logistics_coming_soon),
+                                adventuresLabel = stringResource(Res.string.home_coming_soon_adventures),
+                                budgetLabel = stringResource(Res.string.task_label_budget),
+                                hint = stringResource(Res.string.home_coming_soon_hint),
+                            )
+                        }
+                    }
+                }
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                ) {
+                    greetingBlock()
+                    HomeDailyHubCircularActions(
+                        onOpenMealPlan = onOpenMealPlan,
+                        onOpenGrocery = onOpenGrocery,
+                    )
+                    HomeDailyMealPlanBlock(
+                        nutritionSummary = nutritionSummary,
+                        onOpenMealPlan = onOpenMealPlan,
+                        onOpenGrocery = onOpenGrocery,
+                    )
+                    HomeComingSoonRow(
+                        label = stringResource(Res.string.home_coming_soon_features),
+                        badge = stringResource(Res.string.home_logistics_coming_soon),
+                        adventuresLabel = stringResource(Res.string.home_coming_soon_adventures),
+                        budgetLabel = stringResource(Res.string.task_label_budget),
+                        hint = stringResource(Res.string.home_coming_soon_hint),
+                    )
+                }
+            }
         }
     }
 }

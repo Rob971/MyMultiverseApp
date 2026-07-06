@@ -47,6 +47,7 @@ object MealPlanTestTags {
     const val WEEK_OVERVIEW = "meal_plan_week_overview"
     const val DAILY_SECTION = "meal_plan_daily_section"
     const val CLEAR_WEEK = "meal_plan_clear_week"
+    const val WIDE_DAYS_ROW = "meal_plan_wide_days_row"
     fun suggestAiButton(dayIndex: Int, slot: MealSlot) =
         "meal_plan_suggest_ai_${slot.name.lowercase()}_$dayIndex"
     fun lunchField(dayIndex: Int) = "meal_plan_lunch_$dayIndex"

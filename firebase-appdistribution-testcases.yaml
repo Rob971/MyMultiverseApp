@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 79
-updated: 2026-07-03
+version: 80
+updated: 2026-07-06
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -853,6 +853,17 @@ testcases:
       - Header, empty state, bulk grocery button, and AI chips remain full width above the columns.
       - Day expand/collapse and meal editing work in both columns.
       - Below 600dp, layout falls back to single-column stacked days (today block, then upcoming days).
+
+  - id: wavec-wide-home-columns
+    title: Wide Today layout (hero actions vs daily feed)
+    steps:
+      - Use a tablet, foldable inner display, or emulator with shortest width >= 600dp.
+      - Sign in with an active household and open the Today tab.
+      - Resize below 600dp or switch to a phone.
+    expected:
+      - On wide layout, greeting stays full width; circular Plan and Grocery heroes sit in the left column; Daily meal plan block and coming-soon row sit in the right column.
+      - Today vs This week toggle, tonight timeline, and update-list row work in the right column.
+      - Below 600dp, layout falls back to the stacked phone column (greeting, heroes, daily block, coming soon).
 
   - id: wavec-ai-grocery-terracotta-accent
     title: AI read-only grocery terracotta accent
