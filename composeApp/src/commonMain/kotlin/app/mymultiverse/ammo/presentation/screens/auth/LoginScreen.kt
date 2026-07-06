@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -39,8 +38,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.AmmoRoundLogo
+import app.mymultiverse.ammo.presentation.components.ScreenLayout
+import app.mymultiverse.ammo.presentation.components.keyboardAwareScroll
+import app.mymultiverse.ammo.presentation.components.rememberFieldScrollIntoViewModifier
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.AppIcons
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
@@ -122,6 +123,9 @@ fun LoginScreen(
         LoginError.InvalidCredentials -> stringResource(Res.string.auth_error_invalid_credentials)
         else -> null
     }
+    val scrollState = rememberScrollState()
+    val emailScrollIntoView = rememberFieldScrollIntoViewModifier()
+    val passwordScrollIntoView = rememberFieldScrollIntoViewModifier()
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -138,11 +142,12 @@ fun LoginScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = ScreenLayout.horizontalPadding)
-                .verticalScroll(rememberScrollState())
+                .keyboardAwareScroll(scrollState)
                 .testTag(LoginTestTags.SCREEN),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
         ) {
+            Spacer(modifier = Modifier.height(ScreenLayout.contentTopPadding))
             AmmoRoundLogo(modifier = Modifier.size(96.dp))
             Spacer(modifier = Modifier.height(24.dp))
             Text(
@@ -221,6 +226,7 @@ fun LoginScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .then(emailScrollIntoView)
                     .testTag(LoginTestTags.EMAIL_FIELD),
             )
             Spacer(modifier = Modifier.height(JourneyTextFieldDefaults.fieldSpacing))
@@ -241,6 +247,7 @@ fun LoginScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .then(passwordScrollIntoView)
                     .testTag(LoginTestTags.PASSWORD_FIELD),
             )
 
@@ -293,6 +300,7 @@ fun LoginScreen(
                     },
                 ),
             )
+            Spacer(modifier = Modifier.height(ScreenLayout.contentBottomPadding))
         }
     }
 }

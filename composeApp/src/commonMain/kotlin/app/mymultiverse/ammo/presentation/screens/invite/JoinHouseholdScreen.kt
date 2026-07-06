@@ -6,13 +6,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.presentation.components.JourneySsoButtonLabel
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.AmmoRoundLogo
+import app.mymultiverse.ammo.presentation.components.keyboardAwareScroll
+import app.mymultiverse.ammo.presentation.components.rememberFieldScrollIntoViewModifier
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import app.mymultiverse.ammo.presentation.theme.SharedJourneyColors
@@ -191,18 +191,19 @@ private fun JoinHouseholdContent(
         else -> null
     }
     val joinFieldError = (uiState.message as? JoinHouseholdMessage.Error)?.type
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(padding)
             .padding(horizontal = ScreenLayout.horizontalPadding)
-            .imePadding()
-            .verticalScroll(rememberScrollState())
+            .keyboardAwareScroll(scrollState)
             .testTag(JoinHouseholdTestTags.SCREEN),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top,
     ) {
+        Spacer(modifier = Modifier.height(ScreenLayout.contentTopPadding))
         AmmoRoundLogo(modifier = Modifier.size(88.dp))
         Spacer(modifier = Modifier.height(20.dp))
         Text(
@@ -248,6 +249,7 @@ private fun JoinHouseholdContent(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+        Spacer(modifier = Modifier.height(ScreenLayout.contentBottomPadding))
     }
 }
 
@@ -263,6 +265,7 @@ private fun JoinHouseholdEmailStep(
         JoinHouseholdError.InvalidEmail -> stringResource(Res.string.invite_join_error_invalid_email)
         else -> null
     }
+    val emailScrollIntoView = rememberFieldScrollIntoViewModifier()
     JourneyTextField(
         value = uiState.email,
         onValueChange = screenModel::onEmailChange,
@@ -283,6 +286,7 @@ private fun JoinHouseholdEmailStep(
         ),
         modifier = Modifier
             .fillMaxWidth()
+            .then(emailScrollIntoView)
             .testTag(JoinHouseholdTestTags.EMAIL_FIELD),
     )
 
@@ -348,6 +352,7 @@ private fun JoinHouseholdOtpStep(
     )
     Spacer(modifier = Modifier.height(16.dp))
 
+    val otpScrollIntoView = rememberFieldScrollIntoViewModifier()
     JourneyTextField(
         value = uiState.otpCode,
         onValueChange = screenModel::onOtpCodeChange,
@@ -364,6 +369,7 @@ private fun JoinHouseholdOtpStep(
         ),
         modifier = Modifier
             .fillMaxWidth()
+            .then(otpScrollIntoView)
             .testTag(JoinHouseholdTestTags.OTP_FIELD),
     )
 

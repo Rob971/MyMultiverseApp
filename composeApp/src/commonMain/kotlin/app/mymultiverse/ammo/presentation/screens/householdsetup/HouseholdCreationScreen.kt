@@ -6,13 +6,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -40,6 +38,8 @@ import app.mymultiverse.ammo.presentation.components.JourneyTextField
 import app.mymultiverse.ammo.presentation.components.JourneyTextFieldDefaults
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.AmmoRoundLogo
+import app.mymultiverse.ammo.presentation.components.keyboardAwareScroll
+import app.mymultiverse.ammo.presentation.components.rememberFieldScrollIntoViewModifier
 import app.mymultiverse.ammo.presentation.screens.home.HouseholdNameAvailability
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import app.mymultiverse.ammo.presentation.theme.SharedJourneyColors
@@ -98,6 +98,8 @@ fun HouseholdCreationScreen(
     } else {
         null
     }
+    val scrollState = rememberScrollState()
+    val nameScrollIntoView = rememberFieldScrollIntoViewModifier()
 
     Scaffold(
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
@@ -114,12 +116,12 @@ fun HouseholdCreationScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = ScreenLayout.horizontalPadding)
-                .imePadding()
-                .verticalScroll(rememberScrollState())
+                .keyboardAwareScroll(scrollState)
                 .testTag(HouseholdCreationTestTags.SCREEN),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
         ) {
+            Spacer(modifier = Modifier.height(ScreenLayout.contentTopPadding))
             AmmoRoundLogo(modifier = Modifier.size(88.dp))
             Spacer(modifier = Modifier.height(20.dp))
             Text(
@@ -164,6 +166,7 @@ fun HouseholdCreationScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
+                    .then(nameScrollIntoView)
                     .testTag(HouseholdCreationTestTags.NAME_FIELD),
             )
 
@@ -189,6 +192,7 @@ fun HouseholdCreationScreen(
             ) {
                 Text(stringResource(Res.string.household_gate_create_button))
             }
+            Spacer(modifier = Modifier.height(ScreenLayout.contentBottomPadding))
         }
     }
 }

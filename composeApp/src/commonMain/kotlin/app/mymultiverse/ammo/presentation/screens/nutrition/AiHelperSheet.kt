@@ -3,6 +3,7 @@ package app.mymultiverse.ammo.presentation.screens.nutrition
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomSheetDefaults
@@ -43,6 +44,7 @@ fun AiHelperSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
+                .imePadding()
                 .padding(bottom = 16.dp)
                 .testTag(AiHelperSheetTestTags.SHEET),
         ) {

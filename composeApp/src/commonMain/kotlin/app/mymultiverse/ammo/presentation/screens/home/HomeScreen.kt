@@ -16,6 +16,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import app.mymultiverse.ammo.presentation.components.JourneyTextField
 import app.mymultiverse.ammo.presentation.components.JourneyTextFieldDefaults
+import app.mymultiverse.ammo.presentation.components.KeyboardAwareDialogColumn
+import app.mymultiverse.ammo.presentation.components.keyboardAwareInsets
+import app.mymultiverse.ammo.presentation.components.rememberFieldScrollIntoViewModifier
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -35,8 +38,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.layout.WindowInsets
@@ -493,6 +494,7 @@ fun HomeOnboardingContent(
 ) {
     val hasPendingInvites = pendingInvites.isNotEmpty()
     val pullRefreshState = rememberPullToRefreshState()
+    val nameScrollIntoView = rememberFieldScrollIntoViewModifier()
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -503,8 +505,7 @@ fun HomeOnboardingContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .navigationBarsPadding()
-                .imePadding()
+                .keyboardAwareInsets()
                 .verticalScroll(rememberScrollState())
                 .padding(screenListPadding()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -590,6 +591,7 @@ fun HomeOnboardingContent(
                 onValueChange = onNameChange,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .then(nameScrollIntoView)
                     .testTag(HomeTestTags.ONBOARDING_CREATE_NAME_FIELD),
                 label = { Text(stringResource(Res.string.household_gate_name_label)) },
                 enabled = !onboardingUiState.isCreating,
@@ -673,13 +675,7 @@ fun HomeWelcomeContent(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .then(
-                    if (embeddedInMainTabs) {
-                        Modifier.imePadding()
-                    } else {
-                        Modifier.navigationBarsPadding().imePadding()
-                    },
-                )
+                .keyboardAwareInsets()
                 .padding(screenListPadding()),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
@@ -757,7 +753,9 @@ private fun HomeRenameHouseholdDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.home_rename_household_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(JourneyTextFieldDefaults.fieldSpacing)) {
+            KeyboardAwareDialogColumn(
+                verticalArrangement = Arrangement.spacedBy(JourneyTextFieldDefaults.fieldSpacing),
+            ) {
                 JourneyTextField(
                     value = uiState.nameInput,
                     onValueChange = onNameChange,

@@ -51,6 +51,7 @@ import app.mymultiverse.ammo.presentation.components.HouseholdRoleBadge
 import app.mymultiverse.ammo.presentation.components.HouseholdRoleSelector
 import app.mymultiverse.ammo.presentation.components.householdRoleLabel
 import app.mymultiverse.ammo.presentation.components.JourneyEmptyState
+import app.mymultiverse.ammo.presentation.components.KeyboardAwareDialogColumn
 import app.mymultiverse.ammo.presentation.components.JourneyIcon
 import app.mymultiverse.ammo.presentation.components.JourneyIconButton
 import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
@@ -496,7 +497,7 @@ fun HouseholdMembersScreen(
             onDismissRequest = screenModel::dismissDialogs,
             title = { Text(stringResource(Res.string.sharing_members_add_person)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                KeyboardAwareDialogColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     JourneyTextField(
                         value = uiState.emailInput,
                         onValueChange = screenModel::onEmailChange,
@@ -595,7 +596,7 @@ fun HouseholdMembersScreen(
             onDismissRequest = screenModel::dismissAddDependantDialog,
             title = { Text(stringResource(Res.string.sharing_members_add_dependent)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                KeyboardAwareDialogColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     JourneyTextField(
                         value = uiState.dependantNameInput,
                         onValueChange = screenModel::onDependantNameChange,
