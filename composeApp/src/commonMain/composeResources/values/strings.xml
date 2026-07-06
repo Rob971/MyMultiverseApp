@@ -11,6 +11,15 @@
     <string name="home_household_description">Invite people to plan meals and groceries with you.</string>
     <string name="home_household_description_named">Manage people in %1$s — plan meals and groceries together.</string>
     <string name="home_logistics_requires_household">Family required</string>
+    <string name="household_push_someone">Someone</string>
+    <string name="household_push_grocery_item_added_title">Grocery list updated</string>
+    <string name="household_push_grocery_item_added_body_single">%1$s added %2$s to the grocery list</string>
+    <string name="household_push_grocery_item_added_body_multiple">%1$s added %2$d items to the grocery list</string>
+    <string name="household_push_meal_plan_item_added_title">Meal plan updated</string>
+    <string name="household_push_meal_plan_item_added_body_single">%1$s added %2$s for %3$s (%4$s)</string>
+    <string name="household_push_meal_plan_item_added_body_multiple">%1$s added %2$d meals to the plan</string>
+    <string name="household_push_meal_slot_lunch">lunch</string>
+    <string name="household_push_meal_slot_dinner">dinner</string>
     <string name="household_gate_title">Set up your family</string>
     <string name="household_gate_subtitle">Create or join a family group to plan meals and groceries together.</string>
     <string name="household_gate_create_title">Create a new family</string>

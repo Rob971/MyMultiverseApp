@@ -245,6 +245,12 @@ private fun AuthenticatedMainApp() {
         HouseholdPushEvents.consumePendingGroceryListNudge()?.let {
             selectedTab = AppMainTab.Grocery
         }
+        HouseholdPushEvents.consumePendingGroceryItemAdded()?.let {
+            selectedTab = AppMainTab.Grocery
+        }
+        HouseholdPushEvents.consumePendingMealPlanItemAdded()?.let {
+            selectedTab = AppMainTab.MealPlan
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -260,6 +266,18 @@ private fun AuthenticatedMainApp() {
     LaunchedEffect(Unit) {
         HouseholdPushEvents.groceryListNudges.collect {
             selectedTab = AppMainTab.Grocery
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        HouseholdPushEvents.groceryItemAdded.collect {
+            selectedTab = AppMainTab.Grocery
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        HouseholdPushEvents.mealPlanItemAdded.collect {
+            selectedTab = AppMainTab.MealPlan
         }
     }
 

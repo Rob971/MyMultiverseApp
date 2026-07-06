@@ -10,6 +10,15 @@
     <string name="home_household_description">Invita ll'ata pe' planificà pasti e spesa cu te.</string>
     <string name="home_household_description_named">Gestisce ll'ata dint'a %1$s — planificate pasti e spesa insieme.</string>
     <string name="home_logistics_requires_household">Famiglia richiesta</string>
+    <string name="household_push_someone">Qualcuno</string>
+    <string name="household_push_grocery_item_added_title">Lista aggiornata</string>
+    <string name="household_push_grocery_item_added_body_single">%1$s ha mietto %2$s 'n lista</string>
+    <string name="household_push_grocery_item_added_body_multiple">%1$s ha mietto %2$d cose 'n lista</string>
+    <string name="household_push_meal_plan_item_added_title">Piano pasti aggiornato</string>
+    <string name="household_push_meal_plan_item_added_body_single">%1$s ha mietto %2$s pe' %3$s (%4$s)</string>
+    <string name="household_push_meal_plan_item_added_body_multiple">%1$s ha mietto %2$d pasti 'o piano</string>
+    <string name="household_push_meal_slot_lunch">pranzo</string>
+    <string name="household_push_meal_slot_dinner">cena</string>
     <string name="household_gate_title">Configure 'a famiglia</string>
     <string name="household_gate_subtitle">Crea o uniscite a nu gruppo famigliare pe' planificà pasti e spesa insieme.</string>
     <string name="household_gate_create_title">Crea 'na famiglia nova</string>

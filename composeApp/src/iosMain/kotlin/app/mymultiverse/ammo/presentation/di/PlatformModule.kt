@@ -26,8 +26,10 @@ actual fun platformModule(): Module = module {
     single<PushNotificationRegistrar> {
         val client = get<SupabaseClientHolder>().client
         if (client != null) {
-            SupabasePushNotificationRegistrar(client, "ios") {
+            SupabasePushNotificationRegistrar(client, "ios", {
                 IosApnsTokenProvider.currentToken()
+            }) {
+                get<LanguageManager>().currentLanguage.value
             }
         } else {
             NoOpPushNotificationRegistrar()
