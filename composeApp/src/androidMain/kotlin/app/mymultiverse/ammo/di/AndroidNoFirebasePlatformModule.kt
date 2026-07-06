@@ -4,6 +4,7 @@ import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
 import app.mymultiverse.ammo.data.platform.NoOpPushNotificationRegistrar
 import app.mymultiverse.ammo.data.platform.SupabasePushNotificationRegistrar
 import app.mymultiverse.ammo.data.supabase.SupabaseClientHolder
+import app.mymultiverse.ammo.domain.manager.LanguageManager
 import app.mymultiverse.ammo.domain.observability.CrashReporter
 import app.mymultiverse.ammo.domain.platform.PushNotificationRegistrar
 import org.koin.android.ext.koin.androidContext
@@ -16,8 +17,10 @@ fun androidNoFirebasePlatformModule(): Module = module {
         val client = get<SupabaseClientHolder>().client
         if (client != null) {
             val context = androidContext()
-            SupabasePushNotificationRegistrar(client, "android") {
+            SupabasePushNotificationRegistrar(client, "android", {
                 "android-stub-${context.packageName}"
+            }) {
+                get<LanguageManager>().currentLanguage.value
             }
         } else {
             NoOpPushNotificationRegistrar()

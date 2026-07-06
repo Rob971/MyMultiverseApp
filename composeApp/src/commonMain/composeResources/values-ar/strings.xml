@@ -10,6 +10,15 @@
     <string name="home_household_description">ادعُ أشخاصًا للتخطيط للوجبات والبقالة معك.</string>
     <string name="home_household_description_named">إدارة الأشخاص في %1$s — خططوا للوجبات والبقالة معًا.</string>
     <string name="home_logistics_requires_household">العائلة مطلوبة</string>
+    <string name="household_push_someone">شخص ما</string>
+    <string name="household_push_grocery_item_added_title">تم تحديث قائمة التسوق</string>
+    <string name="household_push_grocery_item_added_body_single">أضاف %1$s %2$s إلى قائمة التسوق</string>
+    <string name="household_push_grocery_item_added_body_multiple">أضاف %1$s %2$d عناصر إلى قائمة التسوق</string>
+    <string name="household_push_meal_plan_item_added_title">تم تحديث خطة الوجبات</string>
+    <string name="household_push_meal_plan_item_added_body_single">أضاف %1$s %2$s ليوم %3$s (%4$s)</string>
+    <string name="household_push_meal_plan_item_added_body_multiple">أضاف %1$s %2$d وجبات إلى الخطة</string>
+    <string name="household_push_meal_slot_lunch">غداء</string>
+    <string name="household_push_meal_slot_dinner">عشاء</string>
     <string name="household_gate_title">إعداد عائلتك</string>
     <string name="household_gate_subtitle">أنشئ مجموعة عائلية أو انضم إليها للتخطيط للوجبات والبقالة معًا.</string>
     <string name="household_gate_create_title">إنشاء عائلة جديدة</string>

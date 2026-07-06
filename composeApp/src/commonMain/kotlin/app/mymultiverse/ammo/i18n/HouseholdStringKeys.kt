@@ -22,6 +22,15 @@ object HouseholdStringKeys {
         "household_name_taken",
         "household_name_invalid",
         "home_logistics_requires_household",
+        "household_push_someone",
+        "household_push_grocery_item_added_title",
+        "household_push_grocery_item_added_body_single",
+        "household_push_grocery_item_added_body_multiple",
+        "household_push_meal_plan_item_added_title",
+        "household_push_meal_plan_item_added_body_single",
+        "household_push_meal_plan_item_added_body_multiple",
+        "household_push_meal_slot_lunch",
+        "household_push_meal_slot_dinner",
     )
 
     val localeDirectories: List<String> = NutritionStringKeys.localeDirectories

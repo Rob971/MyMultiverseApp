@@ -69,4 +69,43 @@ class InvitePushPayloadTest {
         assertEquals("2026-06-30", nudge?.weekKey)
         assertEquals("Alex", nudge?.nudgerName)
     }
+
+    @Test
+    fun groceryItemAddedFromData_readsGroceryItemAddedPayload() {
+        val push = InvitePushPayload.groceryItemAddedFromData(
+            mapOf(
+                InvitePushPayload.KEY_TYPE to InvitePushPayload.TYPE_GROCERY_ITEM_ADDED,
+                InvitePushPayload.KEY_HOUSEHOLD_ID to "household-1",
+                InvitePushPayload.KEY_WEEK_KEY to "2026-06-30",
+                InvitePushPayload.KEY_ACTOR_NAME to "Alex",
+                InvitePushPayload.KEY_ITEM_LABEL to "Milk",
+                InvitePushPayload.KEY_ADDED_COUNT to "1",
+            ),
+        )
+
+        assertEquals("household-1", push?.householdId)
+        assertEquals("Milk", push?.itemLabel)
+        assertEquals(1, push?.addedCount)
+    }
+
+    @Test
+    fun mealPlanItemAddedFromData_readsMealPlanItemAddedPayload() {
+        val push = InvitePushPayload.mealPlanItemAddedFromData(
+            mapOf(
+                InvitePushPayload.KEY_TYPE to InvitePushPayload.TYPE_MEAL_PLAN_ITEM_ADDED,
+                InvitePushPayload.KEY_HOUSEHOLD_ID to "household-1",
+                InvitePushPayload.KEY_WEEK_KEY to "2026-06-30",
+                InvitePushPayload.KEY_ACTOR_NAME to "Alex",
+                InvitePushPayload.KEY_ITEM_LABEL to "Pasta",
+                InvitePushPayload.KEY_ADDED_COUNT to "2",
+                InvitePushPayload.KEY_DAY_INDEX to "1",
+                InvitePushPayload.KEY_MEAL_SLOT to "dinner",
+            ),
+        )
+
+        assertEquals("Pasta", push?.itemLabel)
+        assertEquals(2, push?.addedCount)
+        assertEquals(1, push?.dayIndex)
+        assertEquals("dinner", push?.mealSlot)
+    }
 }

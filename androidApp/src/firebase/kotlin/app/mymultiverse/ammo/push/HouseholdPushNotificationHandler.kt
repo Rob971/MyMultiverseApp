@@ -85,6 +85,8 @@ object HouseholdPushNotificationHandler {
                 val nudgerName = data[InvitePushPayload.KEY_NUDGER_NAME].orEmpty().ifBlank { "Someone" }
                 "$nudgerName is heading to the store"
             }
+            InvitePushPayload.TYPE_GROCERY_ITEM_ADDED -> "Grocery list updated"
+            InvitePushPayload.TYPE_MEAL_PLAN_ITEM_ADDED -> "Meal plan updated"
             else -> null
         }
 
@@ -94,6 +96,26 @@ object HouseholdPushNotificationHandler {
             InvitePushPayload.TYPE_MEMBER_JOINED -> "Open Ammò to see your household"
             InvitePushPayload.TYPE_GROCERY_LIST_NUDGE ->
                 "Add anything missing to the grocery list before they shop"
+            InvitePushPayload.TYPE_GROCERY_ITEM_ADDED -> {
+                val actorName = data[InvitePushPayload.KEY_ACTOR_NAME].orEmpty().ifBlank { "Someone" }
+                val itemLabel = data[InvitePushPayload.KEY_ITEM_LABEL].orEmpty()
+                val addedCount = data[InvitePushPayload.KEY_ADDED_COUNT]?.toIntOrNull() ?: 1
+                if (addedCount > 1) {
+                    "$actorName added $addedCount items to the grocery list"
+                } else {
+                    "$actorName added $itemLabel to the grocery list"
+                }
+            }
+            InvitePushPayload.TYPE_MEAL_PLAN_ITEM_ADDED -> {
+                val actorName = data[InvitePushPayload.KEY_ACTOR_NAME].orEmpty().ifBlank { "Someone" }
+                val addedCount = data[InvitePushPayload.KEY_ADDED_COUNT]?.toIntOrNull() ?: 1
+                if (addedCount > 1) {
+                    "$actorName added $addedCount meals to the plan"
+                } else {
+                    val itemLabel = data[InvitePushPayload.KEY_ITEM_LABEL].orEmpty()
+                    "$actorName added $itemLabel to the meal plan"
+                }
+            }
             else -> null
         }
 
@@ -103,6 +125,12 @@ object HouseholdPushNotificationHandler {
                 data[InvitePushPayload.KEY_HOUSEHOLD_ID].hashCode()
             InvitePushPayload.TYPE_GROCERY_LIST_NUDGE ->
                 data[InvitePushPayload.KEY_HOUSEHOLD_ID].hashCode() xor data[InvitePushPayload.KEY_WEEK_KEY].hashCode()
+            InvitePushPayload.TYPE_GROCERY_ITEM_ADDED ->
+                data[InvitePushPayload.KEY_HOUSEHOLD_ID].hashCode() xor
+                    (data[InvitePushPayload.KEY_ITEM_LABEL].hashCode())
+            InvitePushPayload.TYPE_MEAL_PLAN_ITEM_ADDED ->
+                data[InvitePushPayload.KEY_HOUSEHOLD_ID].hashCode() xor
+                    (data[InvitePushPayload.KEY_DAY_INDEX].hashCode())
             else ->
                 data[InvitePushPayload.KEY_INVITE_TOKEN]?.hashCode()
                     ?: data.hashCode()

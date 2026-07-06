@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 79
-updated: 2026-07-03
+version: 80
+updated: 2026-07-06
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -52,6 +52,7 @@ summary: |
   Today hero raster icons (v76): center Plan lunch / Shopping list circles use the same transparent WebP art as bottom nav (scaled up inside tinted rings).
   Theme-aware nav art (v79): Today/Plan/Groceries WebP icons use drawable-dark variants when app or system theme is dark (in-app theme picker included).
   Partner nudges (v77): grocery and meal plan tabs show prominent reminder cards (teal on Groceries, terracotta on Plan) plus toolbar bell for multi-member households on the current week.
+  Item-added pushes (v80): partners receive a localized push (device app language) when a member adds a grocery item or fills a meal-plan slot; tap opens the matching tab.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Family members role change (v71): Change role button and tappable badge on member rows; role updates show immediately after save.
   Family member photos (v76): each member row shows a circular avatar beside the name; tap your own avatar (or a dependant's if you manage members) to pick a photo from the gallery.
@@ -930,6 +931,20 @@ testcases:
     expected:
       - Nudge hidden for solo households, viewers, and future weeks.
       - Partners receive push to update the shared meal plan; sender sees confirmation or cooldown messaging.
+
+  - id: nutrition-item-added-push-localized
+    title: Localized push when partner adds grocery item or meal
+    steps:
+      - Two person members in the same household with push tokens registered; set device B's app language to French (or another non-English locale).
+      - On device A, add a grocery item (e.g. Milk) to the current week and wait for sync.
+      - On device B, confirm a push arrives with title/body in B's app language naming A and the item.
+      - Tap the push; confirm the app opens on the Groceries tab.
+      - On device A, fill an empty lunch or dinner slot on the Plan tab and wait for sync.
+      - On device B, confirm a localized meal-plan push naming A, the meal, day, and slot; tap to open the Plan tab.
+    expected:
+      - No push is sent to the member who made the change; solo households send nothing.
+      - Adding multiple items in one sync produces a single batched push (item count instead of label).
+      - Push copy follows each recipient device's app language (all 8 locales), not the sender's.
 
   - id: s10-meal-suggest-ingredients-sheet
     title: Inline meal suggest → apply → optional ingredients in one sheet

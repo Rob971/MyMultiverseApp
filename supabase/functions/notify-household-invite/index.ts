@@ -14,8 +14,19 @@ import {
 } from "./invite-content.ts";
 import { buildInvitePushData, inviteTokenFromPayload } from "./invite-token.ts";
 import { buildGroceryListNudgePushData } from "./grocery-list-nudge-token.ts";
+import { buildGroceryItemAddedPushData } from "./grocery-item-added-token.ts";
 import { buildMealPlanNudgePushData } from "./meal-plan-nudge-token.ts";
+import { buildMealPlanItemAddedPushData } from "./meal-plan-item-added-token.ts";
 import { buildMemberJoinedPushData } from "./member-joined-token.ts";
+import {
+  groceryItemAddedPushText,
+  groceryListNudgePushText,
+  mealPlanItemAddedPushText,
+  mealPlanNudgePushText,
+  memberJoinedPushText,
+  normalizePushLocale,
+  type PushLocale,
+} from "./notification-i18n.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,11 +64,15 @@ async function resolveInviteToken(
   return token || null;
 }
 
+type LocalizedPushContent = {
+  title: string;
+  body: string;
+};
+
 async function sendPushToUserTokens(
   admin: SupabaseClient,
   userId: string,
-  title: string,
-  body: string,
+  contentForLocale: (locale: PushLocale) => LocalizedPushContent,
   data: Record<string, string>,
   fcmServiceAccountJson: string,
   apnsTeamId: string,
@@ -68,7 +83,7 @@ async function sendPushToUserTokens(
 ): Promise<void> {
   const { data: tokens } = await admin
     .from("user_device_tokens")
-    .select("token, platform")
+    .select("token, platform, app_locale")
     .eq("user_id", userId);
 
   const apnsConfigured = Boolean(apnsKeyId && apnsTeamId && apnsPrivateKey);
@@ -78,6 +93,8 @@ async function sendPushToUserTokens(
   for (const tokenRow of tokens ?? []) {
     const token = String(tokenRow.token ?? "");
     const platform = String(tokenRow.platform ?? "");
+    const locale = normalizePushLocale(tokenRow.app_locale as string | null | undefined);
+    const { title, body } = contentForLocale(locale);
 
     if (fcmServiceAccountJson && isDeliverableAndroidToken(token, platform)) {
       const ok = await sendAndroidInvitePush(
@@ -184,14 +201,14 @@ async function processHouseholdInvite(
 
   const inviteeUserId = payload.invitee_user_id as string | null | undefined;
   if (inviteeUserId) {
-    const pushTitle = `${inviterName} invited you`;
-    const pushBody = `Join ${householdName} on ${APP_BRAND_NAME}`;
     const pushData = buildInvitePushData(payload, inviteToken);
     await sendPushToUserTokens(
       admin,
       inviteeUserId,
-      pushTitle,
-      pushBody,
+      () => ({
+        title: `${inviterName} invited you`,
+        body: `Join ${householdName} on ${APP_BRAND_NAME}`,
+      }),
       pushData,
       fcmServiceAccountJson,
       apnsTeamId,
@@ -234,8 +251,6 @@ async function processGroceryListNudge(
     return;
   }
 
-  const pushTitle = `${nudgerName} is heading to the store`;
-  const pushBody = `Add anything missing to the grocery list in ${householdName}`;
   const pushData = buildGroceryListNudgePushData(payload);
 
   for (const member of members ?? []) {
@@ -244,8 +259,7 @@ async function processGroceryListNudge(
     await sendPushToUserTokens(
       admin,
       userId,
-      pushTitle,
-      pushBody,
+      (locale) => groceryListNudgePushText(locale, nudgerName, householdName),
       pushData,
       fcmServiceAccountJson,
       apnsKeyId,
@@ -288,8 +302,6 @@ async function processMealPlanNudge(
     return;
   }
 
-  const pushTitle = `${nudgerName} is planning meals`;
-  const pushBody = `Add lunches and dinners to the meal plan in ${householdName}`;
   const pushData = buildMealPlanNudgePushData(payload);
 
   for (const member of members ?? []) {
@@ -298,8 +310,7 @@ async function processMealPlanNudge(
     await sendPushToUserTokens(
       admin,
       userId,
-      pushTitle,
-      pushBody,
+      (locale) => mealPlanNudgePushText(locale, nudgerName, householdName),
       pushData,
       fcmServiceAccountJson,
       apnsKeyId,
@@ -342,8 +353,6 @@ async function processMemberJoined(
     return;
   }
 
-  const pushTitle = `${memberName} joined`;
-  const pushBody = `Now collaborating in ${householdName}`;
   const pushData = buildMemberJoinedPushData(payload);
 
   for (const member of members ?? []) {
@@ -352,12 +361,124 @@ async function processMemberJoined(
     await sendPushToUserTokens(
       admin,
       userId,
-      pushTitle,
-      pushBody,
+      (locale) => memberJoinedPushText(locale, memberName, householdName),
       pushData,
       fcmServiceAccountJson,
       apnsTeamId,
       apnsKeyId,
+      apnsPrivateKey,
+      apnsBundleId,
+      apnsUseSandbox,
+    );
+  }
+}
+
+async function processGroceryItemAdded(
+  admin: SupabaseClient,
+  payload: Record<string, unknown>,
+  fcmServiceAccountJson: string,
+  apnsKeyId: string,
+  apnsTeamId: string,
+  apnsPrivateKey: string,
+  apnsBundleId: string,
+  apnsUseSandbox: boolean,
+): Promise<void> {
+  const householdId = String(payload.household_id ?? "").trim();
+  const actorUserId = String(payload.actor_user_id ?? "").trim();
+  const actorName = String(payload.actor_name ?? "Someone");
+  const itemLabel = String(payload.item_label ?? "");
+  const addedCount = Number(payload.added_count ?? 1);
+
+  if (!householdId || !actorUserId) {
+    console.warn("grocery_item_added_missing_ids", { householdId, actorUserId });
+    return;
+  }
+
+  const { data: members, error } = await admin
+    .from("household_members")
+    .select("user_id")
+    .eq("household_id", householdId)
+    .neq("user_id", actorUserId);
+
+  if (error) {
+    console.error("grocery_item_added_recipients_failed", error.message);
+    return;
+  }
+
+  const pushData = buildGroceryItemAddedPushData(payload);
+
+  for (const member of members ?? []) {
+    const userId = String(member.user_id ?? "").trim();
+    if (!userId) continue;
+    await sendPushToUserTokens(
+      admin,
+      userId,
+      (locale) => groceryItemAddedPushText(locale, actorName, itemLabel, addedCount),
+      pushData,
+      fcmServiceAccountJson,
+      apnsKeyId,
+      apnsTeamId,
+      apnsPrivateKey,
+      apnsBundleId,
+      apnsUseSandbox,
+    );
+  }
+}
+
+async function processMealPlanItemAdded(
+  admin: SupabaseClient,
+  payload: Record<string, unknown>,
+  fcmServiceAccountJson: string,
+  apnsKeyId: string,
+  apnsTeamId: string,
+  apnsPrivateKey: string,
+  apnsBundleId: string,
+  apnsUseSandbox: boolean,
+): Promise<void> {
+  const householdId = String(payload.household_id ?? "").trim();
+  const actorUserId = String(payload.actor_user_id ?? "").trim();
+  const actorName = String(payload.actor_name ?? "Someone");
+  const itemLabel = String(payload.item_label ?? "");
+  const addedCount = Number(payload.added_count ?? 1);
+  const dayIndex = Number(payload.day_index ?? 0);
+  const mealSlot = String(payload.meal_slot ?? "");
+
+  if (!householdId || !actorUserId) {
+    console.warn("meal_plan_item_added_missing_ids", { householdId, actorUserId });
+    return;
+  }
+
+  const { data: members, error } = await admin
+    .from("household_members")
+    .select("user_id")
+    .eq("household_id", householdId)
+    .neq("user_id", actorUserId);
+
+  if (error) {
+    console.error("meal_plan_item_added_recipients_failed", error.message);
+    return;
+  }
+
+  const pushData = buildMealPlanItemAddedPushData(payload);
+
+  for (const member of members ?? []) {
+    const userId = String(member.user_id ?? "").trim();
+    if (!userId) continue;
+    await sendPushToUserTokens(
+      admin,
+      userId,
+      (locale) => mealPlanItemAddedPushText(
+        locale,
+        actorName,
+        itemLabel,
+        addedCount,
+        dayIndex,
+        mealSlot,
+      ),
+      pushData,
+      fcmServiceAccountJson,
+      apnsKeyId,
+      apnsTeamId,
       apnsPrivateKey,
       apnsBundleId,
       apnsUseSandbox,
@@ -395,7 +516,14 @@ Deno.serve(async (req) => {
       .from("household_notification_outbox")
       .select("id, kind, payload")
       .is("processed_at", null)
-      .in("kind", ["household_invite", "household_member_joined", "grocery_list_nudge", "meal_plan_nudge"])
+      .in("kind", [
+        "household_invite",
+        "household_member_joined",
+        "grocery_list_nudge",
+        "meal_plan_nudge",
+        "grocery_item_added",
+        "meal_plan_item_added",
+      ])
       .order("created_at", { ascending: true })
       .limit(25);
 
@@ -458,6 +586,28 @@ Deno.serve(async (req) => {
         );
       } else if (row.kind === "meal_plan_nudge") {
         await processMealPlanNudge(
+          admin,
+          payload,
+          fcmServiceAccountJson,
+          apnsKeyId,
+          apnsTeamId,
+          apnsPrivateKey,
+          apnsBundleId,
+          apnsUseSandbox,
+        );
+      } else if (row.kind === "grocery_item_added") {
+        await processGroceryItemAdded(
+          admin,
+          payload,
+          fcmServiceAccountJson,
+          apnsKeyId,
+          apnsTeamId,
+          apnsPrivateKey,
+          apnsBundleId,
+          apnsUseSandbox,
+        );
+      } else if (row.kind === "meal_plan_item_added") {
+        await processMealPlanItemAdded(
           admin,
           payload,
           fcmServiceAccountJson,

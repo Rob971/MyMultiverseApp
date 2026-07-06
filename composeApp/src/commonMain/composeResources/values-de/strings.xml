@@ -10,6 +10,15 @@
     <string name="home_household_description">Lade Personen ein, Mahlzeiten und Einkäufe mit dir zu planen.</string>
     <string name="home_household_description_named">Verwalte Personen in %1$s — plant Mahlzeiten und Einkäufe gemeinsam.</string>
     <string name="home_logistics_requires_household">Familie erforderlich</string>
+    <string name="household_push_someone">Jemand</string>
+    <string name="household_push_grocery_item_added_title">Einkaufsliste aktualisiert</string>
+    <string name="household_push_grocery_item_added_body_single">%1$s hat %2$s zur Einkaufsliste hinzugefügt</string>
+    <string name="household_push_grocery_item_added_body_multiple">%1$s hat %2$d Artikel zur Einkaufsliste hinzugefügt</string>
+    <string name="household_push_meal_plan_item_added_title">Essensplan aktualisiert</string>
+    <string name="household_push_meal_plan_item_added_body_single">%1$s hat %2$s für %3$s (%4$s) hinzugefügt</string>
+    <string name="household_push_meal_plan_item_added_body_multiple">%1$s hat %2$d Mahlzeiten zum Plan hinzugefügt</string>
+    <string name="household_push_meal_slot_lunch">Mittagessen</string>
+    <string name="household_push_meal_slot_dinner">Abendessen</string>
     <string name="household_gate_title">Familie einrichten</string>
     <string name="household_gate_subtitle">Erstelle oder tritt einer Familiengruppe bei, um Mahlzeiten und Einkäufe gemeinsam zu planen.</string>
     <string name="household_gate_create_title">Neue Familie erstellen</string>

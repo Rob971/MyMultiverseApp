@@ -16,4 +16,4 @@ if ! command -v deno >/dev/null 2>&1; then
 fi
 
 cd "${FUNCTION_DIR}"
-deno test invite-content_test.ts invite-token_test.ts
+deno test invite-content_test.ts invite-token_test.ts notification-i18n_test.ts grocery-item-added-token_test.ts grocery-list-nudge-token_test.ts meal-plan-nudge-token_test.ts
