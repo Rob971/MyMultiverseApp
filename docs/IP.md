@@ -82,6 +82,16 @@ Ammò is a product of MyMultiverse.
 
 ## Registration checklist
 
+### Free protection (do before / while publishing)
+
+- [x] **™ symbols** — MyMultiverse™, Ammò™ on app settings, website headers/footers, store listing draft (`docs/PLAY-STORE-LISTING.md`)
+- [x] **Copyright notice** — Account & settings sheet + all mymultiverse.app footers: `© [year] Roberto Cornano (MyMultiverse). All rights reserved.`
+- [ ] **Contributor sign-off** — Carola ZENO: signed IP assignment ([`docs/legal/CONTRIBUTOR-SIGNOFF-CHECKLIST.md`](legal/CONTRIBUTOR-SIGNOFF-CHECKLIST.md))
+- [x] **Timestamp evidence** — run `./scripts/create-ip-evidence-archive.sh`; store `.tar.gz` off-repo ([`docs/ip-evidence/README.md`](ip-evidence/README.md))
+- [x] **Repo COPYRIGHT** — root [`COPYRIGHT`](../COPYRIGHT) file
+
+### Paid / counsel (when ready)
+
 - [ ] Signed **IP assignment / contributor agreement** with Carola ZENO
 - [ ] EUIPO trademark: **MyMultiverse** (classes 9, 42; consider 35)
 - [ ] EUIPO trademark: **Ammò** + figurative logo

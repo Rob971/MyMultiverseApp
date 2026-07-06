@@ -29,6 +29,11 @@ import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.auth_sign_out
 import ammo.composeapp.generated.resources.home_app_version
 import ammo.composeapp.generated.resources.home_app_version_rc
+import ammo.composeapp.generated.resources.home_copyright_notice
+import ammo.composeapp.generated.resources.home_trademark_notice
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import ammo.composeapp.generated.resources.home_delete_account
 import ammo.composeapp.generated.resources.home_export_personal_data
 import ammo.composeapp.generated.resources.home_section_household
@@ -42,6 +47,8 @@ object HomeAccountSheetTestTags {
     const val EXPORT = HomeTestTags.EXPORT_DATA_BUTTON
     const val DELETE = HomeTestTags.DELETE_ACCOUNT_BUTTON
     const val VERSION = HomeTestTags.APP_VERSION_LABEL
+    const val COPYRIGHT = "home_account_copyright"
+    const val TRADEMARK = "home_account_trademark"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -164,14 +171,36 @@ fun HomeAccountSheet(
                 } else {
                     stringResource(Res.string.home_app_version, AppBuildInfo.VERSION_NAME)
                 }
+            val copyrightYear =
+                Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
             Text(
                 text = versionLabel,
                 style = MaterialTheme.typography.labelSmall,
                 color = JourneySemanticColors.inkMuted(),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp, bottom = 16.dp)
+                    .padding(top = 16.dp)
                     .testTag(HomeAccountSheetTestTags.VERSION),
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = stringResource(Res.string.home_copyright_notice, copyrightYear),
+                style = MaterialTheme.typography.labelSmall,
+                color = JourneySemanticColors.inkMuted(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .testTag(HomeAccountSheetTestTags.COPYRIGHT),
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = stringResource(Res.string.home_trademark_notice),
+                style = MaterialTheme.typography.labelSmall,
+                color = JourneySemanticColors.inkMuted(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp, bottom = 16.dp)
+                    .testTag(HomeAccountSheetTestTags.TRADEMARK),
                 textAlign = TextAlign.Center,
             )
         }
