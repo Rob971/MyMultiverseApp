@@ -174,8 +174,9 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun grocery_rowTap_togglesChecked() {
-        val screenModel = nutritionScreenModel()
+    fun grocery_editButton_opensEditField() {
+        val itemId = "instrumented-item-1"
+        val screenModel = nutritionScreenModel(itemId = itemId)
 
         composeRule.setContent {
             AppTheme {
@@ -190,10 +191,12 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
         composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
 
-        composeRule.onNodeWithText("Milk")
+        composeRule.onNodeWithTag("${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}$itemId")
             .performScrollTo()
             .performClick()
-        composeRule.waitForState(screenModel.groceryItems) { it.single().isChecked }
+
+        composeRule.onNodeWithTag("${GroceryItemRowTestTags.EDIT_FIELD_PREFIX}$itemId")
+            .assertIsDisplayed()
     }
 
     @Test
