@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -15,16 +16,23 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.ammo.domain.model.Greeting
+import app.mymultiverse.ammo.domain.model.auth.AuthState
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.ammo.presentation.components.MealPlanTestTags
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
+import app.mymultiverse.ammo.presentation.screens.auth.LoginScreen
+import app.mymultiverse.ammo.presentation.screens.auth.LoginScreenModel
+import app.mymultiverse.ammo.presentation.screens.auth.LoginTestTags
 import app.mymultiverse.ammo.presentation.screens.home.HomeTestTags
 import app.mymultiverse.ammo.presentation.screens.home.HomeWelcomeContent
 import app.mymultiverse.ammo.presentation.screens.nutrition.GroceryListTestTags
 import app.mymultiverse.ammo.presentation.screens.nutrition.GroceryShoppingScreen
 import app.mymultiverse.ammo.presentation.screens.nutrition.NutritionScreenModel
 import app.mymultiverse.ammo.presentation.screens.nutrition.WeeklyMealPlanScreen
+import app.mymultiverse.ammo.presentation.screens.onboarding.AuthScreen
+import app.mymultiverse.ammo.presentation.screens.onboarding.AuthTestTags
+import app.mymultiverse.ammo.presentation.screens.onboarding.OnboardingScreenModel
 import app.mymultiverse.ammo.presentation.theme.AppTheme
 import app.mymultiverse.ammo.ui.InstrumentedComposeTest.waitForState
 import com.russhwolf.settings.MapSettings
@@ -124,7 +132,7 @@ class WideLayoutInstrumentedTest {
             AppTheme {
                 WideLayoutHost {
                     HomeWelcomeContent(
-                        greeting = Greeting.Morning,
+                        greeting = Greeting("Good morning"),
                         userDisplayName = "Alex",
                         nutritionSummary = null,
                         isRefreshing = false,
@@ -147,7 +155,7 @@ class WideLayoutInstrumentedTest {
             AppTheme {
                 PhoneLayoutHost {
                     HomeWelcomeContent(
-                        greeting = Greeting.Morning,
+                        greeting = Greeting("Good morning"),
                         userDisplayName = "Alex",
                         nutritionSummary = null,
                         isRefreshing = false,
@@ -161,6 +169,104 @@ class WideLayoutInstrumentedTest {
         }
 
         composeRule.onNodeWithTag(HomeTestTags.WIDE_LAYOUT).assertDoesNotExist()
+    }
+
+    /**
+     * [WideLayoutHost] minus [AuthScreen]/[LoginScreen]'s horizontal screen padding on both
+     * sides — the width [AdaptiveFormWidth] receives as its incoming constraint, comfortably
+     * over the 600dp breakpoint so the form is expected to clamp to [ScreenLayout.formMaxWidth].
+     */
+    private val wideAvailableFormWidth =
+        (ScreenLayout.expandedMinWidth + 200.dp) - (ScreenLayout.horizontalPadding * 2)
+
+    /** Same computation for [PhoneLayoutHost] — under the breakpoint, so no clamping applies. */
+    private val phoneAvailableFormWidth =
+        (ScreenLayout.expandedMinWidth - 48.dp) - (ScreenLayout.horizontalPadding * 2)
+
+    @Test
+    fun auth_wideLayout_capsFormWidthAtFormMaxWidth() {
+        composeRule.setContent {
+            AppTheme {
+                WideLayoutHost {
+                    AuthScreen(
+                        pendingInviteToken = null,
+                        showConfigMissing = false,
+                        onContinueWithEmail = {},
+                        screenModel = OnboardingScreenModel(
+                            authRepository = InstrumentedFakeAuthRepository(AuthState.Unauthenticated),
+                            collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
+                        ),
+                    )
+                }
+            }
+        }
+
+        assertTrue(
+            "Test host must offer more width than the form cap to prove clamping",
+            wideAvailableFormWidth > ScreenLayout.formMaxWidth,
+        )
+        composeRule.onNodeWithTag(AuthTestTags.SCREEN)
+            .assertWidthIsEqualTo(ScreenLayout.formMaxWidth)
+    }
+
+    @Test
+    fun auth_phoneLayout_fillsAvailableWidth() {
+        composeRule.setContent {
+            AppTheme {
+                PhoneLayoutHost {
+                    AuthScreen(
+                        pendingInviteToken = null,
+                        showConfigMissing = false,
+                        onContinueWithEmail = {},
+                        screenModel = OnboardingScreenModel(
+                            authRepository = InstrumentedFakeAuthRepository(AuthState.Unauthenticated),
+                            collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
+                        ),
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(AuthTestTags.SCREEN)
+            .assertWidthIsEqualTo(phoneAvailableFormWidth)
+    }
+
+    @Test
+    fun login_wideLayout_capsFormWidthAtFormMaxWidth() {
+        composeRule.setContent {
+            AppTheme {
+                WideLayoutHost {
+                    LoginScreen(
+                        showConfigMissing = false,
+                        screenModel = LoginScreenModel(
+                            authRepository = InstrumentedFakeAuthRepository(AuthState.Unauthenticated),
+                        ),
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(LoginTestTags.SCREEN)
+            .assertWidthIsEqualTo(ScreenLayout.formMaxWidth)
+    }
+
+    @Test
+    fun login_phoneLayout_fillsAvailableWidth() {
+        composeRule.setContent {
+            AppTheme {
+                PhoneLayoutHost {
+                    LoginScreen(
+                        showConfigMissing = false,
+                        screenModel = LoginScreenModel(
+                            authRepository = InstrumentedFakeAuthRepository(AuthState.Unauthenticated),
+                        ),
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(LoginTestTags.SCREEN)
+            .assertWidthIsEqualTo(phoneAvailableFormWidth)
     }
 }
 

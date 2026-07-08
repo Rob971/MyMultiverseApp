@@ -124,6 +124,14 @@ android {
                 java.srcDir("src/firebase/kotlin")
             }
         }
+        // AGP's default instrumented-test source set for a plain `com.android.application`
+        // module is `src/androidTest`, not `src/androidInstrumentedTest` (that alias only
+        // applies to Kotlin Multiplatform android targets). Repo convention keeps tests under
+        // `androidInstrumentedTest` (see qa-testing.mdc), so wire it in explicitly — otherwise
+        // this entire suite is silently excluded from compilation and never runs.
+        getByName("androidTest") {
+            java.srcDir("src/androidInstrumentedTest/kotlin")
+        }
     }
 }
 
@@ -147,5 +155,12 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.compose.ui.test.manifest)
     androidTestImplementation(libs.koin.compose)
+    // composeApp declares these as `implementation` in commonMain, so they are not exposed
+    // transitively to androidApp's compile classpath — required by the androidInstrumentedTest
+    // suite, which composes UI directly (Column/Button/Text, etc.) and shares grocery
+    // ghost-pairing dismiss storage via the base multiplatform-settings `Settings` type.
+    androidTestImplementation(compose.foundation)
+    androidTestImplementation(compose.material3)
+    androidTestImplementation(libs.multiplatform.settings)
     androidTestImplementation(libs.multiplatform.settings.test)
 }
