@@ -143,14 +143,12 @@ private fun GroceryFlatRowContent(
     val reorderThresholdPx = remember(density) { with(density) { 48.dp.toPx() } }
     var accumulatedDrag by remember(item.id) { mutableFloatStateOf(0f) }
 
-    // Pre-resolve composable colors for use inside pointerInput lambdas
-    val checkContainerColor = JourneySemanticColors.brandTealContainer()
+    // Pre-resolve composable colors
     val checkContentColor = if (item.isChecked) {
         JourneySemanticColors.successAccent()
     } else {
         JourneySemanticColors.brandTeal()
     }
-    val deleteContainerColor = JourneySemanticColors.brandTerracotta().copy(alpha = 0.12f)
     val deleteContentColor = JourneySemanticColors.brandTerracotta()
 
     if (showDeleteConfirm) {
@@ -196,9 +194,11 @@ private fun GroceryFlatRowContent(
                         })
                     }
                 }
-                .padding(horizontal = 4.dp, vertical = 12.dp),
+                // No horizontal padding here — LazyColumn already applies ScreenLayout.horizontalPadding (24dp).
+                // Vertical padding gives breathing room between rows.
+                .padding(vertical = 10.dp),
             verticalAlignment = if (isEditing) Alignment.Top else Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             if (enableReorder && !isEditing) {
                 Box(
@@ -234,7 +234,7 @@ private fun GroceryFlatRowContent(
                 }
             }
 
-            // ── Check / toggle button (left) ──────────────────────────────────
+            // ── Check / toggle button (left, flush to column edge) ───────────
             JourneyIconButton(
                 onClick = {
                     performHaptic(JourneyHapticFeedback.LightClick)
@@ -243,9 +243,7 @@ private fun GroceryFlatRowContent(
                 enabled = !isEditing && !readOnly,
                 modifier = Modifier.testTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}"),
                 colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = checkContainerColor,
                     contentColor = checkContentColor,
-                    disabledContainerColor = checkContainerColor.copy(alpha = 0.38f),
                     disabledContentColor = checkContentColor.copy(alpha = 0.38f),
                 ),
             ) {
@@ -330,13 +328,12 @@ private fun GroceryFlatRowContent(
                         )
                     }
                 }
-                // ── Delete button (right) ─────────────────────────────────────
+                // ── Delete button (right, transparent bg) ────────────────────
                 if (!readOnly) {
                     JourneyIconButton(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.testTag("${GroceryItemRowTestTags.DELETE_BUTTON_PREFIX}${item.id}"),
                         colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = deleteContainerColor,
                             contentColor = deleteContentColor,
                         ),
                     ) {
