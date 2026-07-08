@@ -36,6 +36,31 @@ val appVersionName = if (appVersionPrerelease.isEmpty()) {
     "$appVersionNameBase-$appVersionPrerelease"
 }
 
+// Track-encoded version code for Play Store upload uniqueness.
+//
+// In CI: GITHUB_RUN_NUMBER is the monotonically-increasing counter; multiplying by 3 and adding
+// a per-track offset (0=debug/alpha, 1=beta, 2=production) guarantees:
+//   - every CI build has a unique code (run numbers never repeat)
+//   - within the same run, alpha < beta < production
+//   - all CI codes are ≥ 100_000, well above any historic debug code committed to the repo
+//
+// Locally (no GITHUB_RUN_NUMBER): falls back to the raw appVersionCode from properties so
+// local debug builds and IDE runs are unaffected.
+val ciRunNumber: Long? = System.getenv("GITHUB_RUN_NUMBER")?.trim()?.toLongOrNull()
+val releaseTrack: String = System.getenv("RELEASE_TRACK")?.trim()?.lowercase() ?: ""
+val trackOffset: Long = when (releaseTrack) {
+    "beta"       -> 1L
+    "production" -> 2L
+    else         -> 0L  // debug, alpha, or unset
+}
+val versionCodeFinal: Int = if (ciRunNumber != null) {
+    (100_000L + ciRunNumber * 3L + trackOffset)
+        .coerceAtMost(Int.MAX_VALUE.toLong())
+        .toInt()
+} else {
+    appVersionCode
+}
+
 fun loadReleaseSigningProperties(): Properties? {
     val fromFile = Properties()
     val keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -78,7 +103,7 @@ android {
         applicationId = "app.mymultiverse.ammo"
         minSdk = 24
         targetSdk = 35
-        versionCode = appVersionCode
+        versionCode = versionCodeFinal
         versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

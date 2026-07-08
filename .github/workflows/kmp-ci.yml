@@ -5,10 +5,14 @@ on:
     branches:
       - main
       - master
+      - release/**   # beta stabilization branches — triggers distribute-beta
+    tags:
+      - 'v[0-9]*'   # production releases — triggers distribute-production
   pull_request:
     branches:
       - main
       - master
+      - release/**
     types:
       - opened
       - reopened
@@ -25,7 +29,10 @@ on:
           - android-ci
           - android-instrumented-tests
           - supabase-migrations
-          - release
+          - release              # bump version + Firebase alpha + commit + tag (manual named release)
+          - distribute-alpha     # Firebase alpha distribute only (no bump, no commit)
+          - distribute-beta      # signed AAB → Play Closed Testing
+          - distribute-production # signed AAB → Play Production (staged rollout)
           - play-store-bundle
           - firebase-cleanup-releases
       version_bump:
@@ -84,6 +91,11 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          # Tag pushes always run — they trigger distribute-production.
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           if [[ "$COMMIT_MSG" == *"[skip ci]"* ]] || [[ "$COMMIT_MSG" == *"[ci skip]"* ]] || [[ "$COMMIT_MSG" == chore\(version\):* ]]; then
             echo "run=false" >> "$GITHUB_OUTPUT"
             echo "Skipping CI for automated/version-only push."
@@ -139,7 +151,8 @@ jobs:
       ${{ needs.ci-gate.outputs.run == 'true' &&
           (github.event_name == 'pull_request' ||
           (github.event_name == 'push' &&
-            (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
+            (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' ||
+             startsWith(github.ref, 'refs/heads/release/'))) ||
           (github.event_name == 'workflow_dispatch' &&
             (github.event.inputs.job == 'all' || github.event.inputs.job == 'supabase-migrations'))) }}
 
@@ -525,6 +538,103 @@ jobs:
           git push
           git push origin "$TAG_NAME"
 
+  # ─────────────────────────────────────────────────────────────────────────
+  # ALPHA TRACK — automatic Firebase App Distribution on every green main push.
+  # No version bump, no git commit; the github.run_number surfaces in release notes.
+  # Also runnable manually: workflow_dispatch → job=distribute-alpha.
+  # ─────────────────────────────────────────────────────────────────────────
+  distribute-alpha:
+    name: Alpha — Firebase App Distribution
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs:
+      - ci-gate
+      - android-ci
+      - android-instrumented-tests
+    if: >-
+      ${{ always() &&
+          needs.ci-gate.outputs.run == 'true' &&
+          needs.android-ci.result == 'success' &&
+          (needs.android-instrumented-tests.result == 'success' ||
+           needs.android-instrumented-tests.result == 'skipped') &&
+          (
+            (github.event_name == 'push' &&
+             (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
+            (github.event_name == 'workflow_dispatch' &&
+             github.event.inputs.job == 'distribute-alpha')
+          ) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+          gradle-home-cache-cleanup: false
+
+      - name: Android CI setup
+        uses: ./.github/actions/android-ci-setup
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
+
+      - name: Require Supabase secrets
+        uses: ./.github/actions/require-supabase-secrets
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Build debug APK (alpha track)
+        run: ./gradlew :androidApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
+
+      - name: Verify launcher activity in debug APK
+        run: |
+          chmod +x ./scripts/verify-android-apk-entrypoint.sh
+          ./scripts/verify-android-apk-entrypoint.sh androidApp/build/outputs/apk/debug/androidApp-debug.apk
+
+      - name: Validate Firebase service account secret
+        shell: bash
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [[ -z "${FIREBASE_SERVICE_ACCOUNT_JSON}" ]]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT_JSON is not set. Add the Firebase service account JSON in GitHub repo secrets."
+            exit 1
+          fi
+          printf '%s' "${FIREBASE_SERVICE_ACCOUNT_JSON}" | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for key in ('type', 'project_id', 'private_key', 'client_email'):
+              if key not in data:
+                  raise SystemExit(f'Missing key in service account JSON: {key}')
+          print(f'Firebase service account: {data[\"client_email\"]}')
+          "
+
+      - name: Distribute to Firebase App Distribution (alpha group)
+        uses: ./.github/actions/firebase-distribute
+        with:
+          apk-path: androidApp/build/outputs/apk/debug/androidApp-debug.apk
+          firebase-app-id: ${{ env.FIREBASE_APP_ID }}
+          firebase-project-id: ${{ env.FIREBASE_PROJECT_ID }}
+          firebase-tools-version: ${{ env.FIREBASE_TOOLS_VERSION }}
+          firebase-service-account-json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          firebase-testers: ${{ secrets.FIREBASE_ALPHA_TESTERS }}
+          firebase-groups: ${{ secrets.FIREBASE_ALPHA_GROUPS }}
+          github-ref-name: ${{ github.ref_name }}
+          github-sha: ${{ github.sha }}
+
+  # ─────────────────────────────────────────────────────────────────────────
   play-store-bundle:
     name: Play Store bundle (signed AAB)
     runs-on: ubuntu-latest
@@ -596,6 +706,277 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  # ─────────────────────────────────────────────────────────────────────────
+  # BETA TRACK — signed AAB → Google Play Closed Testing on release/** push.
+  # versionCode uses the CI run-number formula with RELEASE_TRACK=beta (offset 1).
+  # Requires secret: PLAY_SERVICE_ACCOUNT_JSON (Google Play Developer API).
+  # ─────────────────────────────────────────────────────────────────────────
+  distribute-beta:
+    name: Beta — Play Closed Testing (signed AAB)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs:
+      - ci-gate
+      - android-ci
+    if: >-
+      ${{ always() &&
+          needs.ci-gate.outputs.run == 'true' &&
+          needs.android-ci.result == 'success' &&
+          (
+            (github.event_name == 'push' &&
+             startsWith(github.ref, 'refs/heads/release/')) ||
+            (github.event_name == 'workflow_dispatch' &&
+             github.event.inputs.job == 'distribute-beta')
+          ) }}
+    env:
+      RELEASE_TRACK: beta
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history needed to count commits on release branch
+
+      - name: Stamp beta prerelease label (in-memory, no git commit)
+        id: stamp
+        run: |
+          # Derive beta sequence: number of commits on this release branch since it diverged from main.
+          MERGE_BASE="$(git merge-base HEAD origin/main 2>/dev/null || git rev-parse HEAD~1)"
+          BETA_SEQ="$(git rev-list --count HEAD ^"$MERGE_BASE" 2>/dev/null || echo 1)"
+          BETA_SEQ="${BETA_SEQ:-1}"
+          # Stamp version.prerelease in the properties file (not committed — build-time only).
+          if grep -q '^version\.prerelease=' gradle/app-version.properties; then
+            sed -i "s|^version\.prerelease=.*|version.prerelease=beta.${BETA_SEQ}|" gradle/app-version.properties
+          else
+            echo "version.prerelease=beta.${BETA_SEQ}" >> gradle/app-version.properties
+          fi
+          echo "beta_seq=${BETA_SEQ}" >> "$GITHUB_OUTPUT"
+          VERSION_NAME="$(grep '^version\.name=' gradle/app-version.properties | cut -d= -f2-)"
+          echo "version_display=${VERSION_NAME}-beta.${BETA_SEQ}" >> "$GITHUB_OUTPUT"
+          echo "Beta label: ${VERSION_NAME}-beta.${BETA_SEQ} (sequence ${BETA_SEQ})"
+
+      - name: Check Play Store service account secret
+        id: play_secret_check
+        shell: bash
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [[ -z "${PLAY_SERVICE_ACCOUNT_JSON}" ]]; then
+            echo "::warning::PLAY_SERVICE_ACCOUNT_JSON is not set. Add the Google Play Developer API service account JSON as a GitHub repo secret to enable automated Play Store uploads. Skipping upload."
+            echo "has_secret=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_secret=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+          gradle-home-cache-cleanup: false
+
+      - name: Android CI setup
+        uses: ./.github/actions/android-ci-setup
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
+
+      - name: Configure Play upload signing
+        uses: ./.github/actions/android-release-signing-setup
+        with:
+          keystore-base64: ${{ secrets.AMMO_UPLOAD_KEYSTORE_BASE64 }}
+          store-password: ${{ secrets.AMMO_UPLOAD_STORE_PASSWORD }}
+          key-alias: ${{ secrets.AMMO_UPLOAD_KEY_ALIAS }}
+          key-password: ${{ secrets.AMMO_UPLOAD_KEY_PASSWORD }}
+
+      - name: Build signed release AAB (beta)
+        run: ./gradlew :androidApp:bundleRelease ${{ env.GRADLE_BUILD_ARGS }}
+
+      - name: Upload signed AAB artifact (beta)
+        uses: actions/upload-artifact@v4
+        with:
+          name: androidApp-beta-aab-${{ github.run_number }}
+          path: androidApp/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload to Play Closed Testing
+        if: steps.play_secret_check.outputs.has_secret == 'true'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: app.mymultiverse.ammo
+          releaseFiles: androidApp/build/outputs/bundle/release/*.aab
+          track: beta
+          status: completed
+          whatsNewDirectory: distribution/whatsnew
+
+      - name: Summarize beta release
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Beta Release Summary"
+            echo
+            echo "- **Version:** \`${{ steps.stamp.outputs.version_display }}\`"
+            echo "- **Run:** \`${{ github.run_number }}\`"
+            echo "- **Branch:** \`${{ github.ref_name }}\`"
+            echo "- **Commit:** \`${{ github.sha }}\`"
+            echo "- **Play upload:** ${{ steps.play_secret_check.outputs.has_secret == 'true' && 'uploaded to Closed Testing' || 'skipped (PLAY_SERVICE_ACCOUNT_JSON not set)' }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # PRODUCTION TRACK — signed AAB → Play Production (20% staged rollout) on v* tag push.
+  # versionCode uses the CI run-number formula with RELEASE_TRACK=production (offset 2).
+  # Hotfixes: tag vX.Y.Z-hotfix.N on main — same trigger, same job.
+  # Requires secret: PLAY_SERVICE_ACCOUNT_JSON.
+  # ─────────────────────────────────────────────────────────────────────────
+  distribute-production:
+    name: Production — Play Store (signed AAB, staged rollout)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs:
+      - ci-gate
+      - android-ci
+      - android-instrumented-tests
+    if: >-
+      ${{ always() &&
+          needs.ci-gate.outputs.run == 'true' &&
+          needs.android-ci.result == 'success' &&
+          (needs.android-instrumented-tests.result == 'success' ||
+           needs.android-instrumented-tests.result == 'skipped') &&
+          (
+            (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+            (github.event_name == 'workflow_dispatch' &&
+             github.event.inputs.job == 'distribute-production')
+          ) }}
+    env:
+      RELEASE_TRACK: production
+    permissions:
+      contents: write   # needed to create a GitHub Release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Resolve version from tag or properties file
+        id: version
+        run: |
+          # On tag push: strip leading 'v'; on manual dispatch: read from properties.
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            TAG="${{ github.ref_name }}"
+            DISPLAY="${TAG#v}"
+          else
+            NAME="$(grep '^version\.name=' gradle/app-version.properties | cut -d= -f2-)"
+            PRE="$(grep '^version\.prerelease=' gradle/app-version.properties | cut -d= -f2- || true)"
+            DISPLAY="${NAME}${PRE:+-$PRE}"
+          fi
+          echo "display=${DISPLAY}" >> "$GITHUB_OUTPUT"
+          echo "tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          echo "Production version: ${DISPLAY}"
+
+      - name: Check Play Store service account secret
+        id: play_secret_check
+        shell: bash
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [[ -z "${PLAY_SERVICE_ACCOUNT_JSON}" ]]; then
+            echo "::warning::PLAY_SERVICE_ACCOUNT_JSON is not set. Skipping Play Store upload. Add the Google Play Developer API service account JSON as a GitHub repo secret."
+            echo "has_secret=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_secret=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+          gradle-home-cache-cleanup: false
+
+      - name: Android CI setup
+        uses: ./.github/actions/android-ci-setup
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
+
+      - name: Configure Play upload signing
+        uses: ./.github/actions/android-release-signing-setup
+        with:
+          keystore-base64: ${{ secrets.AMMO_UPLOAD_KEYSTORE_BASE64 }}
+          store-password: ${{ secrets.AMMO_UPLOAD_STORE_PASSWORD }}
+          key-alias: ${{ secrets.AMMO_UPLOAD_KEY_ALIAS }}
+          key-password: ${{ secrets.AMMO_UPLOAD_KEY_PASSWORD }}
+
+      - name: Build signed release AAB (production)
+        run: ./gradlew :androidApp:bundleRelease ${{ env.GRADLE_BUILD_ARGS }}
+
+      - name: Upload signed AAB artifact (production)
+        uses: actions/upload-artifact@v4
+        with:
+          name: androidApp-production-aab-${{ github.run_number }}
+          path: androidApp/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload to Play Production (20% staged rollout)
+        if: steps.play_secret_check.outputs.has_secret == 'true'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: app.mymultiverse.ammo
+          releaseFiles: androidApp/build/outputs/bundle/release/*.aab
+          track: production
+          status: inProgress
+          userFraction: 0.20
+          whatsNewDirectory: distribution/whatsnew
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "v${{ steps.version.outputs.display }}"
+          body: |
+            **Release:** `${{ steps.version.outputs.display }}`
+            **Track:** Production (20% staged rollout — increase in Play Console after monitoring)
+            **Build:** run `${{ github.run_number }}` · commit `${{ github.sha }}`
+
+            See `distribution/whatsnew/whatsnew-en-US` for user-facing changelog.
+          files: androidApp/build/outputs/bundle/release/*.aab
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'hotfix') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
+
+      - name: Summarize production release
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Production Release Summary"
+            echo
+            echo "- **Version:** \`${{ steps.version.outputs.display }}\`"
+            echo "- **Tag:** \`${{ steps.version.outputs.tag }}\`"
+            echo "- **Run:** \`${{ github.run_number }}\`"
+            echo "- **Rollout:** 20% staged (expand manually in Play Console after soak)"
+            echo "- **Play upload:** ${{ steps.play_secret_check.outputs.has_secret == 'true' && 'uploaded to Production' || 'skipped (PLAY_SERVICE_ACCOUNT_JSON not set)' }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ─────────────────────────────────────────────────────────────────────────
   firebase-cleanup-releases:
     name: Firebase App Distribution cleanup
     runs-on: ubuntu-latest
