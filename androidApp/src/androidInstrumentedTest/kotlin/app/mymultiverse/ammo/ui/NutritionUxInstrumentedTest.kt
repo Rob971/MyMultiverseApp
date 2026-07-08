@@ -16,7 +16,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
-import androidx.compose.ui.test.performTouchInput
 
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -175,7 +174,7 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun grocery_rowDoubleTap_opensEditField() {
+    fun grocery_editButton_opensEditField() {
         val itemId = "instrumented-item-1"
         val screenModel = nutritionScreenModel(itemId = itemId)
 
@@ -192,9 +191,9 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
         composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
 
-        composeRule.onNodeWithTag("${GroceryItemRowTestTags.ROW_PREFIX}$itemId")
+        composeRule.onNodeWithTag("${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}$itemId")
             .performScrollTo()
-            .performTouchInput { doubleClick() }
+            .performClick()
 
         composeRule.onNodeWithTag("${GroceryItemRowTestTags.EDIT_FIELD_PREFIX}$itemId")
             .assertIsDisplayed()
