@@ -9,6 +9,7 @@ import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.nutrition.NutritionWeekMaintenance
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import com.russhwolf.settings.Settings
+import kotlin.random.Random
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -23,7 +24,7 @@ class NutritionWeekMaintenanceRunner(
     private val settings: Settings,
     private val maintenanceStore: NutritionWeekMaintenanceStore,
     private val remoteApi: NutritionRemoteDataSource?,
-    private val newItemId: () -> String = { "${Clock.System.now().toEpochMilliseconds()}" },
+    private val newItemId: () -> String = { "${Random.nextLong()}_${Random.nextInt()}" },
 ) {
     suspend fun runForCurrentWeek(
         repository: OfflineFirstNutritionRepository,
