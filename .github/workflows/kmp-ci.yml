@@ -709,7 +709,7 @@ jobs:
   # ─────────────────────────────────────────────────────────────────────────
   # BETA TRACK — signed AAB → Google Play Closed Testing on release/** push.
   # versionCode uses the CI run-number formula with RELEASE_TRACK=beta (offset 1).
-  # Requires secret: PLAY_SERVICE_ACCOUNT_JSON (Google Play Developer API).
+  # Requires secret: AMMO_PLAY_SERVICE_ACCOUNT_JSON (Google Play Developer API).
   # ─────────────────────────────────────────────────────────────────────────
   distribute-beta:
     name: Beta — Play Closed Testing (signed AAB)
@@ -759,10 +759,10 @@ jobs:
         id: play_secret_check
         shell: bash
         env:
-          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          AMMO_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.AMMO_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
-          if [[ -z "${PLAY_SERVICE_ACCOUNT_JSON}" ]]; then
-            echo "::warning::PLAY_SERVICE_ACCOUNT_JSON is not set. Add the Google Play Developer API service account JSON as a GitHub repo secret to enable automated Play Store uploads. Skipping upload."
+          if [[ -z "${AMMO_PLAY_SERVICE_ACCOUNT_JSON}" ]]; then
+            echo "::warning::AMMO_PLAY_SERVICE_ACCOUNT_JSON is not set. Add the Google Play Developer API service account JSON as a GitHub repo secret to enable automated Play Store uploads. Skipping upload."
             echo "has_secret=false" >> "$GITHUB_OUTPUT"
           else
             echo "has_secret=true" >> "$GITHUB_OUTPUT"
@@ -810,7 +810,7 @@ jobs:
         if: steps.play_secret_check.outputs.has_secret == 'true'
         uses: r0adkll/upload-google-play@v1
         with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          serviceAccountJsonPlainText: ${{ secrets.AMMO_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: app.mymultiverse.ammo
           releaseFiles: androidApp/build/outputs/bundle/release/*.aab
           track: beta
@@ -828,14 +828,14 @@ jobs:
             echo "- **Run:** \`${{ github.run_number }}\`"
             echo "- **Branch:** \`${{ github.ref_name }}\`"
             echo "- **Commit:** \`${{ github.sha }}\`"
-            echo "- **Play upload:** ${{ steps.play_secret_check.outputs.has_secret == 'true' && 'uploaded to Closed Testing' || 'skipped (PLAY_SERVICE_ACCOUNT_JSON not set)' }}"
+            echo "- **Play upload:** ${{ steps.play_secret_check.outputs.has_secret == 'true' && 'uploaded to Closed Testing' || 'skipped (AMMO_PLAY_SERVICE_ACCOUNT_JSON not set)' }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ─────────────────────────────────────────────────────────────────────────
   # PRODUCTION TRACK — signed AAB → Play Production (20% staged rollout) on v* tag push.
   # versionCode uses the CI run-number formula with RELEASE_TRACK=production (offset 2).
   # Hotfixes: tag vX.Y.Z-hotfix.N on main — same trigger, same job.
-  # Requires secret: PLAY_SERVICE_ACCOUNT_JSON.
+  # Requires secret: AMMO_PLAY_SERVICE_ACCOUNT_JSON.
   # ─────────────────────────────────────────────────────────────────────────
   distribute-production:
     name: Production — Play Store (signed AAB, staged rollout)
@@ -887,10 +887,10 @@ jobs:
         id: play_secret_check
         shell: bash
         env:
-          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          AMMO_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.AMMO_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
-          if [[ -z "${PLAY_SERVICE_ACCOUNT_JSON}" ]]; then
-            echo "::warning::PLAY_SERVICE_ACCOUNT_JSON is not set. Skipping Play Store upload. Add the Google Play Developer API service account JSON as a GitHub repo secret."
+          if [[ -z "${AMMO_PLAY_SERVICE_ACCOUNT_JSON}" ]]; then
+            echo "::warning::AMMO_PLAY_SERVICE_ACCOUNT_JSON is not set. Skipping Play Store upload. Add the Google Play Developer API service account JSON as a GitHub repo secret."
             echo "has_secret=false" >> "$GITHUB_OUTPUT"
           else
             echo "has_secret=true" >> "$GITHUB_OUTPUT"
@@ -938,7 +938,7 @@ jobs:
         if: steps.play_secret_check.outputs.has_secret == 'true'
         uses: r0adkll/upload-google-play@v1
         with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          serviceAccountJsonPlainText: ${{ secrets.AMMO_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: app.mymultiverse.ammo
           releaseFiles: androidApp/build/outputs/bundle/release/*.aab
           track: production
@@ -973,7 +973,7 @@ jobs:
             echo "- **Tag:** \`${{ steps.version.outputs.tag }}\`"
             echo "- **Run:** \`${{ github.run_number }}\`"
             echo "- **Rollout:** 20% staged (expand manually in Play Console after soak)"
-            echo "- **Play upload:** ${{ steps.play_secret_check.outputs.has_secret == 'true' && 'uploaded to Production' || 'skipped (PLAY_SERVICE_ACCOUNT_JSON not set)' }}"
+            echo "- **Play upload:** ${{ steps.play_secret_check.outputs.has_secret == 'true' && 'uploaded to Production' || 'skipped (AMMO_PLAY_SERVICE_ACCOUNT_JSON not set)' }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ─────────────────────────────────────────────────────────────────────────

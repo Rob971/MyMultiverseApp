@@ -77,7 +77,7 @@ git checkout -b release/X.Y main && git push -u origin release/X.Y
 gh workflow run "KMP CI" --ref release/X.Y -f job=distribute-beta
 ```
 
-Requires `PLAY_SERVICE_ACCOUNT_JSON`. Job succeeds with a warning if the secret is absent (AAB artifact is still uploaded to GitHub).
+Requires `AMMO_PLAY_SERVICE_ACCOUNT_JSON`. Job succeeds with a warning if the secret is absent (AAB artifact is still uploaded to GitHub).
 
 ### `distribute-production` (on `v*` tag push)
 
@@ -94,7 +94,7 @@ git tag vX.Y.Z-hotfix.1 main && git push origin vX.Y.Z-hotfix.1
 gh workflow run "KMP CI" --ref vX.Y.Z -f job=distribute-production
 ```
 
-Requires `PLAY_SERVICE_ACCOUNT_JSON`. `distribution/whatsnew/whatsnew-en-US` is read for Play Store release notes — update it before tagging.
+Requires `AMMO_PLAY_SERVICE_ACCOUNT_JSON`. `distribution/whatsnew/whatsnew-en-US` is read for Play Store release notes — update it before tagging.
 
 ### `release` (manual named release — bump + Firebase + tag)
 
@@ -135,7 +135,7 @@ Watch: `gh pr checks N --watch --interval 15` on PRs.
 | `FIREBASE_TESTERS`, `FIREBASE_GROUPS` | Named `release` job testers / groups |
 | `FIREBASE_ALPHA_TESTERS`, `FIREBASE_ALPHA_GROUPS` | `distribute-alpha` job testers / groups |
 | `AMMO_UPLOAD_KEYSTORE_BASE64`, `AMMO_UPLOAD_STORE_PASSWORD`, `AMMO_UPLOAD_KEY_ALIAS`, `AMMO_UPLOAD_KEY_PASSWORD` | Play Store signing (beta + production + play-store-bundle) |
-| `PLAY_SERVICE_ACCOUNT_JSON` | Google Play Developer API — required for `distribute-beta` and `distribute-production` |
+| `AMMO_PLAY_SERVICE_ACCOUNT_JSON` | Google Play Developer API — required for `distribute-beta` and `distribute-production` |
 
 ## Supabase in CI
 
