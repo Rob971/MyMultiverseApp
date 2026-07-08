@@ -36,6 +36,8 @@ class OfflineFirstNutritionRepository(
 
     fun currentGroceryItems(): List<GroceryItem> = localStore.currentGroceryItems()
 
+    fun currentMealPlan(): WeeklyMealPlan = localStore.currentMealPlan()
+
     fun applyRemoteWeekData(row: NutritionWeekDataRow) {
         if (row.householdId != householdId || row.weekKey != weekKey) return
         localStore.applyPayload(row.dataKind, row.payload)
