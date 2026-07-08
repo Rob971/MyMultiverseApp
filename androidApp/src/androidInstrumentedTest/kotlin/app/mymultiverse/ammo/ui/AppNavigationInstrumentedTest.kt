@@ -47,17 +47,19 @@ class AppNavigationInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                NutritionHubScreen(
-                    householdName = "Our household",
-                    enabledFeatures = setOf(
-                        NutritionSharingFeature.Grocery,
-                        NutritionSharingFeature.MealPlan,
-                        NutritionSharingFeature.AiAdvice,
-                    ),
-                    onBack = { backPressed = true },
-                    onOpenSection = {},
-                    screenModel = nutritionScreenModel(),
-                )
+                InstrumentedKoinHost {
+                    NutritionHubScreen(
+                        householdName = "Our household",
+                        enabledFeatures = setOf(
+                            NutritionSharingFeature.Grocery,
+                            NutritionSharingFeature.MealPlan,
+                            NutritionSharingFeature.AiAdvice,
+                        ),
+                        onBack = { backPressed = true },
+                        onOpenSection = {},
+                        screenModel = nutritionScreenModel(),
+                    )
+                }
             }
         }
 

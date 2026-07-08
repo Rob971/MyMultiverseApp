@@ -82,19 +82,21 @@ class HouseholdMembersAdminInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                HouseholdMembersScreen(
-                    household = HouseholdContext(
-                        id = householdId,
-                        name = "Our Household",
-                        ownerId = ownerId,
-                        ownerDisplayName = "Owner",
-                        nutritionFeatures = setOf(NutritionSharingFeature.Grocery),
-                    ),
-                    onBack = {},
-                    screenModel = screenModel,
-                    authRepository = authRepository,
-                    personalDataExporter = noopPersonalDataExporter,
-                )
+                InstrumentedKoinHost {
+                    HouseholdMembersScreen(
+                        household = HouseholdContext(
+                            id = householdId,
+                            name = "Our Household",
+                            ownerId = ownerId,
+                            ownerDisplayName = "Owner",
+                            nutritionFeatures = setOf(NutritionSharingFeature.Grocery),
+                        ),
+                        onBack = {},
+                        screenModel = screenModel,
+                        authRepository = authRepository,
+                        personalDataExporter = noopPersonalDataExporter,
+                    )
+                }
             }
         }
 
@@ -147,19 +149,21 @@ class HouseholdMembersAdminInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                HouseholdMembersScreen(
-                    household = HouseholdContext(
-                        id = householdId,
-                        name = "Our Household",
-                        ownerId = ownerId,
-                        ownerDisplayName = "Owner",
-                        nutritionFeatures = setOf(NutritionSharingFeature.Grocery),
-                    ),
-                    onBack = {},
-                    screenModel = screenModel,
-                    authRepository = authRepository,
-                    personalDataExporter = noopPersonalDataExporter,
-                )
+                InstrumentedKoinHost {
+                    HouseholdMembersScreen(
+                        household = HouseholdContext(
+                            id = householdId,
+                            name = "Our Household",
+                            ownerId = ownerId,
+                            ownerDisplayName = "Owner",
+                            nutritionFeatures = setOf(NutritionSharingFeature.Grocery),
+                        ),
+                        onBack = {},
+                        screenModel = screenModel,
+                        authRepository = authRepository,
+                        personalDataExporter = noopPersonalDataExporter,
+                    )
+                }
             }
         }
 

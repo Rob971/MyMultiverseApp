@@ -47,7 +47,9 @@ class HouseholdCollaborationInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -79,11 +81,13 @@ class HouseholdCollaborationInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                WeeklyMealPlanScreen(
-                    onBack = {},
-                    onOpenSection = { _, _ -> },
-                    screenModel = screenModel,
-                )
+                InstrumentedKoinHost {
+                    WeeklyMealPlanScreen(
+                        onBack = {},
+                        onOpenSection = { _, _ -> },
+                        screenModel = screenModel,
+                    )
+                }
             }
         }
 

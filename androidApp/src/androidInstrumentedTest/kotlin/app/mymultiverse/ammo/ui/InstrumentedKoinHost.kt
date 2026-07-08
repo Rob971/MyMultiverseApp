@@ -34,7 +34,7 @@ private class InstrumentedThemeManager(
     }
 }
 
-private val instrumentedKoinModule = module {
+internal val instrumentedKoinModule = module {
     single<LanguageManager> { InstrumentedLanguageManager() }
     single<ThemeManager> { InstrumentedThemeManager() }
 }

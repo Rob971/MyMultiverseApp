@@ -119,7 +119,9 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -137,7 +139,9 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -160,7 +164,9 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -174,7 +180,9 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -197,11 +205,13 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                WeeklyMealPlanScreen(
-                    onBack = {},
-                    onOpenSection = { _, _ -> },
-                    screenModel = screenModel,
-                )
+                InstrumentedKoinHost {
+                    WeeklyMealPlanScreen(
+                        onBack = {},
+                        onOpenSection = { _, _ -> },
+                        screenModel = screenModel,
+                    )
+                }
             }
         }
 
@@ -225,7 +235,9 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -247,7 +259,9 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -275,11 +289,13 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                WeeklyMealPlanScreen(
-                    onBack = {},
-                    onOpenSection = { _, _ -> },
-                    screenModel = screenModel,
-                )
+                InstrumentedKoinHost {
+                    WeeklyMealPlanScreen(
+                        onBack = {},
+                        onOpenSection = { _, _ -> },
+                        screenModel = screenModel,
+                    )
+                }
             }
         }
 
@@ -301,11 +317,13 @@ class NutritionUxInstrumentedTest {
     fun mealPlan_dailySection_displaysAfterWeekOverview() {
         composeRule.setContent {
             AppTheme {
-                WeeklyMealPlanScreen(
-                    onBack = {},
-                    onOpenSection = { _, _ -> },
-                    screenModel = nutritionScreenModel(),
-                )
+                InstrumentedKoinHost {
+                    WeeklyMealPlanScreen(
+                        onBack = {},
+                        onOpenSection = { _, _ -> },
+                        screenModel = nutritionScreenModel(),
+                    )
+                }
             }
         }
 
@@ -319,7 +337,9 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                NutritionAiAdviceScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    NutritionAiAdviceScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -335,7 +355,9 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                NutritionAiAdviceScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    NutritionAiAdviceScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -359,7 +381,9 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                NutritionAiAdviceScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    NutritionAiAdviceScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -389,17 +413,19 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                NutritionHubScreen(
-                    householdName = "Test Family",
-                    enabledFeatures = setOf(
-                        NutritionSharingFeature.Grocery,
-                        NutritionSharingFeature.MealPlan,
-                        NutritionSharingFeature.AiAdvice,
-                    ),
-                    onBack = {},
-                    onOpenSection = {},
-                    screenModel = screenModel,
-                )
+                InstrumentedKoinHost {
+                    NutritionHubScreen(
+                        householdName = "Test Family",
+                        enabledFeatures = setOf(
+                            NutritionSharingFeature.Grocery,
+                            NutritionSharingFeature.MealPlan,
+                            NutritionSharingFeature.AiAdvice,
+                        ),
+                        onBack = {},
+                        onOpenSection = {},
+                        screenModel = screenModel,
+                    )
+                }
             }
         }
 
@@ -414,17 +440,19 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                NutritionHubScreen(
-                    householdName = "Test Family",
-                    enabledFeatures = setOf(
-                        NutritionSharingFeature.Grocery,
-                        NutritionSharingFeature.MealPlan,
-                        NutritionSharingFeature.AiAdvice,
-                    ),
-                    onBack = {},
-                    onOpenSection = { opened = it },
-                    screenModel = screenModel,
-                )
+                InstrumentedKoinHost {
+                    NutritionHubScreen(
+                        householdName = "Test Family",
+                        enabledFeatures = setOf(
+                            NutritionSharingFeature.Grocery,
+                            NutritionSharingFeature.MealPlan,
+                            NutritionSharingFeature.AiAdvice,
+                        ),
+                        onBack = {},
+                        onOpenSection = { opened = it },
+                        screenModel = screenModel,
+                    )
+                }
             }
         }
 
@@ -442,17 +470,19 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                NutritionHubScreen(
-                    householdName = "Test Family",
-                    enabledFeatures = setOf(
-                        NutritionSharingFeature.Grocery,
-                        NutritionSharingFeature.MealPlan,
-                        NutritionSharingFeature.AiAdvice,
-                    ),
-                    onBack = {},
-                    onOpenSection = { opened = it },
-                    screenModel = screenModel,
-                )
+                InstrumentedKoinHost {
+                    NutritionHubScreen(
+                        householdName = "Test Family",
+                        enabledFeatures = setOf(
+                            NutritionSharingFeature.Grocery,
+                            NutritionSharingFeature.MealPlan,
+                            NutritionSharingFeature.AiAdvice,
+                        ),
+                        onBack = {},
+                        onOpenSection = { opened = it },
+                        screenModel = screenModel,
+                    )
+                }
             }
         }
 
@@ -736,13 +766,15 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                AiHelperSheet(
-                    visible = true,
-                    launchContext = AiHelperLaunchContext(mode = NutritionAiMode.MealPlan),
-                    onDismiss = {},
-                    onApplied = {},
-                    screenModel = screenModel,
-                )
+                InstrumentedKoinHost {
+                    AiHelperSheet(
+                        visible = true,
+                        launchContext = AiHelperLaunchContext(mode = NutritionAiMode.MealPlan),
+                        onDismiss = {},
+                        onApplied = {},
+                        screenModel = screenModel,
+                    )
+                }
             }
         }
 
@@ -761,23 +793,25 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                Box {
-                    WeeklyMealPlanScreen(
-                        onBack = {},
-                        onOpenSection = { _, _ -> },
-                        onOpenAiSheet = { context ->
-                            launchContext.value = context
-                            sheetVisible.value = true
-                        },
-                        screenModel = screenModel,
-                    )
-                    AiHelperSheet(
-                        visible = sheetVisible.value,
-                        launchContext = launchContext.value,
-                        onDismiss = { sheetVisible.value = false },
-                        onApplied = { sheetVisible.value = false },
-                        screenModel = screenModel,
-                    )
+                InstrumentedKoinHost {
+                    Box {
+                        WeeklyMealPlanScreen(
+                            onBack = {},
+                            onOpenSection = { _, _ -> },
+                            onOpenAiSheet = { context ->
+                                launchContext.value = context
+                                sheetVisible.value = true
+                            },
+                            screenModel = screenModel,
+                        )
+                        AiHelperSheet(
+                            visible = sheetVisible.value,
+                            launchContext = launchContext.value,
+                            onDismiss = { sheetVisible.value = false },
+                            onApplied = { sheetVisible.value = false },
+                            screenModel = screenModel,
+                        )
+                    }
                 }
             }
         }
@@ -800,7 +834,9 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -815,7 +851,9 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -831,7 +869,9 @@ class NutritionUxInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
             }
         }
 
@@ -850,7 +890,9 @@ class NutritionUxInstrumentedTest {
     fun groceryScreen_enablesKeepScreenOnFlag() {
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = nutritionScreenModel())
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = nutritionScreenModel())
+                }
             }
         }
 
@@ -862,7 +904,9 @@ class NutritionUxInstrumentedTest {
     fun groceryScreen_keepScreenOnToggle_disablesFlag() {
         composeRule.setContent {
             AppTheme {
-                GroceryShoppingScreen(onBack = {}, screenModel = nutritionScreenModel())
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = nutritionScreenModel())
+                }
             }
         }
 
