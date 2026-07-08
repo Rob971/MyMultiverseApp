@@ -53,7 +53,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import app.mymultiverse.ammo.presentation.components.HomeComingSoonRow
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.ammo.presentation.components.GlobalLanguageAction
 import app.mymultiverse.ammo.presentation.components.JourneyBanner
@@ -731,13 +730,6 @@ fun HomeWelcomeContent(
                                 onOpenMealPlan = onOpenMealPlan,
                                 onOpenGrocery = onOpenGrocery,
                             )
-                            HomeComingSoonRow(
-                                label = stringResource(Res.string.home_coming_soon_features),
-                                badge = stringResource(Res.string.home_logistics_coming_soon),
-                                adventuresLabel = stringResource(Res.string.home_coming_soon_adventures),
-                                budgetLabel = stringResource(Res.string.task_label_budget),
-                                hint = stringResource(Res.string.home_coming_soon_hint),
-                            )
                         }
                     }
                 }
@@ -755,13 +747,6 @@ fun HomeWelcomeContent(
                         nutritionSummary = nutritionSummary,
                         onOpenMealPlan = onOpenMealPlan,
                         onOpenGrocery = onOpenGrocery,
-                    )
-                    HomeComingSoonRow(
-                        label = stringResource(Res.string.home_coming_soon_features),
-                        badge = stringResource(Res.string.home_logistics_coming_soon),
-                        adventuresLabel = stringResource(Res.string.home_coming_soon_adventures),
-                        budgetLabel = stringResource(Res.string.task_label_budget),
-                        hint = stringResource(Res.string.home_coming_soon_hint),
                     )
                 }
             }

@@ -120,9 +120,5 @@ class AppIconsTest {
             AppIconRole.SsoGoogle.imageVector().name,
             AppIconRole.SsoApple.imageVector().name,
         )
-        assertNotEquals(
-            AppIconRole.ComingSoonExplore.imageVector().name,
-            AppIconRole.ComingSoonBudget.imageVector().name,
-        )
     }
 }

@@ -82,7 +82,6 @@
     <string name="nutrition_ai_empty_question">Azzecca primma 'na nota curta.</string>
     <string name="nutrition_ai_idle_title">Nun è stato generato niente ancora</string>
     <string name="nutrition_ai_idle_body">Scegli 'nu suggerimento rapido o descrivi 'a settimana toja, po' piglia Genera.</string>
-    <string name="home_logistics_coming_soon">Presto</string>
     <string name="nutrition_week_dates">%1$s – %2$s</string>
     <string name="nutrition_grocery_progress">%1$d 'e %2$d spuntate</string>
     <string name="nutrition_meal_plan_progress">%1$d 'e %2$d pasti pianificati</string>
@@ -380,11 +379,8 @@
     <string name="home_greeting_morning_personalized">Buongiorno, %1$s</string>
     <string name="home_greeting_afternoon_personalized">Buon pomeriggio, %1$s</string>
     <string name="home_greeting_evening_personalized">Buonasera, %1$s</string>
-    <string name="home_coming_soon_hint">Viaggi, gite e finanzas condivise stanno arrivanno.</string>
     <string name="home_greeting_loading">Sto caricanno 'a semmana toja…</string>
     <string name="home_greeting_personalized">Ciao, %1$s</string>
-    <string name="home_coming_soon_features">Avventure e budget</string>
-    <string name="home_coming_soon_adventures">Avventure</string>
     <string name="home_section_this_week">Chesta semmana</string>
     <string name="home_section_household">Famiglia</string>
     <string name="home_section_more">De cchiù</string>

@@ -42,8 +42,6 @@ enum class AppIconRole {
     Destructive,
     DragHandle,
     MealSlot,
-    ComingSoonExplore,
-    ComingSoonBudget,
     Household,
     InviteMember,
     NotifyPartners,
@@ -79,8 +77,6 @@ fun AppIconRole.imageVector(): ImageVector = when (this) {
     AppIconRole.SsoGoogle -> AppIcons.Google
     AppIconRole.SsoApple -> AppIcons.Apple
     AppIconRole.MealSlot -> AppIcons.Restaurant
-    AppIconRole.ComingSoonExplore -> AppIcons.Adventures
-    AppIconRole.ComingSoonBudget -> AppIcons.BudgetWallet
     AppIconRole.Household -> AppIcons.Household
     AppIconRole.InviteMember -> AppIcons.PersonAdd
     AppIconRole.NotifyPartners -> AppIcons.Notifications
@@ -109,7 +105,6 @@ fun AppIconRole.resolveTint(accentColor: Color? = null): Color = when (this) {
     AppIconRole.SyncPending,
     AppIconRole.KeepScreenOn,
     AppIconRole.Hint,
-    AppIconRole.ComingSoonBudget,
     -> JourneySemanticColors.brandTeal()
 
     AppIconRole.ChromeClose,
@@ -120,9 +115,6 @@ fun AppIconRole.resolveTint(accentColor: Color? = null): Color = when (this) {
     AppIconRole.Household,
     AppIconRole.SyncOffline,
     -> JourneySemanticColors.inkMuted()
-
-    AppIconRole.ComingSoonExplore,
-    -> JourneySemanticColors.brandTerracotta()
 
     AppIconRole.DragHandle,
     -> JourneySemanticColors.inkSecondary()
