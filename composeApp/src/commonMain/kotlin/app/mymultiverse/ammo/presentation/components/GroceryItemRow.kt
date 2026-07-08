@@ -248,7 +248,7 @@ private fun GroceryFlatRowContent(
                 ),
             ) {
                 JourneyIcon(
-                    imageVector = if (item.isChecked) AppIcons.CheckCircle else AppIcons.RadioButtonUnchecked,
+                    imageVector = if (item.isChecked) AppIcons.CheckCircle else AppIcons.GroceryCheckOutline,
                     role = if (item.isChecked) AppIconRole.GroceryChecked else AppIconRole.GroceryUnchecked,
                     contentDescription = toggleContentDescription,
                     useContentColor = true,
@@ -338,7 +338,7 @@ private fun GroceryFlatRowContent(
                         ),
                     ) {
                         JourneyIcon(
-                            imageVector = AppIcons.Close,
+                            imageVector = AppIcons.GroceryRemoveCircle,
                             role = AppIconRole.ActionDelete,
                             contentDescription = deleteContentDescription,
                             useContentColor = true,
