@@ -274,7 +274,7 @@ private fun MealPlanMealField(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(horizontal = 2.dp),
             ) {
-                items(suggestions.withIndex().toList(), key = { it.value }) { (index, suggestion) ->
+                items(suggestions.withIndex().toList(), key = { it.index }) { (index, suggestion) ->
                     SuggestionChip(
                         onClick = { onValueChange(suggestion) },
                         label = {
