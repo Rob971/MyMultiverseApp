@@ -132,6 +132,9 @@
     <string name="nutrition_grocery_edit_hint">Item name</string>
     <string name="nutrition_grocery_save_edit">Save</string>
     <string name="nutrition_grocery_cancel_edit">Cancel</string>
+    <string name="nutrition_grocery_delete_confirm_title">Remove item?</string>
+    <string name="nutrition_grocery_delete_confirm_body">This item will be permanently removed from the list.</string>
+    <string name="nutrition_grocery_delete_confirm_action">Remove</string>
     <string name="nutrition_grocery_undo_delete">Item removed</string>
     <string name="nutrition_grocery_undo_action">Undo</string>
     <string name="nutrition_grocery_clear_checked_undo">Checked items cleared</string>

@@ -132,6 +132,9 @@
     <string name="nutrition_grocery_edit_hint">Nomme d' 'o articolo</string>
     <string name="nutrition_grocery_save_edit">Sarva</string>
     <string name="nutrition_grocery_cancel_edit">Annulle</string>
+    <string name="nutrition_grocery_delete_confirm_title">Lèva l'articolo?</string>
+    <string name="nutrition_grocery_delete_confirm_body">St'articolo sarà levato 'nzampo 'a lista.</string>
+    <string name="nutrition_grocery_delete_confirm_action">Lèva</string>
     <string name="nutrition_grocery_undo_delete">Articolo levato</string>
     <string name="nutrition_grocery_undo_action">Annulle</string>
     <string name="nutrition_grocery_clear_checked_undo">Articoli segnati scancellati</string>

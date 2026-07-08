@@ -132,6 +132,9 @@
     <string name="nutrition_grocery_edit_hint">اسم العنصر</string>
     <string name="nutrition_grocery_save_edit">حفظ</string>
     <string name="nutrition_grocery_cancel_edit">إلغاء</string>
+    <string name="nutrition_grocery_delete_confirm_title">إزالة العنصر؟</string>
+    <string name="nutrition_grocery_delete_confirm_body">سيُزال هذا العنصر نهائياً من القائمة.</string>
+    <string name="nutrition_grocery_delete_confirm_action">إزالة</string>
     <string name="nutrition_grocery_undo_delete">تمت إزالة العنصر</string>
     <string name="nutrition_grocery_undo_action">تراجع</string>
     <string name="nutrition_grocery_clear_checked_undo">تم مسح العناصر المحددة</string>

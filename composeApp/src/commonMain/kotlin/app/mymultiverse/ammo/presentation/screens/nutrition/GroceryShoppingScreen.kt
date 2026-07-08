@@ -42,6 +42,9 @@ import ammo.composeapp.generated.resources.nutrition_collaboration_grocery_check
 import ammo.composeapp.generated.resources.nutrition_grocery_add_button
 import ammo.composeapp.generated.resources.nutrition_grocery_add_hint
 import ammo.composeapp.generated.resources.nutrition_grocery_cancel_edit
+import ammo.composeapp.generated.resources.nutrition_grocery_delete_confirm_action
+import ammo.composeapp.generated.resources.nutrition_grocery_delete_confirm_body
+import ammo.composeapp.generated.resources.nutrition_grocery_delete_confirm_title
 import ammo.composeapp.generated.resources.nutrition_grocery_clear_checked
 import ammo.composeapp.generated.resources.nutrition_grocery_clear_checked_undo
 import ammo.composeapp.generated.resources.nutrition_grocery_drag_handle
@@ -184,6 +187,9 @@ fun GroceryShoppingScreen(
     val editContentDescription = stringResource(Res.string.nutrition_grocery_edit_item)
     val saveContentDescription = stringResource(Res.string.nutrition_grocery_save_edit)
     val cancelEditLabel = stringResource(Res.string.nutrition_grocery_cancel_edit)
+    val confirmDeleteTitle = stringResource(Res.string.nutrition_grocery_delete_confirm_title)
+    val confirmDeleteBody = stringResource(Res.string.nutrition_grocery_delete_confirm_body)
+    val confirmDeleteActionLabel = stringResource(Res.string.nutrition_grocery_delete_confirm_action)
     val toggleContentDescription = stringResource(Res.string.nutrition_grocery_toggle_item)
     val deleteContentDescription = stringResource(Res.string.nutrition_delete_item)
     val dragHandleContentDescription = stringResource(Res.string.nutrition_grocery_drag_handle)
@@ -419,6 +425,9 @@ fun GroceryShoppingScreen(
                     editContentDescription = editContentDescription,
                     saveContentDescription = saveContentDescription,
                     cancelEditLabel = cancelEditLabel,
+                    confirmDeleteTitle = confirmDeleteTitle,
+                    confirmDeleteBody = confirmDeleteBody,
+                    confirmDeleteActionLabel = confirmDeleteActionLabel,
                     toggleContentDescription = toggleContentDescription,
                     deleteContentDescription = deleteContentDescription,
                     dragHandleContentDescription = dragHandleContentDescription,
@@ -557,6 +566,9 @@ private fun LazyListScope.groceryShoppingListItems(
     editContentDescription: String,
     saveContentDescription: String,
     cancelEditLabel: String,
+    confirmDeleteTitle: String,
+    confirmDeleteBody: String,
+    confirmDeleteActionLabel: String,
     toggleContentDescription: String,
     deleteContentDescription: String,
     dragHandleContentDescription: String,
@@ -694,6 +706,9 @@ private fun LazyListScope.groceryShoppingListItems(
                     editContentDescription = editContentDescription,
                     saveContentDescription = saveContentDescription,
                     cancelEditLabel = cancelEditLabel,
+                    confirmDeleteTitle = confirmDeleteTitle,
+                    confirmDeleteBody = confirmDeleteBody,
+                    confirmDeleteActionLabel = confirmDeleteActionLabel,
                     toggleContentDescription = toggleContentDescription,
                     deleteContentDescription = deleteContentDescription,
                     dragHandleContentDescription = dragHandleContentDescription,
@@ -754,6 +769,9 @@ private fun LazyListScope.groceryShoppingListItems(
                         editContentDescription = editContentDescription,
                         saveContentDescription = saveContentDescription,
                         cancelEditLabel = cancelEditLabel,
+                        confirmDeleteTitle = confirmDeleteTitle,
+                        confirmDeleteBody = confirmDeleteBody,
+                        confirmDeleteActionLabel = confirmDeleteActionLabel,
                         toggleContentDescription = toggleContentDescription,
                         deleteContentDescription = deleteContentDescription,
                         dragHandleContentDescription = dragHandleContentDescription,
@@ -783,6 +801,9 @@ private fun GroceryListItem(
     editContentDescription: String,
     saveContentDescription: String,
     cancelEditLabel: String,
+    confirmDeleteTitle: String,
+    confirmDeleteBody: String,
+    confirmDeleteActionLabel: String,
     toggleContentDescription: String,
     deleteContentDescription: String,
     dragHandleContentDescription: String,
@@ -805,6 +826,9 @@ private fun GroceryListItem(
         editContentDescription = editContentDescription,
         saveContentDescription = saveContentDescription,
         cancelEditLabel = cancelEditLabel,
+        confirmDeleteTitle = confirmDeleteTitle,
+        confirmDeleteBody = confirmDeleteBody,
+        confirmDeleteActionLabel = confirmDeleteActionLabel,
         toggleContentDescription = toggleContentDescription,
         deleteContentDescription = deleteContentDescription,
         onStartEdit = onStartEdit,

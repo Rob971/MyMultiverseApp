@@ -16,8 +16,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
-import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.swipeRight
+
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
@@ -863,7 +862,7 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun grocery_swipeRight_checksItem() {
+    fun grocery_checkButton_checksItem() {
         val itemId = "instrumented-item-1"
         val screenModel = nutritionScreenModel(itemId = itemId)
 
@@ -880,10 +879,64 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
         composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
 
-        composeRule.onNodeWithTag("${GroceryItemRowTestTags.ROW_PREFIX}$itemId")
+        composeRule.onNodeWithTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}$itemId")
             .performScrollTo()
-            .performTouchInput { swipeRight() }
+            .performClick()
         composeRule.waitForState(screenModel.groceryItems) { it.single().isChecked }
+    }
+
+    @Test
+    fun grocery_deleteButton_showsConfirmationDialog() {
+        val itemId = "instrumented-item-1"
+        val screenModel = nutritionScreenModel(itemId = itemId)
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.INPUT_FIELD)
+            .performTextInput("Milk")
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
+        composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
+
+        composeRule.onNodeWithTag("${GroceryItemRowTestTags.DELETE_BUTTON_PREFIX}$itemId")
+            .performScrollTo()
+            .performClick()
+
+        composeRule.onNodeWithTag(GroceryItemRowTestTags.DELETE_CONFIRM_BUTTON)
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun grocery_deleteConfirm_removesItem() {
+        val itemId = "instrumented-item-1"
+        val screenModel = nutritionScreenModel(itemId = itemId)
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.INPUT_FIELD)
+            .performTextInput("Milk")
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
+        composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
+
+        composeRule.onNodeWithTag("${GroceryItemRowTestTags.DELETE_BUTTON_PREFIX}$itemId")
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithTag(GroceryItemRowTestTags.DELETE_CONFIRM_BUTTON)
+            .assertIsDisplayed()
+            .performClick()
+
+        composeRule.waitForState(screenModel.groceryItems) { it.isEmpty() }
     }
 
     @Test

@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 82
+version: 83
 updated: 2026-07-08
 
 summary: |
@@ -27,7 +27,7 @@ summary: |
   Wave C platform breadth: system dark theme with Napolitan dark palette; grocery side-panel input and two-column meal plan (today vs rest of week) on width >= 600dp; terracotta AI read-only grocery accent.
   Wave C QA (v31): dedicated manual cases for dark theme, wide grocery/meal plan layouts, and AI terracotta accent.
   Home navigation (v32): bottom tabs (Today / Plan / Groceries), profile avatar for account settings, first-win card action buttons, dark-mode readable card text on Welcome Home.
-  Phase 1 UX (v34–v35): swipe-to-check, hide checked, viewer banner on Plan, skip entry gate, empty grocery CTA on Today.
+  Phase 1 UX (v34–v35): swipe-to-check (replaced by explicit buttons v83), hide checked, viewer banner on Plan, skip entry gate, empty grocery CTA on Today.
   Phase 2 UX (v36): AiHelperSheet bottom sheet on Plan tab; output-first AI copy (no chatbot tone).
   Phase 2 UX (v37): inline AI triggers — empty meal slot “Suggest 20-min meal”, grocery “Build list from this week’s meals” chip, terracotta AI suggestion chips.
   Phase 2 UX (v38): chip-first AI sheet (quick picks generate on tap; criteria behind More options); mode locked from context; plan empty-state AI chips; full-screen AI adviser demoted to deep link only.
@@ -59,7 +59,8 @@ summary: |
   Family member photos (v76): each member row shows a circular avatar beside the name; tap your own avatar (or a dependant's if you manage members) to pick a photo from the gallery.
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
   Contextual AI chips E4-11 (v52): Plan empty state and AI helper sheet prepend Use up {ingredient} chips from unchecked grocery + meal history (fallback to protein/budget/veggies when no signals).
-  Grocery simplification (v54): Groceries tab focuses on Update list (week selector → list CRUD); removed build-from-meals chip, pantry check, and AI suggestion sections from grocery screen; drag handle reorders active items; swipe gestures unchanged.
+  Grocery simplification (v54): Groceries tab focuses on Update list (week selector → list CRUD); removed build-from-meals chip, pantry check, and AI suggestion sections from grocery screen; drag handle reorders active items.
+  Explicit check/delete buttons (v83): replaced swipe-to-check/delete with explicit check button (left) and × delete button (right) on each row; delete shows Remove item? confirmation dialog before removing.
   Meal plan simplification (v55): Plan tab shows compact week progress then Daily planning day cards; removed bulk generate-grocery, pantry check, and AI suggestion sections; per-meal Add to grocery and Suggest 20-min meal remain on each day.
   Grocery add discoverability (v56): Groceries tab renames Update list to To buy with inline add row (labeled Add button) under the section header on phone; empty-state and all-checked CTAs scroll to and focus the add field; sticky bottom bar keeps labeled Add button; Today timeline shows Shopping list row title instead of Update list.
   Meal plan grocery direct add (v57): Plan tab Add to grocery list writes generated ingredients (including pantry staples) straight to the editable Groceries list — no AI suggestion chips or manual adopt step.
@@ -489,15 +490,20 @@ testcases:
       - Each planned meal shows a primary Add to grocery list button (not a small text link).
       - Tapping it adds generated ingredients directly to the Groceries tab list (snackbar confirms count).
 
-  - id: grocery-swipe-to-check
-    title: Swipe to check grocery items
+  - id: grocery-check-delete-buttons
+    title: Explicit check and delete buttons on grocery rows
     steps:
       - Open Groceries with at least one unchecked item.
-      - Swipe a row to the right to check it off; swipe left on another row to delete (confirm undo if shown).
-      - Tap a row or checkbox to toggle as before.
+      - Tap the check button (left of the row) to mark the item as bought; label turns muted and gets a strikethrough.
+      - Tap the check button again to uncheck the item.
+      - Tap the cross (×) button on the right of an item; confirm the Remove item? dialog by tapping Remove.
+      - Tap the cross button on another item and tap Cancel to dismiss without deleting.
     expected:
-      - Right swipe checks/unchecks with haptic feedback; left swipe still deletes.
-      - Row tap and checkbox remain available.
+      - Check button toggles item checked state with strikethrough text; haptic feedback plays.
+      - Row tap also toggles checked state.
+      - Cross button always visible on each editable row (checked and unchecked items).
+      - Remove item? confirmation dialog appears before deletion; item removed only on confirm.
+      - Tapping Cancel or outside the dialog leaves the item unchanged.
 
   - id: grocery-shopping-hide-checked
     title: Shopping mode hide checked items
@@ -667,10 +673,12 @@ testcases:
       - Tap checkbox on one item to mark it checked.
       - Use Clear checked and tap Undo from the snackbar.
       - Edit an item label inline.
-      - Swipe right to check an item; swipe left to delete and use Undo if shown.
+      - Tap the check button to mark an item bought; tap the cross (×) button and confirm to delete.
+      - Use Undo from the delete snackbar to restore a deleted item.
     expected:
       - To buy subtitle shows progress when items exist, or add hint when empty.
       - Section header Add action focuses the sticky add field on phone.
+      - Cross button shows a Remove item? dialog; item deleted only after confirming.
       - Delete and clear-checked undo snackbars auto-dismiss after a few seconds unless Undo is tapped.
       - Duplicate entry scrolls to the existing row with no error snackbar; list still has one row.
       - Reorder persists after leaving and returning to the screen.
