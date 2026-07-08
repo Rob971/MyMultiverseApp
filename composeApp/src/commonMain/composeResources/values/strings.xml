@@ -82,7 +82,6 @@
     <string name="nutrition_ai_empty_question">Add a short note first.</string>
     <string name="nutrition_ai_idle_title">Nothing generated yet</string>
     <string name="nutrition_ai_idle_body">Choose a quick pick or describe your week, then tap Generate.</string>
-    <string name="home_logistics_coming_soon">Coming soon</string>
     <string name="nutrition_week_dates">%1$s – %2$s</string>
     <string name="nutrition_grocery_progress">%1$d of %2$d checked</string>
     <string name="nutrition_meal_plan_progress">%1$d of %2$d meals planned</string>
@@ -380,11 +379,8 @@
     <string name="home_greeting_morning_personalized">Good morning, %1$s</string>
     <string name="home_greeting_afternoon_personalized">Good afternoon, %1$s</string>
     <string name="home_greeting_evening_personalized">Good evening, %1$s</string>
-    <string name="home_coming_soon_hint">Trips, outings, and shared finances are on the roadmap.</string>
     <string name="home_greeting_loading">Loading your week…</string>
     <string name="home_greeting_personalized">Hello, %1$s</string>
-    <string name="home_coming_soon_features">Adventures &amp; Budget</string>
-    <string name="home_coming_soon_adventures">Adventures</string>
     <string name="home_section_this_week">This week</string>
     <string name="home_section_household">Family</string>
     <string name="home_section_more">More</string>

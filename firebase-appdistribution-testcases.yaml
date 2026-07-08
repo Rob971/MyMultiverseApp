@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 80
-updated: 2026-07-06
+version: 81
+updated: 2026-07-08
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -38,7 +38,7 @@ summary: |
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
   Global language (v53): globe icon in app headers (auth, onboarding, Home, nutrition screens) plus full picker in account sheet.
-  Icon clarity (v59): bolder nav/feature icons (Today, Plan, Groceries); Google/Apple marks on SSO buttons; coming-soon Adventures/Budget row on Today with labeled compass and wallet icons; dedicated sync and keep-screen-on icons.
+  Icon clarity (v59): bolder nav/feature icons (Today, Plan, Groceries); Google/Apple marks on SSO buttons; dedicated sync and keep-screen-on icons.
   Language picker flags (v60): national flag trigger in top-right on auth/login and all headers; dropdown lists flag + language name; Napulitano keeps dialect subtitle.
   Brand logo (v65): richer gold-framed Ammò badge restored in-app, launcher icons, invite emails, and mymultiverse.app brand assets; Android keeps a simplified monochrome notification icon for status bar compliance.
   Launcher safe zone (v66): Android adaptive icon foreground scaled to the 66% center circle so Ammò wordmark is not clipped on home screen.
@@ -1004,15 +1004,6 @@ testcases:
       - Trigger shows the flag for the current language (e.g. Napoli celeste football flag for Napulitano, Italy tricolor for Italiano, UK for English).
       - Auth, Home, nutrition, and members strings update for the selected locale (EN, FR, ES, DE, IT, Napoli, AR).
       - Dropdown lists each language with its flag; Napulitano option shows dialect subtitle.
-
-  - id: icon-clarity-coming-soon-row
-    title: Coming soon Adventures and Budget row on Today
-    steps:
-      - Open the Today tab on Welcome Home.
-      - Scroll below the Daily meal plan block.
-    expected:
-      - Card shows Adventures and Budget labels each with a distinct icon (compass terracotta, wallet teal) and a Coming soon badge.
-      - Hint text explains trips and shared finances are on the roadmap (testTag home_coming_soon_row).
 
   - id: icon-clarity-sso-auth
     title: SSO provider icons on auth
