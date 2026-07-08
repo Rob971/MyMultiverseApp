@@ -55,7 +55,7 @@ class HouseholdEntryInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                KoinApplication(application = { modules(testModule(householdRepository, selectionStore, sessionCoordinator)) }) {
+                KoinApplication(application = { modules(testModule(householdRepository, selectionStore, sessionCoordinator), instrumentedKoinModule) }) {
                     NutritionEntryGate(
                         onBack = {},
                         onReady = { resolvedHousehold = it },
@@ -103,11 +103,13 @@ class HouseholdEntryInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                NutritionEntryGate(
-                    onBack = {},
-                    onReady = {},
-                    screenModel = screenModel,
-                )
+                InstrumentedKoinHost {
+                    NutritionEntryGate(
+                        onBack = {},
+                        onReady = {},
+                        screenModel = screenModel,
+                    )
+                }
             }
         }
 

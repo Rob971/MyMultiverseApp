@@ -43,11 +43,13 @@ class HouseholdMembersEntryInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                HouseholdMembersGate(
-                    onBack = {},
-                    onReady = {},
-                    entryScreenModel = screenModel,
-                )
+                InstrumentedKoinHost {
+                    HouseholdMembersGate(
+                        onBack = {},
+                        onReady = {},
+                        entryScreenModel = screenModel,
+                    )
+                }
             }
         }
 

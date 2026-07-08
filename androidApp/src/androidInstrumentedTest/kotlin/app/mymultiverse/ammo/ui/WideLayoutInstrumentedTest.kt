@@ -73,8 +73,10 @@ class WideLayoutInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                WideLayoutHost {
-                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    WideLayoutHost {
+                        GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                    }
                 }
             }
         }
@@ -93,8 +95,10 @@ class WideLayoutInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                PhoneLayoutHost {
-                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                InstrumentedKoinHost {
+                    PhoneLayoutHost {
+                        GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                    }
                 }
             }
         }
@@ -113,12 +117,14 @@ class WideLayoutInstrumentedTest {
 
         composeRule.setContent {
             AppTheme {
-                WideLayoutHost {
-                    WeeklyMealPlanScreen(
-                        onBack = {},
-                        onOpenSection = { _, _ -> },
-                        screenModel = screenModel,
-                    )
+                InstrumentedKoinHost {
+                    WideLayoutHost {
+                        WeeklyMealPlanScreen(
+                            onBack = {},
+                            onOpenSection = { _, _ -> },
+                            screenModel = screenModel,
+                        )
+                    }
                 }
             }
         }
