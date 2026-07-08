@@ -77,13 +77,14 @@ jobs:
     steps:
       - name: Evaluate skip rules
         id: evaluate
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           if [[ "${{ github.event_name }}" != "push" ]]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          msg="${{ github.event.head_commit.message }}"
-          if [[ "$msg" == *"[skip ci]"* ]] || [[ "$msg" == *"[ci skip]"* ]] || [[ "$msg" == chore\(version\):* ]]; then
+          if [[ "$COMMIT_MSG" == *"[skip ci]"* ]] || [[ "$COMMIT_MSG" == *"[ci skip]"* ]] || [[ "$COMMIT_MSG" == chore\(version\):* ]]; then
             echo "run=false" >> "$GITHUB_OUTPUT"
             echo "Skipping CI for automated/version-only push."
           else
