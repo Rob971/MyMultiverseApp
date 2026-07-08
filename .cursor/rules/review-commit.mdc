@@ -16,10 +16,11 @@ Apply on every implementation task, code review, and when the user asks for a co
 3. **i18n** — New UI copy in all 8 `values*` locales; composables use `stringResource`; screen models expose data, not formatted English.
 4. **Design system** — Reuse `Journey*` / `FamilyLogistics*` / `JourneySemanticColors`; no raw `OutlinedTextField`, `Icons.Default`, or one-off hex colors.
 5. **UX states** — Loading, error, empty handled; snackbars above `bottomBar` where applicable; `imePadding` on text-heavy screens.
-6. **Tests** — Unit tests for domain/screen model changes; instrumented only for critical UI paths; fakes implement full interfaces.
-7. **QA YAML** — Update `firebase-appdistribution-testcases.yaml` (bump `version`) when user-facing flows change.
-8. **Secrets** — No credentials, `local.properties` values, or `google-services.json` in commits.
-9. **Gradle** — Run `:composeApp:testDebugUnitTest` (and `:androidApp:assembleDebugAndroidTest` if UI touched) before done.
+6. **Tests — new coverage** — Every new domain method, screen model transition, codec, and composable screen has a unit or instrumented test. New `LazyColumn`/`LazyRow` `items()` blocks use stable, prefixed keys. New screens have `*TestTags` constants.
+7. **Tests — existing coverage updated** — Every modified function whose behavior changed has its test updated to match. No stale `assertEquals`/`assert` that passes for the wrong reason. Fakes implement the full current interface with no `TODO()` stubs.
+8. **QA YAML** — Update `firebase-appdistribution-testcases.yaml` (bump `version`) when user-facing flows change.
+9. **Secrets** — No credentials, `local.properties` values, or `google-services.json` in commits.
+10. **Gradle** — Run `:composeApp:testDebugUnitTest` (must be `BUILD SUCCESSFUL`) and `:composeApp:compileDebugAndroidTestKotlinAndroid` (must compile clean) before done.
 
 ## PR checklist
 
@@ -41,8 +42,8 @@ Apply on every implementation task, code review, and when the user asks for a co
 | Priority | Check |
 |----------|--------|
 | P0 | Security (RLS, auth, secrets), data loss, crash |
-| P1 | i18n parity, viewer read-only violations, wrong layer imports |
-| P2 | Missing tests, broken `testTag`s, Firebase YAML drift |
+| P1 | i18n parity, viewer read-only violations, wrong layer imports, **unit test compile failure or `BUILD FAILED`** |
+| P2 | **Missing tests for new code**, **stale tests not updated for changed behavior**, **fakes out of sync with interface**, broken `testTag`s, Firebase YAML drift |
 | P3 | Design-system drift (non-Journey controls), touch targets &lt; 48dp |
 | P4 | Naming, minor style |
 
@@ -53,3 +54,7 @@ Apply on every implementation task, code review, and when the user asks for a co
 - Business logic in `@Composable` bodies.
 - Mixing AI read-only lists with editable CRUD without explicit UX separation.
 - Phone-only layout assumptions (test wide ≥ `ScreenLayout.expandedMinWidth` when touching grocery/meal plan).
+- **New public methods/classes with no test** — every shipped function is a contract; untested contracts break silently.
+- **Tests that were not updated after a behavior change** — a test that passes despite the implementation changing is a false green; it hides future regressions.
+- **Fake left with `TODO()` or incomplete interface** — downstream tests silently skip untested paths; treat as a crash equivalent.
+- **`LazyColumn`/`LazyRow` items keyed by display text or non-unique property** — causes `IllegalArgumentException` at runtime; use stable IDs with type prefixes when multiple `items()` blocks share a column.
