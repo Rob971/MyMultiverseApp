@@ -132,6 +132,9 @@
     <string name="nutrition_grocery_edit_hint">Nom de l'article</string>
     <string name="nutrition_grocery_save_edit">Enregistrer</string>
     <string name="nutrition_grocery_cancel_edit">Annuler</string>
+    <string name="nutrition_grocery_delete_confirm_title">Supprimer l'article ?</string>
+    <string name="nutrition_grocery_delete_confirm_body">Cet article sera définitivement supprimé de la liste.</string>
+    <string name="nutrition_grocery_delete_confirm_action">Supprimer</string>
     <string name="nutrition_grocery_undo_delete">Article supprimé</string>
     <string name="nutrition_grocery_undo_action">Annuler</string>
     <string name="nutrition_grocery_clear_checked_undo">Articles cochés effacés</string>
