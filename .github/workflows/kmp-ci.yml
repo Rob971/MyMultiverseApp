@@ -813,8 +813,11 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.AMMO_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: app.mymultiverse.ammo
           releaseFiles: androidApp/build/outputs/bundle/release/*.aab
-          track: beta
-          status: draft
+          # Use 'internal' until the Play Console store listing is complete (description,
+          # screenshots, content rating, privacy policy). Switch to 'beta' (closed testing)
+          # once the listing satisfies the Play API preconditions for that track.
+          track: internal
+          status: completed
           whatsNewDirectory: distribution/whatsnew
 
       - name: Summarize beta release
