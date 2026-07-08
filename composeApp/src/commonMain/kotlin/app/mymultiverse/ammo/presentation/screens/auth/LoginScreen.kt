@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.ammo.presentation.components.AdaptiveFormWidth
 import app.mymultiverse.ammo.presentation.components.AmmoRoundLogo
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.keyboardAwareScroll
@@ -137,16 +138,20 @@ fun LoginScreen(
             )
         },
     ) { padding ->
-        Column(
+        AdaptiveFormWidth(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = ScreenLayout.horizontalPadding)
-                .keyboardAwareScroll(scrollState)
-                .testTag(LoginTestTags.SCREEN),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top,
+                .padding(horizontal = ScreenLayout.horizontalPadding),
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .keyboardAwareScroll(scrollState)
+                    .testTag(LoginTestTags.SCREEN),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
+            ) {
             Spacer(modifier = Modifier.height(ScreenLayout.contentTopPadding))
             AmmoRoundLogo(modifier = Modifier.size(96.dp))
             Spacer(modifier = Modifier.height(24.dp))
@@ -301,6 +306,7 @@ fun LoginScreen(
                 ),
             )
             Spacer(modifier = Modifier.height(ScreenLayout.contentBottomPadding))
+            }
         }
     }
 }

@@ -123,6 +123,7 @@ object GroceryListTestTags {
     const val UPDATE_LIST_SECTION = TO_BUY_SECTION
     const val KEEP_SCREEN_ON_TOGGLE = "grocery_keep_screen_on_toggle"
     const val PARTNER_NUDGE_ACTION = "grocery_partner_nudge_action"
+    const val WIDE_LAYOUT = "grocery_wide_layout"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -460,7 +461,8 @@ fun GroceryShoppingScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding),
+                        .padding(padding)
+                        .testTag(GroceryListTestTags.WIDE_LAYOUT),
                 ) {
                     PullToRefreshBox(
                         isRefreshing = isRefreshing,

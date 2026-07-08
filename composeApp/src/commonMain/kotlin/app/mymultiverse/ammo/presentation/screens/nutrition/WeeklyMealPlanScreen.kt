@@ -513,7 +513,9 @@ private fun WeeklyMealPlanScreenContent(
                     if (isWideLayout && todayEntry != null && upcomingEntries.isNotEmpty()) {
                         item(key = "wide-days") {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag(MealPlanTestTags.WIDE_DAYS_ROW),
                                 horizontalArrangement = Arrangement.spacedBy(ScreenLayout.horizontalPadding),
                             ) {
                                 Column(
