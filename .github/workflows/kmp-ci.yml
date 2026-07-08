@@ -814,7 +814,7 @@ jobs:
           packageName: app.mymultiverse.ammo
           releaseFiles: androidApp/build/outputs/bundle/release/*.aab
           track: beta
-          status: completed
+          status: draft
           whatsNewDirectory: distribution/whatsnew
 
       - name: Summarize beta release
