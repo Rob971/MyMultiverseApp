@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.presentation.theme
 
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
@@ -1684,6 +1685,85 @@ object AppIcons {
             return _planLunchPlaceSetting!!
         }
     private var _planLunchPlaceSetting: ImageVector? = null
+
+    /**
+     * Grocery row check button — unchecked state.
+     * Bold ring (outer r=10, inner r=7) with EvenOdd fill. Ring width 3 dp vs
+     * RadioButtonUnchecked's 2 dp, making the affordance clearly visible at row size.
+     */
+    val GroceryCheckOutline: ImageVector
+        get() {
+            if (_groceryCheckOutline != null) return _groceryCheckOutline!!
+            _groceryCheckOutline = ImageVector.Builder(
+                name = "Filled.GroceryCheckOutline",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path(pathFillType = PathFillType.EvenOdd) {
+                    // Outer ring boundary (r = 10, same as CheckCircle)
+                    moveTo(12f, 2f)
+                    curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+                    reflectiveCurveTo(6.48f, 22f, 12f, 22f)
+                    reflectiveCurveTo(22f, 17.52f, 22f, 12f)
+                    reflectiveCurveTo(17.52f, 2f, 12f, 2f)
+                    close()
+                    // Inner cutout (r = 7 → ring width 3, bolder than RadioButtonUnchecked's 2)
+                    moveTo(12f, 19f)
+                    curveToRelative(-3.87f, 0f, -7f, -3.13f, -7f, -7f)
+                    reflectiveCurveToRelative(3.13f, -7f, 7f, -7f)
+                    reflectiveCurveToRelative(7f, 3.13f, 7f, 7f)
+                    reflectiveCurveToRelative(-3.13f, 7f, -7f, 7f)
+                    close()
+                }
+            }.build()
+            return _groceryCheckOutline!!
+        }
+    private var _groceryCheckOutline: ImageVector? = null
+
+    /**
+     * Grocery row delete button.
+     * Filled circle with × cutout (EvenOdd fill). Creates visual balance with
+     * GroceryCheckOutline and CheckCircle — all three share the same circle boundary.
+     */
+    val GroceryRemoveCircle: ImageVector
+        get() {
+            if (_groceryRemoveCircle != null) return _groceryRemoveCircle!!
+            _groceryRemoveCircle = ImageVector.Builder(
+                name = "Filled.GroceryRemoveCircle",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path(pathFillType = PathFillType.EvenOdd) {
+                    // Filled circle boundary (r = 10)
+                    moveTo(12f, 2f)
+                    curveTo(6.47f, 2f, 2f, 6.47f, 2f, 12f)
+                    curveTo(2f, 17.53f, 6.47f, 22f, 12f, 22f)
+                    curveTo(17.53f, 22f, 22f, 17.53f, 22f, 12f)
+                    curveTo(22f, 6.47f, 17.53f, 2f, 12f, 2f)
+                    close()
+                    // × cutout — EvenOdd makes this region transparent through the filled circle
+                    moveTo(17f, 15.59f)
+                    lineTo(15.59f, 17f)
+                    lineTo(12f, 13.41f)
+                    lineTo(8.41f, 17f)
+                    lineTo(7f, 15.59f)
+                    lineTo(10.59f, 12f)
+                    lineTo(7f, 8.41f)
+                    lineTo(8.41f, 7f)
+                    lineTo(12f, 10.59f)
+                    lineTo(15.59f, 7f)
+                    lineTo(17f, 8.41f)
+                    lineTo(13.41f, 12f)
+                    close()
+                }
+            }.build()
+            return _groceryRemoveCircle!!
+        }
+    private var _groceryRemoveCircle: ImageVector? = null
 
     /** Apple, carrot, fish, and steak — Today hero + Groceries tab. */
     val FreshGroceries: ImageVector
