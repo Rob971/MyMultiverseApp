@@ -11,6 +11,39 @@ alwaysApply: true
 2. **Instrumented** (`androidApp/src/androidInstrumentedTest`) — Compose UI smoke on critical paths.
 3. **Manual** (`firebase-appdistribution-testcases.yaml`) — Firebase App Distribution testers (currently **v76**).
 
+## Test coverage mandate (non-negotiable)
+
+Every code change — bug fix, feature, or refactor — **must** satisfy all applicable rules below before the task is considered done. This is a merge blocker equivalent to i18n parity.
+
+### Adding new code
+
+| What you add | Required test |
+|---|---|
+| New domain model method / pure function | Unit test covering happy path + at least one edge/error case |
+| New repository method | Unit test via `Fake*` repository; assert state emitted by `Flow` or return value |
+| New screen model method / state transition | `runTest` + `TestDispatcher`; call the method, `advanceUntilIdle()`, assert `StateFlow` value |
+| New codec / mapper | Unit test round-tripping domain ↔ DTO |
+| New composable screen | Add `*TestTags` constants; add instrumented smoke test for the primary tap path |
+| New `LazyColumn` / `LazyRow` `items()` block | Key must be a stable unique identifier; use type-prefix (`"invite-"`, `"member-"`, `"done-"`) when multiple `items()` blocks share the same column |
+| New i18n string key | Covered by `*LocaleStringsTest` automatically once added to all 8 locale files |
+
+### Modifying existing code
+
+| What you change | Required test update |
+|---|---|
+| Change a domain/screen model method signature or behavior | Update every unit test that calls it; add a new case if the change introduces a new code path |
+| Change a repository or service interface | Update **all** `Fake*` implementations (`FakeAuthRepository`, `FakeNutritionRepository`, instrumented fakes, etc.) to match the new API, then verify tests still compile and pass |
+| Change a composable's visible output / UX state | Update or add the matching instrumented or unit assertion |
+| Change navigation routes or `AppNavigator` API | Update `AppNavigatorTest`, `AppNavigationTest`, and any contract tests |
+| Change a codec / DTO shape | Update the round-trip unit test to cover the new shape |
+| Remove a feature or screen | Delete its test file; remove orphan `testTag` references and Firebase YAML entries |
+
+### Keeping fakes in sync
+
+- Fakes must implement the **full** interface — never leave unimplemented stubs (`TODO()`) in shipped fake code.
+- When a method is added to a domain interface, update every fake in `commonTest/…/presentation/di/` and `androidInstrumentedTest/…/` immediately in the same commit as the interface change.
+- CI will fail to compile if a fake is incomplete; treat that as P0.
+
 ## Unit tests
 
 - Pure domain: no mocks (`NutritionAiPlanner`, `WeekCalendar`, `GroceryListPresentation`, codecs).
@@ -53,12 +86,18 @@ Update `firebase-appdistribution-testcases.yaml` when user-visible flows change:
 
 Release workflow embeds checklist excerpt in Firebase release notes.
 
-## Before merge
+## Before merge (every PR — mandatory)
+
+Run **both** commands and confirm green before declaring done:
 
 ```bash
 ./gradlew :composeApp:testDebugUnitTest
 ./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid
 ```
+
+- **Unit tests must pass** — `BUILD SUCCESSFUL` with zero failures.
+- **Instrumented compile must succeed** — catches broken fakes, missing `testTag`s, and API mismatches before CI.
+- A PR where either command produces `BUILD FAILED` must not be submitted for review.
 
 When touching invites/migrations:
 

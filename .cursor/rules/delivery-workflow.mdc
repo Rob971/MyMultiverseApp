@@ -25,11 +25,28 @@ Every task—planning, review, fix, test, or implementation—must follow this s
 
 ## 3. Test
 
+Testing is **not optional**. Every implementation step must be paired with test work — new tests for new code and updated tests for modified code. See `qa-testing.mdc` for the full coverage mandate table.
+
+### Write or update tests as part of the same change
+
+- **New functionality** → write unit tests for domain methods, screen model state transitions, and codecs before (or immediately after) implementing them. Never defer test writing to a follow-up PR.
+- **Modified functionality** → update every existing test that exercises the changed code path; stale passing tests that no longer assert the correct behavior are a bug.
+- **Interface changes** → update all `Fake*` and `Instrumented*Fakes` in the same commit as the interface change. A fake that doesn't compile is a P0 blocker.
+- **Deleted code** → delete or refactor the corresponding tests; do not leave orphan test files.
+
+### Coverage by layer
+
 - **Unit** (`commonTest`): domain, screen models, repositories, codecs, i18n parity, navigation contracts.
 - **Instrumented** (`androidInstrumentedTest`): critical UX with `testTag`s; `Instrumented*Fakes`, not production network.
 - **Supabase** (when touching invites/migrations): `scripts/verify-supabase-household.sh`, edge Deno tests if helpers change.
 - Update `firebase-appdistribution-testcases.yaml` when user-facing flows change (bump `version`).
-- Run before done: `./gradlew :composeApp:testDebugUnitTest` (+ `:androidApp:assembleDebugAndroidTest` if UI changed).
+
+### Gate before done
+
+```bash
+./gradlew :composeApp:testDebugUnitTest                       # must be BUILD SUCCESSFUL
+./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid    # must compile clean
+```
 
 ## 4. Review
 
@@ -44,4 +61,4 @@ Follow `review-commit.mdc` self-review checklist: UX states, architecture bounda
 
 ## Definition of done
 
-Feature works on target platforms; tests added/updated and passing; strings localized in all 8 locales; manual QA steps in Firebase YAML when flows change; no new linter issues in touched files; review-commit checklist satisfied.
+Feature works on target platforms; **new code has unit tests and modified code has updated tests** (see `qa-testing.mdc` mandate table); fakes match current interfaces; both Gradle gates green; strings localized in all 8 locales; manual QA steps in Firebase YAML when flows change; no new linter issues in touched files; review-commit checklist satisfied.

@@ -49,7 +49,11 @@ If your task touches these paths, **read the rule file first** (use the Read too
 - [ ] Layer boundaries respected (no UI in domain/data; no `*Impl` in composables)
 - [ ] All new strings in **8** locale `strings.xml` files
 - [ ] Journey components / semantic colors (no raw Material forms or one-off hex)
-- [ ] Tests added or updated; `:composeApp:testDebugUnitTest` run
+- [ ] **New functionality has unit tests** — every new domain method, screen model transition, codec, or repository method has a corresponding `*Test.kt` covering happy path + edge cases (`qa-testing.mdc` coverage table)
+- [ ] **Existing tests updated** — every test that exercises changed code compiles, passes, and reflects the new behavior; no stale assertions left behind
+- [ ] **Fakes kept in sync** — all `Fake*` and `Instrumented*Fakes` implement the full current interface; no `TODO()` stubs introduced
+- [ ] `:composeApp:testDebugUnitTest` runs green (`BUILD SUCCESSFUL`, zero failures)
+- [ ] `:composeApp:compileDebugAndroidTestKotlinAndroid` compiles clean (catches broken fakes before CI)
 - [ ] `firebase-appdistribution-testcases.yaml` updated if user-facing flows changed
 - [ ] No secrets committed; commit only if user explicitly asked
 
