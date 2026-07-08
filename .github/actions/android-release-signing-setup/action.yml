@@ -44,10 +44,10 @@ runs:
         KEYSTORE_PATH: ${{ runner.temp }}/ammo-upload.jks
       run: |
         set -euo pipefail
-        # Strip any whitespace/newlines before decoding — secrets stored via copy-paste from
-        # `base64 keystore.jks` (which line-wraps at 76 chars) cause `base64 --decode` to fail
-        # with "invalid input" on GNU coreutils (Linux runners are strict; macOS is lenient).
-        printf '%s' "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 --decode > "$KEYSTORE_PATH"
+        # --ignore-garbage tolerates line-wrapping and any stray whitespace that gets into the
+        # secret value when it was base64-encoded (e.g. `base64 keystore.jks` line-wraps at
+        # 76 chars; GNU base64 --decode is strict by default and rejects those newlines).
+        printf '%s' "$KEYSTORE_BASE64" | base64 --decode --ignore-garbage > "$KEYSTORE_PATH"
         if ! keytool -list -keystore "$KEYSTORE_PATH" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null 2>&1; then
           echo "::error::Upload keystore, store password, or key alias did not validate."
           exit 1
