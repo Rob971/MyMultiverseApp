@@ -148,6 +148,9 @@ private fun GroceryFlatRowContent(
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text(confirmDeleteTitle) },
             text = { Text(confirmDeleteBody) },
+            containerColor = JourneySemanticColors.elevatedSurface(),
+            titleContentColor = JourneySemanticColors.inkDeep(),
+            textContentColor = JourneySemanticColors.inkMuted(),
             confirmButton = {
                 JourneyDestructiveTextButton(
                     onClick = {
