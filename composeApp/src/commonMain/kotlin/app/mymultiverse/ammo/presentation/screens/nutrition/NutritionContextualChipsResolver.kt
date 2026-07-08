@@ -10,6 +10,7 @@ object NutritionContextualChipsResolver {
         mealPlan: WeeklyMealPlan,
         groceryItems: List<GroceryItem>,
         maxChips: Int = 3,
+        languageCode: String = "en",
     ): List<NutritionContextualChips.IngredientMatch> {
         val mealTexts = mealPlan.days.flatMap { day ->
             listOf(day.lunch, day.dinner)
@@ -21,6 +22,7 @@ object NutritionContextualChipsResolver {
             mealTexts = mealTexts,
             groceryLabels = uncheckedGrocery,
             maxChips = maxChips,
+            languageCode = languageCode,
         )
     }
 }

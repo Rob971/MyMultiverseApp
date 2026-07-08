@@ -42,4 +42,17 @@ class NutritionContextualChipsTest {
 
         assertTrue(result.isEmpty())
     }
+
+    @Test
+    fun ingredientsFromHistory_localizesDisplayNamesForSelectedLanguage() {
+        val result = NutritionContextualChips.ingredientsFromHistory(
+            mealTexts = listOf("Pasta con pollo"),
+            groceryLabels = listOf("Tomates"),
+            maxChips = 2,
+            languageCode = "es",
+        )
+
+        assertEquals(listOf("tomatoes", "chicken"), result.map { it.id })
+        assertEquals(listOf("Tomates", "Pollo"), result.map { it.displayName })
+    }
 }

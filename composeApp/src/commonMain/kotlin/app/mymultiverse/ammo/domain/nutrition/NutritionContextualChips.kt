@@ -45,6 +45,7 @@ object NutritionContextualChips {
         mealTexts: List<String>,
         groceryLabels: List<String>,
         maxChips: Int = 3,
+        languageCode: String = "en",
     ): List<IngredientMatch> {
         if (maxChips <= 0) return emptyList()
 
@@ -63,18 +64,22 @@ object NutritionContextualChips {
 
         return ordered
             .take(maxChips)
-            .mapNotNull { id -> lexicon.find { it.id == id }?.toMatch() }
+            .mapNotNull { id -> lexicon.find { it.id == id }?.toMatch(languageCode) }
     }
 
     private fun match(text: String): IngredientMatch? {
         val normalized = text.trim().lowercase()
         if (normalized.isEmpty()) return null
         return lexicon.firstOrNull { entry ->
-            entry.matchers.any { it(normalized) }
+            NutritionFoodSuggestionLocalization.containsIngredient(normalized, entry.id) ||
+                entry.matchers.any { it(normalized) }
         }?.toMatch()
     }
 
-    private fun LexiconEntry.toMatch() = IngredientMatch(id = id, displayName = displayName)
+    private fun LexiconEntry.toMatch(languageCode: String = "en") = IngredientMatch(
+        id = id,
+        displayName = NutritionFoodSuggestionLocalization.ingredientNameFor(id, languageCode),
+    )
 
     private fun entry(id: String, displayName: String, vararg keywords: String): LexiconEntry {
         val terms = (listOf(displayName) + keywords.toList()).distinct()

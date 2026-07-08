@@ -36,6 +36,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import app.mymultiverse.ammo.domain.manager.LanguageManager
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiMode
@@ -109,6 +110,7 @@ import ammo.composeapp.generated.resources.nutrition_meal_plan_preview_line
 import ammo.composeapp.generated.resources.nutrition_week_label
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 private data class AiQuickPick(
     val label: String,
@@ -132,6 +134,8 @@ fun NutritionAiAssistantContent(
     val aiGrocery by screenModel.aiGroceryItems.collectAsState()
     val mealPlan by screenModel.mealPlan.collectAsState()
     val groceryItems by screenModel.groceryItems.collectAsState()
+    val languageManager = koinInject<LanguageManager>()
+    val currentLanguage by languageManager.currentLanguage.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val mealGroceryLoading by screenModel.mealGroceryLoading.collectAsState()
     val adoptAllResult by screenModel.adoptAllGroceryResult.collectAsState()
@@ -197,8 +201,12 @@ fun NutritionAiAssistantContent(
         WeekCalendar.formatWeekRange(screenModel.weekKey),
     )
 
-    val contextualMatches = remember(mealPlan, groceryItems) {
-        NutritionContextualChipsResolver.ingredientMatches(mealPlan, groceryItems)
+    val contextualMatches = remember(mealPlan, groceryItems, currentLanguage) {
+        NutritionContextualChipsResolver.ingredientMatches(
+            mealPlan = mealPlan,
+            groceryItems = groceryItems,
+            languageCode = currentLanguage,
+        )
     }
     val contextualQuickPicks = contextualMatches.map { match ->
         AiQuickPick(

@@ -30,6 +30,7 @@ import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.NutritionHouseholdSelectionStore
 import app.mymultiverse.ammo.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
+import app.mymultiverse.ammo.domain.manager.LanguageManager
 import app.mymultiverse.ammo.domain.manager.ThemeManager
 import app.mymultiverse.ammo.domain.usecase.GetGreetingUseCase
 import app.mymultiverse.ammo.presentation.screens.auth.LoginScreenModel
@@ -106,7 +107,12 @@ private val dataModule = module {
             diagnostics = get(),
         )
     }
-    single<NutritionAiAssistantService> { LocalNutritionAiAssistantService() }
+    single<NutritionAiAssistantService> {
+        val languageManager = get<LanguageManager>()
+        LocalNutritionAiAssistantService(
+            currentLanguageCode = { languageManager.currentLanguage.value },
+        )
+    }
 }
 
 private val presentationModule = module {

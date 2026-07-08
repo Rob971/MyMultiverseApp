@@ -1,6 +1,7 @@
 package app.mymultiverse.ammo.data.service
 
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
+import app.mymultiverse.ammo.domain.manager.SupportedAppLanguages
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.NutritionAdviceBuilder
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
@@ -9,6 +10,7 @@ import kotlinx.coroutines.delay
 
 class LocalNutritionAiAssistantService(
     private val responseDelayMs: Long = DEFAULT_DELAY_MS,
+    private val currentLanguageCode: () -> String = { SupportedAppLanguages.DEFAULT_CODE },
 ) : NutritionAiAssistantService {
 
     override suspend fun askAdvice(question: String): Result<String> {
@@ -24,7 +26,10 @@ class LocalNutritionAiAssistantService(
             return Result.failure(IllegalArgumentException("empty_criteria"))
         }
         delayIfNeeded()
-        val items = NutritionAiPlanner.generateGroceryList(criteria.trim())
+        val items = NutritionAiPlanner.generateGroceryList(
+            criteria = criteria.trim(),
+            languageCode = currentLanguageCode(),
+        )
         if (items.isEmpty()) {
             return Result.failure(IllegalArgumentException("empty_result"))
         }
@@ -36,7 +41,10 @@ class LocalNutritionAiAssistantService(
             return Result.failure(IllegalArgumentException("empty_meal"))
         }
         delayIfNeeded()
-        val items = NutritionAiPlanner.generateGroceryForMeal(mealDescription.trim())
+        val items = NutritionAiPlanner.generateGroceryForMeal(
+            mealDescription = mealDescription.trim(),
+            languageCode = currentLanguageCode(),
+        )
         if (items.isEmpty()) {
             return Result.failure(IllegalArgumentException("empty_result"))
         }
