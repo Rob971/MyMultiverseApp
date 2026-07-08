@@ -34,6 +34,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
@@ -75,6 +76,7 @@ fun GroceryItemRow(
     enableReorder: Boolean = false,
     dragHandleContentDescription: String = "",
     onReorderStep: (Int) -> Unit = {},
+    foodEmoji: String? = null,
     modifier: Modifier = Modifier,
 ) {
     if (readOnly) {
@@ -95,6 +97,7 @@ fun GroceryItemRow(
             enableReorder = false,
             dragHandleContentDescription = dragHandleContentDescription,
             onReorderStep = {},
+            foodEmoji = foodEmoji,
             modifier = modifier
                 .fillMaxWidth()
                 .testTag("${GroceryItemRowTestTags.ROW_PREFIX}${item.id}"),
@@ -176,6 +179,7 @@ fun GroceryItemRow(
             enableReorder = enableReorder && !item.isChecked,
             dragHandleContentDescription = dragHandleContentDescription,
             onReorderStep = onReorderStep,
+            foodEmoji = foodEmoji,
         )
     }
 }
@@ -198,6 +202,7 @@ private fun GroceryFlatRowContent(
     enableReorder: Boolean,
     dragHandleContentDescription: String,
     onReorderStep: (Int) -> Unit,
+    foodEmoji: String? = null,
     modifier: Modifier = Modifier,
 ) {
     var editText by remember(item.id, isEditing) {
@@ -314,6 +319,13 @@ private fun GroceryFlatRowContent(
                     )
                 }
             } else {
+                if (foodEmoji != null) {
+                    FoodItemThumbnail(
+                        emoji = foodEmoji,
+                        size = 32.dp,
+                        modifier = Modifier.alpha(if (item.isChecked) 0.35f else 1f),
+                    )
+                }
                 Text(
                     text = item.label,
                     modifier = Modifier.weight(1f),
