@@ -12,21 +12,91 @@ alwaysApply: false
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `.github/workflows/kmp-ci.yml` | PR, `main` push, manual | Android CI, instrumented, Supabase migration validation, release |
+| `.github/workflows/kmp-ci.yml` | PR, branch push, tag push, manual | Android CI, instrumented, Supabase migration validation, three-track release |
 | `.github/workflows/supabase-deploy.yml` | `main` supabase changes, manual | `db push`, edge deploy, smoke probes |
 
 **Website hosting:** [Rob971/mymultiverse-website](https://github.com/Rob971/mymultiverse-website) — **Deploy hosting** workflow (not in this repo).
+
+## Branching strategy
+
+| Branch | Purpose | Distribution |
+|----|---|---|
+| `main` / `master` | Integration; always green | Alpha → Firebase App Distribution (auto on push) |
+| `release/X.Y` | Beta stabilisation; cut from `main` every ~2 weeks | Beta → Play Closed Testing (auto on push) |
+| `hotfix/X.Y.Z` | Emergency fix; cut from a production tag | Production → Play (via `vX.Y.Z-hotfix.N` tag on `main`) |
+| `feature/*` | All feature work | — (PR → squash → `main`) |
+
+Tags matching `v*` pushed to any branch trigger `distribute-production`. Cut `release/X.Y` from `main` to start a beta cycle; push a `v*` tag after the beta soak to ship to production.
 
 ## KMP CI jobs
 
 | Event | Jobs |
 |-------|------|
-| **PR / push `main`** | CI gate, Android CI (unit + APK), Android Instrumented UI Tests, Supabase Migrations |
-| **PR / push `main`** | No automatic release or version bump |
-| **Manual `workflow_dispatch`** | `all`, `android-ci`, `android-instrumented-tests`, `supabase-migrations`, **`release`**, **`play-store-bundle`** |
+| **PR (main, master, release/**)** | CI gate, Android CI (unit + APK), Instrumented UI Tests, Supabase Migrations |
+| **Push `main`** | + `distribute-alpha` (Firebase, auto, no version bump) |
+| **Push `release/**`** | + `distribute-beta` (Play Closed Testing, auto, beta label stamped) |
+| **Push `v*` tag** | + `distribute-production` (Play Production 20% staged rollout) |
+| **Manual `workflow_dispatch`** | Any job individually (`release`, `distribute-alpha`, `distribute-beta`, `distribute-production`, `play-store-bundle`, …) |
 | **iOS** | Job disabled (`if: false`); compile locally: `./gradlew :composeApp:compileKotlinIosSimulatorArm64` |
 
-### Release job (manual only)
+## Version code scheme
+
+`versionCode` in CI = `100_000 + GITHUB_RUN_NUMBER × 3 + trackOffset`
+
+| Track | `RELEASE_TRACK` env | Offset | Example (run 500) |
+|---|---|---|---|
+| Alpha / debug | unset | 0 | 101 500 |
+| Beta | `beta` | 1 | 101 501 |
+| Production | `production` | 2 | 101 502 |
+
+Local builds (no `GITHUB_RUN_NUMBER`) fall back to `version.code` from `gradle/app-version.properties`.
+Computed in `androidApp/build.gradle.kts` as `versionCodeFinal`.
+
+## Distribution jobs
+
+### `distribute-alpha` (auto on `main` push)
+
+Distributes a debug APK to Firebase App Distribution on every green `main` push. No version bump or git commit — `github.run_number` appears in Firebase release notes.
+
+```bash
+# Manual trigger:
+gh workflow run "KMP CI" --ref main -f job=distribute-alpha
+```
+
+Secrets used: `FIREBASE_ALPHA_TESTERS`, `FIREBASE_ALPHA_GROUPS` (separate from the general `FIREBASE_TESTERS` / `FIREBASE_GROUPS` used by the named `release` job).
+
+### `distribute-beta` (auto on `release/**` push)
+
+Stamps `version.prerelease=beta.N` in-memory (no git commit), builds a signed release AAB with `RELEASE_TRACK=beta`, uploads to Play Closed Testing.
+
+```bash
+# Start a beta cycle:
+git checkout -b release/X.Y main && git push -u origin release/X.Y
+
+# Manual trigger:
+gh workflow run "KMP CI" --ref release/X.Y -f job=distribute-beta
+```
+
+Requires `AMMO_PLAY_SERVICE_ACCOUNT_JSON`. Job succeeds with a warning if the secret is absent (AAB artifact is still uploaded to GitHub).
+
+### `distribute-production` (on `v*` tag push)
+
+Builds a signed release AAB with `RELEASE_TRACK=production`, uploads to Play Production as a 20% staged rollout, and creates a GitHub Release. Expand rollout percentage manually in Play Console after monitoring crash rates.
+
+```bash
+# Tag from main after beta soak:
+git tag vX.Y.Z && git push origin vX.Y.Z
+
+# Hotfix (cut from production tag, fix, PR to main, then):
+git tag vX.Y.Z-hotfix.1 main && git push origin vX.Y.Z-hotfix.1
+
+# Manual trigger (rare):
+gh workflow run "KMP CI" --ref vX.Y.Z -f job=distribute-production
+```
+
+Requires `AMMO_PLAY_SERVICE_ACCOUNT_JSON`. `distribution/whatsnew/whatsnew-en-US` is read for Play Store release notes — update it before tagging.
+
+### `release` (manual named release — bump + Firebase + tag)
 
 ```bash
 gh workflow run "KMP CI" --ref main -f job=release -f version_bump=patch
@@ -36,15 +106,13 @@ Flow: bump `gradle/app-version.properties` → build debug APK → Firebase App 
 
 `version_bump`: `patch` | `minor` | `none`.
 
-### Play Store bundle job (manual only)
+### `play-store-bundle` (manual signed AAB artifact only)
 
-Builds a **signed release AAB** for Google Play upload (does not distribute to Firebase).
+Builds a signed release AAB without uploading to Play Store. Use for manual upload or local inspection.
 
 ```bash
 gh workflow run "KMP CI" --ref main -f job=play-store-bundle
 ```
-
-Flow: decode upload keystore from secrets → `bundleRelease` → upload `androidApp-release-aab` artifact (30-day retention) → log release `ANDROID_SHA256_FINGERPRINT` for website `assetlinks.json`.
 
 **Local build** (after `keystore.properties` or `local.properties` upload keys):
 
@@ -63,8 +131,11 @@ Watch: `gh pr checks N --watch --interval 15` on PRs.
 | `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF` | Migrations deploy |
 | `SUPABASE_SERVICE_ROLE_KEY` | Edge functions, smoke scripts |
 | `GOOGLE_SERVICES_JSON` | Crashlytics in CI APK |
-| Firebase App Distribution tokens | Release job composite action |
-| `AMMO_UPLOAD_KEYSTORE_BASE64`, `AMMO_UPLOAD_STORE_PASSWORD`, `AMMO_UPLOAD_KEY_ALIAS`, `AMMO_UPLOAD_KEY_PASSWORD` | Play Store `play-store-bundle` job |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase App Distribution (all Firebase distribute jobs) |
+| `FIREBASE_TESTERS`, `FIREBASE_GROUPS` | Named `release` job testers / groups |
+| `FIREBASE_ALPHA_TESTERS`, `FIREBASE_ALPHA_GROUPS` | `distribute-alpha` job testers / groups |
+| `AMMO_UPLOAD_KEYSTORE_BASE64`, `AMMO_UPLOAD_STORE_PASSWORD`, `AMMO_UPLOAD_KEY_ALIAS`, `AMMO_UPLOAD_KEY_PASSWORD` | Play Store signing (beta + production + play-store-bundle) |
+| `AMMO_PLAY_SERVICE_ACCOUNT_JSON` | Google Play Developer API — required for `distribute-beta` and `distribute-production` |
 
 ## Supabase in CI
 
@@ -76,6 +147,10 @@ Watch: `gh pr checks N --watch --interval 15` on PRs.
 - Release notes: semver from `gradle/app-version.properties` + branch/SHA + QA checklist from `firebase-appdistribution-testcases.yaml`.
 - Keep YAML `version` in sync when adding manual test cases.
 
+## Play Store release notes
+
+Edit `distribution/whatsnew/whatsnew-en-US` before tagging a production release. Add locale files (`whatsnew-fr-FR`, `whatsnew-es-ES`, etc.) for other supported locales — Play Console will use the matching file per device locale.
+
 ## PR & commit policy
 
 - See `review-commit.mdc`: commit when user asks; squash merge to `main`; PR body includes test plan.
@@ -86,7 +161,8 @@ Watch: `gh pr checks N --watch --interval 15` on PRs.
 - Parallel merge-gate jobs; Gradle cache; shallow checkout; pinned `firebase-tools`; AVD snapshot for instrumented.
 - **Android CI** builds debug + `androidTest` APKs once (`assembleDebugAndroidTest`); **instrumented** job downloads them and runs `scripts/ci-run-instrumented-tests.sh` via `adb` (no Gradle compile on the emulator runner).
 - **Path filters** (`ci-changes` + `dorny/paths-filter`): skip instrumented when the diff does not touch `composeApp/**`, `androidApp/**`, Gradle, or Android CI workflow files; manual `workflow_dispatch` always runs instrumented when selected.
+- `distribute-alpha`, `distribute-beta`, `distribute-production` all use `cache-read-only: true` (they never write to the Gradle cache, preserving it for CI build jobs).
 
 ## Current release line
 
-Check `gradle/app-version.properties` on `main` for `version.name` / `version.code` (e.g. 1.1.6 / 114).
+Check `gradle/app-version.properties` on `main` for `version.name` / `version.code` (e.g. 1.2.2 / 133).
