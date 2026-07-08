@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -235,6 +236,8 @@ private fun GroceryFlatRowContent(
             }
 
             // ── Check / toggle button (left, flush to column edge) ───────────
+            // Tint is passed directly to Icon — bypasses LocalContentColor so color
+            // is guaranteed regardless of the composition-local propagation chain.
             JourneyIconButton(
                 onClick = {
                     performHaptic(JourneyHapticFeedback.LightClick)
@@ -242,16 +245,12 @@ private fun GroceryFlatRowContent(
                 },
                 enabled = !isEditing && !readOnly,
                 modifier = Modifier.testTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}"),
-                colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = checkContentColor,
-                    disabledContentColor = checkContentColor.copy(alpha = 0.38f),
-                ),
             ) {
-                JourneyIcon(
+                Icon(
                     imageVector = if (item.isChecked) AppIcons.CheckCircle else AppIcons.GroceryCheckOutline,
-                    role = if (item.isChecked) AppIconRole.GroceryChecked else AppIconRole.GroceryUnchecked,
                     contentDescription = toggleContentDescription,
-                    useContentColor = true,
+                    tint = if (readOnly || isEditing) checkContentColor.copy(alpha = 0.38f) else checkContentColor,
+                    modifier = Modifier.size(26.dp),
                 )
             }
 
@@ -333,15 +332,12 @@ private fun GroceryFlatRowContent(
                     JourneyIconButton(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.testTag("${GroceryItemRowTestTags.DELETE_BUTTON_PREFIX}${item.id}"),
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = deleteContentColor,
-                        ),
                     ) {
-                        JourneyIcon(
+                        Icon(
                             imageVector = AppIcons.GroceryRemoveCircle,
-                            role = AppIconRole.ActionDelete,
                             contentDescription = deleteContentDescription,
-                            useContentColor = true,
+                            tint = deleteContentColor,
+                            modifier = Modifier.size(26.dp),
                         )
                     }
                 }
