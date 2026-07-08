@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 81
+version: 82
 updated: 2026-07-08
 
 summary: |
@@ -53,6 +53,7 @@ summary: |
   Theme-aware nav art (v79): Today/Plan/Groceries WebP icons use drawable-dark variants when app or system theme is dark (in-app theme picker included).
   Partner nudges (v77): grocery and meal plan tabs show prominent reminder cards (teal on Groceries, terracotta on Plan) plus toolbar bell for multi-member households on the current week.
   Item-added pushes (v80): partners receive a localized push (device app language) when a member adds a grocery item or fills a meal-plan slot; tap opens the matching tab.
+  Food emoji thumbnails (v82): recognised grocery items show a food emoji tile between the checkbox and label; recognised meal-plan dishes show an emoji tile above the text field and in collapsed day-card summaries.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Family members role change (v71): Change role button and tappable badge on member rows; role updates show immediately after save.
   Family member photos (v76): each member row shows a circular avatar beside the name; tap your own avatar (or a dependant's if you manage members) to pick a photo from the gallery.
@@ -1035,6 +1036,22 @@ testcases:
       - Invite email (with token and fallback), invite-open landing, and invalid invite pages show the hosted logo.
       - Android adaptive launcher uses the richer raster foreground (`ic_launcher_foreground`) scaled to the 66% safe zone on API 26+; iOS and website PNGs are generated from the same gold-framed badge source.
       - Logo scales cleanly at auth (~96dp) and banner (~64dp) sizes in light and dark theme.
+
+  - id: food-emoji-grocery-list
+    title: Food emoji thumbnails on grocery list (v82)
+    steps:
+      - Open Groceries tab and add recognised items such as "Chicken", "Pasta", "Broccoli", "Eggs", "Salmon".
+      - Add an unknown item such as "Detergent".
+      - Open the Plan tab and enter a recognisable dish in a meal slot e.g. "Spaghetti Bolognese", "Chicken Stir-Fry".
+      - Collapse a day card that has a meal planned.
+    expected:
+      - Known grocery items (Chicken, Pasta, Broccoli, Eggs, Salmon) each show a small food emoji tile between the checkbox and the label text.
+      - Unknown items (Detergent) show no tile — just the label text.
+      - Checked/completed items show the emoji tile at reduced opacity (faded).
+      - AI-suggested grocery items in the terracotta read-only section also show food emoji tiles for known items.
+      - In the expanded meal field for a recognised dish, a food emoji tile appears above the text field.
+      - In the collapsed day card, small emoji tiles appear next to the meal summary text when dishes are recognised.
+      - Emoji tiles use the app's card surface background; they do not clip or overlap text.
 
   - id: supabase-persistence-smoke
     title: Supabase household persistence (two accounts)

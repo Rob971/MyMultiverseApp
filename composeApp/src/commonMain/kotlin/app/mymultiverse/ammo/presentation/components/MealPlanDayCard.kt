@@ -135,19 +135,33 @@ fun MealPlanDayCard(
             }
 
             if (!expanded && !isToday) {
-                Text(
-                    text = MealPlanPresentation.summaryText(
-                        day = day,
-                        notPlannedLabel = notPlannedLabel,
-                        unplannedSlotLabel = unplannedSlotLabel,
-                        lunchLabel = lunchLabel,
-                        dinnerLabel = dinnerLabel,
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (isPlanned) JourneySemanticColors.inkDeep() else JourneySemanticColors.inkMuted(),
-                    fontWeight = if (isPlanned) FontWeight.Medium else FontWeight.Normal,
+                val lunchEmoji = FoodEmojiCatalog.emojiForMealText(day.lunch)
+                val dinnerEmoji = FoodEmojiCatalog.emojiForMealText(day.dinner)
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                )
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    if (lunchEmoji != null) {
+                        FoodItemThumbnail(emoji = lunchEmoji, size = 22.dp)
+                    }
+                    if (dinnerEmoji != null) {
+                        FoodItemThumbnail(emoji = dinnerEmoji, size = 22.dp)
+                    }
+                    Text(
+                        text = MealPlanPresentation.summaryText(
+                            day = day,
+                            notPlannedLabel = notPlannedLabel,
+                            unplannedSlotLabel = unplannedSlotLabel,
+                            lunchLabel = lunchLabel,
+                            dinnerLabel = dinnerLabel,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isPlanned) JourneySemanticColors.inkDeep() else JourneySemanticColors.inkMuted(),
+                        fontWeight = if (isPlanned) FontWeight.Medium else FontWeight.Normal,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
 
             AnimatedVisibility(
@@ -232,8 +246,16 @@ private fun MealPlanMealField(
     } else {
         MealPlanPresentation.mealLabelSuggestions(weekDays, value)
     }
+    val dishEmoji = FoodEmojiCatalog.emojiForMealText(value)
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        AnimatedVisibility(visible = value.isNotBlank() && dishEmoji != null) {
+            FoodItemThumbnail(
+                emoji = dishEmoji ?: "",
+                size = 36.dp,
+                modifier = Modifier.padding(bottom = 2.dp),
+            )
+        }
         JourneyTextField(
             value = value,
             onValueChange = onValueChange,

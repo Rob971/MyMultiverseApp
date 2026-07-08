@@ -93,6 +93,7 @@ import app.mymultiverse.ammo.presentation.components.GroceryGhostPairingBanner
 import app.mymultiverse.ammo.presentation.components.PartnerNudgeCard
 import app.mymultiverse.ammo.presentation.components.GroceryInputBar
 import app.mymultiverse.ammo.presentation.components.HouseholdViewerReadOnlyNotice
+import app.mymultiverse.ammo.presentation.components.FoodEmojiCatalog
 import app.mymultiverse.ammo.presentation.components.GroceryItemRow
 import app.mymultiverse.ammo.presentation.components.GroceryItemRowTestTags
 import app.mymultiverse.ammo.presentation.components.JourneySnackbarHost
@@ -796,6 +797,7 @@ private fun GroceryListItem(
     showDivider: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
+    val foodEmoji = FoodEmojiCatalog.emojiForGroceryLabel(item.label)
     GroceryItemRow(
         item = item,
         isEditing = editingItemId == item.id,
@@ -815,6 +817,7 @@ private fun GroceryListItem(
         enableReorder = enableReorder,
         dragHandleContentDescription = dragHandleContentDescription,
         onReorderStep = onReorderStep,
+        foodEmoji = foodEmoji,
         modifier = modifier,
     )
 }

@@ -40,6 +40,7 @@ fun AiReadOnlyGroceryList(
             modifier = Modifier.padding(bottom = 4.dp),
         )
         items.forEach { item ->
+            val foodEmoji = FoodEmojiCatalog.emojiForGroceryLabel(item.label)
             FamilyLogisticsCardSurface(accentColor = aiAccent) {
                 Row(
                     modifier = Modifier
@@ -48,11 +49,15 @@ fun AiReadOnlyGroceryList(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    JourneyIcon(
-                        role = AppIconRole.AiAccent,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                    )
+                    if (foodEmoji != null) {
+                        FoodItemThumbnail(emoji = foodEmoji, size = 32.dp)
+                    } else {
+                        JourneyIcon(
+                            role = AppIconRole.AiAccent,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
                     Text(
                         text = item.label,
                         style = MaterialTheme.typography.bodyLarge,
