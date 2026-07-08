@@ -319,7 +319,7 @@ fun HouseholdMembersScreen(
                             color = JourneySemanticColors.inkDeep(),
                         )
                     }
-                    items(uiState.outboundInvites, key = { it.id }) { invite ->
+                    items(uiState.outboundInvites, key = { "invite-${it.id}" }) { invite ->
                         val shareMessage = invite.inviteToken?.let { token ->
                             stringResource(
                                 Res.string.sharing_members_invite_share_message,
@@ -352,7 +352,7 @@ fun HouseholdMembersScreen(
                     }
                 }
                 if (uiState.members.isNotEmpty()) {
-                    items(uiState.members, key = { it.id }) { member ->
+                    items(uiState.members, key = { "member-${it.id}" }) { member ->
                         MemberRow(
                             member = member,
                             actorRole = uiState.currentUserRole,
