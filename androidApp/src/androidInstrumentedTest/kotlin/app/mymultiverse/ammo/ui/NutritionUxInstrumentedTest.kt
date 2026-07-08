@@ -16,6 +16,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
 
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -174,8 +175,9 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun grocery_rowTap_togglesChecked() {
-        val screenModel = nutritionScreenModel()
+    fun grocery_rowDoubleTap_opensEditField() {
+        val itemId = "instrumented-item-1"
+        val screenModel = nutritionScreenModel(itemId = itemId)
 
         composeRule.setContent {
             AppTheme {
@@ -190,10 +192,12 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
         composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
 
-        composeRule.onNodeWithText("Milk")
+        composeRule.onNodeWithTag("${GroceryItemRowTestTags.ROW_PREFIX}$itemId")
             .performScrollTo()
-            .performClick()
-        composeRule.waitForState(screenModel.groceryItems) { it.single().isChecked }
+            .performTouchInput { doubleClick() }
+
+        composeRule.onNodeWithTag("${GroceryItemRowTestTags.EDIT_FIELD_PREFIX}$itemId")
+            .assertIsDisplayed()
     }
 
     @Test

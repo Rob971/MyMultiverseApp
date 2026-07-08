@@ -1,7 +1,7 @@
 package app.mymultiverse.ammo.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -143,6 +143,16 @@ private fun GroceryFlatRowContent(
     val reorderThresholdPx = remember(density) { with(density) { 48.dp.toPx() } }
     var accumulatedDrag by remember(item.id) { mutableFloatStateOf(0f) }
 
+    // Pre-resolve composable colors for use inside pointerInput lambdas
+    val checkContainerColor = JourneySemanticColors.brandTealContainer()
+    val checkContentColor = if (item.isChecked) {
+        JourneySemanticColors.successAccent()
+    } else {
+        JourneySemanticColors.brandTeal()
+    }
+    val deleteContainerColor = JourneySemanticColors.brandTerracotta().copy(alpha = 0.12f)
+    val deleteContentColor = JourneySemanticColors.brandTerracotta()
+
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
@@ -177,13 +187,15 @@ private fun GroceryFlatRowContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = rowMinHeight)
-                .clickable(
-                    enabled = !isEditing && !readOnly,
-                    onClick = {
-                        performHaptic(JourneyHapticFeedback.LightClick)
-                        onToggle()
-                    },
-                )
+                // Double-tap on the row text area opens inline edit; single tap does nothing.
+                .pointerInput(item.id, isEditing, readOnly, item.isChecked) {
+                    if (!isEditing && !readOnly && !item.isChecked) {
+                        detectTapGestures(onDoubleTap = { _ ->
+                            performHaptic(JourneyHapticFeedback.LightClick)
+                            onStartEdit()
+                        })
+                    }
+                }
                 .padding(horizontal = 4.dp, vertical = 12.dp),
             verticalAlignment = if (isEditing) Alignment.Top else Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -222,6 +234,7 @@ private fun GroceryFlatRowContent(
                 }
             }
 
+            // ── Check / toggle button (left) ──────────────────────────────────
             JourneyIconButton(
                 onClick = {
                     performHaptic(JourneyHapticFeedback.LightClick)
@@ -229,11 +242,18 @@ private fun GroceryFlatRowContent(
                 },
                 enabled = !isEditing && !readOnly,
                 modifier = Modifier.testTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}"),
+                colors = IconButtonDefaults.iconButtonColors(
+                    containerColor = checkContainerColor,
+                    contentColor = checkContentColor,
+                    disabledContainerColor = checkContainerColor.copy(alpha = 0.38f),
+                    disabledContentColor = checkContentColor.copy(alpha = 0.38f),
+                ),
             ) {
                 JourneyIcon(
                     imageVector = if (item.isChecked) AppIcons.CheckCircle else AppIcons.RadioButtonUnchecked,
                     role = if (item.isChecked) AppIconRole.GroceryChecked else AppIconRole.GroceryUnchecked,
                     contentDescription = toggleContentDescription,
+                    useContentColor = true,
                 )
             }
 
@@ -294,6 +314,7 @@ private fun GroceryFlatRowContent(
                     },
                     textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
                 )
+                // Edit button hidden when item is checked (double-tap on row also triggers edit)
                 AnimatedVisibility(visible = !item.isChecked && !readOnly) {
                     JourneyIconButton(
                         onClick = onStartEdit,
@@ -309,12 +330,14 @@ private fun GroceryFlatRowContent(
                         )
                     }
                 }
+                // ── Delete button (right) ─────────────────────────────────────
                 if (!readOnly) {
                     JourneyIconButton(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.testTag("${GroceryItemRowTestTags.DELETE_BUTTON_PREFIX}${item.id}"),
                         colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = JourneySemanticColors.brandTerracotta(),
+                            containerColor = deleteContainerColor,
+                            contentColor = deleteContentColor,
                         ),
                     ) {
                         JourneyIcon(
