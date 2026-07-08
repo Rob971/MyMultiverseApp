@@ -10,7 +10,7 @@ object NutritionAiPlanner {
         val summary: String,
     )
 
-    fun generateGroceryList(criteria: String): List<String> {
+    fun generateGroceryList(criteria: String, languageCode: String = "en"): List<String> {
         if (criteria.isBlank()) return emptyList()
         val keywords = criteria.lowercase()
         val items = linkedSetOf<String>()
@@ -22,41 +22,73 @@ object NutritionAiPlanner {
         add("Seasonal vegetables", "Fresh fruit", "Whole-grain bread", "Olive oil", "Eggs", "Milk")
 
         when {
-            keywords.contains("protein") || keywords.contains("muscle") ->
+            NutritionFoodSuggestionLocalization.hasIntent(
+                keywords,
+                NutritionFoodSuggestionLocalization.Intent.Protein,
+            ) ->
                 add("Chicken breast", "Greek yogurt", "Lentils", "Canned tuna", "Cottage cheese", "Quinoa")
 
-            keywords.contains("vegetarian") || keywords.contains("vegan") ->
+            NutritionFoodSuggestionLocalization.hasIntent(
+                keywords,
+                NutritionFoodSuggestionLocalization.Intent.Vegetarian,
+            ) ->
                 add("Firm tofu", "Chickpeas", "Spinach", "Brown rice", "Almond butter", "Fortified plant milk")
 
-            keywords.contains("budget") || keywords.contains("cheap") || keywords.contains("save") ->
+            NutritionFoodSuggestionLocalization.hasIntent(
+                keywords,
+                NutritionFoodSuggestionLocalization.Intent.Budget,
+            ) ->
                 add("Dried beans", "Frozen vegetables", "Rice", "Pasta", "Canned tomatoes", "Oats")
 
-            keywords.contains("allerg") || keywords.contains("nut-free") ->
+            NutritionFoodSuggestionLocalization.hasIntent(
+                keywords,
+                NutritionFoodSuggestionLocalization.Intent.Allergy,
+            ) || keywords.contains("nut-free") ->
                 add("Sunflower seed butter", "Rice cakes", "Gluten-free oats", "Coconut yogurt")
 
-            keywords.contains("kid") || keywords.contains("child") || keywords.contains("family") ->
+            NutritionFoodSuggestionLocalization.hasIntent(
+                keywords,
+                NutritionFoodSuggestionLocalization.Intent.Family,
+            ) ->
                 add("Whole-wheat pasta", "Cheese sticks", "Carrots", "Apples", "Turkey slices", "Hummus")
         }
 
-        if (keywords.contains("vegetable") || keywords.contains("veggie") || keywords.contains("salad")) {
+        if (NutritionFoodSuggestionLocalization.hasIntent(
+                keywords,
+                NutritionFoodSuggestionLocalization.Intent.Vegetable,
+            )
+        ) {
             add("Mixed salad greens", "Broccoli", "Cherry tomatoes", "Cucumber", "Avocado")
         }
-        if (keywords.contains("fish") || keywords.contains("omega")) {
+        if (NutritionFoodSuggestionLocalization.hasIntent(
+                keywords,
+                NutritionFoodSuggestionLocalization.Intent.Fish,
+            )
+        ) {
             add("Salmon fillets", "Sardines", "Lemons")
         }
-        if (keywords.contains("breakfast")) {
+        if (NutritionFoodSuggestionLocalization.hasIntent(
+                keywords,
+                NutritionFoodSuggestionLocalization.Intent.Breakfast,
+            )
+        ) {
             add("Oats", "Bananas", "Berries", "Honey")
         }
 
-        return items.take(14).toList()
+        return items
+            .take(14)
+            .map { label -> NutritionFoodSuggestionLocalization.labelFor(label, languageCode) }
     }
 
-    fun generateGroceryForMeal(mealDescription: String): List<String> {
+    fun generateGroceryForMeal(mealDescription: String, languageCode: String = "en"): List<String> {
         val trimmed = mealDescription.trim()
         if (trimmed.isEmpty()) return emptyList()
         val fromMeal = ingredientsForMeal(trimmed)
-        val fromKeywords = generateGroceryList(trimmed)
-        return (fromMeal + fromKeywords).distinct().take(12)
+        val fromKeywords = generateGroceryList(trimmed, languageCode = "en")
+        return (fromMeal + fromKeywords)
+            .distinct()
+            .take(12)
+            .map { label -> NutritionFoodSuggestionLocalization.labelFor(label, languageCode) }
     }
 
     fun generateMealPlan(
@@ -108,25 +140,36 @@ object NutritionAiPlanner {
         }
 
         when {
-            normalized.contains("chicken") ->
+            NutritionFoodSuggestionLocalization.containsIngredient(normalized, "chicken") ->
                 add("Chicken breast", "Olive oil", "Garlic", "Onion", "Chicken stock")
-            normalized.contains("salmon") || normalized.contains("fish") || normalized.contains("cod") ->
+            NutritionFoodSuggestionLocalization.containsIngredient(normalized, "salmon") ->
                 add("Salmon fillets", "Lemon", "Dill", "Asparagus", "Butter")
-            normalized.contains("beef") || normalized.contains("chili") ->
+            NutritionFoodSuggestionLocalization.containsIngredient(normalized, "beef") || normalized.contains("chili") ->
                 add("Ground beef", "Kidney beans", "Tomatoes", "Onion", "Cumin")
-            normalized.contains("pasta") || normalized.contains("spaghetti") || normalized.contains("lasagna") ->
+            NutritionFoodSuggestionLocalization.containsIngredient(normalized, "pasta") || normalized.contains("lasagna") ->
                 add("Pasta", "Parmesan", "Tomatoes", "Basil", "Garlic")
-            normalized.contains("rice") || normalized.contains("stir-fry") || normalized.contains("bowl") ->
+            NutritionFoodSuggestionLocalization.containsIngredient(normalized, "rice") ||
+                normalized.contains("stir-fry") ||
+                normalized.contains("bowl") ->
                 add("Rice", "Soy sauce", "Ginger", "Bell peppers", "Scallions")
-            normalized.contains("salad") ->
+            NutritionFoodSuggestionLocalization.hasIntent(
+                normalized,
+                NutritionFoodSuggestionLocalization.Intent.Vegetable,
+            ) ->
                 add("Mixed greens", "Cherry tomatoes", "Cucumber", "Olive oil", "Balsamic vinegar")
             normalized.contains("soup") || normalized.contains("stew") ->
                 add("Vegetable broth", "Carrots", "Celery", "Potatoes", "Herbs")
             normalized.contains("taco") || normalized.contains("burrito") ->
                 add("Tortillas", "Black beans", "Salsa", "Lettuce", "Cheese")
-            normalized.contains("egg") || normalized.contains("frittata") || normalized.contains("omelette") ->
+            NutritionFoodSuggestionLocalization.containsIngredient(normalized, "eggs") ||
+                normalized.contains("frittata") ||
+                normalized.contains("omelette") ->
                 add("Eggs", "Spinach", "Cheese", "Milk", "Butter")
-            normalized.contains("tofu") || normalized.contains("veggie") || normalized.contains("vegetable") ->
+            NutritionFoodSuggestionLocalization.containsIngredient(normalized, "tofu") ||
+                NutritionFoodSuggestionLocalization.hasIntent(
+                    normalized,
+                    NutritionFoodSuggestionLocalization.Intent.Vegetable,
+                ) ->
                 add("Firm tofu", "Broccoli", "Soy sauce", "Sesame oil", "Brown rice")
         }
 
@@ -153,7 +196,10 @@ object NutritionAiPlanner {
             fun from(criteria: String): MealProfile {
                 val keywords = criteria.lowercase()
                 return when {
-                    keywords.contains("vegetarian") || keywords.contains("vegan") ->
+                    NutritionFoodSuggestionLocalization.hasIntent(
+                        keywords,
+                        NutritionFoodSuggestionLocalization.Intent.Vegetarian,
+                    ) ->
                         MealProfile(
                             label = "plant-forward",
                             lunches = listOf(
@@ -176,7 +222,10 @@ object NutritionAiPlanner {
                             ),
                         )
 
-                    keywords.contains("protein") || keywords.contains("muscle") ->
+                    NutritionFoodSuggestionLocalization.hasIntent(
+                        keywords,
+                        NutritionFoodSuggestionLocalization.Intent.Protein,
+                    ) ->
                         MealProfile(
                             label = "high-protein",
                             lunches = listOf(
@@ -199,7 +248,10 @@ object NutritionAiPlanner {
                             ),
                         )
 
-                    keywords.contains("budget") || keywords.contains("cheap") ->
+                    NutritionFoodSuggestionLocalization.hasIntent(
+                        keywords,
+                        NutritionFoodSuggestionLocalization.Intent.Budget,
+                    ) ->
                         MealProfile(
                             label = "budget-friendly",
                             lunches = listOf(
@@ -222,7 +274,10 @@ object NutritionAiPlanner {
                             ),
                         )
 
-                    keywords.contains("allerg") ->
+                    NutritionFoodSuggestionLocalization.hasIntent(
+                        keywords,
+                        NutritionFoodSuggestionLocalization.Intent.Allergy,
+                    ) ->
                         MealProfile(
                             label = "allergy-aware",
                             lunches = listOf(
@@ -245,7 +300,10 @@ object NutritionAiPlanner {
                             ),
                         )
 
-                    keywords.contains("kid") || keywords.contains("child") ->
+                    NutritionFoodSuggestionLocalization.hasIntent(
+                        keywords,
+                        NutritionFoodSuggestionLocalization.Intent.Family,
+                    ) ->
                         MealProfile(
                             label = "family-friendly",
                             lunches = listOf(
@@ -268,9 +326,10 @@ object NutritionAiPlanner {
                             ),
                         )
 
-                    keywords.contains("quick") ||
-                        keywords.contains("20-min") ||
-                        keywords.contains("20 min") ->
+                    NutritionFoodSuggestionLocalization.hasIntent(
+                        keywords,
+                        NutritionFoodSuggestionLocalization.Intent.Quick,
+                    ) ->
                         MealProfile(
                             label = "quick",
                             lunches = listOf(

@@ -1,6 +1,7 @@
 package app.mymultiverse.ammo.presentation.screens.nutrition
 
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
+import app.mymultiverse.ammo.data.service.LocalNutritionAiAssistantService
 import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
@@ -299,6 +300,24 @@ class NutritionScreenModelTest {
         assertEquals(2, groceryState.itemCount)
         assertEquals(2, repository.aiGrocery.value.size)
         assertEquals("Milk", repository.aiGrocery.value.first().label)
+    }
+
+    @Test
+    fun runAiAssistant_groceryMode_usesSelectedLanguageForFoodSuggestions() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        var selectedLanguage = "es"
+        val ai = LocalNutritionAiAssistantService(
+            responseDelayMs = 0,
+            currentLanguageCode = { selectedLanguage },
+        )
+        val model = nutritionScreenModel(repository, ai, scope = modelScope) { "ai-localized" }
+
+        model.runAiAssistant(NutritionAiMode.GroceryList, "Almuerzos proteicos para la familia")
+        advanceUntilIdle()
+
+        assertIs<NutritionAiState.GroceryList>(model.aiState.value)
+        assertTrue(repository.aiGrocery.value.any { it.label == "Pechuga de pollo" })
+        assertTrue(repository.aiGrocery.value.none { it.label == "Chicken breast" })
     }
 
     @Test

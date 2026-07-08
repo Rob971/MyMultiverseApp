@@ -16,6 +16,41 @@ class NutritionAiPlannerTest {
     }
 
     @Test
+    fun generateGroceryList_localizesFoodSuggestionsForSelectedLanguage() {
+        val items = NutritionAiPlanner.generateGroceryList(
+            criteria = "Almuerzos proteicos para la familia",
+            languageCode = "es",
+        )
+
+        assertTrue("Pechuga de pollo" in items)
+        assertTrue("Yogur griego" in items)
+        assertTrue("Chicken breast" !in items)
+    }
+
+    @Test
+    fun generateGroceryForMeal_localizesMealIngredientSuggestions() {
+        val items = NutritionAiPlanner.generateGroceryForMeal(
+            mealDescription = "Pasta con pollo",
+            languageCode = "fr",
+        )
+
+        assertTrue("Blanc de poulet" in items)
+        assertTrue("Huile d'olive" in items)
+        assertTrue("Chicken breast" !in items)
+    }
+
+    @Test
+    fun generateMealPlan_matchesLocalizedQuickPickCriteria() {
+        val result = NutritionAiPlanner.generateMealPlan(
+            criteria = "Comidas altas en proteína",
+            scope = MealPlanGenerationScope.FullWeek,
+            currentPlan = WeeklyMealPlan(weekKey = "2026-W24"),
+        )
+
+        assertTrue(result.summary.contains("high-protein"))
+    }
+
+    @Test
     fun generateMealPlan_quickCriteria_usesQuickProfile() {
         val result = NutritionAiPlanner.generateMealPlan(
             criteria = "Quick 20-min lunch",
