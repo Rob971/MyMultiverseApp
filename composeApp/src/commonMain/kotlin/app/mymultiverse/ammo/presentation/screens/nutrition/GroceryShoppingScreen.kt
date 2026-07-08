@@ -682,7 +682,7 @@ private fun LazyListScope.groceryShoppingListItems(
         if (sections.active.isNotEmpty()) {
             items(
                 items = sections.active,
-                key = { it.id },
+                key = { "active-${it.id}" },
             ) { item ->
                 val index = items.indexOfFirst { it.id == item.id }
                 val isLastActive = item.id == sections.active.last().id

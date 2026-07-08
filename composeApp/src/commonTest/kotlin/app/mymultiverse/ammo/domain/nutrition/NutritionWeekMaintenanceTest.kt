@@ -92,6 +92,25 @@ class NutritionWeekMaintenanceTest {
     }
 
     @Test
+    fun mergeCarriedGrocery_allCarriedItemsReceiveUniqueIds() {
+        val carried = listOf(
+            GroceryItem(id = "old-1", label = "Milk"),
+            GroceryItem(id = "old-2", label = "Eggs"),
+            GroceryItem(id = "old-3", label = "Butter"),
+        )
+        var counter = 0
+
+        val merged = NutritionWeekMaintenance.mergeCarriedGrocery(
+            carried = carried,
+            current = emptyList(),
+            newItemId = { "${counter++}" },
+        )!!
+
+        val ids = merged.map { it.id }
+        assertEquals(ids.size, ids.toSet().size, "All generated IDs must be unique: $ids")
+    }
+
+    @Test
     fun shouldCarryGrocery_onlyWhenWeekChanges() {
         assertTrue(
             NutritionWeekMaintenance.shouldCarryGrocery(

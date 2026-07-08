@@ -10,9 +10,11 @@ object GroceryListPresentation {
     )
 
     fun partition(items: List<GroceryItem>): Sections {
+        val seen = mutableSetOf<String>()
         val active = mutableListOf<GroceryItem>()
         val completed = mutableListOf<GroceryItem>()
         items.forEach { item ->
+            if (!seen.add(item.id)) return@forEach
             if (item.isChecked) completed += item else active += item
         }
         return Sections(active = active, completed = completed)

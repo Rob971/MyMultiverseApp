@@ -148,6 +148,40 @@ class NutritionWeekMaintenanceRunnerTest {
         assertEquals(1, remote.fetchCount)
     }
 
+    @Test
+    fun runForCurrentWeek_multipleCarriedItemsHaveUniqueIds() = runTest {
+        val settings = MapSettings()
+        val householdId = "household-d"
+        val currentWeek = "2026-06-15"
+        val previousWeek = "2026-06-08"
+        val wednesday = LocalDate(2026, 6, 17)
+
+        NutritionLocalStore(settings, householdId, previousWeek).saveGroceryItems(
+            listOf(
+                GroceryItem(id = "p1", label = "Milk"),
+                GroceryItem(id = "p2", label = "Eggs"),
+                GroceryItem(id = "p3", label = "Butter"),
+            ),
+        )
+
+        val repository = offlineRepository(settings, householdId, currentWeek)
+        val runner = NutritionWeekMaintenanceRunner(
+            settings = settings,
+            maintenanceStore = NutritionWeekMaintenanceStore(settings),
+            remoteApi = null,
+        )
+
+        runner.runForCurrentWeek(
+            repository = repository,
+            householdId = householdId,
+            weekKey = currentWeek,
+            today = wednesday,
+        )
+
+        val ids = repository.currentGroceryItems().map { it.id }
+        assertEquals(ids.size, ids.toSet().size, "Carried items must have unique IDs: $ids")
+    }
+
     private fun offlineRepository(
         settings: MapSettings,
         householdId: String,

@@ -69,6 +69,33 @@ class GroceryListPresentationTest {
     }
 
     @Test
+    fun partition_dropsDuplicateIds_keepingFirstOccurrence() {
+        val items = listOf(
+            GroceryItem("dup", "Milk", isChecked = false),
+            GroceryItem("dup", "Duplicate Milk", isChecked = false),
+            GroceryItem("3", "Eggs", isChecked = true),
+        )
+
+        val sections = GroceryListPresentation.partition(items)
+
+        assertEquals(listOf("Milk"), sections.active.map { it.label })
+        assertEquals(listOf("Eggs"), sections.completed.map { it.label })
+    }
+
+    @Test
+    fun partition_dropsDuplicateAcrossSections() {
+        val items = listOf(
+            GroceryItem("shared", "Milk", isChecked = false),
+            GroceryItem("shared", "Milk checked", isChecked = true),
+        )
+
+        val sections = GroceryListPresentation.partition(items)
+
+        assertEquals(listOf("Milk"), sections.active.map { it.label })
+        assertEquals(emptyList(), sections.completed.map { it.label })
+    }
+
+    @Test
     fun moveActiveItem_ignoresCheckedItems() {
         val items = listOf(
             GroceryItem("1", "Milk", isChecked = true),
