@@ -950,15 +950,15 @@ jobs:
           whatsNewDirectory: distribution/whatsnew
 
       - name: Create GitHub Release
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        if: always() && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: "v${{ steps.version.outputs.display }}"
           body: |
             **Release:** `${{ steps.version.outputs.display }}`
-            **Track:** Production (20% staged rollout — increase in Play Console after monitoring)
             **Build:** run `${{ github.run_number }}` · commit `${{ github.sha }}`
+            **Play Store:** ${{ steps.play_secret_check.outputs.has_secret == 'true' && 'uploaded — 20% staged rollout (expand in Play Console after monitoring)' || 'skipped (AMMO_PLAY_SERVICE_ACCOUNT_JSON not set)' }}
 
             See `distribution/whatsnew/whatsnew-en-US` for user-facing changelog.
           files: androidApp/build/outputs/bundle/release/*.aab
