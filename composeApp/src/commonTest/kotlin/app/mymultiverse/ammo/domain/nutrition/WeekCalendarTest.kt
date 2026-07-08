@@ -86,6 +86,11 @@ class WeekCalendarTest {
     }
 
     @Test
+    fun previousWeekKey_goesBackSevenDays() {
+        assertEquals("2026-05-18", WeekCalendar.previousWeekKey("2026-05-25"))
+    }
+
+    @Test
     fun weekKeyForOffset_returnsCurrentAndNextWeek() {
         val current = "2026-05-18"
 

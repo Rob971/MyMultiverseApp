@@ -38,6 +38,11 @@ object WeekCalendar {
         return start.plus(WeeklyMealPlan.DAYS_IN_WEEK, DateTimeUnit.DAY).toString()
     }
 
+    fun previousWeekKey(weekKey: String): String {
+        val start = LocalDate.parse(weekKey)
+        return start.minus(WeeklyMealPlan.DAYS_IN_WEEK, DateTimeUnit.DAY).toString()
+    }
+
     fun weekKeyForOffset(
         baseWeekKey: String = currentWeekKey(),
         offset: Int,

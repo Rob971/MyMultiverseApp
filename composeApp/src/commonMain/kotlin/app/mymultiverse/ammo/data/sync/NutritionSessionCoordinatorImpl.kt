@@ -1,6 +1,7 @@
 package app.mymultiverse.ammo.data.sync
 
 import app.mymultiverse.ammo.data.local.nutrition.NutritionLocalStore
+import app.mymultiverse.ammo.data.local.nutrition.NutritionWeekMaintenanceStore
 import app.mymultiverse.ammo.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteDataSource
@@ -26,6 +27,11 @@ class NutritionSessionCoordinatorImpl(
     private val realtimeSync: NutritionHouseholdRealtimeSync?,
     private val diagnostics: DiagnosticsContext,
     private val logger: AppLogger,
+    private val weekMaintenanceRunner: NutritionWeekMaintenanceRunner = NutritionWeekMaintenanceRunner(
+        settings = settings,
+        maintenanceStore = NutritionWeekMaintenanceStore(settings),
+        remoteApi = remoteApi,
+    ),
 ) : NutritionSessionCoordinator {
 
     private val personalRepository = NutritionRepositoryImpl(settings)
@@ -78,6 +84,13 @@ class NutritionSessionCoordinatorImpl(
         )
         _nutrition.value = repository
         repository.refreshFromRemote()
+        if (weekKey == WeekCalendar.currentWeekKey()) {
+            weekMaintenanceRunner.runForCurrentWeek(
+                repository = repository,
+                householdId = householdId,
+                weekKey = weekKey,
+            )
+        }
         realtimeSync?.start(
             householdId = householdId,
             weekKey = weekKey,
