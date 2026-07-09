@@ -247,6 +247,7 @@ private fun MealPlanMealField(
         MealPlanPresentation.mealLabelSuggestions(weekDays, value)
     }
     val dishEmoji = FoodEmojiCatalog.emojiForMealText(value)
+    val scrollIntoViewModifier = rememberFieldScrollIntoViewModifier()
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         AnimatedVisibility(visible = value.isNotBlank() && dishEmoji != null) {
@@ -261,7 +262,8 @@ private fun MealPlanMealField(
             onValueChange = onValueChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .testTag(fieldTestTag),
+                .testTag(fieldTestTag)
+                .then(scrollIntoViewModifier),
             label = { Text(label) },
             placeholder = { Text(label) },
             singleLine = false,
