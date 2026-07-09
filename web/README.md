@@ -33,7 +33,7 @@ When updating public pages, use footer: `© [year] Roberto Cornano (MyMultiverse
 
 ## Legal pages (privacy & terms)
 
-Draft HTML for the website repo — **lawyer review required** before publish:
+HTML for the website repo:
 
 | File | Deploy to website |
 |------|-------------------|

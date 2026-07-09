@@ -1,7 +1,7 @@
 # Intellectual property (MyMultiverse / Ammò)
 
 > **Internal reference.** Not legal advice. Confirm registrations and agreements
-> with a qualified IP attorney in your jurisdiction (EU/Italy recommended).
+> with a qualified IP attorney in your jurisdiction (Spain/EU recommended).
 
 ## Rights holder
 

@@ -1,8 +1,5 @@
 # Website legal pages — deploy guide
 
-> **Draft for lawyer review.** HTML references live in `web/site-updates/`.
-> Copy into [mymultiverse-website](https://github.com/Rob971/mymultiverse-website) before deploy.
-
 ## Files to copy
 
 | Source (this repo) | Destination (website repo) |
@@ -32,14 +29,12 @@
 - Users retain ownership of grocery/meal content
 - Licence to host/sync solely to operate the Service
 
-## Placeholders for counsel
+## Confirmed legal details
 
-Before publishing, confirm with your lawyer:
-
-| Item | Current draft |
-|------|----------------|
-| Governing law | `[Italy / jurisdiction]` in Terms §16 |
-| Courts | `[city]` in Terms §16 |
+| Item | Confirmed |
+|------|-----------|
+| Governing law | Spain (Terms §16, IP assignment §7) |
+| Courts | Barcelona (Terms §16, IP assignment §7) |
 | Data controller address | Contact form only — add registered address if required |
 | International transfers | Privacy §5 — confirm Supabase/Firebase DPA and SCCs |
 | Consumer rights | Terms §11–12 — caps may need EU consumer-law adjustments |
