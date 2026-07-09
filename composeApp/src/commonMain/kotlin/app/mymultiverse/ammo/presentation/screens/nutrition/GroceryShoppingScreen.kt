@@ -71,7 +71,6 @@ import ammo.composeapp.generated.resources.nutrition_grocery_hide_checked
 import ammo.composeapp.generated.resources.nutrition_grocery_show_checked
 import ammo.composeapp.generated.resources.nutrition_grocery_progress
 import ammo.composeapp.generated.resources.nutrition_grocery_save_edit
-import ammo.composeapp.generated.resources.nutrition_grocery_section_completed_count
 import ammo.composeapp.generated.resources.nutrition_grocery_section_to_buy
 import ammo.composeapp.generated.resources.nutrition_grocery_title
 import ammo.composeapp.generated.resources.nutrition_grocery_toggle_item
@@ -151,8 +150,6 @@ fun GroceryShoppingScreen(
     var editingItemId by rememberSaveable { mutableStateOf<String?>(null) }
     var refocusInput by rememberSaveable { mutableStateOf(false) }
     var pendingScrollLabel by rememberSaveable { mutableStateOf<String?>(null) }
-    var completedExpanded by rememberSaveable { mutableStateOf(false) }
-    var completedExpandUserSet by rememberSaveable { mutableStateOf(false) }
     var hideCheckedItems by rememberSaveable { mutableStateOf(false) }
     var keepScreenOn by rememberSaveable { mutableStateOf(true) }
     val listState = rememberLazyListState()
@@ -167,8 +164,9 @@ fun GroceryShoppingScreen(
     val previousWeekLabel = stringResource(Res.string.nutrition_week_previous)
     val nextWeekLabel = stringResource(Res.string.nutrition_week_next)
     val sections = remember(items) { GroceryListPresentation.partition(items) }
-    val displaySections = remember(sections, hideCheckedItems) {
-        GroceryListPresentation.forShoppingDisplay(sections, hideCheckedItems)
+    // Items render in their original list order (in-place); hideCheckedItems filters inline.
+    val displayItems = remember(items, hideCheckedItems) {
+        if (hideCheckedItems) items.filter { !it.isChecked } else items
     }
     val checkedCount = sections.completed.size
     val totalCount = items.size
@@ -199,10 +197,6 @@ fun GroceryShoppingScreen(
     } else {
         addHint
     }
-    val sectionCompletedCount = stringResource(
-        Res.string.nutrition_grocery_section_completed_count,
-        sections.completed.size,
-    )
     val clearCheckedLabel = stringResource(Res.string.nutrition_grocery_clear_checked)
     val hideCheckedLabel = stringResource(Res.string.nutrition_grocery_hide_checked)
     val showCheckedLabel = stringResource(
@@ -309,12 +303,6 @@ fun GroceryShoppingScreen(
         refocusInput = true
     }
 
-    LaunchedEffect(sections.completed.size) {
-        if (!completedExpandUserSet) {
-            completedExpanded = sections.completed.size <= 3
-        }
-    }
-
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val isWideLayout = maxWidth >= ScreenLayout.expandedMinWidth
         val showPhoneStickyInput = canWrite && !isWideLayout
@@ -323,7 +311,7 @@ fun GroceryShoppingScreen(
             val label = pendingScrollLabel ?: return@LaunchedEffect
             if (items.none { it.label.equals(label, ignoreCase = true) }) return@LaunchedEffect
 
-            val activeIndex = sections.active.indexOfFirst { it.label.equals(label, ignoreCase = true) }
+            val activeIndex = displayItems.indexOfFirst { it.label.equals(label, ignoreCase = true) }
             if (activeIndex < 0) return@LaunchedEffect
 
             val index = groceryActiveItemListIndex(
@@ -412,7 +400,7 @@ fun GroceryShoppingScreen(
                     toBuySectionTitle = toBuySectionTitle,
                     toBuySectionSubtitle = toBuySectionSubtitle,
                     addButtonLabel = addButtonLabel,
-                    sections = displaySections,
+                    displayItems = displayItems,
                     rawSections = sections,
                     hideCheckedItems = hideCheckedItems,
                     onHideCheckedToggle = { hideCheckedItems = !hideCheckedItems },
@@ -431,13 +419,7 @@ fun GroceryShoppingScreen(
                     toggleContentDescription = toggleContentDescription,
                     deleteContentDescription = deleteContentDescription,
                     dragHandleContentDescription = dragHandleContentDescription,
-                    sectionCompletedCount = sectionCompletedCount,
                     clearCheckedLabel = clearCheckedLabel,
-                    completedExpanded = completedExpanded,
-                    onCompletedExpandToggle = {
-                        completedExpandUserSet = true
-                        completedExpanded = !completedExpanded
-                    },
                     onScrollToAddAndFocus = { focusAddInput() },
                     onStartEdit = { editingItemId = it },
                     onCancelEdit = { if (editingItemId == it) editingItemId = null },
@@ -553,7 +535,7 @@ private fun LazyListScope.groceryShoppingListItems(
     toBuySectionTitle: String,
     toBuySectionSubtitle: String,
     addButtonLabel: String,
-    sections: GroceryListPresentation.Sections,
+    displayItems: List<GroceryItem>,
     rawSections: GroceryListPresentation.Sections,
     hideCheckedItems: Boolean,
     onHideCheckedToggle: () -> Unit,
@@ -572,10 +554,7 @@ private fun LazyListScope.groceryShoppingListItems(
     toggleContentDescription: String,
     deleteContentDescription: String,
     dragHandleContentDescription: String,
-    sectionCompletedCount: String,
     clearCheckedLabel: String,
-    completedExpanded: Boolean,
-    onCompletedExpandToggle: () -> Unit,
     onScrollToAddAndFocus: () -> Unit,
     onStartEdit: (String) -> Unit,
     onCancelEdit: (String) -> Unit,
@@ -665,11 +644,20 @@ private fun LazyListScope.groceryShoppingListItems(
 
     if (rawSections.completed.isNotEmpty() && totalCount > 0) {
         item(key = "shopping-mode-toggle") {
-            JourneyTertiaryButton(
-                onClick = onHideCheckedToggle,
-                label = if (hideCheckedItems) showCheckedLabel else hideCheckedLabel,
-                modifier = Modifier.testTag(GroceryListTestTags.SHOPPING_HIDE_CHECKED_TOGGLE),
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+                JourneyTertiaryButton(
+                    onClick = onHideCheckedToggle,
+                    label = if (hideCheckedItems) showCheckedLabel else hideCheckedLabel,
+                    modifier = Modifier.testTag(GroceryListTestTags.SHOPPING_HIDE_CHECKED_TOGGLE),
+                )
+                if (canWrite) {
+                    JourneyTertiaryButton(
+                        onClick = onClearChecked,
+                        label = clearCheckedLabel,
+                        modifier = Modifier.testTag(GroceryListTestTags.CLEAR_CHECKED_ACTION),
+                    )
+                }
+            }
         }
     }
 
@@ -690,104 +678,58 @@ private fun LazyListScope.groceryShoppingListItems(
                 testTag = GroceryListTestTags.EMPTY_STATE,
             )
         }
-    } else {
-        if (sections.active.isNotEmpty()) {
-            items(
-                items = sections.active,
-                key = { "active-${it.id}" },
-            ) { item ->
-                val index = items.indexOfFirst { it.id == item.id }
-                val isLastActive = item.id == sections.active.last().id
-                GroceryListItem(
-                    item = item,
-                    index = index,
-                    editingItemId = editingItemId,
-                    editLabel = editLabel,
-                    editContentDescription = editContentDescription,
-                    saveContentDescription = saveContentDescription,
-                    cancelEditLabel = cancelEditLabel,
-                    confirmDeleteTitle = confirmDeleteTitle,
-                    confirmDeleteBody = confirmDeleteBody,
-                    confirmDeleteActionLabel = confirmDeleteActionLabel,
-                    toggleContentDescription = toggleContentDescription,
-                    deleteContentDescription = deleteContentDescription,
-                    dragHandleContentDescription = dragHandleContentDescription,
-                    enableReorder = canWrite && sections.active.size > 1,
-                    onReorderStep = { direction -> onReorderStep(item.id, direction) },
-                    onStartEdit = { onStartEdit(item.id) },
-                    onCancelEdit = { onCancelEdit(item.id) },
-                    onSaveEdit = { label -> onSaveEdit(item.id, label) },
-                    onToggle = { onToggle(item.id) },
-                    onDelete = { onDelete(item, index) },
-                    readOnly = !canWrite,
-                    showDivider = !isLastActive || sections.completed.isNotEmpty(),
-                    modifier = Modifier.animateItem(),
+    } else if (displayItems.isEmpty()) {
+        // hideCheckedItems=true and all items are checked — show placeholder with show-all CTA
+        item(key = "empty-active") {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(Res.string.nutrition_grocery_empty_active),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = JourneySemanticColors.inkMuted(),
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
                 )
-            }
-        } else {
-            item(key = "empty-active") {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = stringResource(Res.string.nutrition_grocery_empty_active),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = JourneySemanticColors.inkMuted(),
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
+                if (canWrite) {
+                    JourneyTertiaryButton(
+                        onClick = onScrollToAddAndFocus,
+                        label = stringResource(Res.string.nutrition_grocery_empty_cta),
                     )
-                    if (canWrite) {
-                        JourneyTertiaryButton(
-                            onClick = onScrollToAddAndFocus,
-                            label = stringResource(Res.string.nutrition_grocery_empty_cta),
-                        )
-                    }
                 }
             }
         }
-
-        if (sections.completed.isNotEmpty()) {
-            item(key = "section-completed") {
-                FamilyLogisticsSectionHeader(
-                    title = sectionCompletedCount,
-                    titleModifier = Modifier.testTag(GroceryListTestTags.COMPLETED_SECTION_HEADER),
-                    onTitleClick = onCompletedExpandToggle,
-                    actionLabel = if (canWrite) clearCheckedLabel else null,
-                    actionModifier = Modifier.testTag(GroceryListTestTags.CLEAR_CHECKED_ACTION),
-                    onAction = if (canWrite) onClearChecked else null,
-                )
-            }
-            if (completedExpanded) {
-                items(
-                    items = sections.completed,
-                    key = { "done-${it.id}" },
-                ) { item ->
-                    val index = items.indexOfFirst { it.id == item.id }
-                    val isLastCompleted = item.id == sections.completed.last().id
-                    GroceryListItem(
-                        item = item,
-                        index = index,
-                        editingItemId = editingItemId,
-                        editLabel = editLabel,
-                        editContentDescription = editContentDescription,
-                        saveContentDescription = saveContentDescription,
-                        cancelEditLabel = cancelEditLabel,
-                        confirmDeleteTitle = confirmDeleteTitle,
-                        confirmDeleteBody = confirmDeleteBody,
-                        confirmDeleteActionLabel = confirmDeleteActionLabel,
-                        toggleContentDescription = toggleContentDescription,
-                        deleteContentDescription = deleteContentDescription,
-                        dragHandleContentDescription = dragHandleContentDescription,
-                        enableReorder = false,
-                        onReorderStep = {},
-                        onStartEdit = { onStartEdit(item.id) },
-                        onCancelEdit = { onCancelEdit(item.id) },
-                        onSaveEdit = { label -> onSaveEdit(item.id, label) },
-                        onToggle = { onToggle(item.id) },
-                        onDelete = { onDelete(item, index) },
-                        readOnly = !canWrite,
-                        showDivider = !isLastCompleted,
-                        modifier = Modifier.animateItem(),
-                    )
-                }
-            }
+    } else {
+        // All items render in their original list order; checked items are styled
+        // with strikethrough in place — they do not move to a separate section.
+        val activeCount = displayItems.count { !it.isChecked }
+        items(
+            items = displayItems,
+            key = { "item-${it.id}" },
+        ) { item ->
+            val index = items.indexOfFirst { it.id == item.id }
+            GroceryListItem(
+                item = item,
+                index = index,
+                editingItemId = editingItemId,
+                editLabel = editLabel,
+                editContentDescription = editContentDescription,
+                saveContentDescription = saveContentDescription,
+                cancelEditLabel = cancelEditLabel,
+                confirmDeleteTitle = confirmDeleteTitle,
+                confirmDeleteBody = confirmDeleteBody,
+                confirmDeleteActionLabel = confirmDeleteActionLabel,
+                toggleContentDescription = toggleContentDescription,
+                deleteContentDescription = deleteContentDescription,
+                dragHandleContentDescription = dragHandleContentDescription,
+                enableReorder = canWrite && activeCount > 1,
+                onReorderStep = { direction -> onReorderStep(item.id, direction) },
+                onStartEdit = { onStartEdit(item.id) },
+                onCancelEdit = { onCancelEdit(item.id) },
+                onSaveEdit = { label -> onSaveEdit(item.id, label) },
+                onToggle = { onToggle(item.id) },
+                onDelete = { onDelete(item, index) },
+                readOnly = !canWrite,
+                showDivider = item.id != displayItems.last().id,
+                modifier = Modifier.animateItem(),
+            )
         }
     }
 }

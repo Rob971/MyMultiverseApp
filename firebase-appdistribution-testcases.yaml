@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 83
-updated: 2026-07-08
+version: 84
+updated: 2026-07-09
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -506,13 +506,18 @@ testcases:
       - Tapping Cancel or outside the dialog leaves the item unchanged.
 
   - id: grocery-shopping-hide-checked
-    title: Shopping mode hide checked items
+    title: Shopping mode hide/show checked items in-place
     steps:
       - Check off one or more grocery items.
+      - Observe the items stay in their original position with strikethrough text.
       - Tap Hide checked items below the progress card.
+      - Tap Show checked items (N) to restore.
+      - Tap Clear all checked to remove all completed items at once.
     expected:
-      - Unchecked items stay visible at the top; checked section disappears.
-      - Show checked items restores the completed section.
+      - Checked items remain in their original list position with strikethrough and muted text.
+      - No "Checked" section appears at the bottom; items do not move when toggled.
+      - Hide checked items removes checked rows inline; Show checked items (N) restores them.
+      - Clear all checked removes all checked items and shows an undo snackbar.
 
   - id: viewer-readonly-grocery-plan
     title: Viewer read-only banner on Groceries and Plan

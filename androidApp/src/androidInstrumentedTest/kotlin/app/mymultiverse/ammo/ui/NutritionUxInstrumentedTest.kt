@@ -16,6 +16,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.doubleClick
 
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -174,7 +176,7 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun grocery_editButton_opensEditField() {
+    fun grocery_doubleTap_opensEditField() {
         val itemId = "instrumented-item-1"
         val screenModel = nutritionScreenModel(itemId = itemId)
 
@@ -191,9 +193,9 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
         composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
 
-        composeRule.onNodeWithTag("${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}$itemId")
+        composeRule.onNodeWithTag("${GroceryItemRowTestTags.ROW_PREFIX}$itemId")
             .performScrollTo()
-            .performClick()
+            .performTouchInput { doubleClick() }
 
         composeRule.onNodeWithTag("${GroceryItemRowTestTags.EDIT_FIELD_PREFIX}$itemId")
             .assertIsDisplayed()
@@ -231,7 +233,7 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
-    fun grocery_editButton_meetsMinimumTouchTarget() {
+    fun grocery_row_meetsMinimumTouchTarget() {
         val itemId = "instrumented-item-1"
         val screenModel = nutritionScreenModel(itemId = itemId)
 
@@ -248,11 +250,9 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
         composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
 
-        val editButtonTag = "${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}$itemId"
-        composeRule.onNodeWithTag(editButtonTag)
+        composeRule.onNodeWithTag("${GroceryItemRowTestTags.ROW_PREFIX}$itemId")
             .performScrollTo()
             .assertHeightIsAtLeast(48.dp)
-            .assertWidthIsAtLeast(48.dp)
     }
 
     @Test
