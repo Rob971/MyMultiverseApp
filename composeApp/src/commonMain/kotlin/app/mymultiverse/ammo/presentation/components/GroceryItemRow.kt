@@ -291,24 +291,36 @@ private fun GroceryFlatRowContent(
                     )
                 }
             } else {
-                if (foodEmoji != null) {
-                    FoodItemThumbnail(
-                        emoji = foodEmoji,
-                        size = 32.dp,
-                        modifier = Modifier.alpha(if (item.isChecked) 0.35f else 1f),
-                    )
-                }
-                Text(
-                    text = item.label,
+                // Centre the emoji + label as a group between the two flanking buttons.
+                // The Box takes the remaining space (weight 1) and uses contentAlignment
+                // to place the inner Row at the horizontal centre of that space.
+                Box(
                     modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = if (item.isChecked) {
-                        JourneySemanticColors.inkMuted()
-                    } else {
-                        JourneySemanticColors.inkDeep()
-                    },
-                    textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
-                )
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (foodEmoji != null) {
+                            FoodItemThumbnail(
+                                emoji = foodEmoji,
+                                size = 32.dp,
+                                modifier = Modifier.alpha(if (item.isChecked) 0.35f else 1f),
+                            )
+                        }
+                        Text(
+                            text = item.label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = if (item.isChecked) {
+                                JourneySemanticColors.inkMuted()
+                            } else {
+                                JourneySemanticColors.inkDeep()
+                            },
+                            textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
+                        )
+                    }
+                }
                 // ── Delete button (right, transparent bg) ────────────────────
                 // Edit is triggered via double-tap on the row (see pointerInput above).
                 if (!readOnly) {
