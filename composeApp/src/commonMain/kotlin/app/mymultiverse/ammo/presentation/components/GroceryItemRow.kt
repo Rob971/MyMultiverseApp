@@ -1,6 +1,5 @@
 package app.mymultiverse.ammo.presentation.components
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +44,6 @@ object GroceryItemRowTestTags {
     const val ROW_PREFIX = "grocery_item_"
     const val CHECKBOX_PREFIX = "grocery_checkbox_"
     const val EDIT_FIELD_PREFIX = "grocery_edit_"
-    const val EDIT_BUTTON_PREFIX = "grocery_edit_btn_"
     const val SAVE_BUTTON_PREFIX = "grocery_save_btn_"
     const val DRAG_HANDLE_PREFIX = "grocery_drag_handle_"
     const val DELETE_BUTTON_PREFIX = "grocery_delete_btn_"
@@ -311,23 +309,8 @@ private fun GroceryFlatRowContent(
                     },
                     textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
                 )
-                // Edit button hidden when item is checked (double-tap on row also triggers edit)
-                AnimatedVisibility(visible = !item.isChecked && !readOnly) {
-                    JourneyIconButton(
-                        onClick = onStartEdit,
-                        modifier = Modifier.testTag("${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}${item.id}"),
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = JourneySemanticColors.brandTeal(),
-                        ),
-                    ) {
-                        JourneyIcon(
-                            role = AppIconRole.ActionEdit,
-                            contentDescription = editContentDescription,
-                            useContentColor = true,
-                        )
-                    }
-                }
                 // ── Delete button (right, transparent bg) ────────────────────
+                // Edit is triggered via double-tap on the row (see pointerInput above).
                 if (!readOnly) {
                     JourneyIconButton(
                         onClick = { showDeleteConfirm = true },
