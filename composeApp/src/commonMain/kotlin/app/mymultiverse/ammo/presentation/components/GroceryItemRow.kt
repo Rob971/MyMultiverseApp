@@ -247,7 +247,7 @@ private fun GroceryFlatRowContent(
                 modifier = Modifier.testTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}"),
             ) {
                 Icon(
-                    imageVector = if (item.isChecked) AppIcons.CheckCircle else AppIcons.GroceryCheckOutline,
+                    imageVector = AppIcons.CheckCircle,
                     contentDescription = toggleContentDescription,
                     tint = if (readOnly || isEditing) checkContentColor.copy(alpha = 0.38f) else checkContentColor,
                     modifier = Modifier.size(26.dp),
