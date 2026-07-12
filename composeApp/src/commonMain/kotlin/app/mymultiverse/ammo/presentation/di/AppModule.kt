@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.presentation.di
 
+import app.mymultiverse.ammo.data.location.LocationLanguageSuggestionBootstrapper
 import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteApi
@@ -30,6 +31,7 @@ import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.NutritionHouseholdSelectionStore
 import app.mymultiverse.ammo.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
+import app.mymultiverse.ammo.domain.location.DeviceRegionService
 import app.mymultiverse.ammo.domain.manager.LanguageManager
 import app.mymultiverse.ammo.domain.manager.ThemeManager
 import app.mymultiverse.ammo.domain.usecase.GetGreetingUseCase
@@ -142,4 +144,12 @@ internal fun coreKoinModules() = listOf(observabilityModule, domainModule, dataM
 val appModule = module {
     includes(coreKoinModules())
     includes(platformModule())
+    single {
+        LocationLanguageSuggestionBootstrapper(
+            settings = get(),
+            languageManager = get(),
+            deviceRegionService = get<DeviceRegionService>(),
+            scope = get(),
+        )
+    }
 }
