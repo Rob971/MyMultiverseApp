@@ -44,6 +44,7 @@ object GroceryItemRowTestTags {
     const val ROW_PREFIX = "grocery_item_"
     const val CHECKBOX_PREFIX = "grocery_checkbox_"
     const val EDIT_FIELD_PREFIX = "grocery_edit_"
+    const val EDIT_BUTTON_PREFIX = "grocery_edit_btn_"
     const val SAVE_BUTTON_PREFIX = "grocery_save_btn_"
     const val DRAG_HANDLE_PREFIX = "grocery_drag_handle_"
     const val DELETE_BUTTON_PREFIX = "grocery_delete_btn_"
@@ -148,7 +149,10 @@ private fun GroceryFlatRowContent(
     } else {
         JourneySemanticColors.brandTeal()
     }
+    val checkContainerColor = JourneySemanticColors.brandTealContainer()
     val deleteContentColor = JourneySemanticColors.brandTerracotta()
+    val deleteContainerColor = JourneySemanticColors.brandTerracotta().copy(alpha = 0.12f)
+    val editContentColor = JourneySemanticColors.brandTeal()
 
     if (showDeleteConfirm) {
         AlertDialog(
@@ -234,8 +238,8 @@ private fun GroceryFlatRowContent(
             }
 
             // ── Check / toggle button (left, flush to column edge) ───────────
-            // Tint is passed directly to Icon — bypasses LocalContentColor so color
-            // is guaranteed regardless of the composition-local propagation chain.
+            // Container color makes the button recognisable as interactive.
+            // Icon tint is applied directly to bypass LocalContentColor sensitivity.
             JourneyIconButton(
                 onClick = {
                     performHaptic(JourneyHapticFeedback.LightClick)
@@ -243,6 +247,12 @@ private fun GroceryFlatRowContent(
                 },
                 enabled = !isEditing && !readOnly,
                 modifier = Modifier.testTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}"),
+                colors = IconButtonDefaults.iconButtonColors(
+                    containerColor = checkContainerColor,
+                    contentColor = checkContentColor,
+                    disabledContainerColor = checkContainerColor.copy(alpha = 0.38f),
+                    disabledContentColor = checkContentColor.copy(alpha = 0.38f),
+                ),
             ) {
                 Icon(
                     imageVector = AppIcons.CheckCircle,
@@ -321,12 +331,33 @@ private fun GroceryFlatRowContent(
                         )
                     }
                 }
-                // ── Delete button (right, transparent bg) ────────────────────
-                // Edit is triggered via double-tap on the row (see pointerInput above).
+                // ── Edit button (right side, only for unchecked editable items) ──
+                // Single-tap opens inline edit; double-tap on the row also works.
+                if (!readOnly && !item.isChecked) {
+                    JourneyIconButton(
+                        onClick = onStartEdit,
+                        modifier = Modifier.testTag("${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}${item.id}"),
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = checkContainerColor,
+                            contentColor = editContentColor,
+                        ),
+                    ) {
+                        JourneyIcon(
+                            role = AppIconRole.ActionEdit,
+                            contentDescription = editContentDescription,
+                            useContentColor = true,
+                        )
+                    }
+                }
+                // ── Delete button (far right) ─────────────────────────────────
                 if (!readOnly) {
                     JourneyIconButton(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.testTag("${GroceryItemRowTestTags.DELETE_BUTTON_PREFIX}${item.id}"),
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = deleteContainerColor,
+                            contentColor = deleteContentColor,
+                        ),
                     ) {
                         Icon(
                             imageVector = AppIcons.GroceryRemoveCircle,
