@@ -2,6 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!--
+        Coarse location is used on first launch to detect whether the user is in the
+        Campania region (Italy) and pre-select the Neapolitan language accordingly.
+        It is also reserved for future meal-plan localisation features.
+        The permission is only accessed when already granted — no runtime prompt is
+        shown solely for language detection.
+    -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
