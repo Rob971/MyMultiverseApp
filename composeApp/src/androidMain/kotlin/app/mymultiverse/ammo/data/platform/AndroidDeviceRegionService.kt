@@ -30,8 +30,11 @@ class AndroidDeviceRegionService(
     private val context: Context,
 ) : DeviceRegionService {
 
+    override fun getLocaleCountryCode(): String? =
+        Locale.getDefault().country.uppercase().ifBlank { null }
+
     override suspend fun getRegion(): DeviceRegion? {
-        val countryCode = Locale.getDefault().country.uppercase().ifBlank { return null }
+        val countryCode = getLocaleCountryCode() ?: return null
 
         val adminArea = if (countryCode == "IT") {
             withTimeoutOrNull(REGION_TIMEOUT_MS) { tryResolveAdminArea() }
