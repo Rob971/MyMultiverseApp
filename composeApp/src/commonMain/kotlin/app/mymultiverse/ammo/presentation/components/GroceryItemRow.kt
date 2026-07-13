@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.presentation.components
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -31,19 +32,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.presentation.platform.JourneyHapticFeedback
 import app.mymultiverse.ammo.presentation.platform.rememberJourneyHapticFeedback
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
+import app.mymultiverse.ammo.presentation.theme.imageVector
 
 object GroceryItemRowTestTags {
     const val ROW_PREFIX = "grocery_item_"
@@ -54,6 +65,50 @@ object GroceryItemRowTestTags {
     const val DRAG_HANDLE_PREFIX = "grocery_drag_handle_"
     const val DELETE_BUTTON_PREFIX = "grocery_delete_btn_"
     const val DELETE_CONFIRM_BUTTON = "grocery_delete_confirm_btn"
+}
+
+// ── Single-Canvas action button ───────────────────────────────────────────────
+//
+// Draws the coloured circle disc AND the icon vector in ONE DrawScope pass so
+// there is no inter-layer compositing boundary between the background and the
+// icon content.  This avoids the GPU-driver issue where child Icon composables
+// are invisible on top of a background(shape) layer.
+@Composable
+private fun GroceryCircleButton(
+    containerColor: Color,
+    icon: ImageVector,
+    iconTint: Color,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    circleSize: Dp = 36.dp,
+    iconFraction: Float = 0.56f,
+    onClick: () -> Unit,
+) {
+    val painter = rememberVectorPainter(icon)
+    Canvas(
+        modifier = modifier
+            .size(circleSize)
+            .semantics {
+                this.role = Role.Button
+                contentDescription?.let { this.contentDescription = it }
+            }
+            .clickable(onClick = onClick),
+    ) {
+        val radius = size.minDimension / 2f
+        // 1. Circle background
+        drawCircle(color = containerColor, radius = radius)
+        // 2. Icon — same DrawScope, no layer boundary
+        val iconSizePx = size.minDimension * iconFraction
+        val offset = (size.minDimension - iconSizePx) / 2f
+        translate(left = offset, top = offset) {
+            with(painter) {
+                draw(
+                    size = Size(iconSizePx, iconSizePx),
+                    colorFilter = ColorFilter.tint(iconTint),
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -149,8 +204,6 @@ private fun GroceryFlatRowContent(
     // ── Pre-resolve composable colors ─────────────────────────────────────────
     val checkTeal = JourneySemanticColors.brandTeal()
     val mutedColor = JourneySemanticColors.inkMuted()
-    // Checkbox: teal fill when checked, muted gray border when unchecked.
-    // White checkmark ensures maximum contrast in both light and dark themes.
     val checkboxColors = CheckboxDefaults.colors(
         checkedColor = checkTeal,
         uncheckedColor = mutedColor,
@@ -158,8 +211,6 @@ private fun GroceryFlatRowContent(
         disabledCheckedColor = checkTeal.copy(alpha = 0.38f),
         disabledUncheckedColor = mutedColor.copy(alpha = 0.38f),
     )
-
-    // Edit / delete button colors
     val editContainerColor = JourneySemanticColors.brandTealContainer()
     val editContentColor = JourneySemanticColors.brandTeal()
     val deleteContainerColor = JourneySemanticColors.brandTerracotta().copy(alpha = 0.18f)
@@ -245,13 +296,11 @@ private fun GroceryFlatRowContent(
             //
             // The item label fills the full row width with Arrangement.Center so
             // it always sits at the true horizontal midpoint of the screen.
-            // Action buttons are absolutely positioned at the left/right edges
-            // and never displace the label's centre.
+            // Action buttons are absolutely positioned at left/right edges.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = rowMinHeight)
-                    // Double-tap anywhere on the row opens the inline edit field.
                     .pointerInput(item.id, readOnly, item.isChecked) {
                         if (!readOnly && !item.isChecked) {
                             detectTapGestures(onDoubleTap = {
@@ -286,21 +335,12 @@ private fun GroceryFlatRowContent(
                 }
 
                 // ── Left edge: Checkbox [drag handle?] ───────────────────────
-                // IMPORTANT: Checkbox is always the FIRST child so it sits at
-                // x=0 of the content area for every row — checked, unchecked,
-                // and in reorder mode.  The optional drag handle appears to its
-                // right so it never shifts the checkbox's horizontal position.
+                // Checkbox is always FIRST so its column position never shifts
+                // regardless of whether the drag handle is shown.
                 Row(
                     modifier = Modifier.align(Alignment.CenterStart),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    // ── Checkbox (always leftmost) ────────────────────────────
-                    // Material3 Checkbox guarantees:
-                    //   • visually distinct checked (teal fill + white ✓) vs
-                    //     unchecked (muted gray border, hollow) states
-                    //   • correct rendering in light and dark themes
-                    //   • built-in 48 dp touch target
-                    //   • accessibility semantics (Role.Checkbox, checked state)
                     Checkbox(
                         checked = item.isChecked,
                         onCheckedChange = if (readOnly) null else { _ ->
@@ -313,7 +353,6 @@ private fun GroceryFlatRowContent(
                         colors = checkboxColors,
                     )
 
-                    // ── Drag handle (right of checkbox when reorder active) ───
                     if (enableReorder) {
                         Box(
                             modifier = Modifier
@@ -350,15 +389,12 @@ private fun GroceryFlatRowContent(
                 }
 
                 // ── Right edge: [edit?] delete ────────────────────────────────
-                // Buttons use Modifier.background(color, CircleShape) to draw the
-                // coloured disc without creating a clipping layer that can suppress
-                // child Icon rendering on some Android GPU drivers.
                 if (!readOnly) {
                     Row(
                         modifier = Modifier.align(Alignment.CenterEnd),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        // Edit button — only shown for unchecked items
+                        // Edit — only for unchecked items; single-tap or double-tap to edit
                         if (!item.isChecked) {
                             Box(
                                 modifier = Modifier
@@ -366,56 +402,30 @@ private fun GroceryFlatRowContent(
                                     .testTag("${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}${item.id}"),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .background(
-                                            color = editContainerColor,
-                                            shape = CircleShape,
-                                        )
-                                        .clickable(
-                                            onClickLabel = editContentDescription,
-                                            role = Role.Button,
-                                            onClick = onStartEdit,
-                                        ),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    JourneyIcon(
-                                        role = AppIconRole.ActionEdit,
-                                        contentDescription = null,
-                                        tint = editContentColor,
-                                    )
-                                }
+                                GroceryCircleButton(
+                                    containerColor = editContainerColor,
+                                    icon = AppIconRole.ActionEdit.imageVector(),
+                                    iconTint = editContentColor,
+                                    contentDescription = editContentDescription,
+                                    onClick = onStartEdit,
+                                )
                             }
                         }
 
-                        // Delete button
+                        // Delete
                         Box(
                             modifier = Modifier
                                 .size(FamilyLogisticsDesign.minTouchTarget)
                                 .testTag("${GroceryItemRowTestTags.DELETE_BUTTON_PREFIX}${item.id}"),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .background(
-                                        color = deleteContainerColor,
-                                        shape = CircleShape,
-                                    )
-                                    .clickable(
-                                        onClickLabel = deleteContentDescription,
-                                        role = Role.Button,
-                                        onClick = { showDeleteConfirm = true },
-                                    ),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                JourneyIcon(
-                                    role = AppIconRole.ActionDelete,
-                                    contentDescription = null,
-                                    tint = deleteContentColor,
-                                )
-                            }
+                            GroceryCircleButton(
+                                containerColor = deleteContainerColor,
+                                icon = AppIconRole.ActionDelete.imageVector(),
+                                iconTint = deleteContentColor,
+                                contentDescription = deleteContentDescription,
+                                onClick = { showDeleteConfirm = true },
+                            )
                         }
                     }
                 }
