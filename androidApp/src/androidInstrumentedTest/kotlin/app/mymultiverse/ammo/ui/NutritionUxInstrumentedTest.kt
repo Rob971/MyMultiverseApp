@@ -202,6 +202,32 @@ class NutritionUxInstrumentedTest {
     }
 
     @Test
+    fun grocery_editButton_opensEditField() {
+        val itemId = "instrumented-item-1"
+        val screenModel = nutritionScreenModel(itemId = itemId)
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.INPUT_FIELD)
+            .performTextInput("Milk")
+        composeRule.onNodeWithTag(GroceryInputBarTestTags.ADD_BUTTON).performClick()
+        composeRule.waitForState(screenModel.groceryItems) { it.size == 1 }
+
+        composeRule.onNodeWithTag("${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}$itemId")
+            .performScrollTo()
+            .performClick()
+
+        composeRule.onNodeWithTag("${GroceryItemRowTestTags.EDIT_FIELD_PREFIX}$itemId")
+            .assertIsDisplayed()
+    }
+
+    @Test
     fun grocery_generateFromMeal_addsItemsToModel() {
         val weekKey = WeekCalendar.currentWeekKey()
         val dayIndex = WeekCalendar.todayIndexInWeek(weekKey) ?: 0
