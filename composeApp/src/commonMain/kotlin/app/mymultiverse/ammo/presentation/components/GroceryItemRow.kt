@@ -18,7 +18,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -44,7 +43,6 @@ import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.presentation.platform.JourneyHapticFeedback
 import app.mymultiverse.ammo.presentation.platform.rememberJourneyHapticFeedback
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
-import app.mymultiverse.ammo.presentation.theme.AppIcons
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 
 object GroceryItemRowTestTags {
@@ -412,11 +410,10 @@ private fun GroceryFlatRowContent(
                                     ),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Icon(
-                                    imageVector = AppIcons.GroceryRemoveCircle,
+                                JourneyIcon(
+                                    role = AppIconRole.ActionDelete,
                                     contentDescription = null,
                                     tint = deleteContentColor,
-                                    modifier = Modifier.size(22.dp),
                                 )
                             }
                         }
