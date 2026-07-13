@@ -321,6 +321,26 @@ class NutritionScreenModelTest {
     }
 
     @Test
+    fun runAiAssistant_mealPlanMode_usesSelectedLanguageForDishNames() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = LocalNutritionAiAssistantService(
+            responseDelayMs = 0,
+            currentLanguageCode = { "it" },
+        )
+        val model = nutritionScreenModel(repository, ai, scope = modelScope) { "mp-localized" }
+
+        model.runAiAssistant(NutritionAiMode.MealPlan, "Pasto veloce 20 min")
+        advanceUntilIdle()
+
+        val state = model.aiState.value
+        assertIs<NutritionAiState.MealPlanPreview>(state)
+        assertTrue(state.plan.days.none { it.lunch == "20-min veggie omelette with toast" })
+        assertTrue(state.plan.days.none { it.dinner == "20-min chicken stir-fry with rice" })
+        assertTrue(state.plan.days[0].lunch == "Frittata di verdure in 20 min con pane tostato")
+        assertTrue(state.plan.days[0].dinner == "Pollo saltato in padella in 20 min con riso")
+    }
+
+    @Test
     fun adoptAiGrocerySuggestion_movesItemToEditableListAndRemovesChip() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         repository.aiGrocery.value = listOf(
