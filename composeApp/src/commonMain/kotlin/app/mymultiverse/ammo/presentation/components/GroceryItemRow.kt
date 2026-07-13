@@ -287,11 +287,35 @@ private fun GroceryFlatRowContent(
                     )
                 }
 
-                // ── Left edge: [drag handle?] Checkbox ───────────────────────
+                // ── Left edge: Checkbox [drag handle?] ───────────────────────
+                // IMPORTANT: Checkbox is always the FIRST child so it sits at
+                // x=0 of the content area for every row — checked, unchecked,
+                // and in reorder mode.  The optional drag handle appears to its
+                // right so it never shifts the checkbox's horizontal position.
                 Row(
                     modifier = Modifier.align(Alignment.CenterStart),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    // ── Checkbox (always leftmost) ────────────────────────────
+                    // Material3 Checkbox guarantees:
+                    //   • visually distinct checked (teal fill + white ✓) vs
+                    //     unchecked (muted gray border, hollow) states
+                    //   • correct rendering in light and dark themes
+                    //   • built-in 48 dp touch target
+                    //   • accessibility semantics (Role.Checkbox, checked state)
+                    Checkbox(
+                        checked = item.isChecked,
+                        onCheckedChange = if (readOnly) null else { _ ->
+                            performHaptic(JourneyHapticFeedback.LightClick)
+                            onToggle()
+                        },
+                        modifier = Modifier.testTag(
+                            "${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}",
+                        ),
+                        colors = checkboxColors,
+                    )
+
+                    // ── Drag handle (right of checkbox when reorder active) ───
                     if (enableReorder) {
                         Box(
                             modifier = Modifier
@@ -325,26 +349,6 @@ private fun GroceryFlatRowContent(
                             )
                         }
                     }
-
-                    // ── Checkbox ──────────────────────────────────────────────
-                    // Replaces the previous custom icon button.
-                    // Material3 Checkbox guarantees:
-                    //   • visually distinct checked (teal fill + white ✓) vs
-                    //     unchecked (muted gray border, hollow) states
-                    //   • correct rendering in light and dark themes
-                    //   • built-in 48 dp touch target (minimumInteractiveComponentSize)
-                    //   • accessibility semantics (Role.Checkbox, checked state)
-                    Checkbox(
-                        checked = item.isChecked,
-                        onCheckedChange = if (readOnly) null else { _ ->
-                            performHaptic(JourneyHapticFeedback.LightClick)
-                            onToggle()
-                        },
-                        modifier = Modifier.testTag(
-                            "${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}",
-                        ),
-                        colors = checkboxColors,
-                    )
                 }
 
                 // ── Right edge: [edit?] delete ────────────────────────────────
