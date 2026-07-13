@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.presentation.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -7,14 +8,22 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import app.mymultiverse.ammo.data.platform.AvatarImageFetcher
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun UserAvatarButton(
@@ -22,32 +31,73 @@ fun UserAvatarButton(
     contentDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    avatarUrl: String? = null,
     showPersonFallback: Boolean = initials == "?",
 ) {
     JourneyIconButton(
         onClick = onClick,
         modifier = modifier,
     ) {
-        if (showPersonFallback) {
-            JourneyIcon(
-                role = AppIconRole.Account,
+        UserAvatarContent(
+            initials = initials,
+            contentDescription = contentDescription,
+            avatarUrl = avatarUrl,
+            showPersonFallback = showPersonFallback,
+        )
+    }
+}
+
+@Composable
+private fun UserAvatarContent(
+    initials: String,
+    contentDescription: String,
+    avatarUrl: String?,
+    showPersonFallback: Boolean,
+) {
+    var bitmap by remember(avatarUrl) { mutableStateOf<ImageBitmap?>(null) }
+
+    LaunchedEffect(avatarUrl) {
+        bitmap = null
+        val url = avatarUrl?.trim().orEmpty()
+        if (url.isEmpty()) return@LaunchedEffect
+        bitmap = AvatarImageFetcher.load(url)
+    }
+
+    if (bitmap != null) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                bitmap = bitmap!!,
                 contentDescription = contentDescription,
-            )
-        } else {
-            Box(
                 modifier = Modifier
                     .size(36.dp)
-                    .clip(CircleShape)
-                    .background(JourneySemanticColors.brandTeal()),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = initials,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                )
-            }
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop,
+            )
+        }
+    } else if (showPersonFallback) {
+        JourneyIcon(
+            role = AppIconRole.Account,
+            contentDescription = contentDescription,
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(JourneySemanticColors.brandTeal()),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = initials,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+            )
         }
     }
 }

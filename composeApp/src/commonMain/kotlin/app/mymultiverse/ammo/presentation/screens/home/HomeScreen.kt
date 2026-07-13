@@ -138,6 +138,7 @@ fun HomeScreen(
     val deleteAccountMessage by screenModel.deleteAccountMessage.collectAsState()
     val showDeleteAccountDialog by screenModel.showDeleteAccountDialog.collectAsState()
     val authState by authRepository.authState.collectAsState()
+    val currentUserAvatarUrl by screenModel.currentUserAvatarUrl.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val sessionEmail = (authState as? AuthState.Authenticated)?.user?.email.orEmpty()
     val avatarInitials = (authState as? AuthState.Authenticated)?.user?.avatarInitials() ?: "?"
@@ -303,6 +304,7 @@ fun HomeScreen(
                     HomeTopBar(
                         onOpenSettings = { showAccountSheet = true },
                         avatarInitials = avatarInitials,
+                        avatarUrl = currentUserAvatarUrl,
                     )
                 },
                 // Transparent so NapolitanBackground / MaterialTheme.background shows through on Android.
@@ -449,6 +451,7 @@ private fun HomeTopBar(
     onSignOut: (() -> Unit)? = null,
     onOpenSettings: (() -> Unit)? = null,
     avatarInitials: String? = null,
+    avatarUrl: String? = null,
 ) {
     val settingsDescription = stringResource(Res.string.home_settings_button)
     TopAppBar(
@@ -462,6 +465,7 @@ private fun HomeTopBar(
                     contentDescription = settingsDescription,
                     onClick = openSettings,
                     modifier = Modifier.testTag(HomeTestTags.SETTINGS_BUTTON),
+                    avatarUrl = avatarUrl,
                     showPersonFallback = avatarInitials == null || avatarInitials == "?",
                 )
             }
