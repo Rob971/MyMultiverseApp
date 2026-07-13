@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
-import app.mymultiverse.ammo.data.location.LocationLanguageSuggestionBootstrapper
 import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.domain.model.auth.AuthState
 import app.mymultiverse.ammo.domain.manager.AppThemePreferences
@@ -68,18 +67,19 @@ fun App() {
         val authRepository = koinInject<AuthRepository>()
         val inviteFlow = koinInject<InviteJoinFlowCoordinator>()
         val logger = koinInject<AppLogger>()
-        val languageBootstrapper = koinInject<LocationLanguageSuggestionBootstrapper>()
         val authState by authRepository.authState.collectAsState(initial = AuthState.Loading)
         val pendingInviteToken by inviteFlow.pendingInviteToken.collectAsState()
 
         val navigator = rememberAppNavigator(startDestination = AppRoute.Onboarding)
 
         LaunchedEffect(Unit) {
-            languageBootstrapper.bootstrapIfFirstLaunch()
             logger.startSession()
             inviteFlow.start()
         }
 
+        // Requests location permission for Italian users (first launch only) and
+        // then applies the locale/region-based default language.
+        PlatformLocationPermissionSetup()
         PlatformPushSetup()
 
         LaunchedEffect(authState) {

@@ -25,11 +25,13 @@ import kotlin.coroutines.resume
  */
 class IosDeviceRegionService : DeviceRegionService {
 
-    override suspend fun getRegion(): DeviceRegion? {
-        val countryCode = (NSLocale.currentLocale.objectForKey(NSLocaleCountryCode) as? String)
+    override fun getLocaleCountryCode(): String? =
+        (NSLocale.currentLocale.objectForKey(NSLocaleCountryCode) as? String)
             ?.uppercase()
             ?.ifBlank { null }
-            ?: return null
+
+    override suspend fun getRegion(): DeviceRegion? {
+        val countryCode = getLocaleCountryCode() ?: return null
 
         val adminArea = if (countryCode == "IT") {
             withTimeoutOrNull(REGION_TIMEOUT_MS) { tryResolveAdminArea() }

@@ -63,5 +63,7 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>To personalise your language experience — if you're in the Campania region, the app can automatically select Neapolitan for you.</string>
 </dict>
 </plist>
