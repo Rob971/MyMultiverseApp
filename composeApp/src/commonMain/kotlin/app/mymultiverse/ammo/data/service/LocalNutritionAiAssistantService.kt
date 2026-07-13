@@ -66,7 +66,7 @@ class LocalNutritionAiAssistantService(
         }
         delayIfNeeded()
         return Result.success(
-            NutritionAiPlanner.generateMealPlan(criteria.trim(), scope, currentPlan),
+            NutritionAiPlanner.generateMealPlan(criteria.trim(), scope, currentPlan, currentLanguageCode()),
         )
     }
 

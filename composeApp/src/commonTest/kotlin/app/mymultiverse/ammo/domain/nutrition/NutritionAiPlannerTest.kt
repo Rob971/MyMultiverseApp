@@ -51,6 +51,47 @@ class NutritionAiPlannerTest {
     }
 
     @Test
+    fun generateMealPlan_localizesDishNamesForItalian() {
+        val result = NutritionAiPlanner.generateMealPlan(
+            criteria = "Pasto veloce 20 min",
+            scope = MealPlanGenerationScope.FullWeek,
+            currentPlan = WeeklyMealPlan(weekKey = "2026-W24"),
+            languageCode = "it",
+        )
+
+        assertTrue(result.days[0].lunch.contains("20 min", ignoreCase = true))
+        assertTrue(result.days[0].lunch == "Frittata di verdure in 20 min con pane tostato")
+        assertTrue(result.days[0].dinner == "Pollo saltato in padella in 20 min con riso")
+        assertTrue(result.days.none { it.lunch == "20-min veggie omelette with toast" })
+        assertTrue(result.days.none { it.dinner == "20-min chicken stir-fry with rice" })
+    }
+
+    @Test
+    fun generateMealPlan_localizesDishNamesForSpanish() {
+        val result = NutritionAiPlanner.generateMealPlan(
+            criteria = "Comidas altas en proteína",
+            scope = MealPlanGenerationScope.FullWeek,
+            currentPlan = WeeklyMealPlan(weekKey = "2026-W24"),
+            languageCode = "es",
+        )
+
+        assertTrue(result.days.none { it.lunch == "Grilled chicken salad with quinoa" })
+        assertTrue(result.days.any { it.lunch == "Ensalada de pollo a la plancha con quinoa" })
+    }
+
+    @Test
+    fun generateMealPlan_defaultLanguage_keepsDishNamesInEnglish() {
+        val result = NutritionAiPlanner.generateMealPlan(
+            criteria = "Quick 20-min lunch",
+            scope = MealPlanGenerationScope.FullWeek,
+            currentPlan = WeeklyMealPlan(weekKey = "2026-W24"),
+        )
+
+        assertTrue(result.days[0].lunch == "20-min veggie omelette with toast")
+        assertTrue(result.days[0].dinner == "20-min chicken stir-fry with rice")
+    }
+
+    @Test
     fun generateMealPlan_quickCriteria_usesQuickProfile() {
         val result = NutritionAiPlanner.generateMealPlan(
             criteria = "Quick 20-min lunch",

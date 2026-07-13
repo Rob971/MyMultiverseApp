@@ -95,10 +95,11 @@ object NutritionAiPlanner {
         criteria: String,
         scope: MealPlanGenerationScope,
         currentPlan: WeeklyMealPlan,
+        languageCode: String = "en",
     ): MealPlanGeneration {
         val profile = MealProfile.from(criteria)
         val generatedDays = List(WeeklyMealPlan.DAYS_IN_WEEK) { index ->
-            buildDayMeals(profile, index)
+            buildDayMeals(profile, index, languageCode)
         }
 
         val mergedDays = when (scope) {
@@ -123,11 +124,11 @@ object NutritionAiPlanner {
         return MealPlanGeneration(days = mergedDays, summary = summary)
     }
 
-    private fun buildDayMeals(profile: MealProfile, dayIndex: Int): DayMeals {
+    private fun buildDayMeals(profile: MealProfile, dayIndex: Int, languageCode: String = "en"): DayMeals {
         val rotation = dayIndex % profile.lunches.size
         return DayMeals(
-            lunch = profile.lunches[rotation],
-            dinner = profile.dinners[rotation],
+            lunch = NutritionFoodSuggestionLocalization.mealDishFor(profile.lunches[rotation], languageCode),
+            dinner = NutritionFoodSuggestionLocalization.mealDishFor(profile.dinners[rotation], languageCode),
         )
     }
 
