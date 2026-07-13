@@ -1,14 +1,17 @@
 package app.mymultiverse.ammo.presentation.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -20,17 +23,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
@@ -132,9 +137,7 @@ private fun GroceryFlatRowContent(
     foodEmoji: String? = null,
     modifier: Modifier = Modifier,
 ) {
-    var editText by remember(item.id, isEditing) {
-        mutableStateOf(item.label)
-    }
+    var editText by remember(item.id, isEditing) { mutableStateOf(item.label) }
     var showDeleteConfirm by remember(item.id) { mutableStateOf(false) }
     val performHaptic = rememberJourneyHapticFeedback()
     val fontScale = maxOf(1f, LocalDensity.current.fontScale)
@@ -143,7 +146,7 @@ private fun GroceryFlatRowContent(
     val reorderThresholdPx = remember(density) { with(density) { 48.dp.toPx() } }
     var accumulatedDrag by remember(item.id) { mutableFloatStateOf(0f) }
 
-    // Pre-resolve composable colors
+    // Pre-resolve composable colors so they are available in non-composable lambdas.
     val checkContentColor = if (item.isChecked) {
         JourneySemanticColors.successAccent()
     } else {
@@ -151,7 +154,7 @@ private fun GroceryFlatRowContent(
     }
     val checkContainerColor = JourneySemanticColors.brandTealContainer()
     val deleteContentColor = JourneySemanticColors.brandTerracotta()
-    val deleteContainerColor = JourneySemanticColors.brandTerracotta().copy(alpha = 0.12f)
+    val deleteContainerColor = JourneySemanticColors.brandTerracotta().copy(alpha = 0.15f)
     val editContentColor = JourneySemanticColors.brandTeal()
 
     if (showDeleteConfirm) {
@@ -184,85 +187,17 @@ private fun GroceryFlatRowContent(
     }
 
     Box(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = rowMinHeight)
-                // Double-tap on the row text area opens inline edit; single tap does nothing.
-                .pointerInput(item.id, isEditing, readOnly, item.isChecked) {
-                    if (!isEditing && !readOnly && !item.isChecked) {
-                        detectTapGestures(onDoubleTap = { _ ->
-                            performHaptic(JourneyHapticFeedback.LightClick)
-                            onStartEdit()
-                        })
-                    }
-                }
-                // No horizontal padding here — LazyColumn already applies ScreenLayout.horizontalPadding (24dp).
-                // Vertical padding gives breathing room between rows.
-                .padding(vertical = 10.dp),
-            verticalAlignment = if (isEditing) Alignment.Top else Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            if (enableReorder && !isEditing) {
-                Box(
-                    modifier = Modifier
-                        .size(FamilyLogisticsDesign.minTouchTarget)
-                        .testTag("${GroceryItemRowTestTags.DRAG_HANDLE_PREFIX}${item.id}")
-                        .pointerInput(item.id) {
-                            detectVerticalDragGestures(
-                                onDragStart = { accumulatedDrag = 0f },
-                                onDragEnd = { accumulatedDrag = 0f },
-                                onDragCancel = { accumulatedDrag = 0f },
-                                onVerticalDrag = { _, dragAmount ->
-                                    accumulatedDrag += dragAmount
-                                    while (accumulatedDrag >= reorderThresholdPx) {
-                                        performHaptic(JourneyHapticFeedback.LightClick)
-                                        onReorderStep(1)
-                                        accumulatedDrag -= reorderThresholdPx
-                                    }
-                                    while (accumulatedDrag <= -reorderThresholdPx) {
-                                        performHaptic(JourneyHapticFeedback.LightClick)
-                                        onReorderStep(-1)
-                                        accumulatedDrag += reorderThresholdPx
-                                    }
-                                },
-                            )
-                        },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    JourneyIcon(
-                        role = AppIconRole.DragHandle,
-                        contentDescription = dragHandleContentDescription,
-                    )
-                }
-            }
 
-            // ── Check / toggle button (left, flush to column edge) ───────────
-            // Container color makes the button recognisable as interactive.
-            // Icon tint is applied directly to bypass LocalContentColor sensitivity.
-            JourneyIconButton(
-                onClick = {
-                    performHaptic(JourneyHapticFeedback.LightClick)
-                    onToggle()
-                },
-                enabled = !isEditing && !readOnly,
-                modifier = Modifier.testTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}"),
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = checkContainerColor,
-                    contentColor = checkContentColor,
-                    disabledContainerColor = checkContainerColor.copy(alpha = 0.38f),
-                    disabledContentColor = checkContentColor.copy(alpha = 0.38f),
-                ),
+        if (isEditing) {
+            // ── Edit mode: inline text field + save / cancel ─────────────────
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = rowMinHeight)
+                    .padding(vertical = 10.dp),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Icon(
-                    imageVector = AppIcons.CheckCircle,
-                    contentDescription = toggleContentDescription,
-                    tint = if (readOnly || isEditing) checkContentColor.copy(alpha = 0.38f) else checkContentColor,
-                    modifier = Modifier.size(26.dp),
-                )
-            }
-
-            if (isEditing) {
                 JourneyTextField(
                     value = editText,
                     onValueChange = { editText = it },
@@ -272,9 +207,7 @@ private fun GroceryFlatRowContent(
                     label = { Text(editLabel) },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
-                        onDone = {
-                            if (onSaveEdit(editText)) onCancelEdit()
-                        },
+                        onDone = { if (onSaveEdit(editText)) onCancelEdit() },
                     ),
                 )
                 TextButton(onClick = onCancelEdit) {
@@ -285,9 +218,7 @@ private fun GroceryFlatRowContent(
                     )
                 }
                 JourneyIconButton(
-                    onClick = {
-                        if (onSaveEdit(editText)) onCancelEdit()
-                    },
+                    onClick = { if (onSaveEdit(editText)) onCancelEdit() },
                     enabled = editText.isNotBlank(),
                     modifier = Modifier.testTag("${GroceryItemRowTestTags.SAVE_BUTTON_PREFIX}${item.id}"),
                     colors = IconButtonDefaults.iconButtonColors(
@@ -300,71 +231,198 @@ private fun GroceryFlatRowContent(
                         useContentColor = true,
                     )
                 }
-            } else {
-                // Centre the emoji + label as a group between the two flanking buttons.
-                // The Box takes the remaining space (weight 1) and uses contentAlignment
-                // to place the inner Row at the horizontal centre of that space.
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.Center,
+            }
+        } else {
+            // ── View mode: Box overlay layout ────────────────────────────────
+            //
+            // The item label is placed in a full-width centered Row so it is
+            // ALWAYS at the horizontal centre of the screen, regardless of how
+            // many buttons are visible.  Buttons are overlaid absolutely at the
+            // left and right edges and do not affect the label's centre point.
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = rowMinHeight)
+                    // Double-tap anywhere on the row opens inline edit.
+                    .pointerInput(item.id, readOnly, item.isChecked) {
+                        if (!readOnly && !item.isChecked) {
+                            detectTapGestures(onDoubleTap = {
+                                performHaptic(JourneyHapticFeedback.LightClick)
+                                onStartEdit()
+                            })
+                        }
+                    }
+                    .padding(vertical = 10.dp),
+            ) {
+                // ── Label: always centred on the full row width ───────────────
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        if (foodEmoji != null) {
-                            FoodItemThumbnail(
-                                emoji = foodEmoji,
-                                size = 32.dp,
-                                modifier = Modifier.alpha(if (item.isChecked) 0.35f else 1f),
+                    if (foodEmoji != null) {
+                        FoodItemThumbnail(
+                            emoji = foodEmoji,
+                            size = 32.dp,
+                            modifier = Modifier.alpha(if (item.isChecked) 0.35f else 1f),
+                        )
+                    }
+                    Text(
+                        text = item.label,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (item.isChecked) {
+                            JourneySemanticColors.inkMuted()
+                        } else {
+                            JourneySemanticColors.inkDeep()
+                        },
+                        textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
+                    )
+                }
+
+                // ── Left edge: [drag handle?] check button ────────────────────
+                Row(
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    // Drag-handle for active (unchecked) items when reorder enabled
+                    if (enableReorder) {
+                        Box(
+                            modifier = Modifier
+                                .size(FamilyLogisticsDesign.minTouchTarget)
+                                .testTag("${GroceryItemRowTestTags.DRAG_HANDLE_PREFIX}${item.id}")
+                                .pointerInput(item.id) {
+                                    detectVerticalDragGestures(
+                                        onDragStart = { accumulatedDrag = 0f },
+                                        onDragEnd = { accumulatedDrag = 0f },
+                                        onDragCancel = { accumulatedDrag = 0f },
+                                        onVerticalDrag = { _, dragAmount ->
+                                            accumulatedDrag += dragAmount
+                                            while (accumulatedDrag >= reorderThresholdPx) {
+                                                performHaptic(JourneyHapticFeedback.LightClick)
+                                                onReorderStep(1)
+                                                accumulatedDrag -= reorderThresholdPx
+                                            }
+                                            while (accumulatedDrag <= -reorderThresholdPx) {
+                                                performHaptic(JourneyHapticFeedback.LightClick)
+                                                onReorderStep(-1)
+                                                accumulatedDrag += reorderThresholdPx
+                                            }
+                                        },
+                                    )
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            JourneyIcon(
+                                role = AppIconRole.DragHandle,
+                                contentDescription = dragHandleContentDescription,
                             )
                         }
-                        Text(
-                            text = item.label,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = if (item.isChecked) {
-                                JourneySemanticColors.inkMuted()
-                            } else {
-                                JourneySemanticColors.inkDeep()
-                            },
-                            textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
-                        )
                     }
-                }
-                // ── Edit button (right side, only for unchecked editable items) ──
-                // Single-tap opens inline edit; double-tap on the row also works.
-                if (!readOnly && !item.isChecked) {
-                    JourneyIconButton(
-                        onClick = onStartEdit,
-                        modifier = Modifier.testTag("${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}${item.id}"),
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = checkContainerColor,
-                            contentColor = editContentColor,
-                        ),
+
+                    // Check button — 48 dp touch target wrapping a 36 dp circle.
+                    // Modifier.background() guarantees the container is rendered at the
+                    // Canvas level independently of Material3 IconButton internals.
+                    Box(
+                        modifier = Modifier
+                            .size(FamilyLogisticsDesign.minTouchTarget)
+                            .testTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}"),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        JourneyIcon(
-                            role = AppIconRole.ActionEdit,
-                            contentDescription = editContentDescription,
-                            useContentColor = true,
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (readOnly) checkContainerColor.copy(alpha = 0.38f)
+                                    else checkContainerColor,
+                                )
+                                .clickable(
+                                    enabled = !readOnly,
+                                    onClickLabel = toggleContentDescription,
+                                    role = Role.Checkbox,
+                                    onClick = {
+                                        performHaptic(JourneyHapticFeedback.LightClick)
+                                        onToggle()
+                                    },
+                                ),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = AppIcons.CheckCircle,
+                                contentDescription = null, // announced via outer testTag + semantics
+                                tint = if (readOnly) checkContentColor.copy(alpha = 0.38f)
+                                       else checkContentColor,
+                                modifier = Modifier.size(22.dp),
+                            )
+                        }
                     }
                 }
-                // ── Delete button (far right) ─────────────────────────────────
+
+                // ── Right edge: [edit?] delete button ─────────────────────────
                 if (!readOnly) {
-                    JourneyIconButton(
-                        onClick = { showDeleteConfirm = true },
-                        modifier = Modifier.testTag("${GroceryItemRowTestTags.DELETE_BUTTON_PREFIX}${item.id}"),
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = deleteContainerColor,
-                            contentColor = deleteContentColor,
-                        ),
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(
-                            imageVector = AppIcons.GroceryRemoveCircle,
-                            contentDescription = deleteContentDescription,
-                            tint = deleteContentColor,
-                            modifier = Modifier.size(26.dp),
-                        )
+                        // Edit button — only for unchecked items; single-tap to edit.
+                        // Double-tap anywhere on the row is also supported.
+                        if (!item.isChecked) {
+                            Box(
+                                modifier = Modifier
+                                    .size(FamilyLogisticsDesign.minTouchTarget)
+                                    .testTag("${GroceryItemRowTestTags.EDIT_BUTTON_PREFIX}${item.id}"),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(checkContainerColor)
+                                        .clickable(
+                                            onClickLabel = editContentDescription,
+                                            role = Role.Button,
+                                            onClick = onStartEdit,
+                                        ),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    JourneyIcon(
+                                        role = AppIconRole.ActionEdit,
+                                        contentDescription = null,
+                                        tint = editContentColor,
+                                    )
+                                }
+                            }
+                        }
+
+                        // Delete button
+                        Box(
+                            modifier = Modifier
+                                .size(FamilyLogisticsDesign.minTouchTarget)
+                                .testTag("${GroceryItemRowTestTags.DELETE_BUTTON_PREFIX}${item.id}"),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(deleteContainerColor)
+                                    .clickable(
+                                        onClickLabel = deleteContentDescription,
+                                        role = Role.Button,
+                                        onClick = { showDeleteConfirm = true },
+                                    ),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    imageVector = AppIcons.GroceryRemoveCircle,
+                                    contentDescription = null,
+                                    tint = deleteContentColor,
+                                    modifier = Modifier.size(22.dp),
+                                )
+                            }
+                        }
                     }
                 }
             }
