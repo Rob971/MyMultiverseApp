@@ -8,6 +8,7 @@ import app.mymultiverse.ammo.domain.model.sharing.Household
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
+import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.ammo.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.ammo.domain.repository.GreetingRepository
@@ -189,6 +190,69 @@ class HomeScreenModelTest {
         advanceUntilIdle()
 
         assertEquals(null, screenModel.userDisplayName.value)
+    }
+
+    @Test
+    fun currentUserAvatarUrl_isNullWhenNoHousehold() = runTest(testDispatcher) {
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome")),
+            householdRepository = FakeHouseholdRepository(
+                initialMembershipStatus = HouseholdMembershipStatus.None,
+            ),
+        )
+
+        advanceUntilIdle()
+
+        assertNull(screenModel.currentUserAvatarUrl.value)
+    }
+
+    @Test
+    fun currentUserAvatarUrl_isNullBeforeAvatarSet() = runTest(testDispatcher) {
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome")),
+        )
+
+        advanceUntilIdle()
+
+        assertNull(screenModel.currentUserAvatarUrl.value)
+    }
+
+    @Test
+    fun currentUserAvatarUrl_reflectsAvatarAfterUpload() = runTest(testDispatcher) {
+        val collaborationRepo = FakeHouseholdCollaborationRepository()
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome")),
+            collaborationRepository = collaborationRepo,
+        )
+        advanceUntilIdle()
+
+        val ownerMember = HouseholdMember(
+            id = "owner-test-user",
+            householdId = "household-1",
+            kind = HouseholdMemberKind.Person,
+            displayName = "Test User",
+            role = HouseholdMemberRole.Owner,
+            referenceId = "test-user",
+        )
+        collaborationRepo.updateMemberAvatar("household-1", ownerMember, ByteArray(0), "image/jpeg")
+        advanceUntilIdle()
+
+        assertEquals(
+            "https://example.com/avatar/owner-test-user.jpg",
+            screenModel.currentUserAvatarUrl.value,
+        )
+    }
+
+    @Test
+    fun currentUserAvatarUrl_isNullWhenUnauthenticated() = runTest(testDispatcher) {
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome")),
+            authRepository = FakeAuthRepository(initialState = AuthState.Unauthenticated),
+        )
+
+        advanceUntilIdle()
+
+        assertNull(screenModel.currentUserAvatarUrl.value)
     }
 
     @Test

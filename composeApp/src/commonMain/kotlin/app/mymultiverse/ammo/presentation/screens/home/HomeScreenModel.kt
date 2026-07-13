@@ -36,6 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -227,6 +228,16 @@ class HomeScreenModel(
             SharingStarted.Eagerly,
             displayNameForAuthState(authRepository.authState.value),
         )
+
+    val currentUserAvatarUrl: StateFlow<String?> = combine(
+        authRepository.authState,
+        collaborationSnapshot,
+    ) { authState, snapshot ->
+        val userId = (authState as? AuthState.Authenticated)?.user?.id ?: return@combine null
+        snapshot.members
+            .firstOrNull { it.kind != HouseholdMemberKind.Dependant && it.referenceId == userId }
+            ?.avatarUrl
+    }.stateIn(scope, SharingStarted.Eagerly, null)
 
     init {
         scope.launch {
