@@ -1,7 +1,6 @@
 package app.mymultiverse.ammo.presentation.components
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -32,12 +30,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -54,7 +53,6 @@ import app.mymultiverse.ammo.presentation.platform.JourneyHapticFeedback
 import app.mymultiverse.ammo.presentation.platform.rememberJourneyHapticFeedback
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
-import app.mymultiverse.ammo.presentation.theme.imageVector
 
 object GroceryItemRowTestTags {
     const val ROW_PREFIX = "grocery_item_"
@@ -67,24 +65,131 @@ object GroceryItemRowTestTags {
     const val DELETE_CONFIRM_BUTTON = "grocery_delete_confirm_btn"
 }
 
-// ── Single-Canvas action button ───────────────────────────────────────────────
+// ── Primitive icon draw functions ─────────────────────────────────────────────
 //
-// Draws the coloured circle disc AND the icon vector in ONE DrawScope pass so
-// there is no inter-layer compositing boundary between the background and the
-// icon content.  This avoids the GPU-driver issue where child Icon composables
-// are invisible on top of a background(shape) layer.
+// These draw icons using ONLY raw DrawScope primitives (drawRoundRect, drawPath,
+// rotate).  No VectorPainter / Picture / ImageVector involved.
+//
+// Root cause of previous invisible icons: this device's GPU driver does not
+// support Picture playback (used internally by VectorPainter / Icon composable).
+// drawCircle() and drawRoundRect() are direct GPU draw calls — always work.
+
+/** Trash-can icon: handle bar + lid bar + trapezoidal body. */
+private fun DrawScope.drawTrashIcon(color: Color) {
+    val w = size.width
+    val h = size.height
+
+    // ── Handle (small bar above lid, centred) ─────────────────────────────────
+    drawRoundRect(
+        color = color,
+        topLeft = Offset(w * 0.375f, h * 0.10f),
+        size = Size(w * 0.25f, h * 0.12f),
+        cornerRadius = CornerRadius(w * 0.04f),
+    )
+
+    // ── Lid (full-width horizontal bar) ──────────────────────────────────────
+    drawRoundRect(
+        color = color,
+        topLeft = Offset(w * 0.10f, h * 0.26f),
+        size = Size(w * 0.80f, h * 0.11f),
+        cornerRadius = CornerRadius(w * 0.04f),
+    )
+
+    // ── Body (trapezoid — slightly narrower at bottom, rounded corners) ───────
+    val bL = w * 0.18f   // body left
+    val bR = w * 0.82f   // body right
+    val bT = h * 0.40f   // body top
+    val bB = h * 0.87f   // body bottom
+    val r  = w * 0.07f   // corner radius
+    val body = Path().apply {
+        moveTo(bL, bT)
+        lineTo(bR, bT)
+        // Taper slightly inward toward bottom
+        lineTo(bR - r * 0.5f, bB - r)
+        quadraticBezierTo(bR, bB, bR - r, bB)
+        lineTo(bL + r, bB)
+        quadraticBezierTo(bL, bB, bL + r * 0.5f, bB - r)
+        close()
+    }
+    drawPath(body, color = color)
+
+    // ── Three vertical lines inside body (visual detail) ─────────────────────
+    val lineTop = bT + h * 0.06f
+    val lineBot = bB - h * 0.10f
+    val lineW = w * 0.055f
+    val lineR = CornerRadius(lineW / 2)
+    for (i in 0..2) {
+        val lx = w * 0.32f + i * w * 0.18f - lineW / 2
+        drawRoundRect(
+            color = Color.White.copy(alpha = 0.55f),
+            topLeft = Offset(lx, lineTop),
+            size = Size(lineW, lineBot - lineTop),
+            cornerRadius = lineR,
+        )
+    }
+}
+
+/** Pencil icon: rotated body + tip triangle + eraser. */
+private fun DrawScope.drawPencilIcon(color: Color) {
+    val cx = size.width / 2f
+    val cy = size.height / 2f
+
+    // Rotate -45° so a vertical pencil becomes a diagonal one pointing bottom-left
+    rotate(degrees = -45f, pivot = Offset(cx, cy)) {
+        val s = size.minDimension
+
+        val pw = s * 0.19f    // pencil width
+        val bodyH = s * 0.52f // pencil body height
+        val tipH  = s * 0.14f // tip triangle height
+        val eraserH = s * 0.09f
+
+        val bodyTop = cy - bodyH / 2f
+
+        // Body (rounded rectangle)
+        drawRoundRect(
+            color = color,
+            topLeft = Offset(cx - pw / 2, bodyTop),
+            size = Size(pw, bodyH),
+            cornerRadius = CornerRadius(pw * 0.28f),
+        )
+
+        // Tip (triangle at bottom of body)
+        val tipPath = Path().apply {
+            moveTo(cx - pw / 2, bodyTop + bodyH)
+            lineTo(cx, bodyTop + bodyH + tipH)   // sharp point
+            lineTo(cx + pw / 2, bodyTop + bodyH)
+            close()
+        }
+        drawPath(tipPath, color = color)
+
+        // Eraser band (slightly lighter, at top)
+        drawRoundRect(
+            color = Color.White.copy(alpha = 0.60f),
+            topLeft = Offset(cx - pw / 2, bodyTop - eraserH + pw * 0.28f),
+            size = Size(pw, eraserH),
+            cornerRadius = CornerRadius(pw * 0.28f),
+        )
+    }
+}
+
+// ── Action button composable ──────────────────────────────────────────────────
+
+/**
+ * Circular grocery action button drawn entirely with DrawScope primitives.
+ *
+ * Circle background and icon are drawn in a SINGLE Canvas call so there is
+ * no compositing layer boundary that could cause the icon to be invisible on
+ * certain Android GPU drivers.
+ */
 @Composable
 private fun GroceryCircleButton(
     containerColor: Color,
-    icon: ImageVector,
-    iconTint: Color,
+    drawIconContent: DrawScope.() -> Unit,
     contentDescription: String?,
     modifier: Modifier = Modifier,
     circleSize: Dp = 36.dp,
-    iconFraction: Float = 0.56f,
     onClick: () -> Unit,
 ) {
-    val painter = rememberVectorPainter(icon)
     Canvas(
         modifier = modifier
             .size(circleSize)
@@ -94,22 +199,14 @@ private fun GroceryCircleButton(
             }
             .clickable(onClick = onClick),
     ) {
-        val radius = size.minDimension / 2f
-        // 1. Circle background
-        drawCircle(color = containerColor, radius = radius)
-        // 2. Icon — same DrawScope, no layer boundary
-        val iconSizePx = size.minDimension * iconFraction
-        val offset = (size.minDimension - iconSizePx) / 2f
-        translate(left = offset, top = offset) {
-            with(painter) {
-                draw(
-                    size = Size(iconSizePx, iconSizePx),
-                    colorFilter = ColorFilter.tint(iconTint),
-                )
-            }
-        }
+        // 1. Circle background — direct GPU call, always works
+        drawCircle(color = containerColor, radius = size.minDimension / 2f)
+        // 2. Icon — same DrawScope, same GPU draw call, same layer
+        drawIconContent()
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun GroceryItemRow(
@@ -201,7 +298,7 @@ private fun GroceryFlatRowContent(
     val reorderThresholdPx = remember(density) { with(density) { 48.dp.toPx() } }
     var accumulatedDrag by remember(item.id) { mutableFloatStateOf(0f) }
 
-    // ── Pre-resolve composable colors ─────────────────────────────────────────
+    // Pre-resolve composable colors
     val checkTeal = JourneySemanticColors.brandTeal()
     val mutedColor = JourneySemanticColors.inkMuted()
     val checkboxColors = CheckboxDefaults.colors(
@@ -213,7 +310,7 @@ private fun GroceryFlatRowContent(
     )
     val editContainerColor = JourneySemanticColors.brandTealContainer()
     val editContentColor = JourneySemanticColors.brandTeal()
-    val deleteContainerColor = JourneySemanticColors.brandTerracotta().copy(alpha = 0.18f)
+    val deleteContainerColor = JourneySemanticColors.brandTerracotta().copy(alpha = 0.22f)
     val deleteContentColor = JourneySemanticColors.brandTerracotta()
 
     if (showDeleteConfirm) {
@@ -248,7 +345,7 @@ private fun GroceryFlatRowContent(
     Box(modifier = modifier.fillMaxWidth()) {
 
         if (isEditing) {
-            // ── Edit mode: inline text field + save / cancel ─────────────────
+            // ── Edit mode ────────────────────────────────────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -293,10 +390,6 @@ private fun GroceryFlatRowContent(
             }
         } else {
             // ── View mode: Box overlay — label pinned to screen centre ────────
-            //
-            // The item label fills the full row width with Arrangement.Center so
-            // it always sits at the true horizontal midpoint of the screen.
-            // Action buttons are absolutely positioned at left/right edges.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -311,7 +404,7 @@ private fun GroceryFlatRowContent(
                     }
                     .padding(vertical = 10.dp),
             ) {
-                // ── Label: always at the horizontal centre of the screen ──────
+                // ── Label — always at true screen centre ──────────────────────
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -329,18 +422,19 @@ private fun GroceryFlatRowContent(
                     Text(
                         text = item.label,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = if (item.isChecked) mutedColor else JourneySemanticColors.inkDeep(),
-                        textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
+                        color = if (item.isChecked) mutedColor
+                                else JourneySemanticColors.inkDeep(),
+                        textDecoration = if (item.isChecked) TextDecoration.LineThrough
+                                         else null,
                     )
                 }
 
                 // ── Left edge: Checkbox [drag handle?] ───────────────────────
-                // Checkbox is always FIRST so its column position never shifts
-                // regardless of whether the drag handle is shown.
                 Row(
                     modifier = Modifier.align(Alignment.CenterStart),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    // Checkbox first — column position never shifts.
                     Checkbox(
                         checked = item.isChecked,
                         onCheckedChange = if (readOnly) null else { _ ->
@@ -394,7 +488,6 @@ private fun GroceryFlatRowContent(
                         modifier = Modifier.align(Alignment.CenterEnd),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        // Edit — only for unchecked items; single-tap or double-tap to edit
                         if (!item.isChecked) {
                             Box(
                                 modifier = Modifier
@@ -404,15 +497,13 @@ private fun GroceryFlatRowContent(
                             ) {
                                 GroceryCircleButton(
                                     containerColor = editContainerColor,
-                                    icon = AppIconRole.ActionEdit.imageVector(),
-                                    iconTint = editContentColor,
+                                    drawIconContent = { drawPencilIcon(editContentColor) },
                                     contentDescription = editContentDescription,
                                     onClick = onStartEdit,
                                 )
                             }
                         }
 
-                        // Delete
                         Box(
                             modifier = Modifier
                                 .size(FamilyLogisticsDesign.minTouchTarget)
@@ -421,8 +512,7 @@ private fun GroceryFlatRowContent(
                         ) {
                             GroceryCircleButton(
                                 containerColor = deleteContainerColor,
-                                icon = AppIconRole.ActionDelete.imageVector(),
-                                iconTint = deleteContentColor,
+                                drawIconContent = { drawTrashIcon(deleteContentColor) },
                                 contentDescription = deleteContentDescription,
                                 onClick = { showDeleteConfirm = true },
                             )
