@@ -15,6 +15,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -30,7 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -146,16 +148,24 @@ private fun GroceryFlatRowContent(
     val reorderThresholdPx = remember(density) { with(density) { 48.dp.toPx() } }
     var accumulatedDrag by remember(item.id) { mutableFloatStateOf(0f) }
 
-    // Pre-resolve composable colors so they are available in non-composable lambdas.
-    val checkContentColor = if (item.isChecked) {
-        JourneySemanticColors.successAccent()
-    } else {
-        JourneySemanticColors.brandTeal()
-    }
-    val checkContainerColor = JourneySemanticColors.brandTealContainer()
-    val deleteContentColor = JourneySemanticColors.brandTerracotta()
-    val deleteContainerColor = JourneySemanticColors.brandTerracotta().copy(alpha = 0.15f)
+    // ── Pre-resolve composable colors ─────────────────────────────────────────
+    val checkTeal = JourneySemanticColors.brandTeal()
+    val mutedColor = JourneySemanticColors.inkMuted()
+    // Checkbox: teal fill when checked, muted gray border when unchecked.
+    // White checkmark ensures maximum contrast in both light and dark themes.
+    val checkboxColors = CheckboxDefaults.colors(
+        checkedColor = checkTeal,
+        uncheckedColor = mutedColor,
+        checkmarkColor = Color.White,
+        disabledCheckedColor = checkTeal.copy(alpha = 0.38f),
+        disabledUncheckedColor = mutedColor.copy(alpha = 0.38f),
+    )
+
+    // Edit / delete button colors
+    val editContainerColor = JourneySemanticColors.brandTealContainer()
     val editContentColor = JourneySemanticColors.brandTeal()
+    val deleteContainerColor = JourneySemanticColors.brandTerracotta().copy(alpha = 0.18f)
+    val deleteContentColor = JourneySemanticColors.brandTerracotta()
 
     if (showDeleteConfirm) {
         AlertDialog(
@@ -233,17 +243,17 @@ private fun GroceryFlatRowContent(
                 }
             }
         } else {
-            // ── View mode: Box overlay layout ────────────────────────────────
+            // ── View mode: Box overlay — label pinned to screen centre ────────
             //
-            // The item label is placed in a full-width centered Row so it is
-            // ALWAYS at the horizontal centre of the screen, regardless of how
-            // many buttons are visible.  Buttons are overlaid absolutely at the
-            // left and right edges and do not affect the label's centre point.
+            // The item label fills the full row width with Arrangement.Center so
+            // it always sits at the true horizontal midpoint of the screen.
+            // Action buttons are absolutely positioned at the left/right edges
+            // and never displace the label's centre.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = rowMinHeight)
-                    // Double-tap anywhere on the row opens inline edit.
+                    // Double-tap anywhere on the row opens the inline edit field.
                     .pointerInput(item.id, readOnly, item.isChecked) {
                         if (!readOnly && !item.isChecked) {
                             detectTapGestures(onDoubleTap = {
@@ -254,7 +264,7 @@ private fun GroceryFlatRowContent(
                     }
                     .padding(vertical = 10.dp),
             ) {
-                // ── Label: always centred on the full row width ───────────────
+                // ── Label: always at the horizontal centre of the screen ──────
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -272,21 +282,16 @@ private fun GroceryFlatRowContent(
                     Text(
                         text = item.label,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = if (item.isChecked) {
-                            JourneySemanticColors.inkMuted()
-                        } else {
-                            JourneySemanticColors.inkDeep()
-                        },
+                        color = if (item.isChecked) mutedColor else JourneySemanticColors.inkDeep(),
                         textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
                     )
                 }
 
-                // ── Left edge: [drag handle?] check button ────────────────────
+                // ── Left edge: [drag handle?] Checkbox ───────────────────────
                 Row(
                     modifier = Modifier.align(Alignment.CenterStart),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    // Drag-handle for active (unchecked) items when reorder enabled
                     if (enableReorder) {
                         Box(
                             modifier = Modifier
@@ -321,53 +326,37 @@ private fun GroceryFlatRowContent(
                         }
                     }
 
-                    // Check button — 48 dp touch target wrapping a 36 dp circle.
-                    // Modifier.background() guarantees the container is rendered at the
-                    // Canvas level independently of Material3 IconButton internals.
-                    Box(
-                        modifier = Modifier
-                            .size(FamilyLogisticsDesign.minTouchTarget)
-                            .testTag("${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}"),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (readOnly) checkContainerColor.copy(alpha = 0.38f)
-                                    else checkContainerColor,
-                                )
-                                .clickable(
-                                    enabled = !readOnly,
-                                    onClickLabel = toggleContentDescription,
-                                    role = Role.Checkbox,
-                                    onClick = {
-                                        performHaptic(JourneyHapticFeedback.LightClick)
-                                        onToggle()
-                                    },
-                                ),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                imageVector = AppIcons.CheckCircle,
-                                contentDescription = null, // announced via outer testTag + semantics
-                                tint = if (readOnly) checkContentColor.copy(alpha = 0.38f)
-                                       else checkContentColor,
-                                modifier = Modifier.size(22.dp),
-                            )
-                        }
-                    }
+                    // ── Checkbox ──────────────────────────────────────────────
+                    // Replaces the previous custom icon button.
+                    // Material3 Checkbox guarantees:
+                    //   • visually distinct checked (teal fill + white ✓) vs
+                    //     unchecked (muted gray border, hollow) states
+                    //   • correct rendering in light and dark themes
+                    //   • built-in 48 dp touch target (minimumInteractiveComponentSize)
+                    //   • accessibility semantics (Role.Checkbox, checked state)
+                    Checkbox(
+                        checked = item.isChecked,
+                        onCheckedChange = if (readOnly) null else { _ ->
+                            performHaptic(JourneyHapticFeedback.LightClick)
+                            onToggle()
+                        },
+                        modifier = Modifier.testTag(
+                            "${GroceryItemRowTestTags.CHECKBOX_PREFIX}${item.id}",
+                        ),
+                        colors = checkboxColors,
+                    )
                 }
 
-                // ── Right edge: [edit?] delete button ─────────────────────────
+                // ── Right edge: [edit?] delete ────────────────────────────────
+                // Buttons use Modifier.background(color, CircleShape) to draw the
+                // coloured disc without creating a clipping layer that can suppress
+                // child Icon rendering on some Android GPU drivers.
                 if (!readOnly) {
                     Row(
                         modifier = Modifier.align(Alignment.CenterEnd),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        // Edit button — only for unchecked items; single-tap to edit.
-                        // Double-tap anywhere on the row is also supported.
+                        // Edit button — only shown for unchecked items
                         if (!item.isChecked) {
                             Box(
                                 modifier = Modifier
@@ -378,8 +367,10 @@ private fun GroceryFlatRowContent(
                                 Box(
                                     modifier = Modifier
                                         .size(36.dp)
-                                        .clip(CircleShape)
-                                        .background(checkContainerColor)
+                                        .background(
+                                            color = editContainerColor,
+                                            shape = CircleShape,
+                                        )
                                         .clickable(
                                             onClickLabel = editContentDescription,
                                             role = Role.Button,
@@ -406,8 +397,10 @@ private fun GroceryFlatRowContent(
                             Box(
                                 modifier = Modifier
                                     .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(deleteContainerColor)
+                                    .background(
+                                        color = deleteContainerColor,
+                                        shape = CircleShape,
+                                    )
                                     .clickable(
                                         onClickLabel = deleteContentDescription,
                                         role = Role.Button,

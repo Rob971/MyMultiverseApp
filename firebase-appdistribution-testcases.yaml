@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 85
-updated: 2026-07-12
+version: 86
+updated: 2026-07-13
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -62,6 +62,7 @@ summary: |
   Grocery simplification (v54): Groceries tab focuses on Update list (week selector → list CRUD); removed build-from-meals chip, pantry check, and AI suggestion sections from grocery screen; drag handle reorders active items.
   Explicit check/delete buttons (v83): replaced swipe-to-check/delete with explicit check button (left) and × delete button (right) on each row; delete shows Remove item? confirmation dialog before removing.
   Grocery row edit button (v85): pencil edit button restored on unchecked editable items (between label and delete ×); all three buttons (check, edit, delete) now have visible teal/terracotta container backgrounds so they are recognisable as interactive controls; double-tap on row still works as an alternate edit gesture.
+  Grocery row checkbox (v86): check button replaced with a standard Material3 Checkbox for universally recognisable and distinguishable states — unchecked = hollow square with muted border; checked = solid teal square with white ✓ checkmark. Works in light and dark themes. Edit and delete circle buttons use background(color, CircleShape) to guarantee icon visibility on all Android GPU drivers.
   Meal plan simplification (v55): Plan tab shows compact week progress then Daily planning day cards; removed bulk generate-grocery, pantry check, and AI suggestion sections; per-meal Add to grocery and Suggest 20-min meal remain on each day.
   Grocery add discoverability (v56): Groceries tab renames Update list to To buy with inline add row (labeled Add button) under the section header on phone; empty-state and all-checked CTAs scroll to and focus the add field; sticky bottom bar keeps labeled Add button; Today timeline shows Shopping list row title instead of Update list.
   Meal plan grocery direct add (v57): Plan tab Add to grocery list writes generated ingredients (including pantry staples) straight to the editable Groceries list — no AI suggestion chips or manual adopt step.
@@ -492,24 +493,28 @@ testcases:
       - Tapping it adds generated ingredients directly to the Groceries tab list (snackbar confirms count).
 
   - id: grocery-check-delete-buttons
-    title: Explicit check, edit, and delete buttons on grocery rows
+    title: Checkbox, edit, and delete controls on grocery rows
     steps:
       - Open Groceries with at least one unchecked item.
-      - Observe each unchecked row has three visible buttons: a teal check button (left), a teal pencil/edit button (second from right), and a terracotta × delete button (far right).
-      - Tap the check button (left) to mark an item as bought; label turns muted with strikethrough; the edit button disappears for checked items.
-      - Tap the check button again on a checked item to uncheck it; edit button reappears.
-      - Tap the pencil edit button on an unchecked item; inline edit field opens.
+      - Observe the left side of each row has a standard checkbox (hollow square with muted border when unchecked).
+      - Observe unchecked rows also have a teal pencil circle (edit) and a terracotta circle (delete ×) on the right.
+      - Tap the checkbox to mark an item as bought; box fills solid teal with a white ✓ checkmark; label turns muted with strikethrough; the edit circle disappears.
+      - Tap the filled checkbox again on a checked item to uncheck it; box returns to hollow; edit circle reappears.
+      - Switch the device to dark mode: verify checkbox states remain highly distinguishable (hollow border vs solid teal fill with white ✓).
+      - Tap the teal pencil circle on an unchecked item; inline edit field opens.
       - Edit the label and tap the confirm icon (or press Done on keyboard) to save; or tap Cancel to discard.
-      - Tap the × delete button on an item; confirm the Remove item? dialog by tapping Remove.
-      - Tap the × delete button on another item and tap Cancel to dismiss without deleting.
+      - Double-tap directly on an item label as an alternate way to open the edit field.
+      - Tap the terracotta × circle on an item; confirm the Remove item? dialog by tapping Remove.
+      - Tap the × circle on another item and tap Cancel to dismiss without deleting.
     expected:
-      - All three button icons (check, edit, delete) have clearly visible colored backgrounds (teal for check/edit, terracotta tint for delete) making them recognisable as interactive controls.
-      - Check button toggles item checked state with strikethrough text; haptic feedback plays.
-      - Pencil button opens inline edit field for unchecked items; button hidden on checked items.
-      - Double-tap on the row text also opens the inline edit field as an alternate gesture.
-      - × delete button visible on all editable rows (checked and unchecked); confirms before removal.
-      - Remove item? dialog appears before deletion; item removed only on confirm.
-      - Undo snackbar appears after deletion; tapping Undo restores the item.
+      - Unchecked checkbox: hollow square with muted gray border — clearly "not done" state.
+      - Checked checkbox: solid teal square with white ✓ checkmark — clearly "done/purchased" state.
+      - Both states render correctly in light and dark themes with strong visual contrast.
+      - Haptic feedback plays on toggle.
+      - Edit pencil circle visible for unchecked items; disappears when item is checked.
+      - Terracotta delete × circle visible on all editable rows (checked and unchecked).
+      - Remove item? confirmation dialog appears before deletion; undo snackbar appears after.
+      - Tapping Cancel or outside the dialog leaves the item unchanged.
 
   - id: grocery-inline-edit
     title: Inline item editing via edit button
