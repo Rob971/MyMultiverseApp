@@ -62,14 +62,14 @@ Industry pattern: **trunk + release branch + tagged production** (used by Chrome
 ```
 feature/* ──PR──► main (alpha) ──cut──► release/X.Y (beta) ──soak──► tag vX.Y.Z (production)
                       │                         │
-                      └─ Firebase auto          └─ Play Closed Testing (X.Y.Z-beta)
+                      └─ Firebase auto          └─ Play Closed Testing (X.Y.Z-beta.N)
 ```
 
 | Stage | Branch / trigger | `version.name` bump? | User-facing string | End-user label |
 |-------|------------------|----------------------|--------------------|----------------|
-| **Alpha** | `main` push → `distribute-alpha` | No — same `X.Y.Z` until named release | `1.4.0-alpha` | **Alpha** |
+| **Alpha** | `main` push → `distribute-alpha` | No — same `X.Y.Z` until named release | `1.4.0-alpha.N` | **Alpha** |
 | **Named release** | Manual `release` job on `main` | Yes — sets next `version.name` | `1.4.0` | Same; tags `v1.4.0` for bookkeeping |
-| **Beta** | `release/X.Y` push | No — CI stamps `beta` only | `1.4.0-beta` | **Beta** |
+| **Beta** | `release/X.Y` push | No — CI stamps `beta.N` only | `1.4.0-beta.N` | **Beta** |
 | **Production** | `vX.Y.Z` tag | Already set | `1.4.0` | **Version 1.4.0** |
 | **Hotfix** | `vX.Y.Z-hotfix.N` tag | PATCH semantics | `1.4.1` or `1.4.0-hotfix.1` | **Version 1.4.1** + what's new |
 
@@ -80,19 +80,19 @@ feature/* ──PR──► main (alpha) ──cut──► release/X.Y (beta) �
 ## Version string format (`AppVersionFormatter`)
 
 ```kotlin
-// Empty prerelease → "1.3.1"; with prerelease → "1.3.1-beta" or "1.3.1-alpha"
+// Empty prerelease → "1.3.1"; with prerelease → "1.3.1-alpha.N" or "1.3.1-beta.N"
 formatVersionName(name, prerelease)
 ```
 
 | `version.prerelease` | Display | `IS_PRERELEASE` |
 |----------------------|---------|-----------------|
 | *(omitted)* | `1.3.1` | `false` |
-| `alpha` | `1.3.1-alpha` | `true` |
-| `beta` | `1.3.1-beta` | `true` |
+| `alpha.N` | `1.3.1-alpha.N` | `true` |
+| `beta.N` | `1.3.1-beta.N` | `true` |
 | `rc.1` | `1.3.1-rc.1` | `true` *(supported; not used by CI today)* |
 
 - Source of truth: `gradle/app-version.properties`
-- CI stamps `alpha` or `beta` in-memory only — never committed to git.
+- CI stamps `alpha.N` or `beta.N` in-memory only (N = `$GITHUB_RUN_NUMBER`) — never committed to git.
 
 ---
 
@@ -102,9 +102,11 @@ Every build distributed to any user **must** carry exactly the right suffix. Thi
 
 | Track | `version.prerelease` value | In-app display | How it is set |
 |-------|---------------------------|---------------|---------------|
-| **Alpha** (`main` / Firebase) | `alpha` | `X.Y.Z-alpha` | `distribute-alpha` job stamps in-memory |
-| **Beta** (`release/**` / Play Closed) | `beta` | `X.Y.Z-beta` | `distribute-beta` job stamps in-memory |
+| **Alpha** (`main` / Firebase) | `alpha.N` | `X.Y.Z-alpha.N` | `distribute-alpha` stamps `alpha.$GITHUB_RUN_NUMBER` in-memory |
+| **Beta** (`release/**` / Play Closed) | `beta.N` | `X.Y.Z-beta.N` | `distribute-beta` stamps `beta.$GITHUB_RUN_NUMBER` in-memory |
 | **Production** (`v*` tag / Play Production) | *(absent)* | `X.Y.Z` | `bump-app-version.sh` clears on named release |
+
+`GITHUB_RUN_NUMBER` is a strictly increasing integer per repository — each new CI run gets a higher value, giving `alpha.100 → alpha.101` etc. automatically.
 
 ### Rules for agents and CI changes
 
@@ -138,8 +140,8 @@ Every build distributed to any user **must** carry exactly the right suffix. Thi
 | Build | Shown in app | Notes |
 |-------|-------------|-------|
 | Stable (production tag) | `Version 1.3.4` | Clean SemVer, no suffix |
-| Beta (`release/**`) | `Version 1.3.4-beta` | CI stamps `beta` in-memory; `VERSION_NAME` includes suffix |
-| Alpha (`main` / Firebase) | `Version 1.3.4-alpha` | CI stamps `alpha` in-memory; `VERSION_NAME` includes suffix |
+| Beta (`release/**`) | `Version 1.3.4-beta.N` | CI stamps `beta.$GITHUB_RUN_NUMBER` in-memory; `VERSION_NAME` includes suffix |
+| Alpha (`main` / Firebase) | `Version 1.3.4-alpha.N` | CI stamps `alpha.$GITHUB_RUN_NUMBER` in-memory; `VERSION_NAME` includes suffix |
 
 All three tracks use the single `home_app_version` string key (`"Version %1$s"`). The prerelease suffix embedded in `VERSION_NAME` makes each track visually distinct. The old `home_app_version_rc` key (which incorrectly labelled beta as "RC") has been removed.
 
@@ -154,7 +156,7 @@ All three tracks use the single `home_app_version` string key (`"Version %1$s"`)
 - New features, refactors, schema changes allowed.
 - Breaking changes OK with migrations + tests.
 - Auto `distribute-alpha` on green `main` push.
-- CI stamps `version.prerelease=alpha` in-memory (not committed); app shows `X.Y.Z-alpha`.
+- CI stamps `version.prerelease=alpha.$GITHUB_RUN_NUMBER` in-memory (not committed); app shows `X.Y.Z-alpha.N`.
 - `version.name` evolves per SemVer when a named `release` job is dispatched (PATCH for fixes, MINOR for features, MAJOR for breaking changes).
 
 ### Beta (`release/X.Y` stabilisation)
@@ -163,7 +165,7 @@ All three tracks use the single `home_app_version` string key (`"Version %1$s"`)
 
 - **Reject new features** unless user explicitly overrides.
 - PATCH-level fixes only; no MINOR/MAJOR bump on the branch.
-- CI stamps `version.prerelease=beta` in-memory (not committed); app shows `X.Y.Z-beta`.
+- CI stamps `version.prerelease=beta.$GITHUB_RUN_NUMBER` in-memory (not committed); app shows `X.Y.Z-beta.N`.
 - Strict self-review per `review-commit.mdc`.
 
 ### Production (tagged release / hotfix)

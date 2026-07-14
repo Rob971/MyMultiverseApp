@@ -598,13 +598,14 @@ jobs:
 
       - name: Stamp alpha prerelease label (in-memory, no git commit)
         run: |
+          BUILD="${GITHUB_RUN_NUMBER:-0}"
           if grep -q '^version\.prerelease=' gradle/app-version.properties; then
-            sed -i "s|^version\.prerelease=.*|version.prerelease=alpha|" gradle/app-version.properties
+            sed -i "s|^version\.prerelease=.*|version.prerelease=alpha.${BUILD}|" gradle/app-version.properties
           else
-            echo "version.prerelease=alpha" >> gradle/app-version.properties
+            echo "version.prerelease=alpha.${BUILD}" >> gradle/app-version.properties
           fi
           VERSION_NAME="$(grep '^version\.name=' gradle/app-version.properties | cut -d= -f2-)"
-          echo "Alpha build: ${VERSION_NAME}-alpha"
+          echo "Alpha build: ${VERSION_NAME}-alpha.${BUILD}"
 
       - name: Build debug APK (alpha track)
         run: ./gradlew :androidApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
@@ -749,14 +750,15 @@ jobs:
       - name: Stamp beta prerelease label (in-memory, no git commit)
         id: stamp
         run: |
+          BUILD="${GITHUB_RUN_NUMBER:-0}"
           if grep -q '^version\.prerelease=' gradle/app-version.properties; then
-            sed -i "s|^version\.prerelease=.*|version.prerelease=beta|" gradle/app-version.properties
+            sed -i "s|^version\.prerelease=.*|version.prerelease=beta.${BUILD}|" gradle/app-version.properties
           else
-            echo "version.prerelease=beta" >> gradle/app-version.properties
+            echo "version.prerelease=beta.${BUILD}" >> gradle/app-version.properties
           fi
           VERSION_NAME="$(grep '^version\.name=' gradle/app-version.properties | cut -d= -f2-)"
-          echo "version_display=${VERSION_NAME}-beta" >> "$GITHUB_OUTPUT"
-          echo "Beta build: ${VERSION_NAME}-beta"
+          echo "version_display=${VERSION_NAME}-beta.${BUILD}" >> "$GITHUB_OUTPUT"
+          echo "Beta build: ${VERSION_NAME}-beta.${BUILD}"
 
       - name: Check Play Store service account secret
         id: play_secret_check
