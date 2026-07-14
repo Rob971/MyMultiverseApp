@@ -28,7 +28,6 @@ import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.auth_sign_out
 import ammo.composeapp.generated.resources.home_app_version
-import ammo.composeapp.generated.resources.home_app_version_rc
 import ammo.composeapp.generated.resources.home_copyright_notice
 import ammo.composeapp.generated.resources.home_trademark_notice
 import ammo.composeapp.generated.resources.home_designer_credit
@@ -167,12 +166,7 @@ fun HomeAccountSheet(
                 )
             }
 
-            val versionLabel =
-                if (AppBuildInfo.IS_PRERELEASE) {
-                    stringResource(Res.string.home_app_version_rc, AppBuildInfo.VERSION_NAME)
-                } else {
-                    stringResource(Res.string.home_app_version, AppBuildInfo.VERSION_NAME)
-                }
+            val versionLabel = stringResource(Res.string.home_app_version, AppBuildInfo.VERSION_NAME)
             val copyrightYear =
                 Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
             Text(

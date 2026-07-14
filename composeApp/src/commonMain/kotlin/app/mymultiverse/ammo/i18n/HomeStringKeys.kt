@@ -80,7 +80,6 @@ object HomeStringKeys {
         "home_rename_household_title",
         "home_rename_household_save",
         "home_app_version",
-        "home_app_version_rc",
         "home_copyright_notice",
         "home_trademark_notice",
         "home_designer_credit",

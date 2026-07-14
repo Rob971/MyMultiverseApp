@@ -521,7 +521,7 @@ jobs:
           github-ref-name: ${{ github.ref_name }}
           github-sha: ${{ github.sha }}
 
-      - name: Commit version bump, tag release, and push
+      - name: Fetch, merge latest main, commit version bump, tag, and push
         env:
           DISPLAY_NAME: ${{ steps.bump.outputs.display_name }}
           TAG_NAME: ${{ steps.bump.outputs.tag_name }}
@@ -529,6 +529,20 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Save the version files that bump-app-version.sh modified earlier in this job.
+          # main may have advanced while the build ran; we must land on top of the latest commit.
+          cp gradle/app-version.properties /tmp/app-version.properties.bumped
+          cp iosApp/iosApp/Info.plist /tmp/Info.plist.bumped
+
+          # Fetch and reset to the latest main so the push is always fast-forward.
+          git fetch origin main
+          git reset --hard origin/main
+
+          # Restore the bumped version files on top of latest main.
+          cp /tmp/app-version.properties.bumped gradle/app-version.properties
+          cp /tmp/Info.plist.bumped iosApp/iosApp/Info.plist
+
           git add gradle/app-version.properties iosApp/iosApp/Info.plist
           if git diff --staged --quiet; then
             echo "No version changes to commit."
@@ -595,6 +609,17 @@ jobs:
         with:
           supabase-url: ${{ secrets.SUPABASE_URL }}
           supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Stamp alpha prerelease label (in-memory, no git commit)
+        run: |
+          BUILD="${GITHUB_RUN_NUMBER:-0}"
+          if grep -q '^version\.prerelease=' gradle/app-version.properties; then
+            sed -i "s|^version\.prerelease=.*|version.prerelease=alpha.${BUILD}|" gradle/app-version.properties
+          else
+            echo "version.prerelease=alpha.${BUILD}" >> gradle/app-version.properties
+          fi
+          VERSION_NAME="$(grep '^version\.name=' gradle/app-version.properties | cut -d= -f2-)"
+          echo "Alpha build: ${VERSION_NAME}-alpha.${BUILD}"
 
       - name: Build debug APK (alpha track)
         run: ./gradlew :androidApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
@@ -735,26 +760,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # full history needed to count commits on release branch
 
       - name: Stamp beta prerelease label (in-memory, no git commit)
         id: stamp
         run: |
-          # Derive beta sequence: number of commits on this release branch since it diverged from main.
-          MERGE_BASE="$(git merge-base HEAD origin/main 2>/dev/null || git rev-parse HEAD~1)"
-          BETA_SEQ="$(git rev-list --count HEAD ^"$MERGE_BASE" 2>/dev/null || echo 1)"
-          BETA_SEQ="${BETA_SEQ:-1}"
-          # Stamp version.prerelease in the properties file (not committed — build-time only).
+          BUILD="${GITHUB_RUN_NUMBER:-0}"
           if grep -q '^version\.prerelease=' gradle/app-version.properties; then
-            sed -i "s|^version\.prerelease=.*|version.prerelease=beta.${BETA_SEQ}|" gradle/app-version.properties
+            sed -i "s|^version\.prerelease=.*|version.prerelease=beta.${BUILD}|" gradle/app-version.properties
           else
-            echo "version.prerelease=beta.${BETA_SEQ}" >> gradle/app-version.properties
+            echo "version.prerelease=beta.${BUILD}" >> gradle/app-version.properties
           fi
-          echo "beta_seq=${BETA_SEQ}" >> "$GITHUB_OUTPUT"
           VERSION_NAME="$(grep '^version\.name=' gradle/app-version.properties | cut -d= -f2-)"
-          echo "version_display=${VERSION_NAME}-beta.${BETA_SEQ}" >> "$GITHUB_OUTPUT"
-          echo "Beta label: ${VERSION_NAME}-beta.${BETA_SEQ} (sequence ${BETA_SEQ})"
+          echo "version_display=${VERSION_NAME}-beta.${BUILD}" >> "$GITHUB_OUTPUT"
+          echo "Beta build: ${VERSION_NAME}-beta.${BUILD}"
 
       - name: Check Play Store service account secret
         id: play_secret_check
