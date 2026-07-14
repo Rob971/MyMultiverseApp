@@ -52,7 +52,6 @@ import ammo.composeapp.generated.resources.auth_provider_coming_soon
 import ammo.composeapp.generated.resources.auth_subtitle
 import ammo.composeapp.generated.resources.auth_title
 import ammo.composeapp.generated.resources.home_app_version
-import ammo.composeapp.generated.resources.home_app_version_rc
 import ammo.composeapp.generated.resources.home_copyright_notice
 import ammo.composeapp.generated.resources.home_designer_credit
 import ammo.composeapp.generated.resources.home_trademark_notice
@@ -109,11 +108,7 @@ fun AuthScreen(
 
     val inviteHouseholdName = uiState.inviteHouseholdName
 
-    val versionLabel = if (AppBuildInfo.IS_PRERELEASE) {
-        stringResource(Res.string.home_app_version_rc, AppBuildInfo.VERSION_NAME)
-    } else {
-        stringResource(Res.string.home_app_version, AppBuildInfo.VERSION_NAME)
-    }
+    val versionLabel = stringResource(Res.string.home_app_version, AppBuildInfo.VERSION_NAME)
     val copyrightYear = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
 
     Scaffold(
