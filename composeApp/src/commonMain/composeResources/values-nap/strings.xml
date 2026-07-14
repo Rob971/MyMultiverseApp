@@ -952,6 +952,17 @@
     <string name="home_rename_household_save">Salva 'o nomme</string>
     <string name="auth_subtitle_sign_in">Trà pe' planificà pasti e spesa cu 'a famiglia toja.</string>
     <string name="auth_subtitle_sign_up">Crea 'o conto pe' planificà pasti e spesa insieme.</string>
+    <string name="auth_registration_name_label">Comm' te chiame</string>
+    <string name="auth_registration_continue">Avanza</string>
+    <string name="auth_registration_step2_title">Comm' se chiama 'a famiglie</string>
+    <string name="auth_registration_step2_subtitle">Sciglie 'nu nomme p'o grupp'. Po' puoi invità i membre.</string>
+    <string name="auth_registration_household_label">Nomme d'a famiglie o grupp'</string>
+    <string name="auth_registration_invite_later">Ccà famiglie 'a facimm' appresso</string>
+    <string name="auth_error_blank_name">Metti 'o nomme tuoje.</string>
+    <string name="auth_password_toggle_show">Vide 'a password</string>
+    <string name="auth_password_toggle_hide">Nasconne 'a password</string>
+    <string name="auth_confirmation_banner_title">Guarda 'a casella d'e mail</string>
+    <string name="auth_confirmation_banner_body">T'avimm mannato 'nu link 'e conferma a %1$s. Aprelo pe' verificà 'o conto, po' trasisce.</string>
     <string name="sharing_members_role_admin">Admin d'â famiglia</string>
     <string name="sharing_members_change_role">Cagna 'o ruolo</string>
     <string name="sharing_members_promote_admin_confirm_title">Fà admin d'â famiglia?</string>

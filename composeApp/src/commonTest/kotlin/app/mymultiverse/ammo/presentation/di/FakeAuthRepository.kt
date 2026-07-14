@@ -34,8 +34,11 @@ class FakeAuthRepository(
         return Result.success(Unit)
     }
 
-    override suspend fun signUpWithEmail(email: String, password: String): Result<Unit> =
-        signInWithEmail(email, password)
+    override suspend fun signUpWithEmail(
+        email: String,
+        password: String,
+        displayName: String?,
+    ): Result<Unit> = signInWithEmail(email, password)
 
     override suspend fun sendEmailOtp(email: String): Result<Unit> = Result.success(Unit)
 

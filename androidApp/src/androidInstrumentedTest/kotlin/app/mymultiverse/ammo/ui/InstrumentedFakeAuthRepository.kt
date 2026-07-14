@@ -17,7 +17,11 @@ class InstrumentedFakeAuthRepository(
     override suspend fun signInWithEmail(email: String, password: String): Result<Unit> =
         Result.failure(UnsupportedOperationException())
 
-    override suspend fun signUpWithEmail(email: String, password: String): Result<Unit> =
+    override suspend fun signUpWithEmail(
+        email: String,
+        password: String,
+        displayName: String?,
+    ): Result<Unit> =
         Result.failure(UnsupportedOperationException())
 
     override suspend fun sendEmailOtp(email: String): Result<Unit> = Result.success(Unit)

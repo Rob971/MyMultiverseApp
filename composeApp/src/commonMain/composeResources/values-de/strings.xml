@@ -952,6 +952,17 @@
     <string name="home_rename_household_save">Name speichern</string>
     <string name="auth_subtitle_sign_in">Melde dich an, um Mahlzeiten und Einkäufe mit deiner Familie zu planen.</string>
     <string name="auth_subtitle_sign_up">Erstelle dein Konto, um Mahlzeiten und Einkäufe gemeinsam zu planen.</string>
+    <string name="auth_registration_name_label">Dein Name</string>
+    <string name="auth_registration_continue">Weiter</string>
+    <string name="auth_registration_step2_title">Haushalt benennen</string>
+    <string name="auth_registration_step2_subtitle">Wähle einen Namen für deine Gruppe. Du kannst Mitglieder danach einladen.</string>
+    <string name="auth_registration_household_label">Haushaltsname</string>
+    <string name="auth_registration_invite_later">Haushalt später einrichten</string>
+    <string name="auth_error_blank_name">Gib deinen Namen ein.</string>
+    <string name="auth_password_toggle_show">Passwort anzeigen</string>
+    <string name="auth_password_toggle_hide">Passwort verbergen</string>
+    <string name="auth_confirmation_banner_title">Prüfe dein Postfach</string>
+    <string name="auth_confirmation_banner_body">Wir haben einen Bestätigungslink an %1$s gesendet. Öffne ihn, um dein Konto zu bestätigen, und melde dich dann an.</string>
     <string name="sharing_members_role_admin">Familien-Admin</string>
     <string name="sharing_members_change_role">Rolle ändern</string>
     <string name="sharing_members_promote_admin_confirm_title">Zum Familien-Admin machen?</string>

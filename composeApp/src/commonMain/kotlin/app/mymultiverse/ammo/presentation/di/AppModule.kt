@@ -35,6 +35,7 @@ import app.mymultiverse.ammo.domain.location.DeviceRegionService
 import app.mymultiverse.ammo.domain.manager.LanguageManager
 import app.mymultiverse.ammo.domain.manager.ThemeManager
 import app.mymultiverse.ammo.domain.usecase.GetGreetingUseCase
+import app.mymultiverse.ammo.presentation.registration.RegistrationData
 import app.mymultiverse.ammo.presentation.screens.auth.LoginScreenModel
 import app.mymultiverse.ammo.presentation.screens.onboarding.OnboardingScreenModel
 import app.mymultiverse.ammo.presentation.screens.householdsetup.HouseholdSetupScreenModel
@@ -118,6 +119,7 @@ private val dataModule = module {
 }
 
 private val presentationModule = module {
+    single { RegistrationData() }
     singleOf(::HomeScreenModel)
     singleOf(::LoginScreenModel)
     singleOf(::OnboardingScreenModel)
