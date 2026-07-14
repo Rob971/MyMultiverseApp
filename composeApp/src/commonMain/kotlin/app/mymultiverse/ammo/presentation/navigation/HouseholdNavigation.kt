@@ -10,4 +10,5 @@ fun Household.toNavigationContext(): HouseholdContext =
         ownerId = ownerId,
         ownerDisplayName = ownerDisplayName,
         nutritionFeatures = nutritionFeatures.orDefaultNutritionFeatures(),
+        avatarUrl = avatarUrl,
     )

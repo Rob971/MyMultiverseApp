@@ -406,4 +406,29 @@ class HouseholdMembersScreenModelTest {
         assertEquals(1, model.uiState.value.members.size)
         assertEquals(HouseholdMemberRole.Owner, model.uiState.value.members.single().role)
     }
+
+    @Test
+    fun uploadHouseholdAvatar_setsLoadingThenClearsOnSuccess() = runTest(testDispatcher) {
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        model.uploadHouseholdAvatar("household-1", ByteArray(0), "image/jpeg")
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.isUploadingHouseholdAvatar)
+        assertEquals(1, householdRepository.updateHouseholdAvatarCalls)
+    }
+
+    @Test
+    fun uploadHouseholdAvatar_onFailure_clearsLoadingAndSetsError() = runTest(testDispatcher) {
+        householdRepository.updateHouseholdAvatarResult = Result.failure(IllegalStateException("upload_failed"))
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        model.uploadHouseholdAvatar("household-1", ByteArray(0), "image/jpeg")
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.isUploadingHouseholdAvatar)
+        assertEquals(HouseholdMembersError.Generic, model.uiState.value.error)
+    }
 }

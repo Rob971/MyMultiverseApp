@@ -74,4 +74,10 @@ class InstrumentedHouseholdRepository(
     override suspend fun dissolveHousehold(): Result<Unit> = Result.success(Unit)
 
     override suspend fun transferOwnership(newOwnerUserId: String): Result<Unit> = Result.success(Unit)
+
+    override suspend fun updateHouseholdAvatar(
+        householdId: String,
+        imageBytes: ByteArray,
+        contentType: String,
+    ): Result<Unit> = Result.success(Unit)
 }

@@ -73,6 +73,8 @@ import ammo.composeapp.generated.resources.sharing_members_invite_by_email
 import ammo.composeapp.generated.resources.sharing_members_invite_by_email_hint
 import ammo.composeapp.generated.resources.sharing_members_invite_chooser_title
 import ammo.composeapp.generated.resources.sharing_members_avatar_content_description
+import ammo.composeapp.generated.resources.sharing_household_avatar_content_description
+import ammo.composeapp.generated.resources.sharing_household_avatar_change_label
 import ammo.composeapp.generated.resources.sharing_members_add_dependent
 import ammo.composeapp.generated.resources.sharing_members_add_person
 import ammo.composeapp.generated.resources.sharing_members_cancel
@@ -169,6 +171,7 @@ object HouseholdMembersTestTags {
     const val HOUSEHOLD_LEAVE_MENU = "household_members_leave_menu"
     const val HOUSEHOLD_DISSOLVE_MENU = "household_members_dissolve_menu"
     const val PENDING_INVITE_OVERFLOW = "household_members_pending_invite_overflow"
+    const val HOUSEHOLD_AVATAR = "household_members_household_avatar"
 }
 
 @Composable
@@ -212,17 +215,28 @@ fun HouseholdMembersScreen(
     }
     val currentUserId = (authState as? AuthState.Authenticated)?.user?.id
     var pendingAvatarMember by remember { mutableStateOf<HouseholdMember?>(null) }
+    var pendingHouseholdAvatarPick by remember { mutableStateOf(false) }
     val launchPhotoPicker = rememberMemberPhotoPickerLauncher { bytes, contentType ->
         val member = pendingAvatarMember
-        if (member != null) {
-            screenModel.uploadMemberAvatar(
-                householdId = household.id,
-                member = member,
-                imageBytes = bytes,
-                contentType = contentType,
-            )
+        when {
+            member != null -> {
+                screenModel.uploadMemberAvatar(
+                    householdId = household.id,
+                    member = member,
+                    imageBytes = bytes,
+                    contentType = contentType,
+                )
+                pendingAvatarMember = null
+            }
+            pendingHouseholdAvatarPick -> {
+                screenModel.uploadHouseholdAvatar(
+                    householdId = household.id,
+                    imageBytes = bytes,
+                    contentType = contentType,
+                )
+                pendingHouseholdAvatarPick = false
+            }
         }
-        pendingAvatarMember = null
     }
 
     val shareTitle = stringResource(Res.string.sharing_members_invite_share_title)
@@ -282,6 +296,18 @@ fun HouseholdMembersScreen(
                 contentPadding = screenListPadding(),
                 verticalArrangement = Arrangement.spacedBy(ScreenLayout.sectionSpacing),
             ) {
+                item {
+                    HouseholdAvatarSection(
+                        householdName = household.name,
+                        avatarUrl = household.avatarUrl,
+                        canManage = uiState.canManageMembers,
+                        isLoading = uiState.isUploadingHouseholdAvatar,
+                        onChangePhoto = {
+                            pendingHouseholdAvatarPick = true
+                            launchPhotoPicker()
+                        },
+                    )
+                }
                 item {
                     Text(
                         text = stringResource(Res.string.sharing_members_subtitle),
@@ -795,6 +821,38 @@ private fun mapErrorMessage(error: HouseholdMembersError): String =
         HouseholdMembersError.TransferTargetNotMember ->
             stringResource(Res.string.sharing_members_error_transfer_failed)
     }
+
+@Composable
+private fun HouseholdAvatarSection(
+    householdName: String,
+    avatarUrl: String?,
+    canManage: Boolean,
+    isLoading: Boolean,
+    onChangePhoto: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        val avatarDescription = stringResource(Res.string.sharing_household_avatar_content_description)
+        MemberAvatar(
+            displayName = householdName,
+            avatarUrl = avatarUrl,
+            contentDescription = avatarDescription,
+            size = 80.dp,
+            isLoading = isLoading,
+            onClick = if (canManage) onChangePhoto else null,
+            modifier = Modifier.testTag(HouseholdMembersTestTags.HOUSEHOLD_AVATAR),
+        )
+        if (canManage) {
+            JourneyTertiaryButton(
+                onClick = onChangePhoto,
+                label = stringResource(Res.string.sharing_household_avatar_change_label),
+            )
+        }
+    }
+}
 
 @Composable
 private fun MemberRow(

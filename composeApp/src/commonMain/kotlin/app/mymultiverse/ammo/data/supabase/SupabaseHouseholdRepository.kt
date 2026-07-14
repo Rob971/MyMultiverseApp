@@ -15,10 +15,14 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
+import io.github.jan.supabase.storage.storage
+import io.ktor.http.ContentType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -222,6 +226,7 @@ class SupabaseHouseholdRepository(
             ownerId = resolvedOwnerId,
             ownerDisplayName = resolvedOwnerDisplayName,
             nutritionFeatures = (features ?: emptyList()).mapNotNull { it.toNutritionFeature() }.toSet(),
+            avatarUrl = avatarUrl?.takeIf { it.isNotBlank() },
         )
     }
 
@@ -252,6 +257,50 @@ class SupabaseHouseholdRepository(
             else -> null
         }
 
+    override suspend fun updateHouseholdAvatar(
+        householdId: String,
+        imageBytes: ByteArray,
+        contentType: String,
+    ): Result<Unit> = runCatching {
+        client.auth.awaitInitialization()
+        requireUserId()
+
+        val extension = when {
+            contentType.contains("png") -> "png"
+            contentType.contains("webp") -> "webp"
+            else -> "jpg"
+        }
+        val storagePath = "households/$householdId/avatar.$extension"
+        val bucket = client.storage.from("member-avatars")
+        bucket.upload(storagePath, imageBytes) {
+            upsert = true
+            this.contentType = ContentType.parse(contentType)
+        }
+        val publicUrl = bucket.publicUrl(storagePath)
+
+        client.postgrest["households"]
+            .update(HouseholdAvatarUpdateRow(avatarUrl = publicUrl)) {
+                filter { eq("id", householdId) }
+            }
+
+        household.update { current ->
+            current?.takeIf { it.id == householdId }?.copy(avatarUrl = publicUrl) ?: current
+        }
+        membershipStatus.update { status ->
+            if (status is HouseholdMembershipStatus.Active &&
+                status.household.id == householdId
+            ) {
+                HouseholdMembershipStatus.Active(
+                    membership = status.membership.copy(
+                        household = status.household.copy(avatarUrl = publicUrl),
+                    ),
+                )
+            } else {
+                status
+            }
+        }
+    }
+
     private fun String?.toHouseholdMemberRole(): HouseholdMemberRole =
         when (this) {
             "owner" -> HouseholdMemberRole.Owner
@@ -259,4 +308,9 @@ class SupabaseHouseholdRepository(
             "viewer" -> HouseholdMemberRole.Viewer
             else -> HouseholdMemberRole.Editor
         }
+
+    @Serializable
+    private data class HouseholdAvatarUpdateRow(
+        @SerialName("avatar_url") val avatarUrl: String,
+    )
 }

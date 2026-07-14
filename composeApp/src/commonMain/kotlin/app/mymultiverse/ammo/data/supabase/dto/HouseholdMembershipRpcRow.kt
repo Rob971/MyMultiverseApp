@@ -12,4 +12,5 @@ data class HouseholdMembershipRpcRow(
     @SerialName("owner_display_name") val ownerDisplayName: String? = null,
     val role: String? = null,
     val features: List<String>? = null,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
 )
