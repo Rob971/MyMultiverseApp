@@ -42,7 +42,7 @@ Terminology maps to [semver.org](https://semver.org/):
 - Refactors with no user-visible change → ship on alpha; **no version bump** until release
 - Dependency bumps (Kotlin, Compose) → PATCH if shipping alone; MINOR if bundled with features
 - Firebase YAML / test-only changes → no bump
-- Beta iteration (`beta.1` → `beta.2`) → **no** `version.name` change; CI increments beta sequence only
+- Beta iteration → **no** `version.name` change; suffix stays `-beta`
 
 ### Tooling
 
@@ -93,6 +93,33 @@ formatVersionName(name, prerelease)
 
 - Source of truth: `gradle/app-version.properties`
 - CI stamps `alpha` or `beta` in-memory only — never committed to git.
+
+---
+
+## Prerelease suffix contract (non-negotiable)
+
+Every build distributed to any user **must** carry exactly the right suffix. This is enforced in CI and must be preserved on every future change to the workflow, the UI version label, or any tooling that reads `version.prerelease`.
+
+| Track | `version.prerelease` value | In-app display | How it is set |
+|-------|---------------------------|---------------|---------------|
+| **Alpha** (`main` / Firebase) | `alpha` | `X.Y.Z-alpha` | `distribute-alpha` job stamps in-memory |
+| **Beta** (`release/**` / Play Closed) | `beta` | `X.Y.Z-beta` | `distribute-beta` job stamps in-memory |
+| **Production** (`v*` tag / Play Production) | *(absent)* | `X.Y.Z` | `bump-app-version.sh` clears on named release |
+
+### Rules for agents and CI changes
+
+1. **Never remove or skip the stamp step** in `distribute-alpha` or `distribute-beta` — the step that writes `version.prerelease=alpha|beta` to `gradle/app-version.properties` before the build is the only mechanism that produces the correct suffix.
+2. **Never commit `version.prerelease`** — stamps are build-time only (in-memory `sed`/`echo`). The file on `main` and `release/*` must not contain a `version.prerelease` key.
+3. **Never change the suffix values** (`alpha`, `beta`) without updating this table, the CI stamp steps, and re-running both Gradle gates.
+4. **UI always uses `home_app_version` (`"Version %1$s"`)** — `AppBuildInfo.VERSION_NAME` already contains the suffix; do not add a separate IS_PRERELEASE branch or a new string key for channel labelling.
+5. **Production builds must have no suffix** — if `version.prerelease` is present in the properties file when a production tag fires, it is a release blocker.
+
+### Self-review gate (add to PR checklist when touching CI or version tooling)
+
+- [ ] `distribute-alpha` still stamps `version.prerelease=alpha` before `assembleDebug`
+- [ ] `distribute-beta` still stamps `version.prerelease=beta` before the signed AAB build
+- [ ] `gradle/app-version.properties` on `main` has **no** `version.prerelease` key
+- [ ] `home_app_version` string key exists in all 8 locale files with a `%1$s` placeholder
 
 ---
 
@@ -166,19 +193,20 @@ All three tracks use the single `home_app_version` string key (`"Version %1$s"`)
 ## Agent decision tree
 
 ```
-1. hotfix/* or "production hotfix"?  → PRODUCTION (PATCH only)
-2. release/* or VERSION_NAME has -beta.? → BETA (no feature work)
-3. main / feature/* / local dev       → ALPHA (default)
-4. Recommending version_bump?         → apply MAJOR/MINOR/PATCH table above
+1. hotfix/* or "production hotfix"?       → PRODUCTION (PATCH only)
+2. release/* or VERSION_NAME has -beta?   → BETA (no feature work)
+3. main / feature/* / local dev           → ALPHA (default)
+4. Recommending version_bump?             → apply MAJOR/MINOR/PATCH table above
 ```
 
 ## Anti-patterns
 
 - Bumping MINOR for every merge — version inflation; use alpha without bump.
 - MAJOR bump without migration plan and user-facing what's new.
-- Calling beta builds "RC" in user-facing strings.
-- Treating clean `X.Y.Z` as production — alpha uses the same format.
-- Committing `version.prerelease=beta.N` to git — CI-only stamp.
+- Calling beta or alpha builds "RC" in user-facing strings.
+- Committing `version.prerelease=alpha` or `version.prerelease=beta` to git — CI-only stamps, never persisted.
+- Removing or skipping the prerelease stamp step in `distribute-alpha` or `distribute-beta` — breaks the suffix contract.
+- Adding a new IS_PRERELEASE branch in the UI version label — the suffix in `VERSION_NAME` is sufficient; a separate branch creates drift.
 - Reusing or decreasing `version.code`.
 
 ## Related rules
