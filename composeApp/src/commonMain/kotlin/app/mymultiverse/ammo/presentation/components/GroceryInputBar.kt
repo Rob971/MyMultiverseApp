@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
@@ -67,13 +66,11 @@ fun GroceryInputBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(
-                    when {
-                        embeddedInSidePanel -> Modifier.imePadding()
-                        embeddedInMainTabs -> Modifier.imePadding()
-                        else -> Modifier.navigationBarsPadding().imePadding()
-                    },
-                )
+                // Side-panel (wide layout): not in Scaffold bottomBar, needs its own IME inset.
+                // Phone (bottomBar or standalone): NutritionScaffold's contentWindowInsets
+                // include WindowInsets.ime so the Scaffold positions the bar above the keyboard;
+                // adding imePadding() here would create visible empty space inside the Surface.
+                .then(if (embeddedInSidePanel) Modifier.imePadding() else Modifier)
                 .padding(
                     horizontal = ScreenLayout.inputBarHorizontalPadding,
                     vertical = ScreenLayout.inputBarVerticalPadding,
