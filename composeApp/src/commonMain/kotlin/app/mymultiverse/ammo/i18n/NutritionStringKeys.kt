@@ -162,6 +162,7 @@ object NutritionStringKeys {
         "nutrition_ai_grocery_summary",
         "nutrition_ai_meal_plan_summary_full_week",
         "nutrition_ai_meal_plan_summary_single_day",
+        "nutrition_ai_meal_plan_summary_single_meal",
         "nutrition_ai_grocery_readonly_note",
         "nutrition_ai_grocery_saved_readonly_note",
         "nutrition_ai_clear_grocery",

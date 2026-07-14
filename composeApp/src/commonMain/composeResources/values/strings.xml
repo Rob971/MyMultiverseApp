@@ -189,6 +189,7 @@
     <string name="nutrition_ai_grocery_summary">%1$d items from your note.</string>
     <string name="nutrition_ai_meal_plan_summary_full_week">Full-week preview. Review, then apply.</string>
     <string name="nutrition_ai_meal_plan_summary_single_day">%1$s preview. Review, then apply.</string>
+    <string name="nutrition_ai_meal_plan_summary_single_meal">%1$s – %2$s preview. Review, then apply.</string>
     <string name="nutrition_ai_grocery_readonly_note">Read-only. Your list is below.</string>
     <string name="nutrition_ai_grocery_saved_readonly_note">Saved for this week (read-only).</string>
     <string name="nutrition_ai_clear_grocery">Clear suggestions</string>

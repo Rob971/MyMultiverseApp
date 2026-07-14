@@ -85,6 +85,7 @@ import ammo.composeapp.generated.resources.nutrition_ai_loading
 import ammo.composeapp.generated.resources.nutrition_ai_meal_plan_result_title
 import ammo.composeapp.generated.resources.nutrition_ai_meal_plan_summary_full_week
 import ammo.composeapp.generated.resources.nutrition_ai_meal_plan_summary_single_day
+import ammo.composeapp.generated.resources.nutrition_ai_meal_plan_summary_single_meal
 import ammo.composeapp.generated.resources.nutrition_ai_mode_advice
 import ammo.composeapp.generated.resources.nutrition_ai_mode_grocery
 import ammo.composeapp.generated.resources.nutrition_ai_mode_meal_plan
@@ -161,11 +162,13 @@ fun NutritionAiAssistantContent(
     val criteriaScrollIntoView = rememberFieldScrollIntoViewModifier()
     var mealPlanApplyRequested by remember { mutableStateOf(false) }
     var showIngredientsStep by remember { mutableStateOf(false) }
-    val scopeLocked = launchContext?.mealPlanScope is MealPlanGenerationScope.SingleDay
+    val scopeLocked = launchContext?.mealPlanScope is MealPlanGenerationScope.SingleDay ||
+        launchContext?.mealPlanScope is MealPlanGenerationScope.SingleMeal
     val ingredientsAfterApplyFlow = chipFirstSheet &&
         launchContext?.offerIngredientsAfterApply == true &&
         launchContext.targetMealSlot != null &&
-        launchContext.mealPlanScope is MealPlanGenerationScope.SingleDay
+        (launchContext.mealPlanScope is MealPlanGenerationScope.SingleDay ||
+            launchContext.mealPlanScope is MealPlanGenerationScope.SingleMeal)
 
     val adoptAllNoneMessage = stringResource(Res.string.nutrition_ai_adopt_all_grocery_none)
     val adoptAllSummaryMessage = adoptAllResult?.let { count ->
@@ -613,6 +616,8 @@ fun NutritionAiAssistantContent(
             }
             is NutritionAiState.MealPlanPreview -> {
                 item {
+                    val lunchLabel = stringResource(Res.string.nutrition_meal_lunch)
+                    val dinnerLabel = stringResource(Res.string.nutrition_meal_dinner)
                     val summaryText = when (val scope = state.scope) {
                         is MealPlanGenerationScope.FullWeek ->
                             stringResource(Res.string.nutrition_ai_meal_plan_summary_full_week)
@@ -620,6 +625,15 @@ fun NutritionAiAssistantContent(
                             stringResource(
                                 Res.string.nutrition_ai_meal_plan_summary_single_day,
                                 nutritionDayLabel(scope.dayIndex),
+                            )
+                        is MealPlanGenerationScope.SingleMeal ->
+                            stringResource(
+                                Res.string.nutrition_ai_meal_plan_summary_single_meal,
+                                nutritionDayLabel(scope.dayIndex),
+                                when (scope.slot) {
+                                    MealSlot.Lunch -> lunchLabel
+                                    MealSlot.Dinner -> dinnerLabel
+                                },
                             )
                     }
                     Text(
@@ -639,13 +653,16 @@ fun NutritionAiAssistantContent(
                 val daysToShow = when (state.scope) {
                     is MealPlanGenerationScope.FullWeek -> state.plan.days.indices.toList()
                     is MealPlanGenerationScope.SingleDay -> listOf(state.scope.dayIndex)
+                    is MealPlanGenerationScope.SingleMeal -> listOf(state.scope.dayIndex)
                 }
+                val singleMealSlot = (state.scope as? MealPlanGenerationScope.SingleMeal)?.slot
                 items(daysToShow, key = { it }) { dayIndex ->
                     val day = state.plan.days[dayIndex]
                     MealPlanPreviewCard(
                         dayIndex = dayIndex,
                         lunch = day.lunch,
                         dinner = day.dinner,
+                        visibleSlot = singleMealSlot,
                         modifier = Modifier.testTag(
                             "${NutritionAiTestTags.MEAL_PLAN_PREVIEW_ROW_PREFIX}$dayIndex",
                         ),
@@ -656,8 +673,11 @@ fun NutritionAiAssistantContent(
                         onClick = {
                             if (ingredientsAfterApplyFlow) {
                                 val ctx = launchContext ?: return@Button
-                                val dayIndex =
-                                    (ctx.mealPlanScope as MealPlanGenerationScope.SingleDay).dayIndex
+                                val dayIndex = when (val s = ctx.mealPlanScope) {
+                                    is MealPlanGenerationScope.SingleMeal -> s.dayIndex
+                                    is MealPlanGenerationScope.SingleDay -> s.dayIndex
+                                    else -> return@Button
+                                }
                                 val slot = ctx.targetMealSlot ?: return@Button
                                 coroutineScope.launch {
                                     screenModel.applyPreviewedMealPlanAndAwait()
@@ -733,6 +753,8 @@ private fun MealPlanPreviewCard(
     lunch: String,
     dinner: String,
     modifier: Modifier = Modifier,
+    /** When non-null, only the specified slot is shown (single-meal generation flow). */
+    visibleSlot: MealSlot? = null,
 ) {
     val dayLabel = nutritionDayLabel(dayIndex)
     FamilyLogisticsCardSurface {
@@ -748,24 +770,28 @@ private fun MealPlanPreviewCard(
                 fontWeight = FontWeight.Bold,
                 color = JourneySemanticColors.inkDeep(),
             )
-            Text(
-                text = stringResource(
-                    Res.string.nutrition_meal_plan_preview_line,
-                    stringResource(Res.string.nutrition_meal_lunch),
-                    lunch,
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = JourneySemanticColors.inkDeep(),
-            )
-            Text(
-                text = stringResource(
-                    Res.string.nutrition_meal_plan_preview_line,
-                    stringResource(Res.string.nutrition_meal_dinner),
-                    dinner,
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = JourneySemanticColors.inkDeep(),
-            )
+            if (visibleSlot == null || visibleSlot == MealSlot.Lunch) {
+                Text(
+                    text = stringResource(
+                        Res.string.nutrition_meal_plan_preview_line,
+                        stringResource(Res.string.nutrition_meal_lunch),
+                        lunch,
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = JourneySemanticColors.inkDeep(),
+                )
+            }
+            if (visibleSlot == null || visibleSlot == MealSlot.Dinner) {
+                Text(
+                    text = stringResource(
+                        Res.string.nutrition_meal_plan_preview_line,
+                        stringResource(Res.string.nutrition_meal_dinner),
+                        dinner,
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = JourneySemanticColors.inkDeep(),
+                )
+            }
         }
     }
 }

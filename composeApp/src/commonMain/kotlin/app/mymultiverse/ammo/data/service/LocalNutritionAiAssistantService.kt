@@ -59,9 +59,12 @@ class LocalNutritionAiAssistantService(
         if (criteria.isBlank()) {
             return Result.failure(IllegalArgumentException("empty_criteria"))
         }
-        if (scope is MealPlanGenerationScope.SingleDay &&
-            scope.dayIndex !in 0 until WeeklyMealPlan.DAYS_IN_WEEK
-        ) {
+        val dayIndex = when (scope) {
+            is MealPlanGenerationScope.SingleDay -> scope.dayIndex
+            is MealPlanGenerationScope.SingleMeal -> scope.dayIndex
+            else -> null
+        }
+        if (dayIndex != null && dayIndex !in 0 until WeeklyMealPlan.DAYS_IN_WEEK) {
             return Result.failure(IllegalArgumentException("invalid_day"))
         }
         delayIfNeeded()

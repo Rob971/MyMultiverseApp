@@ -189,6 +189,7 @@
     <string name="nutrition_ai_grocery_summary">%1$d عناصر من ملاحظتك.</string>
     <string name="nutrition_ai_meal_plan_summary_full_week">معاينة الأسبوع كاملًا. راجع ثم طبّق.</string>
     <string name="nutrition_ai_meal_plan_summary_single_day">معاينة %1$s. راجع ثم طبّق.</string>
+    <string name="nutrition_ai_meal_plan_summary_single_meal">معاينة %2$s في %1$s. راجع ثم طبّق.</string>
     <string name="nutrition_ai_grocery_readonly_note">للقراءة فقط. قائمتك أدناه.</string>
     <string name="nutrition_ai_grocery_saved_readonly_note">محفوظ لهذا الأسبوع (للقراءة فقط).</string>
     <string name="nutrition_ai_clear_grocery">مسح الاقتراحات</string>

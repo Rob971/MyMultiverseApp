@@ -255,7 +255,7 @@ private fun WeeklyMealPlanScreenContent(
         onOpenAiSheet(
             AiHelperLaunchContext(
                 mode = NutritionAiMode.MealPlan,
-                mealPlanScope = MealPlanGenerationScope.SingleDay(dayIndex),
+                mealPlanScope = MealPlanGenerationScope.SingleMeal(dayIndex, slot),
                 initialCriteria = criteria,
                 targetMealSlot = slot,
                 offerIngredientsAfterApply = true,

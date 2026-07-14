@@ -290,6 +290,9 @@ object NutritionFoodSuggestionLocalization {
     fun hasIntent(text: String, intent: Intent): Boolean =
         containsAny(text, intentTerms.getValue(intent))
 
+    /** Returns the normalized 2-letter language code used internally (e.g. "it", "fr", "en"). */
+    fun normalizeLanguageCode(languageCode: String): String = languageKey(languageCode)
+
     fun containsIngredient(text: String, ingredientId: String): Boolean =
         containsAny(text, ingredientTerms.getValue(ingredientId))
 

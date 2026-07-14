@@ -189,6 +189,7 @@
     <string name="nutrition_ai_grocery_summary">%1$d articoli dalla tua nota.</string>
     <string name="nutrition_ai_meal_plan_summary_full_week">Anteprima della settimana. Controlla e applica.</string>
     <string name="nutrition_ai_meal_plan_summary_single_day">Anteprima %1$s. Controlla e applica.</string>
+    <string name="nutrition_ai_meal_plan_summary_single_meal">Anteprima %2$s di %1$s. Controlla e applica.</string>
     <string name="nutrition_ai_grocery_readonly_note">Solo lettura. La tua lista è sotto.</string>
     <string name="nutrition_ai_grocery_saved_readonly_note">Salvato per questa settimana (solo lettura).</string>
     <string name="nutrition_ai_clear_grocery">Cancella suggerimenti</string>

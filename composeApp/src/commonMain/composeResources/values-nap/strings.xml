@@ -189,6 +189,7 @@
     <string name="nutrition_ai_grocery_summary">%1$d articuli dalla nota toja.</string>
     <string name="nutrition_ai_meal_plan_summary_full_week">Anteprima d' 'a semmana. Cuntrolla e applica.</string>
     <string name="nutrition_ai_meal_plan_summary_single_day">Anteprima %1$s. Cuntrolla e applica.</string>
+    <string name="nutrition_ai_meal_plan_summary_single_meal">Anteprima %2$s 'e %1$s. Cuntrolla e applica.</string>
     <string name="nutrition_ai_grocery_readonly_note">Solo lettura. 'A lista toja è abbascio.</string>
     <string name="nutrition_ai_grocery_saved_readonly_note">Sarvato pe chesta settimana (solo lettura).</string>
     <string name="nutrition_ai_clear_grocery">Pulisce 'e suggerimente</string>

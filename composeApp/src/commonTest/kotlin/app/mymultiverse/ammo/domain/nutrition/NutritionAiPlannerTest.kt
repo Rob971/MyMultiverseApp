@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.domain.nutrition
 
+import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -51,7 +52,7 @@ class NutritionAiPlannerTest {
     }
 
     @Test
-    fun generateMealPlan_localizesDishNamesForItalian() {
+    fun generateMealPlan_italianUser_returnsRegionalItalianDishes() {
         val result = NutritionAiPlanner.generateMealPlan(
             criteria = "Pasto veloce 20 min",
             scope = MealPlanGenerationScope.FullWeek,
@@ -59,15 +60,16 @@ class NutritionAiPlannerTest {
             languageCode = "it",
         )
 
-        assertTrue(result.days[0].lunch.contains("20 min", ignoreCase = true))
-        assertTrue(result.days[0].lunch == "Frittata di verdure in 20 min con pane tostato")
-        assertTrue(result.days[0].dinner == "Pollo saltato in padella in 20 min con riso")
+        // Regional Italian quick dishes — not translated English dishes
         assertTrue(result.days.none { it.lunch == "20-min veggie omelette with toast" })
         assertTrue(result.days.none { it.dinner == "20-min chicken stir-fry with rice" })
+        // First Italian quick lunch is Pasta aglio olio e peperoncino
+        assertTrue(result.days[0].lunch == "Pasta aglio olio e peperoncino")
+        assertTrue(result.days.all { it.lunch.isNotBlank() && it.dinner.isNotBlank() })
     }
 
     @Test
-    fun generateMealPlan_localizesDishNamesForSpanish() {
+    fun generateMealPlan_spanishUser_returnsRegionalSpanishDishes() {
         val result = NutritionAiPlanner.generateMealPlan(
             criteria = "Comidas altas en proteína",
             scope = MealPlanGenerationScope.FullWeek,
@@ -75,8 +77,10 @@ class NutritionAiPlannerTest {
             languageCode = "es",
         )
 
+        // Regional Spanish protein dishes — not translated English dishes
         assertTrue(result.days.none { it.lunch == "Grilled chicken salad with quinoa" })
-        assertTrue(result.days.any { it.lunch == "Ensalada de pollo a la plancha con quinoa" })
+        assertTrue(result.days[0].lunch == "Ensalada de pollo a la plancha con legumbres")
+        assertTrue(result.days.all { it.lunch.isNotBlank() && it.dinner.isNotBlank() })
     }
 
     @Test
@@ -89,6 +93,46 @@ class NutritionAiPlannerTest {
 
         assertTrue(result.days[0].lunch == "20-min veggie omelette with toast")
         assertTrue(result.days[0].dinner == "20-min chicken stir-fry with rice")
+    }
+
+    @Test
+    fun generateMealPlan_singleMealScope_updatesOnlyTargetSlot() {
+        val existing = WeeklyMealPlan(weekKey = "2026-W24").copy(
+            days = List(7) { DayMeals(lunch = "Existing lunch", dinner = "Existing dinner") },
+        )
+        val result = NutritionAiPlanner.generateMealPlan(
+            criteria = "protein",
+            scope = MealPlanGenerationScope.SingleMeal(dayIndex = 2, slot = MealSlot.Lunch),
+            currentPlan = existing,
+        )
+
+        // Only lunch on day 2 is replaced
+        assertTrue(result.days[2].lunch.isNotBlank())
+        assertTrue(result.days[2].lunch != "Existing lunch")
+        assertEquals("Existing dinner", result.days[2].dinner)
+        // All other days are untouched
+        for (i in 0 until 7) {
+            if (i != 2) {
+                assertEquals("Existing lunch", result.days[i].lunch)
+                assertEquals("Existing dinner", result.days[i].dinner)
+            }
+        }
+    }
+
+    @Test
+    fun generateMealPlan_singleMealScope_dinner_updatesOnlyDinnerSlot() {
+        val existing = WeeklyMealPlan(weekKey = "2026-W24").copy(
+            days = List(7) { DayMeals(lunch = "My lunch", dinner = "My dinner") },
+        )
+        val result = NutritionAiPlanner.generateMealPlan(
+            criteria = "Quick 20-min",
+            scope = MealPlanGenerationScope.SingleMeal(dayIndex = 0, slot = MealSlot.Dinner),
+            currentPlan = existing,
+        )
+
+        assertEquals("My lunch", result.days[0].lunch)
+        assertTrue(result.days[0].dinner.isNotBlank())
+        assertTrue(result.days[0].dinner != "My dinner")
     }
 
     @Test
