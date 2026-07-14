@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -18,15 +20,18 @@ import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.presentation.navigation.LocalMainTabBarVisible
-import kotlinx.coroutines.launch
 
 object ScreenLayout {
     val horizontalPadding = 24.dp
@@ -107,19 +112,34 @@ fun Modifier.keyboardAwareScroll(
 ): Modifier = keyboardAwareInsets().verticalScroll(scrollState)
 
 /**
- * Scrolls a focused text field into view inside a [keyboardAwareScroll] parent.
- * Call once per field via [rememberFieldScrollIntoViewModifier].
+ * Scrolls a focused text field into view inside a [keyboardAwareScroll] or [LazyColumn] parent.
+ *
+ * The naive approach of calling [BringIntoViewRequester.bringIntoView] once on [onFocusEvent]
+ * has a timing gap: focus fires before the keyboard has animated in, so the field appears
+ * on-screen at that moment and no scroll occurs. Then [NutritionScaffold]'s `imePadding()` shrinks
+ * the layout as the keyboard rises, covering the bottom of the content — with no follow-up scroll.
+ *
+ * Fix: track both focus state and the current IME bottom inset. [LaunchedEffect] re-runs whenever
+ * [imeBottom] changes (i.e. every frame the keyboard animates), calling [bringIntoViewRequester]
+ * each time so the field stays visible throughout the animation.
  */
 @Composable
 fun rememberFieldScrollIntoViewModifier(): Modifier {
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
-    val scope = rememberCoroutineScope()
+    var isFocused by remember { mutableStateOf(false) }
+    val density = LocalDensity.current
+    val imeBottom = WindowInsets.ime.getBottom(density)
+
+    LaunchedEffect(isFocused, imeBottom) {
+        if (isFocused) {
+            bringIntoViewRequester.bringIntoView()
+        }
+    }
+
     return Modifier
         .bringIntoViewRequester(bringIntoViewRequester)
         .onFocusEvent { focusState ->
-            if (focusState.isFocused) {
-                scope.launch { bringIntoViewRequester.bringIntoView() }
-            }
+            isFocused = focusState.isFocused
         }
 }
 
