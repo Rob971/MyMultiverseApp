@@ -102,7 +102,9 @@ Requires `AMMO_PLAY_SERVICE_ACCOUNT_JSON`. `distribution/whatsnew/whatsnew-en-US
 gh workflow run "KMP CI" --ref main -f job=release -f version_bump=patch
 ```
 
-Flow: bump `gradle/app-version.properties` → build debug APK → Firebase App Distribution → commit `chore(version): release X.Y.Z [skip ci]` → tag `vX.Y.Z` → push.
+Flow: bump `gradle/app-version.properties` → build debug APK → Firebase App Distribution → **fetch + reset to latest `origin/main`** → restore bumped version files → commit `chore(version): release X.Y.Z [skip ci]` → tag `vX.Y.Z` → push.
+
+The fetch-then-reset step ensures the version commit always lands on top of the latest `main` even if other commits merged while the build was running, preventing non-fast-forward push failures.
 
 `version_bump`: `major` | `minor` | `patch` | `none`. See `version-management.mdc` for when to use each.
 
