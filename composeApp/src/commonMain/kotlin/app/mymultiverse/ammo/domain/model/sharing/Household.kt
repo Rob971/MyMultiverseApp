@@ -13,4 +13,5 @@ data class Household(
     val ownerId: String,
     val ownerDisplayName: String?,
     val nutritionFeatures: Set<NutritionSharingFeature>,
+    val avatarUrl: String? = null,
 )

@@ -163,6 +163,33 @@ class FakeHouseholdRepository(
         return Result.success(Unit)
     }
 
+    var updateHouseholdAvatarResult: Result<Unit> = Result.success(Unit)
+    var updateHouseholdAvatarCalls: Int = 0
+        private set
+    var lastHouseholdAvatarUrl: String? = null
+        private set
+
+    override suspend fun updateHouseholdAvatar(
+        householdId: String,
+        imageBytes: ByteArray,
+        contentType: String,
+    ): Result<Unit> {
+        updateHouseholdAvatarCalls++
+        if (updateHouseholdAvatarResult.isSuccess) {
+            val url = "https://example.com/households/$householdId/avatar.jpg"
+            lastHouseholdAvatarUrl = url
+            val current = membership.value
+            if (current is HouseholdMembershipStatus.Active && current.household.id == householdId) {
+                val updated = current.household.copy(avatarUrl = url)
+                membership.update {
+                    HouseholdMembershipStatus.Active(current.membership.copy(household = updated))
+                }
+                state.update { updated }
+            }
+        }
+        return updateHouseholdAvatarResult
+    }
+
     fun setMembershipStatus(status: HouseholdMembershipStatus) {
         membership.update { status }
         when (status) {

@@ -6,6 +6,7 @@ import app.mymultiverse.ammo.domain.sharing.DefaultNutritionSharingFeatures
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class HouseholdNavigationTest {
@@ -42,5 +43,33 @@ class HouseholdNavigationTest {
         )
 
         assertEquals(DefaultNutritionSharingFeatures, household.toNavigationContext().nutritionFeatures)
+    }
+
+    @Test
+    fun toNavigationContext_propagatesAvatarUrl() {
+        val household = Household(
+            id = "household-1",
+            name = "Our household",
+            ownerId = "owner-1",
+            ownerDisplayName = "Owner",
+            nutritionFeatures = emptySet(),
+            avatarUrl = "https://example.com/household.jpg",
+        )
+
+        assertEquals("https://example.com/household.jpg", household.toNavigationContext().avatarUrl)
+    }
+
+    @Test
+    fun toNavigationContext_propagatesNullAvatarUrl() {
+        val household = Household(
+            id = "household-1",
+            name = "Our household",
+            ownerId = "owner-1",
+            ownerDisplayName = "Owner",
+            nutritionFeatures = emptySet(),
+            avatarUrl = null,
+        )
+
+        assertNull(household.toNavigationContext().avatarUrl)
     }
 }

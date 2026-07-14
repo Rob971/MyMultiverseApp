@@ -83,6 +83,7 @@ data class HouseholdMembersUiState(
     val isUpdatingRole: Boolean = false,
     val currentUserRole: HouseholdMemberRole? = null,
     val uploadingAvatarMemberId: String? = null,
+    val isUploadingHouseholdAvatar: Boolean = false,
 )
 
 enum class HouseholdMembersSuccess {
@@ -538,6 +539,32 @@ class HouseholdMembersScreenModel(
                         state.copy(
                             isTransferring = false,
                             showTransferDialog = true,
+                            error = mapFailure(throwable),
+                        )
+                    }
+                }
+        }
+    }
+
+    fun uploadHouseholdAvatar(
+        householdId: String,
+        imageBytes: ByteArray,
+        contentType: String,
+    ) {
+        scope.launch {
+            _uiState.update { it.copy(isUploadingHouseholdAvatar = true, error = null) }
+            householdRepository.updateHouseholdAvatar(
+                householdId = householdId,
+                imageBytes = imageBytes,
+                contentType = contentType,
+            )
+                .onSuccess {
+                    _uiState.update { it.copy(isUploadingHouseholdAvatar = false) }
+                }
+                .onFailure { throwable ->
+                    _uiState.update {
+                        it.copy(
+                            isUploadingHouseholdAvatar = false,
                             error = mapFailure(throwable),
                         )
                     }

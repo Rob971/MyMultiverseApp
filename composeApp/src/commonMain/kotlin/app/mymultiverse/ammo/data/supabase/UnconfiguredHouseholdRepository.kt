@@ -44,4 +44,10 @@ class UnconfiguredHouseholdRepository : HouseholdRepository {
 
     override suspend fun transferOwnership(newOwnerUserId: String): Result<Unit> =
         Result.failure(IllegalStateException("supabase_not_configured"))
+
+    override suspend fun updateHouseholdAvatar(
+        householdId: String,
+        imageBytes: ByteArray,
+        contentType: String,
+    ): Result<Unit> = Result.failure(IllegalStateException("supabase_not_configured"))
 }

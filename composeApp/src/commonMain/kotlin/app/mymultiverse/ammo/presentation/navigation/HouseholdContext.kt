@@ -9,6 +9,7 @@ data class HouseholdContext(
     val ownerId: String,
     val ownerDisplayName: String? = null,
     val nutritionFeatures: Set<NutritionSharingFeature> = emptySet(),
+    val avatarUrl: String? = null,
 ) {
     fun includesNutritionFeature(feature: NutritionSharingFeature): Boolean =
         feature in nutritionFeatures

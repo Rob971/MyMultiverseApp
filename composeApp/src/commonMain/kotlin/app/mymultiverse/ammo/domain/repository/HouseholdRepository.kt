@@ -31,4 +31,11 @@ interface HouseholdRepository {
 
     /** Transfers nutrition household ownership to another active member (owners only). */
     suspend fun transferOwnership(newOwnerUserId: String): Result<Unit>
+
+    /** Uploads a new household family photo and persists its public URL (managers only). */
+    suspend fun updateHouseholdAvatar(
+        householdId: String,
+        imageBytes: ByteArray,
+        contentType: String,
+    ): Result<Unit>
 }

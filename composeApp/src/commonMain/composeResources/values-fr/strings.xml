@@ -910,6 +910,8 @@
     <string name="sharing_members_dependent_hint">Children and others without their own login appear here only.</string>
     <string name="sharing_members_kind_dependent">Dependant</string>
     <string name="sharing_members_avatar_content_description">Photo de profil de %1$s</string>
+    <string name="sharing_household_avatar_content_description">Photo de famille</string>
+    <string name="sharing_household_avatar_change_label">Changer la photo de famille</string>
     <string name="sharing_members_avatar_change">Changer la photo</string>
         <string name="auth_household_joined_success">Vous avez rejoint %1$s.</string>
 
