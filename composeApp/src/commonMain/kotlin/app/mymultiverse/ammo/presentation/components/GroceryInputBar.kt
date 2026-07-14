@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
@@ -66,11 +67,20 @@ fun GroceryInputBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                // Side-panel (wide layout): not in Scaffold bottomBar, needs its own IME inset.
-                // Phone (bottomBar or standalone): NutritionScaffold's contentWindowInsets
-                // include WindowInsets.ime so the Scaffold positions the bar above the keyboard;
-                // adding imePadding() here would create visible empty space inside the Surface.
-                .then(if (embeddedInSidePanel) Modifier.imePadding() else Modifier)
+                // Side-panel (wide layout): sits in a Row, not the Scaffold bottomBar, so it
+                // needs its own imePadding. WindowInsets are consumed by the Scaffold above, so
+                // this is a no-op when the Scaffold's imePadding already handled the keyboard.
+                // Phone (bottomBar slot): NutritionScaffold.imePadding() shrinks the Scaffold
+                // layout so the bottomBar lands right above the keyboard — no extra imePadding
+                // needed here. Only navigationBarsPadding is added so the gesture bar area is
+                // covered by the Surface background when the keyboard is not visible.
+                .then(
+                    when {
+                        embeddedInSidePanel -> Modifier.imePadding()
+                        embeddedInMainTabs -> Modifier.navigationBarsPadding()
+                        else -> Modifier.navigationBarsPadding()
+                    },
+                )
                 .padding(
                     horizontal = ScreenLayout.inputBarHorizontalPadding,
                     vertical = ScreenLayout.inputBarVerticalPadding,

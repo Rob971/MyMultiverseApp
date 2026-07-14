@@ -4,9 +4,8 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.union
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -42,9 +41,12 @@ fun NutritionScaffold(
     val backLabel = stringResource(Res.string.action_back)
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        // imePadding on the Scaffold modifier shrinks the Scaffold's layout by the keyboard
+        // height. The Scaffold's SubcomposeLayout positions the bottomBar at
+        // (layoutHeight - barHeight), so the bar lands right above the keyboard with no gap.
+        modifier = modifier.fillMaxSize().imePadding(),
         containerColor = Color.Transparent,
-        contentWindowInsets = WindowInsets.safeDrawing.union(WindowInsets.ime),
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
                 title = {
