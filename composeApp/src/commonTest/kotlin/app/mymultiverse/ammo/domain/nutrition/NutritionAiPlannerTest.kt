@@ -141,4 +141,54 @@ class NutritionAiPlannerTest {
     fun generateGroceryForMeal_blankMeal_returnsEmpty() {
         assertEquals(emptyList(), NutritionAiPlanner.generateGroceryForMeal("   "))
     }
+
+    @Test
+    fun generateGroceryForMeal_italianDishName_resolvesCorrectIngredients() {
+        // "Pollo saltato in padella in 20 min con riso" is the Italian translation of
+        // "20-min chicken stir-fry with rice". Ingredients should include chicken-related items.
+        val items = NutritionAiPlanner.generateGroceryForMeal(
+            mealDescription = "Pollo saltato in padella in 20 min con riso",
+            languageCode = "it",
+        )
+
+        assertTrue(items.any { it.contains("pollo", ignoreCase = true) || it.contains("Petto", ignoreCase = true) })
+        assertTrue(items.none { it == "Chicken breast" })
+    }
+
+    @Test
+    fun generateGroceryForMeal_italianSoupDish_resolvesSoupIngredients() {
+        // "Zuppa di lenticchie con pane integrale" → "Lentil soup with whole-grain bread"
+        // Should produce soup/vegetable ingredients, not just salt and pepper.
+        val items = NutritionAiPlanner.generateGroceryForMeal(
+            mealDescription = "Zuppa di lenticchie con pane integrale",
+            languageCode = "it",
+        )
+
+        assertTrue(items.isNotEmpty())
+        assertTrue(items.any { it.contains("brodo", ignoreCase = true) || it.contains("Carote", ignoreCase = true) || it.contains("Patate", ignoreCase = true) })
+    }
+
+    @Test
+    fun generateGroceryForMeal_spanishFrittata_resolvesEggIngredients() {
+        // "Tortilla de verduras de 20 min con tostada" → "20-min veggie omelette with toast"
+        val items = NutritionAiPlanner.generateGroceryForMeal(
+            mealDescription = "Tortilla de verduras de 20 min con tostada",
+            languageCode = "es",
+        )
+
+        assertTrue(items.any { it.contains("Huevo", ignoreCase = true) })
+        assertTrue(items.none { it == "Eggs" })
+    }
+
+    @Test
+    fun generateGroceryForMeal_userTypedDish_fallsBackToDirectMatching() {
+        // A user-typed dish name not in the catalog should still resolve ingredients
+        // via multilingual containsIngredient checks.
+        val items = NutritionAiPlanner.generateGroceryForMeal(
+            mealDescription = "Pasta con pollo e verdure",
+            languageCode = "it",
+        )
+
+        assertTrue(items.isNotEmpty())
+    }
 }

@@ -83,7 +83,12 @@ object NutritionAiPlanner {
     fun generateGroceryForMeal(mealDescription: String, languageCode: String = "en"): List<String> {
         val trimmed = mealDescription.trim()
         if (trimmed.isEmpty()) return emptyList()
-        val fromMeal = ingredientsForMeal(trimmed)
+        // Resolve to English canonical for ingredient matching so that localized dish names
+        // (e.g. "Pollo saltato in padella in 20 min con riso") correctly trigger the same
+        // ingredient rules as their English originals. User-typed names not in the catalog
+        // fall back to the original text.
+        val englishDish = NutritionFoodSuggestionLocalization.mealDishToEnglish(trimmed)
+        val fromMeal = ingredientsForMeal(englishDish)
         val fromKeywords = generateGroceryList(trimmed, languageCode = "en")
         return (fromMeal + fromKeywords)
             .distinct()

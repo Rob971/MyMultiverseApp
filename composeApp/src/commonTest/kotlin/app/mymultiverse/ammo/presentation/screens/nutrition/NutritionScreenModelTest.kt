@@ -520,6 +520,32 @@ class NutritionScreenModelTest {
     }
 
     @Test
+    fun generateGroceryForMeal_localizedDishName_producesLocalizedIngredients() = runTest(testDispatcher) {
+        // End-to-end: Italian dish stored in plan → generateGroceryForMeal → Italian ingredient labels.
+        // "Pollo saltato in padella in 20 min con riso" = Italian for "20-min chicken stir-fry with rice".
+        val repository = FakeNutritionRepository(weekKey)
+        repository.mealPlan.value = repository.mealPlan.value.copy(
+            days = repository.mealPlan.value.days.toMutableList().also {
+                it[0] = it[0].copy(lunch = "Pollo saltato in padella in 20 min con riso")
+            },
+        )
+        val ai = LocalNutritionAiAssistantService(
+            responseDelayMs = 0,
+            currentLanguageCode = { "it" },
+        )
+        val model = nutritionScreenModel(repository, ai, scope = modelScope) { "meal-it-1" }
+        advanceUntilIdle()
+
+        model.generateGroceryForMeal(0, MealSlot.Lunch, "Lunedì")
+        advanceUntilIdle()
+
+        val addedLabels = repository.grocery.value.map { it.label }
+        assertTrue(addedLabels.isNotEmpty())
+        assertTrue(addedLabels.any { it.contains("pollo", ignoreCase = true) || it.contains("Petto", ignoreCase = true) })
+        assertTrue("Chicken breast" !in addedLabels)
+    }
+
+    @Test
     fun adoptAllAiGrocerySuggestions_leavesPantryStaplesSeparate() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         repository.aiGrocery.value = listOf(

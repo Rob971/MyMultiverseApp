@@ -258,8 +258,31 @@ object NutritionFoodSuggestionLocalization {
     fun labelFor(englishLabel: String, languageCode: String): String =
         labels[englishLabel]?.get(languageKey(languageCode)) ?: englishLabel
 
+    /**
+     * Reverse map: any localized dish string (any language, lowercased) → its English canonical.
+     * Built lazily once from [mealDishes]. Falls back to the input when not found so user-typed
+     * dish names are passed through unchanged.
+     */
+    private val mealDishReverse: Map<String, String> by lazy {
+        buildMap {
+            for ((english, translations) in mealDishes) {
+                for ((_, localized) in translations) {
+                    putIfAbsent(localized.lowercase(), english)
+                }
+            }
+        }
+    }
+
     fun mealDishFor(englishDish: String, languageCode: String): String =
         mealDishes[englishDish]?.get(languageKey(languageCode)) ?: englishDish
+
+    /**
+     * Given a dish name in any supported language, returns the English canonical used for
+     * ingredient matching. Falls back to the original string for user-typed dish names that
+     * are not in the built-in catalog.
+     */
+    fun mealDishToEnglish(localizedDish: String): String =
+        mealDishReverse[localizedDish.trim().lowercase()] ?: localizedDish
 
     fun ingredientNameFor(id: String, languageCode: String): String =
         labels[ingredientLabelKey(id)]?.get(languageKey(languageCode)) ?: id
