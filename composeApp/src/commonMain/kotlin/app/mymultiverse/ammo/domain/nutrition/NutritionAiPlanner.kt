@@ -225,6 +225,8 @@ object NutritionAiPlanner {
                 "fr" -> frenchProfile(keywords)
                 "es" -> spanishProfile(keywords)
                 "de" -> germanProfile(keywords)
+                "ar" -> arabicProfile(keywords)
+                "nap" -> napoliProfile(keywords)
                 else -> null
             }
         }
@@ -406,6 +408,96 @@ object NutritionAiPlanner {
                     label = "ausgewogen",
                     lunches = listOf("Kartoffelsalat mit Hähnchen und Kräutern", "Linsensuppe mit Vollkornbrot", "Hähnchensalat mit gemischtem Gemüse", "Vollkornnudeln mit Tomatensoße", "Gemüsesuppe mit Einlage", "Lachs mit Kartoffeln und Dill", "Brot mit Aufschnitt und Salat"),
                     dinners = listOf("Hähnchen mit Kartoffeln und Gemüse", "Fischfilet mit Kartoffelpüree und Erbsen", "Schweinebraten mit Rotkohl und Kartoffeln", "Pasta mit hausgemachter Tomatensoße", "Lachs mit grünem Spargel", "Gemüseeintopf mit Einlage", "Schnitzel mit Salat und Kartoffeln"),
+                )
+        }
+
+        private fun arabicProfile(keywords: String): MealProfile = when {
+            NutritionFoodSuggestionLocalization.hasIntent(keywords, NutritionFoodSuggestionLocalization.Intent.Vegetarian) ->
+                MealProfile(
+                    label = "نباتي",
+                    lunches = listOf("حمص بالطحينة مع خبز عربي وزيت الزيتون", "فلافل مع السلطة الخضراء والطحينة", "مجدرة بالعدس والأرز والبصل المقلي", "فتوش بالخضار والسماق", "شوربة الطماطم مع الخبز المحمص", "سلطة الفاصوليا البيضاء بالزيتون", "بيض مع الخضار والجبنة"),
+                    dinners = listOf("ورق عنب محشو بالأرز والخضار", "مقلوبة الخضار مع الأرز", "يخنة الحمص مع الطماطم والبهارات", "هريسة الخضار مع الأرز", "ملوخية الخضار مع الأرز", "شوربة العدس الحمراء مع الخبز", "كوسا محشوة بالأرز والخضار"),
+                )
+            NutritionFoodSuggestionLocalization.hasIntent(keywords, NutritionFoodSuggestionLocalization.Intent.Protein) ->
+                MealProfile(
+                    label = "غني بالبروتين",
+                    lunches = listOf("صدر الدجاج المشوي مع الحمص والخيار", "سلطة التونة مع البيض والطماطم", "لحم مشوي مع الفاصوليا والسلطة", "دجاج بالبهارات مع الكينوا والخضار", "سمك السلمون مع الأرز والليمون", "شيش كباب مع السلطة الخضراء", "مرق الدجاج بالحمص والبيض"),
+                    dinners = listOf("كباب اللحم مع البرغل والبقدونس", "دجاج بالزيتون والليمون والثوم", "سمك السلمون بالفرن مع الخضار", "جمبري مشوي بالثوم مع الأرز", "لحم بالخضار المشكلة والبهارات", "دجاج مشوي مع الفاصوليا الخضراء", "بيفتيك اللحم مع السلطة الخضراء"),
+                )
+            NutritionFoodSuggestionLocalization.hasIntent(keywords, NutritionFoodSuggestionLocalization.Intent.Budget) ->
+                MealProfile(
+                    label = "اقتصادي",
+                    lunches = listOf("فول مدمس مع خبز وزيت الزيتون", "عدس مع الأرز والبصل المقلي", "شوربة الخضار البسيطة", "مجدرة بالعدس والأرز", "خبز مع زيت الزيتون والزعتر", "بيض مع الطماطم والبصل", "أرز بالشعرية بالمرق"),
+                    dinners = listOf("يخنة الفاصوليا مع الخبز", "شوربة العدس مع عصير الليمون", "مكرونة بالصلصة البسيطة", "أرز بالكمون والبصل المقلي", "بطاطس مشوية مع البيض", "فتة الحمص مع الخبز المحمص", "عجة الخضار مع الخبز"),
+                )
+            NutritionFoodSuggestionLocalization.hasIntent(keywords, NutritionFoodSuggestionLocalization.Intent.Allergy) ->
+                MealProfile(
+                    label = "خالي من المسببات الحساسية",
+                    lunches = listOf("دجاج مشوي مع الأرز والخيار", "سلطة التونة مع الطماطم بدون مكسرات", "سمك مشوي مع البطاطس", "أرز بالدجاج والجزر", "صدر الدجاج مع البازلاء والجزر", "لحم مشوي مع البطاطس والجزر", "سمك السلمون مع الأرز والفاصوليا الخضراء"),
+                    dinners = listOf("سمك بالفرن مع البطاطس", "دجاج مشوي مع الخضار بدون مكسرات", "لحم بالخضار البسيطة", "جمبري مع الأرز والليمون", "دجاج بالطماطم والبطاطس", "سمك بالكزبرة والليمون مع الأرز", "دجاج مسلوق مع البطاطس والجزر"),
+                )
+            NutritionFoodSuggestionLocalization.hasIntent(keywords, NutritionFoodSuggestionLocalization.Intent.Family) ->
+                MealProfile(
+                    label = "للعائلة",
+                    lunches = listOf("كبسة الدجاج مع الأرز للعائلة", "منسف الدجاج بالزبادي", "شاورما الدجاج مع الخبز والبطاطس", "دجاج مشوي مع البطاطس للعائلة", "مكرونة باللحم المفروم والصلصة", "ملوخية الدجاج مع الأرز", "رز اللحم للعائلة بالبهارات"),
+                    dinners = listOf("شيش طاووق مع الأرز والسلطة", "دجاج محمر بالثوم مع البطاطس للعائلة", "كباب اللحم مع الأرز والسلطة", "برجر دجاج منزلي مع البطاطس", "مكرونة بالصلصة الحمراء واللحم", "دجاج بالأرز والزبادي", "سمك مشوي مع البطاطس والسلطة"),
+                )
+            NutritionFoodSuggestionLocalization.hasIntent(keywords, NutritionFoodSuggestionLocalization.Intent.Quick) ->
+                MealProfile(
+                    label = "سريع",
+                    lunches = listOf("فلافل مع الطحينة وخبز البيتا", "شاورما دجاج سريعة", "بيض مع الطماطم والبهارات", "حمص مع خبز عربي وزيت الزيتون", "تبولة سريعة بالخضار", "أرز بالشعرية في 20 دقيقة", "سلطة الفاصوليا البيضاء مع الزيتون"),
+                    dinners = listOf("عجة بالخضار والجبنة في 20 دقيقة", "دجاج مشوي سريع مع الأرز", "مكرونة بصلصة الطماطم السريعة", "رز بالدجاج السريع", "بيض مع اللحم المفروم والطماطم", "جمبري مقلي بالثوم مع الأرز", "فتة بسيطة سريعة"),
+                )
+            else ->
+                MealProfile(
+                    label = "متوازن",
+                    lunches = listOf("فتوش بالدجاج المشوي والخبز المحمص", "شوربة العدس الحمراء بالكمون", "ورق عنب محشو بالأرز والبندورة", "تبولة مع الجبنة البيضاء والخضار", "سلطة الحمص بالطحينة وخبز عربي", "مجدرة بالأرز والبصل المقلي", "سمك مشوي مع البرغل والبقدونس"),
+                    dinners = listOf("كبسة الدجاج بالتوابل والأرز", "شيش طاووق مع الأرز والسلطة الخضراء", "دجاج محمر بالثوم مع البطاطس", "مقلوبة الدجاج بالخضار", "سمك بالطماطم والكزبرة والكمون", "ملوخية مع الدجاج والأرز", "لحم بالخضار والبهارات"),
+                )
+        }
+
+        private fun napoliProfile(keywords: String): MealProfile = when {
+            NutritionFoodSuggestionLocalization.hasIntent(keywords, NutritionFoodSuggestionLocalization.Intent.Vegetarian) ->
+                MealProfile(
+                    label = "vegetariano",
+                    lunches = listOf("Pasta e fasule napulitana", "Minestrone 'e verdure cu pane cafone", "Zuppa 'e lenticchie e cepolla", "Insalata 'e cece cu pummarulelle", "Pasta cu pesto 'e basilico", "Bruschetta napulitana cu pummarola", "Panino cu mulignane a' griglia"),
+                    dinners = listOf("Parmigiana 'e mulignane classica", "Pasta cu pesto e zucchine", "Risotto a' funge porcine", "Minestrone cu legume e verdure", "Gnocchi a' pummarola e basilico", "Pasta 'e ricotta e spinace", "Lasagne 'e verdure a' furrno"),
+                )
+            NutritionFoodSuggestionLocalization.hasIntent(keywords, NutritionFoodSuggestionLocalization.Intent.Protein) ->
+                MealProfile(
+                    label = "proteico",
+                    lunches = listOf("Petto 'e pullastro a' griglia cu cece", "Insalata 'e tonno cu fasule e pummarola", "Frittata 'e uova e spinace cu pane", "Pullastro cu quinoa e pummarulelle", "Salmone cu fagiolini e limone", "Bresaola cu rucola e grana", "Ricotta fresca cu frutta secca e nuce"),
+                    dinners = listOf("Tagliata 'e manzo cu rucola e parmigiano", "Pullastro a' cacciatora cu olive e capperi", "Salmone a' furrno cu broccole", "Gammare a' padella cu aglio e uoglio", "Cotoletta 'e vitello cu nzalandella", "Polipetti cu patate e prezzemolo", "Pullastro a' diavola cu patate dolce"),
+                )
+            NutritionFoodSuggestionLocalization.hasIntent(keywords, NutritionFoodSuggestionLocalization.Intent.Budget) ->
+                MealProfile(
+                    label = "economico",
+                    lunches = listOf("Pasta e cece a' pummarola", "Zuppa 'e fasule cu pane cafone", "Pasta cu patane e rosmarino", "Minestra 'e orzo e verdure", "Frittata 'e patane e cepolla", "Pane cu uoglio e pummarola", "Pasta 'e lenticchie cu 'o sedano"),
+                    dinners = listOf("Salsiccia cu fasule a sugo", "Pasta a ragù semplice", "Pappa a pummarola cu pane", "Lenticchie cu salsiccia e sedano", "Frittata mmescata 'e verdure", "Pasta e verdure a' padella", "Zuppa 'e pane e fasule"),
+                )
+            NutritionFoodSuggestionLocalization.hasIntent(keywords, NutritionFoodSuggestionLocalization.Intent.Allergy) ->
+                MealProfile(
+                    label = "senza allergeni",
+                    lunches = listOf("Riso cu pullastro e zucchine", "Pullastro a limone cu patane a' furrno", "Carpaccio 'e manzo cu rucola e limone", "Salmone cu riso e fagiolini", "Insalata 'e tonno cu fasule e pummarola", "Pullastro arrustuto cu carote e sedano", "Vitello cu nzalandella verde"),
+                    dinners = listOf("Branzino a' furrno cu patane", "Pullastro a' griglia cu verdure a vapore", "Gammare a' furrno cu zucchine", "Manzo stufato cu patane e carote", "Merluzzo a' furrno cu patate dolce", "Tacchino arrustuto cu fagiolini", "Pullastro 'nfucuato cu olive e capperi"),
+                )
+            NutritionFoodSuggestionLocalization.hasIntent(keywords, NutritionFoodSuggestionLocalization.Intent.Family) ->
+                MealProfile(
+                    label = "pe' 'a famiglia",
+                    lunches = listOf("Pasta a ragù classico napoletano", "Pizza margherita fatta 'n casa", "Lasagna a' furrno bolognese", "Pasta a' carbonara semprece", "Gnocchi cu burro e salvia", "Pasta cu pullastro e piselle", "Spaghetti a pummarola cu basilico"),
+                    dinners = listOf("Pullastro arrustuto a domenica", "Cotolette 'e pullastro cu patane a' furrno", "Purpette 'e carne a sugo cu pasta", "Spaghetti a' bolognese", "Scaloppine a sugo cu contorno", "Pasta cu salsiccia e piselle", "Sartu 'e riso cu pullastro"),
+                )
+            NutritionFoodSuggestionLocalization.hasIntent(keywords, NutritionFoodSuggestionLocalization.Intent.Quick) ->
+                MealProfile(
+                    label = "ambressa",
+                    lunches = listOf("Pasta aglio uoglio e peperuncino", "Frittata 'e ova cu pane tostato", "Panino cu Pruvulone e pummarola", "Pasta cu 'o tonno e olive nere", "Caprese cu pane cafone", "Zuppa 'e lenticchie veloce", "Ova strapazzate cu pummarulelle"),
+                    dinners = listOf("Pasta cu 'e vongole 'n venti minuti", "Pullastro a' padella cu vino bianco", "Frittata 'e prosciutto e provola", "Spaghetti cu 'o tonno e basilico", "Riso fritto cu ova e piselle", "Cozze a' tarantina cu pane", "Ova a occhio 'e bue cu pane tostato"),
+                )
+            else ->
+                MealProfile(
+                    label = "equilibrato",
+                    lunches = listOf("Pasta e fasule napulitana cu pane", "Frittata 'e maccheroni cu provola", "Insalata caprese cu pane cafone", "Sartu 'e riso cu piselle e carne", "Pasta a pummarola ca' n'uocchio", "Zuppa 'e pesce cu pane", "Pasta cu 'o tonno e pummarulelle"),
+                    dinners = listOf("Salsiccia e friarielli a' padella", "Baccalà a' piscaiola cu pummarola", "Genovese 'e manzo cu paccheri", "Pullastro a' furrno cu patane e rosmarino", "Ragù napoletano a' domenica", "Salmone a griglia cu limone e capperi", "Purpette 'e manzo a sugo"),
                 )
         }
     }

@@ -84,6 +84,36 @@ class NutritionAiPlannerTest {
     }
 
     @Test
+    fun generateMealPlan_arabicUser_returnsRegionalArabicDishes() {
+        val result = NutritionAiPlanner.generateMealPlan(
+            criteria = "وجبات سريعة",
+            scope = MealPlanGenerationScope.FullWeek,
+            currentPlan = WeeklyMealPlan(weekKey = "2026-W24"),
+            languageCode = "ar",
+        )
+
+        // Regional Arabic quick dishes — not translated English dishes
+        assertTrue(result.days.none { it.lunch == "20-min veggie omelette with toast" })
+        assertTrue(result.days[0].lunch == "فلافل مع الطحينة وخبز البيتا")
+        assertTrue(result.days.all { it.lunch.isNotBlank() && it.dinner.isNotBlank() })
+    }
+
+    @Test
+    fun generateMealPlan_napoliUser_returnsRegionalNapoliDishes() {
+        val result = NutritionAiPlanner.generateMealPlan(
+            criteria = "Pasto ambressa veloce",
+            scope = MealPlanGenerationScope.FullWeek,
+            currentPlan = WeeklyMealPlan(weekKey = "2026-W24"),
+            languageCode = "nap",
+        )
+
+        // Regional Neapolitan quick dishes — not translated English dishes
+        assertTrue(result.days.none { it.lunch == "20-min veggie omelette with toast" })
+        assertTrue(result.days[0].lunch == "Pasta aglio uoglio e peperuncino")
+        assertTrue(result.days.all { it.lunch.isNotBlank() && it.dinner.isNotBlank() })
+    }
+
+    @Test
     fun generateMealPlan_defaultLanguage_keepsDishNamesInEnglish() {
         val result = NutritionAiPlanner.generateMealPlan(
             criteria = "Quick 20-min lunch",
