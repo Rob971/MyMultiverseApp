@@ -521,7 +521,7 @@ jobs:
           github-ref-name: ${{ github.ref_name }}
           github-sha: ${{ github.sha }}
 
-      - name: Commit version bump, tag release, and push
+      - name: Fetch, merge latest main, commit version bump, tag, and push
         env:
           DISPLAY_NAME: ${{ steps.bump.outputs.display_name }}
           TAG_NAME: ${{ steps.bump.outputs.tag_name }}
@@ -529,6 +529,20 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Save the version files that bump-app-version.sh modified earlier in this job.
+          # main may have advanced while the build ran; we must land on top of the latest commit.
+          cp gradle/app-version.properties /tmp/app-version.properties.bumped
+          cp iosApp/iosApp/Info.plist /tmp/Info.plist.bumped
+
+          # Fetch and reset to the latest main so the push is always fast-forward.
+          git fetch origin main
+          git reset --hard origin/main
+
+          # Restore the bumped version files on top of latest main.
+          cp /tmp/app-version.properties.bumped gradle/app-version.properties
+          cp /tmp/Info.plist.bumped iosApp/iosApp/Info.plist
+
           git add gradle/app-version.properties iosApp/iosApp/Info.plist
           if git diff --staged --quiet; then
             echo "No version changes to commit."
