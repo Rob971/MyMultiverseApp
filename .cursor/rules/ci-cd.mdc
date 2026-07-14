@@ -104,7 +104,7 @@ gh workflow run "KMP CI" --ref main -f job=release -f version_bump=patch
 
 Flow: bump `gradle/app-version.properties` → build debug APK → Firebase App Distribution → commit `chore(version): release X.Y.Z [skip ci]` → tag `vX.Y.Z` → push.
 
-`version_bump`: `patch` | `minor` | `none`.
+`version_bump`: `major` | `minor` | `patch` | `none`. See `version-management.mdc` for when to use each.
 
 ### `play-store-bundle` (manual signed AAB artifact only)
 

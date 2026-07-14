@@ -36,13 +36,14 @@ on:
           - play-store-bundle
           - firebase-cleanup-releases
       version_bump:
-        description: "Semver bump when running release or all (patch/minor/none)."
+        description: "Semver bump when running release or all (major/minor/patch/none)."
         required: false
         default: patch
         type: choice
         options:
-          - patch
+          - major
           - minor
+          - patch
           - none
       keep_releases:
         description: "Firebase App Distribution releases to keep when running firebase-cleanup-releases."

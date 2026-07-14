@@ -22,6 +22,7 @@ These are injected every session — follow them on **every** task (questions, r
 | `official-docs-urls.mdc` | Confirm APIs against indexed docs |
 | `ui-ux-compose.mdc` | Journey design system, UX states, testTags |
 | `qa-testing.mdc` | Unit/instrumented tests, Firebase YAML |
+| `version-management.mdc` | Release phase (alpha/beta/prod), scope & risk per track |
 
 ## Scoped rules — read before editing matching paths
 
@@ -37,12 +38,13 @@ If your task touches these paths, **read the rule file first** (use the Read too
 ## Task-start checklist (agents)
 
 1. **Classify task** — implementation, review, test-only, docs, release, question.
-2. **Plan** per `delivery-workflow.mdc` — layers, i18n, tests, QA YAML.
-3. **Read scoped rules** from the table above if paths will change.
-4. **Implement** using `architecture-clean`, `kmp-core`, `ui-ux-compose`, `i18n-multilingual`.
-5. **Test** per `qa-testing.mdc` — run Gradle tasks before claiming done.
-6. **Self-review** per `review-commit.mdc` before PR/commit.
-7. **CI/release** per `ci-cd.mdc` when pushing or releasing.
+2. **Identify release phase** per `version-management.mdc` — branch, CI track, `version.prerelease`; adapt scope (alpha iteration vs beta freeze vs prod hotfix).
+3. **Plan** per `delivery-workflow.mdc` — layers, i18n, tests, QA YAML.
+4. **Read scoped rules** from the table above if paths will change.
+5. **Implement** using `architecture-clean`, `kmp-core`, `ui-ux-compose`, `i18n-multilingual`.
+6. **Test** per `qa-testing.mdc` — run Gradle tasks before claiming done.
+7. **Self-review** per `review-commit.mdc` before PR/commit.
+8. **CI/release** per `ci-cd.mdc` when pushing or releasing.
 
 ## Task-end checklist (before "done")
 

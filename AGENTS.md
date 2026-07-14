@@ -27,6 +27,7 @@ Cursor rules in `.cursor/rules/` define how to plan, implement, test, review, co
 | `official-docs-urls.mdc` | Indexed docs + repo skills |
 | `ui-ux-compose.mdc` | Journey design system, dark/wide UX, testTags |
 | `qa-testing.mdc` | Unit, instrumented, Firebase YAML |
+| `version-management.mdc` | Release phase (alpha/beta/prod), scope & risk per track |
 
 ### Read before editing matching paths
 
