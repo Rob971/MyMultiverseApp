@@ -5,9 +5,9 @@ alwaysApply: true
 
 # Delivery workflow (always follow)
 
-> **Compliance:** `agents-mandatory.mdc` is binding. All `.cursor/rules/` apply; do not skip steps.
+> **Compliance:** `agents-mandatory.mdc` is binding. **All** `.cursor/rules/` apply on every task type (implementation, review, questions, docs, release) — no exemptions for small scope. Do not skip steps.
 
-Every task—planning, review, fix, test, or implementation—must follow this sequence.
+Every task—planning, review, fix, test, question, or implementation—must follow this sequence and the full rule inventory in `agents-mandatory.mdc`.
 
 ## 1. Plan
 
