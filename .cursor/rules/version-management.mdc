@@ -1,0 +1,196 @@
+---
+description: MANDATORY — identify release phase (alpha/beta/prod) and adapt risk, scope, and testing
+alwaysApply: true
+---
+
+# Version management & release phases
+
+> **Compliance:** Mandatory (`agents-mandatory.mdc`). Read **before** planning or implementing any change that ships to users, touches `gradle/app-version.properties`, Supabase migrations, or release workflows.
+
+This repo follows **[Semantic Versioning 2.0.0](https://semver.org/)** (`MAJOR.MINOR.PATCH`) for user-facing `version.name`, plus optional prerelease segments for beta. Phase (alpha/beta/prod) is determined by **branch + CI track + prerelease** — not by the version string alone.
+
+## Two numbers users and stores care about
+
+| Field | Example | Audience | Rule |
+|-------|---------|----------|------|
+| **`version.name`** | `1.4.0` | End users, support, release notes | SemVer marketing version — bump only via policy below |
+| **`version.code`** | `136` | Play Store / App Store (internal) | **Monotonic integer** — must increase on every store upload; never reused |
+
+**Industry norm (Android / iOS):** users see a simple `X.Y.Z`; stores enforce a separate always-increasing build number. CI further encodes track in `versionCode` via `100_000 + run_number × 3 + trackOffset` (see `ci-cd.mdc`). Do not expose raw CI build codes in consumer UI.
+
+---
+
+## SemVer bump policy (`MAJOR.MINOR.PATCH`)
+
+Terminology maps to [semver.org](https://semver.org/):
+
+| Bump | SemVer segment | When to use | Ammò examples |
+|------|----------------|-------------|---------------|
+| **PATCH** | `Z` in `X.Y.Z` | Backward-compatible **bug fixes**, security patches, performance fixes, copy/i18n corrections, test-only CI changes that ship no user-visible feature | Grocery sync crash, RTL layout fix, typo in onboarding |
+| **MINOR** | `Y` in `X.Y.Z` | Backward-compatible **new features** or UX capability; additive API/schema changes with migration | Food emoji thumbnails, new household role UI, AI suggestion chips |
+| **MAJOR** | `X` in `X.Y.Z` | **Breaking** changes: incompatible data model, auth/session contract change, removed features, migrations that cannot coexist with prior app versions | Household schema redesign, dropping offline mode, login flow that invalidates existing sessions |
+
+### Agent decision checklist (before recommending a bump)
+
+1. **Would an older app version break** if it kept using the same backend or local data? → **MAJOR**
+2. **Is there new user-visible capability** but old clients still work? → **MINOR**
+3. **Only fixes / polish / no new capability?** → **PATCH**
+4. **Production hotfix on a tagged release?** → **PATCH** on the hotfix line (`v1.3.1-hotfix.1`), not MINOR/MAJOR unless explicitly approved
+
+### What does *not* warrant a MINOR or MAJOR
+
+- Refactors with no user-visible change → ship on alpha; **no version bump** until release
+- Dependency bumps (Kotlin, Compose) → PATCH if shipping alone; MINOR if bundled with features
+- Firebase YAML / test-only changes → no bump
+- Beta iteration (`beta.1` → `beta.2`) → **no** `version.name` change; CI increments beta sequence only
+
+### Tooling
+
+```bash
+./scripts/bump-app-version.sh patch|minor|major|none   # none = version.code only
+gh workflow run "KMP CI" --ref main -f job=release -f version_bump=patch
+```
+
+`version_bump`: `major` | `minor` | `patch` | `none`. All modes except manual property edits clear `version.prerelease`.
+
+---
+
+## Release train (how version meets users)
+
+Industry pattern: **trunk + release branch + tagged production** (used by Chrome, many mobile teams).
+
+```
+feature/* ──PR──► main (alpha) ──cut──► release/X.Y (beta) ──soak──► tag vX.Y.Z (production)
+                      │                         │
+                      └─ Firebase auto          └─ Play Closed Testing (X.Y.Z-beta.N)
+```
+
+| Stage | Branch / trigger | `version.name` bump? | User-facing string | End-user label (target) |
+|-------|------------------|----------------------|--------------------|-------------------------|
+| **Alpha** | `main` push → `distribute-alpha` | No — same `X.Y.Z` until named release | `1.4.0` | **Early access** *(not implemented in UI yet)* |
+| **Named release** | Manual `release` job on `main` | Yes — sets next `version.name` | `1.4.0` | Same; tags `v1.4.0` for bookkeeping |
+| **Beta** | `release/X.Y` push | No — CI adds `beta.N` only | `1.4.0-beta.2` | **Beta** *(not "RC" — see UX section)* |
+| **Production** | `vX.Y.Z` tag | Already set | `1.4.0` | **Version 1.4.0** |
+| **Hotfix** | `vX.Y.Z-hotfix.N` tag | PATCH semantics | `1.4.1` or `1.4.0-hotfix.1` | **Version 1.4.1** + what's new |
+
+**Named release** (`release` job) is the **only** routine way to advance `version.name` on `main`. Merges alone do not bump.
+
+---
+
+## Version string format (`AppVersionFormatter`)
+
+```kotlin
+// Empty prerelease → "1.3.1"; with prerelease → "1.3.1-beta.2"
+formatVersionName(name, prerelease)
+```
+
+| `version.prerelease` | Display | `IS_PRERELEASE` |
+|----------------------|---------|-----------------|
+| *(omitted)* | `1.3.1` | `false` |
+| `beta.2` | `1.3.1-beta.2` | `true` |
+| `rc.1` | `1.3.1-rc.1` | `true` *(supported; not used by CI today)* |
+
+- Source of truth: `gradle/app-version.properties`
+- **No `-alpha` suffix** today — alpha cannot be distinguished from production by version string alone.
+
+---
+
+## End-user display rules (UX)
+
+### Industry best practice
+
+1. **Show one simple version** in account/settings (`1.4.0`) — not CI run numbers.
+2. **Label prerelease channels plainly** — "Beta", "Early access", not internal jargon.
+3. **Align [SemVer prerelease order](https://semver.org/#spec-item-11):** `alpha` < `beta` < `rc` < stable. Do not call beta builds "RC".
+4. **Pair MINOR/MAJOR bumps with `distribution/whatsnew/`** — users infer importance from release notes, not only the number.
+5. **Hotfixes:** prefer bumping PATCH (`1.4.0` → `1.4.1`) over exotic suffixes when Play Store allows; reserve `-hotfix.N` tags for git/traceability.
+
+### Current app behaviour (gaps)
+
+| Build | Shown today | Problem | Target |
+|-------|-------------|---------|--------|
+| Stable | `Version 1.3.1` | OK | Keep |
+| Beta (`-beta.N`) | `Version 1.3.1-beta.2 (RC)` | **Misleading** — beta ≠ release candidate | `Version 1.3.1 (Beta)` or include beta number |
+| Alpha (Firebase) | `Version 1.3.1` | **Indistinguishable** from production | `Version 1.3.1 (Early access)` or build date |
+
+Agents proposing UI changes should follow the **Target** column and update all **8 locales** (`home_app_version_*` keys).
+
+---
+
+## Phase-specific agent behaviour
+
+### Alpha (`main` integration)
+
+**Goal:** Rapid iteration. **No `version.name` bump** per merge.
+
+- New features, refactors, schema changes allowed.
+- Breaking changes OK with migrations + tests.
+- Auto `distribute-alpha` on green `main` push.
+
+### Beta (`release/X.Y` stabilisation)
+
+**Goal:** Stabilisation — **feature freeze**.
+
+- **Reject new features** unless user explicitly overrides.
+- PATCH-level fixes only; no MINOR/MAJOR bump on the branch.
+- CI stamps `version.prerelease=beta.N` (not committed).
+- Strict self-review per `review-commit.mdc`.
+
+### Production (tagged release / hotfix)
+
+**Goal:** Minimal blast radius.
+
+- **Hotfixes only** — PATCH bump.
+- **No breaking changes.**
+- Block destructive DB ops without explicit human override.
+- Update `distribution/whatsnew/whatsnew-en-US` before `v*` tag.
+- Tag: `git tag vX.Y.Z && git push origin vX.Y.Z`
+- Hotfix: `git tag vX.Y.Z-hotfix.N main && git push origin vX.Y.Z-hotfix.N`
+
+---
+
+## Commands (quick reference)
+
+| Action | Command |
+|--------|---------|
+| Bump + Firebase named release | `gh workflow run "KMP CI" --ref main -f job=release -f version_bump=minor` |
+| Alpha only (no bump) | Auto on `main`, or `… -f job=distribute-alpha` |
+| Start beta | `git checkout -b release/1.4 main && git push -u origin release/1.4` |
+| Ship production | `git tag v1.4.0 && git push origin v1.4.0` |
+
+---
+
+## Agent decision tree
+
+```
+1. hotfix/* or "production hotfix"?  → PRODUCTION (PATCH only)
+2. release/* or VERSION_NAME has -beta.? → BETA (no feature work)
+3. main / feature/* / local dev       → ALPHA (default)
+4. Recommending version_bump?         → apply MAJOR/MINOR/PATCH table above
+```
+
+## Anti-patterns
+
+- Bumping MINOR for every merge — version inflation; use alpha without bump.
+- MAJOR bump without migration plan and user-facing what's new.
+- Calling beta builds "RC" in user-facing strings.
+- Treating clean `X.Y.Z` as production — alpha uses the same format.
+- Committing `version.prerelease=beta.N` to git — CI-only stamp.
+- Reusing or decreasing `version.code`.
+
+## Related rules
+
+| Rule | When |
+|------|------|
+| `ci-cd.mdc` | Workflows, track offsets, distribution jobs |
+| `agents-mandatory.mdc` | Task checklists |
+| `qa-testing.mdc` | Test gates before any bump ships |
+| `review-commit.mdc` | Self-review before PR/commit |
+| `supabase-backend.mdc` | Migrations on backend changes |
+
+## Further reading (industry)
+
+- [Semantic Versioning 2.0.0](https://semver.org/) — MAJOR.MINOR.PATCH semantics
+- [Google Play versioning](https://developer.android.com/studio/publish/versioning) — `versionName` vs `versionCode`
+- [Apple CFBundle versioning](https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundleshortversionstring) — parallel marketing vs build number split
+- [Trunk-based development / release branches](https://trunkbaseddevelopment.com/) — `main` + short-lived `release/*`

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Bumps app version in gradle/app-version.properties and syncs iOS Info.plist.
-# Usage: ./scripts/bump-app-version.sh patch|minor|none
+# Usage: ./scripts/bump-app-version.sh patch|minor|major|none
 set -euo pipefail
 
-MODE="${1:?usage: $0 patch|minor|none}"
+MODE="${1:?usage: $0 patch|minor|major|none}"
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=format-app-version.sh
 source "$ROOT_DIR/scripts/format-app-version.sh"
@@ -45,6 +45,14 @@ bump_minor() {
   echo "${major}.$((minor + 1)).0"
 }
 
+bump_major() {
+  local version="$1"
+  local major minor patch
+  IFS='.' read -r major minor patch <<< "$version"
+  major="${major:-0}"
+  echo "$((major + 1)).0.0"
+}
+
 case "$MODE" in
   patch)
     version_name="$(bump_patch "$version_name")"
@@ -56,11 +64,16 @@ case "$MODE" in
     version_prerelease=""
     version_code=$((version_code + 1))
     ;;
+  major)
+    version_name="$(bump_major "$version_name")"
+    version_prerelease=""
+    version_code=$((version_code + 1))
+    ;;
   none)
     version_code=$((version_code + 1))
     ;;
   *)
-    echo "Unknown mode: $MODE (expected patch, minor, or none)"
+    echo "Unknown mode: $MODE (expected patch, minor, major, or none)"
     exit 1
     ;;
 esac

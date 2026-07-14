@@ -487,20 +487,29 @@ Firebase App Distribution runs only via **manual dispatch** (`release` or `all`)
 
 ## App versioning
 
-Canonical version: [`gradle/app-version.properties`](gradle/app-version.properties).
+Canonical version: [`gradle/app-version.properties`](gradle/app-version.properties). Full bump policy: [`.cursor/rules/version-management.mdc`](.cursor/rules/version-management.mdc).
 
 | Field | Purpose |
 |-------|---------|
-| `version.name` | SemVer user-facing version (e.g. `1.0.11`) |
+| `version.name` | SemVer user-facing version (e.g. `1.4.0`) — `MAJOR.MINOR.PATCH` |
 | `version.code` | Monotonic build number (Android `versionCode`, iOS `CFBundleVersion`) |
-| `version.prerelease` | Optional suffix (e.g. `beta.1` → displays as `1.1.0-beta.1`) |
+| `version.prerelease` | Optional suffix (e.g. `beta.1` → `1.4.0-beta.1`; CI-stamped on beta track, not committed) |
 
-**Release (workflow_dispatch → `release` or `all`):**
+**SemVer bumps (named release only):**
 
-1. Choose **version bump**: `patch`, `minor`, or `none` (`none` only increments `version.code`).
-2. CI bumps version, builds a fresh debug APK, distributes to Firebase, tags `vX.Y.Z`, and commits `chore(version): release … [skip ci]`.
+| Bump | Use when |
+|------|----------|
+| `patch` | Bug fixes, hotfixes, security — no new user-facing features |
+| `minor` | New backward-compatible features |
+| `major` | Breaking data model, auth, or incompatible migrations |
+| `none` | Rebuild only — increments `version.code`, not `version.name` |
 
-Merges to `main` do **not** change the version automatically.
+**Release (`workflow_dispatch` → `release`):**
+
+1. Choose **version bump**: `major`, `minor`, `patch`, or `none`.
+2. CI bumps version, builds debug APK, distributes to Firebase, tags `vX.Y.Z`, commits `chore(version): release … [skip ci]`.
+
+Merges to `main` do **not** change `version.name` automatically. Alpha builds (`distribute-alpha` on `main` push) reuse the current `version.name`.
 
 ---
 
