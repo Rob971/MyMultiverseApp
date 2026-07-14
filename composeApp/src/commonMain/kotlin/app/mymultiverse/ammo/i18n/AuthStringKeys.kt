@@ -18,6 +18,8 @@ object AuthStringKeys {
         "auth_error_blank_name",
         "auth_password_toggle_show",
         "auth_password_toggle_hide",
+        "auth_confirmation_banner_title",
+        "auth_confirmation_banner_body",
         "auth_email_label",
         "auth_password_label",
         "auth_sign_in_button",

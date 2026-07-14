@@ -8,13 +8,17 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -59,6 +63,8 @@ import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import app.mymultiverse.ammo.presentation.theme.SharedJourneyColors
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.auth_back_to_sso
+import ammo.composeapp.generated.resources.auth_confirmation_banner_body
+import ammo.composeapp.generated.resources.auth_confirmation_banner_title
 import ammo.composeapp.generated.resources.auth_continue_apple
 import ammo.composeapp.generated.resources.auth_continue_google
 import ammo.composeapp.generated.resources.auth_email_label
@@ -109,6 +115,7 @@ object LoginTestTags {
     const val HOUSEHOLD_NAME_FIELD = "login_household_name_field"
     const val SKIP_HOUSEHOLD_BUTTON = "login_skip_household_button"
     const val STEP2_BACK_BUTTON = "login_step2_back_button"
+    const val CONFIRMATION_BANNER = "login_confirmation_banner"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -230,7 +237,10 @@ private fun CredentialsStep(
         )
         Spacer(modifier = Modifier.height(28.dp))
 
-        if (showBackToSso) {
+        if (uiState.awaitingEmailConfirmation) {
+            EmailConfirmationBanner(email = uiState.email)
+            Spacer(modifier = Modifier.height(24.dp))
+        } else if (showBackToSso) {
             JourneyTertiaryButton(
                 onClick = onBackToSso,
                 enabled = !uiState.isLoading,
@@ -532,6 +542,45 @@ private fun HouseholdSetupStep(
             label = stringResource(Res.string.auth_back_to_sso),
         )
         Spacer(modifier = Modifier.height(ScreenLayout.contentBottomPadding))
+    }
+}
+
+@Composable
+private fun EmailConfirmationBanner(email: String) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(LoginTestTags.CONFIRMATION_BANNER),
+        shape = RoundedCornerShape(16.dp),
+        color = SharedJourneyColors.MediterraneanTeal.copy(alpha = 0.10f),
+        tonalElevation = 0.dp,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Icon(
+                imageVector = AppIcons.CheckCircle,
+                contentDescription = null,
+                tint = SharedJourneyColors.MediterraneanTeal,
+                modifier = Modifier.size(20.dp),
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column {
+                Text(
+                    text = stringResource(Res.string.auth_confirmation_banner_title),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = SharedJourneyColors.MediterraneanTeal,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(Res.string.auth_confirmation_banner_body, email),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = JourneySemanticColors.inkSecondary(),
+                )
+            }
+        }
     }
 }
 

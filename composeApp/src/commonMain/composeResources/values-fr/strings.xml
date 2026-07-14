@@ -961,6 +961,8 @@
     <string name="auth_error_blank_name">Entrez votre prénom.</string>
     <string name="auth_password_toggle_show">Afficher le mot de passe</string>
     <string name="auth_password_toggle_hide">Masquer le mot de passe</string>
+    <string name="auth_confirmation_banner_title">Vérifiez votre boîte mail</string>
+    <string name="auth_confirmation_banner_body">Nous avons envoyé un lien de confirmation à %1$s. Ouvrez-le pour valider votre compte, puis connectez-vous.</string>
     <string name="sharing_members_role_admin">Admin de la famille</string>
     <string name="sharing_members_change_role">Changer le rôle</string>
     <string name="sharing_members_promote_admin_confirm_title">Nommer admin de la famille ?</string>

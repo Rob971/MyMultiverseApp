@@ -961,6 +961,8 @@
     <string name="auth_error_blank_name">Inserisci il tuo nome.</string>
     <string name="auth_password_toggle_show">Mostra password</string>
     <string name="auth_password_toggle_hide">Nascondi password</string>
+    <string name="auth_confirmation_banner_title">Controlla la tua casella</string>
+    <string name="auth_confirmation_banner_body">Ti abbiamo inviato un link di conferma a %1$s. Aprilo per verificare il tuo account, poi accedi.</string>
     <string name="sharing_members_role_admin">Admin della famiglia</string>
     <string name="sharing_members_change_role">Cambia ruolo</string>
     <string name="sharing_members_promote_admin_confirm_title">Rendere admin della famiglia?</string>

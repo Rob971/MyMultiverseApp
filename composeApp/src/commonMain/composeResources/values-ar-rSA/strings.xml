@@ -961,6 +961,8 @@
     <string name="auth_error_blank_name">أدخل اسمك.</string>
     <string name="auth_password_toggle_show">إظهار كلمة المرور</string>
     <string name="auth_password_toggle_hide">إخفاء كلمة المرور</string>
+    <string name="auth_confirmation_banner_title">تحقق من بريدك الوارد</string>
+    <string name="auth_confirmation_banner_body">أرسلنا رابط تأكيد إلى %1$s. افتحه للتحقق من حسابك، ثم سجّل الدخول.</string>
     <string name="sharing_members_role_admin">مسؤول العائلة</string>
     <string name="sharing_members_change_role">تغيير الدور</string>
     <string name="sharing_members_promote_admin_confirm_title">تعيين مسؤول للعائلة؟</string>

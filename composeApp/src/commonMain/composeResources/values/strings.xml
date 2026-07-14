@@ -962,6 +962,8 @@
     <string name="auth_error_blank_name">Enter your name.</string>
     <string name="auth_password_toggle_show">Show password</string>
     <string name="auth_password_toggle_hide">Hide password</string>
+    <string name="auth_confirmation_banner_title">Check your inbox</string>
+    <string name="auth_confirmation_banner_body">We sent a confirmation link to %1$s. Open it to verify your account, then sign in below.</string>
     <string name="sharing_members_role_admin">Family admin</string>
     <string name="sharing_members_change_role">Change role</string>
     <string name="sharing_members_promote_admin_confirm_title">Make family admin?</string>

@@ -44,6 +44,12 @@ data class LoginUiState(
     val registrationStep: LoginRegistrationStep = LoginRegistrationStep.Credentials,
     val isLoading: Boolean = false,
     val message: LoginMessage? = null,
+    /**
+     * True after a successful sign-up email is dispatched and the user is
+     * auto-transitioned to sign-in mode. Drives a prominent confirmation banner
+     * so the user knows exactly what to do next (check inbox, come back, sign in).
+     */
+    val awaitingEmailConfirmation: Boolean = false,
 ) {
     val canSubmitEmailAuth: Boolean =
         email.isNotBlank() && password.isNotBlank()
@@ -68,11 +74,15 @@ class LoginScreenModel(
     }
 
     fun onEmailChange(value: String) {
-        _uiState.update { it.copy(email = value, message = null) }
+        _uiState.update {
+            it.copy(email = value, message = null, awaitingEmailConfirmation = false)
+        }
     }
 
     fun onPasswordChange(value: String) {
-        _uiState.update { it.copy(password = value, message = null) }
+        _uiState.update {
+            it.copy(password = value, message = null, awaitingEmailConfirmation = false)
+        }
     }
 
     fun togglePasswordVisibility() {
@@ -89,6 +99,7 @@ class LoginScreenModel(
                 isSignUpMode = !it.isSignUpMode,
                 registrationStep = LoginRegistrationStep.Credentials,
                 message = null,
+                awaitingEmailConfirmation = false,
             )
         }
     }
@@ -214,17 +225,37 @@ class LoginScreenModel(
                 password = snapshot.password,
                 displayName = displayName,
             )
-            if (result.isSuccess && householdName.isNotBlank()) {
+            val mappedMessage = result.fold(
+                onSuccess = {
+                    if (householdName.isNotBlank()) registrationData.pendingHouseholdName = householdName
+                    null
+                },
+                onFailure = { throwable -> mapAuthFailure(throwable) },
+            )
+            val isConfirmationPending = mappedMessage is LoginMessage.EmailConfirmationSent
+            if (isConfirmationPending && householdName.isNotBlank()) {
+                // Preserve household name so the HouseholdCreationScreen is pre-filled
+                // once the user returns and signs in after confirming.
                 registrationData.pendingHouseholdName = householdName
             }
             _uiState.update { state ->
-                state.copy(
-                    isLoading = false,
-                    message = result.fold(
-                        onSuccess = { null },
-                        onFailure = { throwable -> mapAuthFailure(throwable) },
-                    ),
-                )
+                if (isConfirmationPending) {
+                    // Auto-transition to sign-in mode: email is pre-filled, user
+                    // just needs to type their password after confirming the link.
+                    state.copy(
+                        isLoading = false,
+                        isSignUpMode = false,
+                        registrationStep = LoginRegistrationStep.Credentials,
+                        displayName = "",
+                        householdName = "",
+                        password = "",
+                        isPasswordVisible = false,
+                        awaitingEmailConfirmation = true,
+                        message = null,
+                    )
+                } else {
+                    state.copy(isLoading = false, message = mappedMessage)
+                }
             }
         }
     }

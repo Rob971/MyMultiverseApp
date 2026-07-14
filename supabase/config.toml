@@ -30,5 +30,14 @@ allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
 [auth]
 enabled = true
 
+# Email confirmation is mandatory: users must verify their address before they
+# can sign in. This matches the production Supabase project setting
+# (mailer_autoconfirm: false). Enabling double_confirm_changes prevents
+# unconfirmed email changes from accidentally locking users out.
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+
 [edge_runtime]
 enabled = false

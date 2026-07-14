@@ -209,7 +209,7 @@ class LoginScreenModelTest {
     }
 
     @Test
-    fun submitEmailAuth_signUpShowsConfirmationMessageWhenNoSession() = runTest(testDispatcher) {
+    fun submitEmailAuth_signUpAutoTransitionsToSignInOnEmailConfirmation() = runTest(testDispatcher) {
         val authRepository = RecordingAuthRepository(
             signUpResult = Result.failure(IllegalStateException(AuthFailureCodes.EMAIL_CONFIRMATION_REQUIRED)),
         )
@@ -224,7 +224,56 @@ class LoginScreenModelTest {
         advanceUntilIdle()
 
         assertEquals(1, authRepository.signUpCalls)
-        assertEquals(LoginMessage.EmailConfirmationSent, screenModel.uiState.value.message)
+        // Should auto-switch to sign-in mode with banner — no message, just awaitingEmailConfirmation
+        assertFalse(screenModel.uiState.value.isSignUpMode)
+        assertTrue(screenModel.uiState.value.awaitingEmailConfirmation)
+        assertNull(screenModel.uiState.value.message)
+        // Email is preserved for fast sign-in; password is cleared for security
+        assertEquals("user@example.com", screenModel.uiState.value.email)
+        assertEquals("", screenModel.uiState.value.password)
+        assertEquals(LoginRegistrationStep.Credentials, screenModel.uiState.value.registrationStep)
+    }
+
+    @Test
+    fun submitEmailAuth_signUpConfirmation_preservesPendingHouseholdName() = runTest(testDispatcher) {
+        val registrationData = RegistrationData()
+        val authRepository = RecordingAuthRepository(
+            signUpResult = Result.failure(IllegalStateException(AuthFailureCodes.EMAIL_CONFIRMATION_REQUIRED)),
+        )
+        val screenModel = makeModel(authRepository, registrationData)
+
+        screenModel.toggleSignUpMode()
+        screenModel.onDisplayNameChange("Rosa")
+        screenModel.onEmailChange("rosa@example.com")
+        screenModel.onPasswordChange("secret123")
+        screenModel.advanceToHouseholdStep()
+        screenModel.onHouseholdNameChange("Casa Rossi")
+        screenModel.submitEmailAuth()
+        advanceUntilIdle()
+
+        // Household name should be preserved so it pre-fills once user signs in after confirming.
+        assertEquals("Casa Rossi", registrationData.pendingHouseholdName)
+    }
+
+    @Test
+    fun awaitingEmailConfirmation_clearsWhenUserEditsEmail() = runTest(testDispatcher) {
+        val authRepository = RecordingAuthRepository(
+            signUpResult = Result.failure(IllegalStateException(AuthFailureCodes.EMAIL_CONFIRMATION_REQUIRED)),
+        )
+        val screenModel = makeModel(authRepository)
+
+        screenModel.toggleSignUpMode()
+        screenModel.onDisplayNameChange("Rosa")
+        screenModel.onEmailChange("user@example.com")
+        screenModel.onPasswordChange("secret123")
+        screenModel.advanceToHouseholdStep()
+        screenModel.submitEmailAuth()
+        advanceUntilIdle()
+
+        assertTrue(screenModel.uiState.value.awaitingEmailConfirmation)
+
+        screenModel.onEmailChange("other@example.com")
+        assertFalse(screenModel.uiState.value.awaitingEmailConfirmation)
     }
 
     @Test

@@ -961,6 +961,8 @@
     <string name="auth_error_blank_name">Metti 'o nomme tuoje.</string>
     <string name="auth_password_toggle_show">Vide 'a password</string>
     <string name="auth_password_toggle_hide">Nasconne 'a password</string>
+    <string name="auth_confirmation_banner_title">Guarda 'a casella d'e mail</string>
+    <string name="auth_confirmation_banner_body">T'avimm mannato 'nu link 'e conferma a %1$s. Aprelo pe' verificà 'o conto, po' trasisce.</string>
     <string name="sharing_members_role_admin">Admin d'â famiglia</string>
     <string name="sharing_members_change_role">Cagna 'o ruolo</string>
     <string name="sharing_members_promote_admin_confirm_title">Fà admin d'â famiglia?</string>
