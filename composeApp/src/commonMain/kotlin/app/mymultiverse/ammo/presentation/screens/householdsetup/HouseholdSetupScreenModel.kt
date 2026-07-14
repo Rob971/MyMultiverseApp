@@ -13,6 +13,7 @@ import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.ammo.domain.sharing.HouseholdDefaultName
 import app.mymultiverse.ammo.domain.sharing.HouseholdNameRules
+import app.mymultiverse.ammo.presentation.registration.RegistrationData
 import app.mymultiverse.ammo.presentation.screens.home.HouseholdNameAvailability
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +45,7 @@ class HouseholdSetupScreenModel(
     private val sessionCoordinator: NutritionSessionCoordinator,
     private val firstWinChecklistStore: HomeFirstWinChecklistStore,
     private val logger: AppLogger,
+    private val registrationData: RegistrationData = RegistrationData(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
     private val _uiState = MutableStateFlow(HouseholdSetupUiState())
@@ -65,6 +67,12 @@ class HouseholdSetupScreenModel(
 
     fun applyDefaultHouseholdNameIfEmpty(formattedDefaultName: String) {
         if (_uiState.value.householdNameInput.isNotBlank()) return
+        val pending = registrationData.pendingHouseholdName?.trim()
+        if (!pending.isNullOrBlank()) {
+            onHouseholdNameChange(pending)
+            registrationData.clear()
+            return
+        }
         if (formattedDefaultName.isBlank()) return
         onHouseholdNameChange(formattedDefaultName)
     }

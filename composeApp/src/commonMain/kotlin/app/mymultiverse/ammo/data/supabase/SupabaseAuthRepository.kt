@@ -12,6 +12,8 @@ import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.providers.builtin.OTP
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
@@ -68,12 +70,19 @@ class SupabaseAuthRepository(
             checkNotNull(currentAuthUser()) { "sign_in_failed" }
         }
 
-    override suspend fun signUpWithEmail(email: String, password: String): Result<Unit> =
+    override suspend fun signUpWithEmail(
+        email: String,
+        password: String,
+        displayName: String?,
+    ): Result<Unit> =
         runCatching {
             client.auth.awaitInitialization()
             client.auth.signUpWith(Email) {
                 this.email = email.trim()
                 this.password = password
+                if (!displayName.isNullOrBlank()) {
+                    this.data = buildJsonObject { put("full_name", displayName.trim()) }
+                }
             }
             val user = currentAuthUser()
             if (user != null) {

@@ -15,7 +15,11 @@ class UnconfiguredAuthRepository : AuthRepository {
     override suspend fun signInWithEmail(email: String, password: String): Result<Unit> =
         Result.failure(IllegalStateException("supabase_not_configured"))
 
-    override suspend fun signUpWithEmail(email: String, password: String): Result<Unit> =
+    override suspend fun signUpWithEmail(
+        email: String,
+        password: String,
+        displayName: String?,
+    ): Result<Unit> =
         Result.failure(IllegalStateException("supabase_not_configured"))
 
     override suspend fun sendEmailOtp(email: String): Result<Unit> =

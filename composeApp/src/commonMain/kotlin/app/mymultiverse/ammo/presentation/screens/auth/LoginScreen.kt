@@ -1,5 +1,11 @@
 package app.mymultiverse.ammo.presentation.screens.auth
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -12,19 +18,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import app.mymultiverse.ammo.presentation.components.GlobalLanguageAction
-import app.mymultiverse.ammo.presentation.components.JourneyTextField
-import app.mymultiverse.ammo.presentation.components.JourneyTextFieldDefaults
-import app.mymultiverse.ammo.presentation.components.JourneyButtonLabel
-import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
-import app.mymultiverse.ammo.presentation.components.JourneySecondaryButton
-import app.mymultiverse.ammo.presentation.components.JourneySsoButtonLabel
-import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,12 +33,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.presentation.components.AdaptiveFormWidth
 import app.mymultiverse.ammo.presentation.components.AmmoRoundLogo
+import app.mymultiverse.ammo.presentation.components.GlobalLanguageAction
+import app.mymultiverse.ammo.presentation.components.JourneyButtonLabel
+import app.mymultiverse.ammo.presentation.components.JourneyIconButton
+import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
+import app.mymultiverse.ammo.presentation.components.JourneySecondaryButton
+import app.mymultiverse.ammo.presentation.components.JourneySsoButtonLabel
+import app.mymultiverse.ammo.presentation.components.JourneyTextField
+import app.mymultiverse.ammo.presentation.components.JourneyTextFieldDefaults
+import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.keyboardAwareScroll
 import app.mymultiverse.ammo.presentation.components.rememberFieldScrollIntoViewModifier
@@ -52,6 +62,7 @@ import ammo.composeapp.generated.resources.auth_back_to_sso
 import ammo.composeapp.generated.resources.auth_continue_apple
 import ammo.composeapp.generated.resources.auth_continue_google
 import ammo.composeapp.generated.resources.auth_email_label
+import ammo.composeapp.generated.resources.auth_error_blank_name
 import ammo.composeapp.generated.resources.auth_error_config_missing
 import ammo.composeapp.generated.resources.auth_error_email_unconfirmed
 import ammo.composeapp.generated.resources.auth_error_generic
@@ -61,10 +72,17 @@ import ammo.composeapp.generated.resources.auth_error_signup_disabled
 import ammo.composeapp.generated.resources.auth_error_user_already_exists
 import ammo.composeapp.generated.resources.auth_error_weak_password
 import ammo.composeapp.generated.resources.auth_password_label
+import ammo.composeapp.generated.resources.auth_password_toggle_hide
+import ammo.composeapp.generated.resources.auth_password_toggle_show
 import ammo.composeapp.generated.resources.auth_provider_coming_soon
+import ammo.composeapp.generated.resources.auth_registration_continue
+import ammo.composeapp.generated.resources.auth_registration_household_label
+import ammo.composeapp.generated.resources.auth_registration_invite_later
+import ammo.composeapp.generated.resources.auth_registration_name_label
+import ammo.composeapp.generated.resources.auth_registration_step2_subtitle
+import ammo.composeapp.generated.resources.auth_registration_step2_title
 import ammo.composeapp.generated.resources.auth_sign_in_button
 import ammo.composeapp.generated.resources.auth_sign_up_button
-import ammo.composeapp.generated.resources.auth_subtitle
 import ammo.composeapp.generated.resources.auth_subtitle_sign_in
 import ammo.composeapp.generated.resources.auth_subtitle_sign_up
 import ammo.composeapp.generated.resources.auth_success_email_confirmation
@@ -79,11 +97,18 @@ object LoginTestTags {
     const val SCREEN = "login_screen"
     const val EMAIL_FIELD = "login_email_field"
     const val PASSWORD_FIELD = "login_password_field"
+    const val DISPLAY_NAME_FIELD = "login_display_name_field"
+    const val PASSWORD_TOGGLE = "login_password_toggle"
     const val SUBMIT_BUTTON = "login_submit_button"
+    const val CONTINUE_BUTTON = "login_continue_button"
     const val GOOGLE_BUTTON = "login_google_button"
     const val APPLE_BUTTON = "login_apple_button"
     const val BACK_TO_SSO = "login_back_to_sso"
     const val DESIGNER = "login_designer"
+    const val STEP2_SCREEN = "login_step2_screen"
+    const val HOUSEHOLD_NAME_FIELD = "login_household_name_field"
+    const val SKIP_HOUSEHOLD_BUTTON = "login_skip_household_button"
+    const val STEP2_BACK_BUTTON = "login_step2_back_button"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,40 +120,6 @@ fun LoginScreen(
     screenModel: LoginScreenModel = koinInject(),
 ) {
     val uiState by screenModel.uiState.collectAsState()
-    val feedbackMessage = when {
-        showConfigMissing -> stringResource(Res.string.auth_error_config_missing) to false
-        uiState.message is LoginMessage.EmailConfirmationSent ->
-            stringResource(Res.string.auth_success_email_confirmation) to true
-        uiState.message is LoginMessage.Error -> {
-            val error = (uiState.message as LoginMessage.Error).type
-            if (error.isScreenLevelOnly()) {
-                when (error) {
-                    LoginError.ConfigMissing -> stringResource(Res.string.auth_error_config_missing) to false
-                    LoginError.ProviderComingSoon -> stringResource(Res.string.auth_provider_coming_soon) to false
-                    LoginError.SignUpDisabled -> stringResource(Res.string.auth_error_signup_disabled) to false
-                    else -> stringResource(Res.string.auth_error_generic) to false
-                }
-            } else {
-                null
-            }
-        }
-        else -> null
-    }
-    val fieldError = (uiState.message as? LoginMessage.Error)?.type
-    val emailFieldErrorText = when (fieldError) {
-        LoginError.InvalidEmail -> stringResource(Res.string.auth_error_invalid_email)
-        LoginError.UserAlreadyExists -> stringResource(Res.string.auth_error_user_already_exists)
-        LoginError.EmailNotConfirmed -> stringResource(Res.string.auth_error_email_unconfirmed)
-        else -> null
-    }
-    val passwordFieldErrorText = when (fieldError) {
-        LoginError.WeakPassword -> stringResource(Res.string.auth_error_weak_password)
-        LoginError.InvalidCredentials -> stringResource(Res.string.auth_error_invalid_credentials)
-        else -> null
-    }
-    val scrollState = rememberScrollState()
-    val emailScrollIntoView = rememberFieldScrollIntoViewModifier()
-    val passwordScrollIntoView = rememberFieldScrollIntoViewModifier()
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -146,135 +137,259 @@ fun LoginScreen(
                 .padding(padding)
                 .padding(horizontal = ScreenLayout.horizontalPadding),
         ) {
-            Column(
+            AnimatedContent(
+                targetState = uiState.isOnStep2,
+                transitionSpec = {
+                    if (targetState) {
+                        (slideInHorizontally { it } + fadeIn()) togetherWith
+                            (slideOutHorizontally { -it } + fadeOut())
+                    } else {
+                        (slideInHorizontally { -it } + fadeIn()) togetherWith
+                            (slideOutHorizontally { it } + fadeOut())
+                    }
+                },
+                label = "registration_step",
+            ) { isOnStep2 ->
+                if (isOnStep2) {
+                    HouseholdSetupStep(
+                        uiState = uiState,
+                        showConfigMissing = showConfigMissing,
+                        screenModel = screenModel,
+                    )
+                } else {
+                    CredentialsStep(
+                        uiState = uiState,
+                        showConfigMissing = showConfigMissing,
+                        showBackToSso = showBackToSso,
+                        onBackToSso = onBackToSso,
+                        screenModel = screenModel,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CredentialsStep(
+    uiState: LoginUiState,
+    showConfigMissing: Boolean,
+    showBackToSso: Boolean,
+    onBackToSso: () -> Unit,
+    screenModel: LoginScreenModel,
+) {
+    val feedbackMessage = credentialsFeedbackMessage(uiState, showConfigMissing)
+    val fieldError = (uiState.message as? LoginMessage.Error)?.type
+    val nameFieldErrorText = when (fieldError) {
+        LoginError.BlankDisplayName -> stringResource(Res.string.auth_error_blank_name)
+        else -> null
+    }
+    val emailFieldErrorText = when (fieldError) {
+        LoginError.InvalidEmail -> stringResource(Res.string.auth_error_invalid_email)
+        LoginError.UserAlreadyExists -> stringResource(Res.string.auth_error_user_already_exists)
+        LoginError.EmailNotConfirmed -> stringResource(Res.string.auth_error_email_unconfirmed)
+        else -> null
+    }
+    val passwordFieldErrorText = when (fieldError) {
+        LoginError.WeakPassword -> stringResource(Res.string.auth_error_weak_password)
+        LoginError.InvalidCredentials -> stringResource(Res.string.auth_error_invalid_credentials)
+        else -> null
+    }
+    val scrollState = rememberScrollState()
+    val nameScrollIntoView = rememberFieldScrollIntoViewModifier()
+    val emailScrollIntoView = rememberFieldScrollIntoViewModifier()
+    val passwordScrollIntoView = rememberFieldScrollIntoViewModifier()
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .keyboardAwareScroll(scrollState)
+            .testTag(LoginTestTags.SCREEN),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
+    ) {
+        Spacer(modifier = Modifier.height(ScreenLayout.contentTopPadding))
+        AmmoRoundLogo(modifier = Modifier.size(96.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = stringResource(Res.string.auth_title),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = JourneySemanticColors.inkDeep(),
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stringResource(
+                if (uiState.isSignUpMode) Res.string.auth_subtitle_sign_up
+                else Res.string.auth_subtitle_sign_in,
+            ),
+            style = MaterialTheme.typography.bodyLarge,
+            color = JourneySemanticColors.inkSecondary(),
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(28.dp))
+
+        if (showBackToSso) {
+            JourneyTertiaryButton(
+                onClick = onBackToSso,
+                enabled = !uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .keyboardAwareScroll(scrollState)
-                    .testTag(LoginTestTags.SCREEN),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top,
-            ) {
-            Spacer(modifier = Modifier.height(ScreenLayout.contentTopPadding))
-            AmmoRoundLogo(modifier = Modifier.size(96.dp))
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = stringResource(Res.string.auth_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = JourneySemanticColors.inkDeep(),
-                textAlign = TextAlign.Center,
+                    .testTag(LoginTestTags.BACK_TO_SSO),
+                label = stringResource(Res.string.auth_back_to_sso),
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stringResource(
-                    if (uiState.isSignUpMode) {
-                        Res.string.auth_subtitle_sign_up
-                    } else {
-                        Res.string.auth_subtitle_sign_in
-                    },
-                ),
-                style = MaterialTheme.typography.bodyLarge,
-                color = JourneySemanticColors.inkSecondary(),
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(28.dp))
-
-            if (showBackToSso) {
-                JourneyTertiaryButton(
-                    onClick = onBackToSso,
-                    enabled = !uiState.isLoading,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag(LoginTestTags.BACK_TO_SSO),
-                    label = stringResource(Res.string.auth_back_to_sso),
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-            } else {
-                JourneySecondaryButton(
-                    onClick = screenModel::signInWithGoogle,
-                    enabled = !uiState.isLoading && !showConfigMissing,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag(LoginTestTags.GOOGLE_BUTTON),
-                ) {
-                    JourneySsoButtonLabel(
-                        text = stringResource(Res.string.auth_continue_google),
-                        provider = AppIconRole.SsoGoogle,
-                        useContentColor = true,
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                JourneySecondaryButton(
-                    onClick = screenModel::signInWithApple,
-                    enabled = !uiState.isLoading && !showConfigMissing,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag(LoginTestTags.APPLE_BUTTON),
-                ) {
-                    JourneySsoButtonLabel(
-                        text = stringResource(Res.string.auth_continue_apple),
-                        provider = AppIconRole.SsoApple,
-                        useContentColor = true,
-                    )
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-            }
-
-            JourneyTextField(
-                value = uiState.email,
-                onValueChange = screenModel::onEmailChange,
-                label = { Text(stringResource(Res.string.auth_email_label)) },
+            Spacer(modifier = Modifier.height(20.dp))
+        } else {
+            JourneySecondaryButton(
+                onClick = screenModel::signInWithGoogle,
                 enabled = !uiState.isLoading && !showConfigMissing,
-                isError = emailFieldErrorText != null,
-                supportingText = emailFieldErrorText?.let { error -> { Text(error) } },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(LoginTestTags.GOOGLE_BUTTON),
+            ) {
+                JourneySsoButtonLabel(
+                    text = stringResource(Res.string.auth_continue_google),
+                    provider = AppIconRole.SsoGoogle,
+                    useContentColor = true,
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            JourneySecondaryButton(
+                onClick = screenModel::signInWithApple,
+                enabled = !uiState.isLoading && !showConfigMissing,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(LoginTestTags.APPLE_BUTTON),
+            ) {
+                JourneySsoButtonLabel(
+                    text = stringResource(Res.string.auth_continue_apple),
+                    provider = AppIconRole.SsoApple,
+                    useContentColor = true,
+                )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+
+        if (uiState.isSignUpMode) {
+            JourneyTextField(
+                value = uiState.displayName,
+                onValueChange = screenModel::onDisplayNameChange,
+                label = { Text(stringResource(Res.string.auth_registration_name_label)) },
+                enabled = !uiState.isLoading && !showConfigMissing,
+                isError = nameFieldErrorText != null,
+                supportingText = nameFieldErrorText?.let { error -> { Text(error) } },
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
+                    keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Words,
                     imeAction = ImeAction.Next,
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .then(emailScrollIntoView)
-                    .testTag(LoginTestTags.EMAIL_FIELD),
+                    .then(nameScrollIntoView)
+                    .testTag(LoginTestTags.DISPLAY_NAME_FIELD),
             )
             Spacer(modifier = Modifier.height(JourneyTextFieldDefaults.fieldSpacing))
-            JourneyTextField(
-                value = uiState.password,
-                onValueChange = screenModel::onPasswordChange,
-                label = { Text(stringResource(Res.string.auth_password_label)) },
-                enabled = !uiState.isLoading && !showConfigMissing,
-                isError = passwordFieldErrorText != null,
-                supportingText = passwordFieldErrorText?.let { error -> { Text(error) } },
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done,
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { screenModel.submitEmailAuth() },
-                ),
+        }
+
+        JourneyTextField(
+            value = uiState.email,
+            onValueChange = screenModel::onEmailChange,
+            label = { Text(stringResource(Res.string.auth_email_label)) },
+            enabled = !uiState.isLoading && !showConfigMissing,
+            isError = emailFieldErrorText != null,
+            supportingText = emailFieldErrorText?.let { error -> { Text(error) } },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next,
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(emailScrollIntoView)
+                .testTag(LoginTestTags.EMAIL_FIELD),
+        )
+        Spacer(modifier = Modifier.height(JourneyTextFieldDefaults.fieldSpacing))
+        JourneyTextField(
+            value = uiState.password,
+            onValueChange = screenModel::onPasswordChange,
+            label = { Text(stringResource(Res.string.auth_password_label)) },
+            enabled = !uiState.isLoading && !showConfigMissing,
+            isError = passwordFieldErrorText != null,
+            supportingText = passwordFieldErrorText?.let { error -> { Text(error) } },
+            visualTransformation = if (uiState.isPasswordVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = if (uiState.isSignUpMode) ImeAction.Done else ImeAction.Done,
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { screenModel.submitEmailAuth() },
+            ),
+            trailingIcon = {
+                JourneyIconButton(
+                    onClick = screenModel::togglePasswordVisibility,
+                    modifier = Modifier.testTag(LoginTestTags.PASSWORD_TOGGLE),
+                ) {
+                    val icon = if (uiState.isPasswordVisible) {
+                        AppIcons.VisibilityOff
+                    } else {
+                        AppIcons.Visibility
+                    }
+                    val desc = if (uiState.isPasswordVisible) {
+                        stringResource(Res.string.auth_password_toggle_hide)
+                    } else {
+                        stringResource(Res.string.auth_password_toggle_show)
+                    }
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = desc,
+                        tint = JourneySemanticColors.inkMuted(),
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(passwordScrollIntoView)
+                .testTag(LoginTestTags.PASSWORD_FIELD),
+        )
+
+        if (feedbackMessage != null) {
+            val (text, isSuccess) = feedbackMessage
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = text,
+                color = if (isSuccess) {
+                    SharedJourneyColors.MediterraneanTeal
+                } else {
+                    MaterialTheme.colorScheme.error
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+        if (uiState.isSignUpMode) {
+            JourneyPrimaryButton(
+                onClick = screenModel::advanceToHouseholdStep,
+                enabled = !showConfigMissing && uiState.canAdvanceToHouseholdStep,
+                isLoading = uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .then(passwordScrollIntoView)
-                    .testTag(LoginTestTags.PASSWORD_FIELD),
-            )
-
-            if (feedbackMessage != null) {
-                val (text, isSuccess) = feedbackMessage
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = text,
-                    color = if (isSuccess) {
-                        SharedJourneyColors.MediterraneanTeal
-                    } else {
-                        MaterialTheme.colorScheme.error
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
+                    .testTag(LoginTestTags.CONTINUE_BUTTON),
+            ) {
+                JourneyButtonLabel(
+                    text = stringResource(Res.string.auth_registration_continue),
+                    icon = AppIcons.Person,
+                    role = AppIconRole.OnAccent,
+                    useContentColor = true,
                 )
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
+        } else {
             JourneyPrimaryButton(
                 onClick = screenModel::submitEmailAuth,
                 enabled = !showConfigMissing && uiState.canSubmitEmailAuth,
@@ -284,41 +399,188 @@ fun LoginScreen(
                     .testTag(LoginTestTags.SUBMIT_BUTTON),
             ) {
                 JourneyButtonLabel(
-                    text = stringResource(
-                        if (uiState.isSignUpMode) {
-                            Res.string.auth_sign_up_button
-                        } else {
-                            Res.string.auth_sign_in_button
-                        },
-                    ),
+                    text = stringResource(Res.string.auth_sign_in_button),
                     icon = AppIcons.Person,
                     role = AppIconRole.OnAccent,
                     useContentColor = true,
                 )
             }
-            JourneyTertiaryButton(
-                onClick = screenModel::toggleSignUpMode,
-                enabled = !uiState.isLoading && !showConfigMissing,
-                label = stringResource(
-                    if (uiState.isSignUpMode) {
-                        Res.string.auth_switch_to_sign_in
-                    } else {
-                        Res.string.auth_switch_to_sign_up
-                    },
-                ),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+        }
+        JourneyTertiaryButton(
+            onClick = screenModel::toggleSignUpMode,
+            enabled = !uiState.isLoading && !showConfigMissing,
+            label = stringResource(
+                if (uiState.isSignUpMode) {
+                    Res.string.auth_switch_to_sign_in
+                } else {
+                    Res.string.auth_switch_to_sign_up
+                },
+            ),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(Res.string.home_designer_credit),
+            style = MaterialTheme.typography.labelSmall,
+            color = JourneySemanticColors.inkMuted(),
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(LoginTestTags.DESIGNER),
+        )
+        Spacer(modifier = Modifier.height(ScreenLayout.contentBottomPadding))
+    }
+}
+
+@Composable
+private fun HouseholdSetupStep(
+    uiState: LoginUiState,
+    showConfigMissing: Boolean,
+    screenModel: LoginScreenModel,
+) {
+    val scrollState = rememberScrollState()
+    val householdScrollIntoView = rememberFieldScrollIntoViewModifier()
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .keyboardAwareScroll(scrollState)
+            .testTag(LoginTestTags.STEP2_SCREEN),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
+    ) {
+        Spacer(modifier = Modifier.height(ScreenLayout.contentTopPadding))
+        AmmoRoundLogo(modifier = Modifier.size(96.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = stringResource(Res.string.auth_registration_step2_title),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = JourneySemanticColors.inkDeep(),
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stringResource(Res.string.auth_registration_step2_subtitle),
+            style = MaterialTheme.typography.bodyLarge,
+            color = JourneySemanticColors.inkSecondary(),
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(28.dp))
+
+        JourneyTextField(
+            value = uiState.householdName,
+            onValueChange = screenModel::onHouseholdNameChange,
+            label = { Text(stringResource(Res.string.auth_registration_household_label)) },
+            enabled = !uiState.isLoading && !showConfigMissing,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                capitalization = KeyboardCapitalization.Words,
+                imeAction = ImeAction.Done,
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { screenModel.submitEmailAuth() },
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(householdScrollIntoView)
+                .testTag(LoginTestTags.HOUSEHOLD_NAME_FIELD),
+        )
+
+        val feedbackMessage = step2FeedbackMessage(uiState, showConfigMissing)
+        if (feedbackMessage != null) {
+            val (text, isSuccess) = feedbackMessage
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = stringResource(Res.string.home_designer_credit),
-                style = MaterialTheme.typography.labelSmall,
-                color = JourneySemanticColors.inkMuted(),
+                text = text,
+                color = if (isSuccess) {
+                    SharedJourneyColors.MediterraneanTeal
+                } else {
+                    MaterialTheme.colorScheme.error
+                },
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag(LoginTestTags.DESIGNER),
+                modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(modifier = Modifier.height(ScreenLayout.contentBottomPadding))
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+        JourneyPrimaryButton(
+            onClick = screenModel::submitEmailAuth,
+            enabled = !showConfigMissing && uiState.householdName.isNotBlank(),
+            isLoading = uiState.isLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(LoginTestTags.SUBMIT_BUTTON),
+        ) {
+            JourneyButtonLabel(
+                text = stringResource(Res.string.auth_sign_up_button),
+                icon = AppIcons.Person,
+                role = AppIconRole.OnAccent,
+                useContentColor = true,
+            )
+        }
+        JourneyTertiaryButton(
+            onClick = screenModel::skipHouseholdSetup,
+            enabled = !uiState.isLoading && !showConfigMissing,
+            modifier = Modifier.testTag(LoginTestTags.SKIP_HOUSEHOLD_BUTTON),
+            label = stringResource(Res.string.auth_registration_invite_later),
+        )
+        JourneyTertiaryButton(
+            onClick = screenModel::goBackToCredentials,
+            enabled = !uiState.isLoading,
+            modifier = Modifier.testTag(LoginTestTags.STEP2_BACK_BUTTON),
+            label = stringResource(Res.string.auth_back_to_sso),
+        )
+        Spacer(modifier = Modifier.height(ScreenLayout.contentBottomPadding))
+    }
+}
+
+@Composable
+private fun credentialsFeedbackMessage(
+    uiState: LoginUiState,
+    showConfigMissing: Boolean,
+): Pair<String, Boolean>? {
+    if (showConfigMissing) return stringResource(Res.string.auth_error_config_missing) to false
+    return when (val msg = uiState.message) {
+        is LoginMessage.EmailConfirmationSent ->
+            stringResource(Res.string.auth_success_email_confirmation) to true
+
+        is LoginMessage.Error -> {
+            val error = msg.type
+            if (error.isScreenLevelOnly()) {
+                when (error) {
+                    LoginError.ConfigMissing -> stringResource(Res.string.auth_error_config_missing) to false
+                    LoginError.ProviderComingSoon -> stringResource(Res.string.auth_provider_coming_soon) to false
+                    LoginError.SignUpDisabled -> stringResource(Res.string.auth_error_signup_disabled) to false
+                    else -> stringResource(Res.string.auth_error_generic) to false
+                }
+            } else {
+                null
             }
         }
+
+        null -> null
+    }
+}
+
+@Composable
+private fun step2FeedbackMessage(
+    uiState: LoginUiState,
+    showConfigMissing: Boolean,
+): Pair<String, Boolean>? {
+    if (showConfigMissing) return stringResource(Res.string.auth_error_config_missing) to false
+    return when (val msg = uiState.message) {
+        is LoginMessage.EmailConfirmationSent ->
+            stringResource(Res.string.auth_success_email_confirmation) to true
+
+        is LoginMessage.Error -> {
+            if (msg.type.isScreenLevelOnly()) {
+                stringResource(Res.string.auth_error_generic) to false
+            } else {
+                null
+            }
+        }
+
+        null -> null
     }
 }

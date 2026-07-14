@@ -952,6 +952,15 @@
     <string name="home_rename_household_save">حفظ الاسم</string>
     <string name="auth_subtitle_sign_in">سجّل الدخول للتخطيط للوجبات والبقالة مع عائلتك.</string>
     <string name="auth_subtitle_sign_up">أنشئ حسابك للتخطيط للوجبات والبقالة معًا.</string>
+    <string name="auth_registration_name_label">اسمك</string>
+    <string name="auth_registration_continue">متابعة</string>
+    <string name="auth_registration_step2_title">سمِّ عائلتك</string>
+    <string name="auth_registration_step2_subtitle">اختر اسمًا لمجموعتك. يمكنك دعوة الأعضاء لاحقًا.</string>
+    <string name="auth_registration_household_label">اسم المنزل</string>
+    <string name="auth_registration_invite_later">إعداد المنزل لاحقًا</string>
+    <string name="auth_error_blank_name">أدخل اسمك.</string>
+    <string name="auth_password_toggle_show">إظهار كلمة المرور</string>
+    <string name="auth_password_toggle_hide">إخفاء كلمة المرور</string>
     <string name="sharing_members_role_admin">مسؤول العائلة</string>
     <string name="sharing_members_change_role">تغيير الدور</string>
     <string name="sharing_members_promote_admin_confirm_title">تعيين مسؤول للعائلة؟</string>

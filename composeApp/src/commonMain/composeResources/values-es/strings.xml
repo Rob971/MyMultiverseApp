@@ -952,6 +952,15 @@
     <string name="home_rename_household_save">Guardar nombre</string>
     <string name="auth_subtitle_sign_in">Inicia sesión para planificar comidas y compras con tu familia.</string>
     <string name="auth_subtitle_sign_up">Crea tu cuenta para planificar comidas y compras juntos.</string>
+    <string name="auth_registration_name_label">Tu nombre</string>
+    <string name="auth_registration_continue">Continuar</string>
+    <string name="auth_registration_step2_title">Nombra tu hogar</string>
+    <string name="auth_registration_step2_subtitle">Elige un nombre para tu grupo. Podrás invitar a miembros después.</string>
+    <string name="auth_registration_household_label">Nombre del hogar</string>
+    <string name="auth_registration_invite_later">Configurar el hogar más tarde</string>
+    <string name="auth_error_blank_name">Introduce tu nombre.</string>
+    <string name="auth_password_toggle_show">Mostrar contraseña</string>
+    <string name="auth_password_toggle_hide">Ocultar contraseña</string>
     <string name="sharing_members_role_admin">Admin de la familia</string>
     <string name="sharing_members_change_role">Cambiar rol</string>
     <string name="sharing_members_promote_admin_confirm_title">¿Hacer admin de la familia?</string>

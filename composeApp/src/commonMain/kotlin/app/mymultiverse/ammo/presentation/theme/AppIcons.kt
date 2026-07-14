@@ -1540,6 +1540,99 @@ object AppIcons {
         }
     private var _apple: ImageVector? = null
 
+    /** Password field eye — show hidden text. */
+    val Visibility: ImageVector
+        get() {
+            if (_visibility != null) return _visibility!!
+            _visibility = ImageVector.Builder(
+                name = "Filled.Visibility",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(12.0f, 4.5f)
+                    curveTo(7.0f, 4.5f, 2.73f, 7.61f, 1.0f, 12.0f)
+                    curveTo(2.73f, 16.39f, 7.0f, 19.5f, 12.0f, 19.5f)
+                    reflectiveCurveTo(21.27f, 16.39f, 23.0f, 12.0f)
+                    curveTo(21.27f, 7.61f, 17.0f, 4.5f, 12.0f, 4.5f)
+                    close()
+                    moveTo(12.0f, 17.0f)
+                    curveToRelative(-2.76f, 0.0f, -5.0f, -2.24f, -5.0f, -5.0f)
+                    reflectiveCurveToRelative(2.24f, -5.0f, 5.0f, -5.0f)
+                    reflectiveCurveToRelative(5.0f, 2.24f, 5.0f, 5.0f)
+                    reflectiveCurveToRelative(-2.24f, 5.0f, -5.0f, 5.0f)
+                    close()
+                    moveTo(12.0f, 9.0f)
+                    curveToRelative(-1.66f, 0.0f, -3.0f, 1.34f, -3.0f, 3.0f)
+                    reflectiveCurveToRelative(1.34f, 3.0f, 3.0f, 3.0f)
+                    reflectiveCurveToRelative(3.0f, -1.34f, 3.0f, -3.0f)
+                    reflectiveCurveToRelative(-1.34f, -3.0f, -3.0f, -3.0f)
+                    close()
+                }
+            }.build()
+            return _visibility!!
+        }
+    private var _visibility: ImageVector? = null
+
+    /** Password field eye with slash — hide visible text. */
+    val VisibilityOff: ImageVector
+        get() {
+            if (_visibilityOff != null) return _visibilityOff!!
+            _visibilityOff = ImageVector.Builder(
+                name = "Filled.VisibilityOff",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            ).apply {
+                path {
+                    moveTo(12.0f, 7.0f)
+                    curveToRelative(2.76f, 0.0f, 5.0f, 2.24f, 5.0f, 5.0f)
+                    curveToRelative(0.0f, 0.65f, -0.13f, 1.26f, -0.36f, 1.83f)
+                    lineToRelative(2.92f, 2.92f)
+                    curveToRelative(1.51f, -1.26f, 2.7f, -2.89f, 3.43f, -4.75f)
+                    curveTo(21.27f, 7.61f, 17.0f, 4.5f, 12.0f, 4.5f)
+                    curveToRelative(-1.35f, 0.0f, -2.65f, 0.25f, -3.85f, 0.7f)
+                    lineTo(10.32f, 7.37f)
+                    curveTo(10.85f, 7.13f, 11.41f, 7.0f, 12.0f, 7.0f)
+                    close()
+                    moveTo(2.0f, 4.27f)
+                    lineToRelative(2.28f, 2.28f)
+                    lineToRelative(0.46f, 0.46f)
+                    curveTo(3.08f, 8.3f, 1.78f, 10.02f, 1.0f, 12.0f)
+                    curveTo(2.73f, 16.39f, 7.0f, 19.5f, 12.0f, 19.5f)
+                    curveToRelative(1.55f, 0.0f, 3.03f, -0.3f, 4.38f, -0.84f)
+                    lineToRelative(0.42f, 0.42f)
+                    lineTo(19.73f, 22.0f)
+                    lineTo(21.0f, 20.73f)
+                    lineTo(3.27f, 3.0f)
+                    lineTo(2.0f, 4.27f)
+                    close()
+                    moveTo(7.53f, 9.8f)
+                    lineToRelative(1.55f, 1.55f)
+                    curveTo(9.04f, 11.55f, 9.0f, 11.77f, 9.0f, 12.0f)
+                    curveToRelative(0.0f, 1.66f, 1.34f, 3.0f, 3.0f, 3.0f)
+                    curveToRelative(0.23f, 0.0f, 0.45f, -0.04f, 0.65f, -0.1f)
+                    lineToRelative(1.55f, 1.55f)
+                    curveTo(13.52f, 16.8f, 12.78f, 17.0f, 12.0f, 17.0f)
+                    curveToRelative(-2.76f, 0.0f, -5.0f, -2.24f, -5.0f, -5.0f)
+                    curveToRelative(0.0f, -0.78f, 0.2f, -1.52f, 0.53f, -2.2f)
+                    close()
+                    moveTo(11.84f, 9.02f)
+                    lineToRelative(3.15f, 3.15f)
+                    lineToRelative(0.02f, -0.16f)
+                    curveTo(15.01f, 12.0f, 15.0f, 11.99f, 15.0f, 12.0f)
+                    curveToRelative(0.0f, -1.66f, -1.34f, -3.0f, -3.0f, -3.0f)
+                    lineToRelative(-0.16f, 0.02f)
+                    close()
+                }
+            }.build()
+            return _visibilityOff!!
+        }
+    private var _visibilityOff: ImageVector? = null
+
     /** Adventures (trips/outings) — compass for coming-soon row. */
     val Adventures: ImageVector
         get() {

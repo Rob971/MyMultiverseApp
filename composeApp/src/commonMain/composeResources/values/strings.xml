@@ -953,6 +953,15 @@
     <string name="home_rename_household_save">Save name</string>
     <string name="auth_subtitle_sign_in">Sign in to plan meals and groceries with your family.</string>
     <string name="auth_subtitle_sign_up">Create your account to plan meals and groceries together.</string>
+    <string name="auth_registration_name_label">Your name</string>
+    <string name="auth_registration_continue">Continue</string>
+    <string name="auth_registration_step2_title">Name your household</string>
+    <string name="auth_registration_step2_subtitle">Pick a name for your family group. You can invite members afterwards.</string>
+    <string name="auth_registration_household_label">Household name</string>
+    <string name="auth_registration_invite_later">Set up household later</string>
+    <string name="auth_error_blank_name">Enter your name.</string>
+    <string name="auth_password_toggle_show">Show password</string>
+    <string name="auth_password_toggle_hide">Hide password</string>
     <string name="sharing_members_role_admin">Family admin</string>
     <string name="sharing_members_change_role">Change role</string>
     <string name="sharing_members_promote_admin_confirm_title">Make family admin?</string>
