@@ -2,11 +2,11 @@
 
 > ## MANDATORY FOR ALL AGENTS
 >
-> **Every Cursor agent session MUST follow `.cursor/rules/agents-mandatory.mdc` and all rules it references.**  
-> Do not implement, review, test, commit, or release without the task-start and task-end checklists in that file.  
-> Rules are binding — not suggestions.
+> **Every Cursor agent session MUST follow `.cursor/rules/agents-mandatory.mdc` and ALL rules it references — no matter the task** (implementation, review, question, docs, test fix, commit, or release).  
+> Do not skip rules for “small” or “quick” work. Use the task-start and task-end checklists in `agents-mandatory.mdc` every session.  
+> Rules are binding — not suggestions. They exist to keep architecture, i18n, tests, security, UX, and releases in check.
 
-Cursor rules in `.cursor/rules/` define how to plan, implement, test, review, commit, and ship. Rules with `alwaysApply: true` are injected into every session; scoped rules must be **read** before editing matching paths (see `agents-mandatory.mdc`).
+Cursor rules in `.cursor/rules/` define how to plan, implement, test, review, commit, and ship. **14 rule files** — 10 always apply; 4 scoped (read with the Read tool before touching matching paths). See the complete inventory in `agents-mandatory.mdc`.
 
 ## Product context
 

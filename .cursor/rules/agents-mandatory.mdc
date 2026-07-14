@@ -5,15 +5,31 @@ alwaysApply: true
 
 # Mandatory agent compliance
 
-**Binding:** Every rule in `.cursor/rules/` applies to this repository. Do not skip, summarize away, or override them with generic best practices. When in doubt, read the full rule file.
+**Binding:** Every rule in `.cursor/rules/` applies to this repository — **every session, every task type, no exceptions.** Do not skip, summarize away, override, or treat rules as optional based on scope (“small fix”, “quick question”, “docs only”, “just reviewing”). When in doubt, **read the full rule file** with the Read tool before proceeding.
 
-## Always in context (`alwaysApply: true`)
+> **The rules exist to keep architecture, i18n, tests, security, UX, and release discipline in check.** Skipping them is a merge blocker equivalent to a failing CI build.
 
-These are injected every session — follow them on **every** task (questions, reviews, fixes, features, commits, PRs):
+## No task is exempt
+
+| Task type | Rules still apply |
+|-----------|-------------------|
+| Implementation / feature / bug fix | **All** always-apply rules + scoped rules for touched paths |
+| Code review / PR feedback | `review-commit.mdc`, `architecture-clean.mdc`, `qa-testing.mdc`, scoped rules for changed paths |
+| Question / explanation (“how does X work?”) | Answer must respect documented architecture and conventions; read scoped rules if the answer touches that layer |
+| Test-only / CI fix | `qa-testing.mdc`, `ci-cd.mdc`, `delivery-workflow.mdc` |
+| Docs / rules / workflow edits | `delivery-workflow.mdc`, `review-commit.mdc`; keep `AGENTS.md` index in sync |
+| Commit / PR / merge / release | `review-commit.mdc`, `ci-cd.mdc`, `version-management.mdc` |
+| Refactor / dependency bump | All always-apply rules + `kmp-core.mdc`, `official-docs-urls.mdc` |
+
+**Never** assume a rule does not apply because the diff is small or the user did not mention it.
+
+## Complete rule inventory (all 14 files)
+
+### Always apply — follow on **every** task without being asked
 
 | Rule | Non‑negotiable |
 |------|----------------|
-| `agents-mandatory.mdc` | This file — compliance gate |
+| `agents-mandatory.mdc` | This file — compliance gate; read first |
 | `delivery-workflow.mdc` | Plan → implement → test → review → CI |
 | `review-commit.mdc` | Self-review, commit/PR policy, merge blockers |
 | `architecture-clean.mdc` | Layer boundaries, screen models, navigation |
@@ -24,9 +40,9 @@ These are injected every session — follow them on **every** task (questions, r
 | `qa-testing.mdc` | Unit/instrumented tests, Firebase YAML |
 | `version-management.mdc` | Release phase (alpha/beta/prod), scope & risk per track |
 
-## Scoped rules — read before editing matching paths
+### Scoped — **read before** planning, editing, or reviewing matching paths
 
-If your task touches these paths, **read the rule file first** (use the Read tool):
+If the task touches these paths **or** you need to answer/review code in them, **read the rule file first** (use the Read tool):
 
 | Paths | Rule file |
 |-------|-----------|
@@ -35,35 +51,49 @@ If your task touches these paths, **read the rule file first** (use the Read too
 | `.github/**`, `firebase*.yaml`, `gradle/app-version.properties` | `ci-cd.mdc` |
 | `iosMain/**`, `iosApp/**` | `ios-platform.mdc` |
 
-## Task-start checklist (agents)
+Scoped rules are **not optional** when paths match — they are additional mandatory checks on top of the always-apply set.
 
-1. **Classify task** — implementation, review, test-only, docs, release, question.
-2. **Identify release phase** per `version-management.mdc` — branch, CI track, `version.prerelease`; adapt scope (alpha iteration vs beta freeze vs prod hotfix).
-3. **Plan** per `delivery-workflow.mdc` — layers, i18n, tests, QA YAML.
-4. **Read scoped rules** from the table above if paths will change.
-5. **Implement** using `architecture-clean`, `kmp-core`, `ui-ux-compose`, `i18n-multilingual`.
-6. **Test** per `qa-testing.mdc` — run Gradle tasks before claiming done.
-7. **Self-review** per `review-commit.mdc` before PR/commit.
-8. **CI/release** per `ci-cd.mdc` when pushing or releasing.
+## Task-start checklist (agents) — required every session
+
+1. **Acknowledge compliance** — this task follows `.cursor/rules/`; no rule will be skipped for convenience.
+2. **Classify task** — implementation, review, test-only, docs, release, question.
+3. **Identify release phase** per `version-management.mdc` — branch, CI track, `version.prerelease`; adapt scope (alpha iteration vs beta freeze vs prod hotfix).
+4. **Inventory applicable rules** — list always-apply set + any scoped rules for paths you will read, edit, or review.
+5. **Read scoped rules** — use the Read tool on every matching scoped rule **before** writing code or giving review verdicts.
+6. **Plan** per `delivery-workflow.mdc` — layers, i18n, tests, QA YAML.
+7. **Implement** using `architecture-clean`, `kmp-core`, `ui-ux-compose`, `i18n-multilingual`.
+8. **Test** per `qa-testing.mdc` — run Gradle tasks before claiming done (when code changed).
+9. **Self-review** per `review-commit.mdc` before PR/commit.
+10. **CI/release** per `ci-cd.mdc` when pushing or releasing.
 
 ## Task-end checklist (before "done")
 
+- [ ] **All applicable rules consulted** — always-apply set + scoped rules for touched paths; none skipped
 - [ ] Layer boundaries respected (no UI in domain/data; no `*Impl` in composables)
 - [ ] All new strings in **8** locale `strings.xml` files
 - [ ] Journey components / semantic colors (no raw Material forms or one-off hex)
 - [ ] **New functionality has unit tests** — every new domain method, screen model transition, codec, or repository method has a corresponding `*Test.kt` covering happy path + edge cases (`qa-testing.mdc` coverage table)
 - [ ] **Existing tests updated** — every test that exercises changed code compiles, passes, and reflects the new behavior; no stale assertions left behind
 - [ ] **Fakes kept in sync** — all `Fake*` and `Instrumented*Fakes` implement the full current interface; no `TODO()` stubs introduced
-- [ ] `:composeApp:testDebugUnitTest` runs green (`BUILD SUCCESSFUL`, zero failures)
-- [ ] `:composeApp:compileDebugAndroidTestKotlinAndroid` compiles clean (catches broken fakes before CI)
+- [ ] `:composeApp:testDebugUnitTest` runs green (`BUILD SUCCESSFUL`, zero failures) — when Kotlin changed
+- [ ] `:composeApp:compileDebugAndroidTestKotlinAndroid` compiles clean — when UI or fakes changed
 - [ ] `firebase-appdistribution-testcases.yaml` updated if user-facing flows changed
 - [ ] No secrets committed; commit only if user explicitly asked
 
 ## Reviews & commits
 
-- **Code review:** Use `review-commit.mdc` priority table (P0 security → P4 style).
+- **Code review:** Use `review-commit.mdc` priority table (P0 security → P4 style). Reviews must cite rule violations by rule file name.
 - **Commits:** Only when user asks; message explains **why**; never skip hooks.
 - **PRs:** Test plan required; wait for CI green before merge.
+
+## Anti-patterns (compliance failures)
+
+- “Small change” → skipping tests, i18n, or architecture rules
+- Answering architecture questions without reading `architecture-clean.mdc`
+- Touching `supabase/**` without reading `supabase-backend.mdc` and relevant skills
+- Implementing UI without `ui-ux-compose.mdc` and `i18n-multilingual.mdc`
+- Claiming done without Gradle gates when code changed
+- Replacing project rules with generic LLM best practices
 
 ## Index
 
