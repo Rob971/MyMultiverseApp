@@ -21,7 +21,7 @@ fun canEditMemberAvatar(
     if (currentUserId == null) return false
     return when (member.kind) {
         app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind.Person ->
-            member.referenceId == currentUserId
+            member.referenceId == currentUserId || canManageMembers
         app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind.Dependant ->
             canManageMembers
         app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind.Group -> false
