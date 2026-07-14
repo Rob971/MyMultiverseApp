@@ -22,9 +22,15 @@ class MemberAvatarPresentationTest {
     }
 
     @Test
-    fun canEditMemberAvatar_deniesOtherPersonMembers() {
+    fun canEditMemberAvatar_allowsManagersToEditOtherPersonMembers() {
         val member = personMember(referenceId = "user-2")
-        assertFalse(canEditMemberAvatar(member, currentUserId = "user-1", canManageMembers = true))
+        assertTrue(canEditMemberAvatar(member, currentUserId = "user-1", canManageMembers = true))
+    }
+
+    @Test
+    fun canEditMemberAvatar_deniesNonManagersForOtherPersonMembers() {
+        val member = personMember(referenceId = "user-2")
+        assertFalse(canEditMemberAvatar(member, currentUserId = "user-1", canManageMembers = false))
     }
 
     @Test

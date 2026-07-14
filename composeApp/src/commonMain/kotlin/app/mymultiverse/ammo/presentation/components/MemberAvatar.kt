@@ -2,6 +2,7 @@ package app.mymultiverse.ammo.presentation.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -20,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -39,7 +41,20 @@ fun MemberAvatar(
     onClick: (() -> Unit)? = null,
 ) {
     val initials = remember(displayName) { memberAvatarInitials(displayName) }
-    val avatarContent: @Composable () -> Unit = {
+
+    val baseModifier = modifier.size(size)
+    val interactiveModifier = if (onClick != null) {
+        baseModifier
+            .clip(CircleShape)
+            .clickable(role = Role.Button, onClickLabel = contentDescription, onClick = onClick)
+    } else {
+        baseModifier
+    }
+
+    Box(
+        modifier = interactiveModifier,
+        contentAlignment = Alignment.Center,
+    ) {
         MemberAvatarContent(
             avatarUrl = avatarUrl,
             initials = initials,
@@ -47,19 +62,6 @@ fun MemberAvatar(
             size = size,
             isLoading = isLoading,
         )
-    }
-
-    if (onClick != null) {
-        JourneyIconButton(
-            onClick = onClick,
-            modifier = modifier,
-        ) {
-            avatarContent()
-        }
-    } else {
-        Box(modifier = modifier) {
-            avatarContent()
-        }
     }
 }
 
