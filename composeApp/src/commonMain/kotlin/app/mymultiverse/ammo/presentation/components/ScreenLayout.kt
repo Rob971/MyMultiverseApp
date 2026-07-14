@@ -86,6 +86,20 @@ fun Modifier.screenContentArea(scaffoldPadding: PaddingValues): Modifier {
         .keyboardAwareInsets()
 }
 
+/**
+ * Like [screenContentArea] but without [imePadding] on the outer container. Use when the
+ * scrollable child (e.g. a [LazyColumn]) carries [imePadding] itself so the container does not
+ * resize on every keyboard frame, avoiding scroll-position jumps for top-positioned text fields.
+ */
+@Composable
+fun Modifier.screenContentAreaScrollable(scaffoldPadding: PaddingValues): Modifier {
+    val inMainTabs = LocalMainTabBarVisible.current
+    return fillMaxSize()
+        .padding(scaffoldPadding)
+        .padding(horizontal = ScreenLayout.horizontalPadding)
+        .then(if (!inMainTabs) Modifier.navigationBarsPadding() else Modifier)
+}
+
 /** Scrollable form body with keyboard and navigation-bar insets applied. */
 @Composable
 fun Modifier.keyboardAwareScroll(

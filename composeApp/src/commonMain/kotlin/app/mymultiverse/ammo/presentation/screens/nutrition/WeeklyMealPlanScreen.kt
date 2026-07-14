@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -57,7 +58,7 @@ import app.mymultiverse.ammo.presentation.components.NutritionScaffold
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.WeekSelectorBanner
 import app.mymultiverse.ammo.presentation.components.nutritionDayLabel
-import app.mymultiverse.ammo.presentation.components.screenContentArea
+import app.mymultiverse.ammo.presentation.components.screenContentAreaScrollable
 import app.mymultiverse.ammo.presentation.components.screenListPadding
 import app.mymultiverse.ammo.presentation.navigation.NutritionSection
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
@@ -408,7 +409,7 @@ private fun WeeklyMealPlanScreenContent(
             }
         },
     ) { padding ->
-        BoxWithConstraints(modifier = Modifier.screenContentArea(padding)) {
+        BoxWithConstraints(modifier = Modifier.screenContentAreaScrollable(padding)) {
             val isWideLayout = maxWidth >= ScreenLayout.expandedMinWidth
 
             PullToRefreshBox(
@@ -420,6 +421,7 @@ private fun WeeklyMealPlanScreenContent(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .imePadding()
                         .testTag(MealPlanTestTags.SCROLL_LIST),
                     state = listState,
                     contentPadding = screenListPadding(
