@@ -596,6 +596,16 @@ jobs:
           supabase-url: ${{ secrets.SUPABASE_URL }}
           supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
 
+      - name: Stamp alpha prerelease label (in-memory, no git commit)
+        run: |
+          if grep -q '^version\.prerelease=' gradle/app-version.properties; then
+            sed -i "s|^version\.prerelease=.*|version.prerelease=alpha|" gradle/app-version.properties
+          else
+            echo "version.prerelease=alpha" >> gradle/app-version.properties
+          fi
+          VERSION_NAME="$(grep '^version\.name=' gradle/app-version.properties | cut -d= -f2-)"
+          echo "Alpha build: ${VERSION_NAME}-alpha"
+
       - name: Build debug APK (alpha track)
         run: ./gradlew :androidApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
 
