@@ -31,6 +31,7 @@ import ammo.composeapp.generated.resources.home_app_version
 import ammo.composeapp.generated.resources.home_app_version_rc
 import ammo.composeapp.generated.resources.home_copyright_notice
 import ammo.composeapp.generated.resources.home_trademark_notice
+import ammo.composeapp.generated.resources.home_designer_credit
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -49,6 +50,7 @@ object HomeAccountSheetTestTags {
     const val VERSION = HomeTestTags.APP_VERSION_LABEL
     const val COPYRIGHT = "home_account_copyright"
     const val TRADEMARK = "home_account_trademark"
+    const val DESIGNER = "home_account_designer"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -181,6 +183,16 @@ fun HomeAccountSheet(
                     .fillMaxWidth()
                     .padding(top = 16.dp)
                     .testTag(HomeAccountSheetTestTags.VERSION),
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = stringResource(Res.string.home_designer_credit),
+                style = MaterialTheme.typography.labelSmall,
+                color = JourneySemanticColors.inkMuted(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp)
+                    .testTag(HomeAccountSheetTestTags.DESIGNER),
                 textAlign = TextAlign.Center,
             )
             Text(

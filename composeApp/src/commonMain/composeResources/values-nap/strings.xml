@@ -212,6 +212,7 @@
     <string name="home_app_version_rc">Versione %1$s (RC)</string>
     <string name="home_copyright_notice">© %1$d Roberto Cornano (MyMultiverse). Tutte 'e dderitte riservate.</string>
     <string name="home_trademark_notice">MyMultiverse™ · Ammò™</string>
+    <string name="home_designer_credit">Disegnato 'a Carola Zeno</string>
     <string name="edit_dream_architect_title">Architetto d' 'e Suonne</string>
     <string name="edit_dream_edit_title">Cagna Suonno</string>
     <string name="action_back">Areto</string>
