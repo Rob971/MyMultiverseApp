@@ -71,6 +71,7 @@ import ammo.composeapp.generated.resources.auth_success_email_confirmation
 import ammo.composeapp.generated.resources.auth_switch_to_sign_in
 import ammo.composeapp.generated.resources.auth_switch_to_sign_up
 import ammo.composeapp.generated.resources.auth_title
+import ammo.composeapp.generated.resources.home_designer_credit
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -82,6 +83,7 @@ object LoginTestTags {
     const val GOOGLE_BUTTON = "login_google_button"
     const val APPLE_BUTTON = "login_apple_button"
     const val BACK_TO_SSO = "login_back_to_sso"
+    const val DESIGNER = "login_designer"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -304,6 +306,16 @@ fun LoginScreen(
                         Res.string.auth_switch_to_sign_up
                     },
                 ),
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(Res.string.home_designer_credit),
+                style = MaterialTheme.typography.labelSmall,
+                color = JourneySemanticColors.inkMuted(),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(LoginTestTags.DESIGNER),
             )
             Spacer(modifier = Modifier.height(ScreenLayout.contentBottomPadding))
             }
