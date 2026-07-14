@@ -745,26 +745,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # full history needed to count commits on release branch
 
       - name: Stamp beta prerelease label (in-memory, no git commit)
         id: stamp
         run: |
-          # Derive beta sequence: number of commits on this release branch since it diverged from main.
-          MERGE_BASE="$(git merge-base HEAD origin/main 2>/dev/null || git rev-parse HEAD~1)"
-          BETA_SEQ="$(git rev-list --count HEAD ^"$MERGE_BASE" 2>/dev/null || echo 1)"
-          BETA_SEQ="${BETA_SEQ:-1}"
-          # Stamp version.prerelease in the properties file (not committed — build-time only).
           if grep -q '^version\.prerelease=' gradle/app-version.properties; then
-            sed -i "s|^version\.prerelease=.*|version.prerelease=beta.${BETA_SEQ}|" gradle/app-version.properties
+            sed -i "s|^version\.prerelease=.*|version.prerelease=beta|" gradle/app-version.properties
           else
-            echo "version.prerelease=beta.${BETA_SEQ}" >> gradle/app-version.properties
+            echo "version.prerelease=beta" >> gradle/app-version.properties
           fi
-          echo "beta_seq=${BETA_SEQ}" >> "$GITHUB_OUTPUT"
           VERSION_NAME="$(grep '^version\.name=' gradle/app-version.properties | cut -d= -f2-)"
-          echo "version_display=${VERSION_NAME}-beta.${BETA_SEQ}" >> "$GITHUB_OUTPUT"
-          echo "Beta label: ${VERSION_NAME}-beta.${BETA_SEQ} (sequence ${BETA_SEQ})"
+          echo "version_display=${VERSION_NAME}-beta" >> "$GITHUB_OUTPUT"
+          echo "Beta build: ${VERSION_NAME}-beta"
 
       - name: Check Play Store service account secret
         id: play_secret_check

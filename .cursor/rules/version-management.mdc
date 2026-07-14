@@ -62,14 +62,14 @@ Industry pattern: **trunk + release branch + tagged production** (used by Chrome
 ```
 feature/* ──PR──► main (alpha) ──cut──► release/X.Y (beta) ──soak──► tag vX.Y.Z (production)
                       │                         │
-                      └─ Firebase auto          └─ Play Closed Testing (X.Y.Z-beta.N)
+                      └─ Firebase auto          └─ Play Closed Testing (X.Y.Z-beta)
 ```
 
-| Stage | Branch / trigger | `version.name` bump? | User-facing string | End-user label (target) |
-|-------|------------------|----------------------|--------------------|-------------------------|
-| **Alpha** | `main` push → `distribute-alpha` | No — same `X.Y.Z` until named release | `1.4.0` | **Early access** *(not implemented in UI yet)* |
+| Stage | Branch / trigger | `version.name` bump? | User-facing string | End-user label |
+|-------|------------------|----------------------|--------------------|----------------|
+| **Alpha** | `main` push → `distribute-alpha` | No — same `X.Y.Z` until named release | `1.4.0-alpha` | **Alpha** |
 | **Named release** | Manual `release` job on `main` | Yes — sets next `version.name` | `1.4.0` | Same; tags `v1.4.0` for bookkeeping |
-| **Beta** | `release/X.Y` push | No — CI adds `beta.N` only | `1.4.0-beta.2` | **Beta** *(not "RC" — see UX section)* |
+| **Beta** | `release/X.Y` push | No — CI stamps `beta` only | `1.4.0-beta` | **Beta** |
 | **Production** | `vX.Y.Z` tag | Already set | `1.4.0` | **Version 1.4.0** |
 | **Hotfix** | `vX.Y.Z-hotfix.N` tag | PATCH semantics | `1.4.1` or `1.4.0-hotfix.1` | **Version 1.4.1** + what's new |
 
@@ -80,18 +80,19 @@ feature/* ──PR──► main (alpha) ──cut──► release/X.Y (beta) �
 ## Version string format (`AppVersionFormatter`)
 
 ```kotlin
-// Empty prerelease → "1.3.1"; with prerelease → "1.3.1-beta.2"
+// Empty prerelease → "1.3.1"; with prerelease → "1.3.1-beta" or "1.3.1-alpha"
 formatVersionName(name, prerelease)
 ```
 
 | `version.prerelease` | Display | `IS_PRERELEASE` |
 |----------------------|---------|-----------------|
 | *(omitted)* | `1.3.1` | `false` |
-| `beta.2` | `1.3.1-beta.2` | `true` |
+| `alpha` | `1.3.1-alpha` | `true` |
+| `beta` | `1.3.1-beta` | `true` |
 | `rc.1` | `1.3.1-rc.1` | `true` *(supported; not used by CI today)* |
 
 - Source of truth: `gradle/app-version.properties`
-- **No `-alpha` suffix** today — alpha cannot be distinguished from production by version string alone.
+- CI stamps `alpha` or `beta` in-memory only — never committed to git.
 
 ---
 
@@ -110,7 +111,7 @@ formatVersionName(name, prerelease)
 | Build | Shown in app | Notes |
 |-------|-------------|-------|
 | Stable (production tag) | `Version 1.3.4` | Clean SemVer, no suffix |
-| Beta (`release/**`) | `Version 1.3.4-beta.2` | CI stamps `beta.N` in-memory; `VERSION_NAME` includes suffix |
+| Beta (`release/**`) | `Version 1.3.4-beta` | CI stamps `beta` in-memory; `VERSION_NAME` includes suffix |
 | Alpha (`main` / Firebase) | `Version 1.3.4-alpha` | CI stamps `alpha` in-memory; `VERSION_NAME` includes suffix |
 
 All three tracks use the single `home_app_version` string key (`"Version %1$s"`). The prerelease suffix embedded in `VERSION_NAME` makes each track visually distinct. The old `home_app_version_rc` key (which incorrectly labelled beta as "RC") has been removed.
@@ -135,7 +136,7 @@ All three tracks use the single `home_app_version` string key (`"Version %1$s"`)
 
 - **Reject new features** unless user explicitly overrides.
 - PATCH-level fixes only; no MINOR/MAJOR bump on the branch.
-- CI stamps `version.prerelease=beta.N` in-memory (not committed); app shows `X.Y.Z-beta.N`.
+- CI stamps `version.prerelease=beta` in-memory (not committed); app shows `X.Y.Z-beta`.
 - Strict self-review per `review-commit.mdc`.
 
 ### Production (tagged release / hotfix)
