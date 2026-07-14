@@ -212,6 +212,7 @@
     <string name="home_app_version_rc">الإصدار %1$s (مرشح)</string>
     <string name="home_copyright_notice">© %1$d Roberto Cornano (MyMultiverse). جميع الحقوق محفوظة.</string>
     <string name="home_trademark_notice">MyMultiverse™ · Ammò™</string>
+    <string name="home_designer_credit">تصميم Carola Zeno</string>
     <string name="edit_dream_architect_title">مهندس الأحلام</string>
     <string name="edit_dream_edit_title">تعديل الحلم</string>
     <string name="action_back">رجوع</string>

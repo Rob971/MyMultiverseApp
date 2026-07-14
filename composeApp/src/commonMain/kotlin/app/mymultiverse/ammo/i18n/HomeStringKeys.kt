@@ -83,6 +83,7 @@ object HomeStringKeys {
         "home_app_version_rc",
         "home_copyright_notice",
         "home_trademark_notice",
+        "home_designer_credit",
         "home_export_personal_data",
         "home_export_personal_data_success",
         "home_export_personal_data_error",

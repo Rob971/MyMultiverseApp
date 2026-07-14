@@ -212,6 +212,7 @@
     <string name="home_app_version_rc">Version %1$s (RC)</string>
     <string name="home_copyright_notice">© %1$d Roberto Cornano (MyMultiverse). All rights reserved.</string>
     <string name="home_trademark_notice">MyMultiverse™ · Ammò™</string>
+    <string name="home_designer_credit">Designed by Carola Zeno</string>
     <string name="edit_dream_architect_title">Dream Architect</string>
     <string name="edit_dream_edit_title">Edit Dream</string>
     <string name="action_back">Back</string>
