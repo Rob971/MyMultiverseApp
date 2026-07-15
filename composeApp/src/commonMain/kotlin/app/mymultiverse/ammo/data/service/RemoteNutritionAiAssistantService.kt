@@ -2,6 +2,7 @@ package app.mymultiverse.ammo.data.service
 
 import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
+import kotlinx.coroutines.CancellationException
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
@@ -58,6 +59,7 @@ internal class RemoteNutritionAiAssistantService(
                 appLogger.breadcrumb("gemini_advice_ok lang=$lang")
                 advice
             }.recoverCatching { e ->
+                if (e is CancellationException) throw e  // Never recover from cancellation
                 appLogger.recordError(TAG, "Gemini advice failed; using local fallback", e,
                     mapOf("lang" to lang))
                 local.askAdvice(question).getOrThrow()
@@ -76,10 +78,14 @@ internal class RemoteNutritionAiAssistantService(
             "Return ONLY a JSON array of 8 to 14 food item names, no explanation. " +
             "Example: [\"item1\",\"item2\"]"
 
-        val items = runCatching {
+        val items = try {
             geminiApi.complete(prompt, maxOutputTokens = 512).getOrThrow()
                 .let { GeminiResponseParser.extractJsonArray(it) }
-        }.getOrNull()
+        } catch (e: CancellationException) {
+            throw e  // Never treat cancellation as "no items found"
+        } catch (_: Exception) {
+            null
+        }
 
         if (!items.isNullOrEmpty()) {
             appLogger.breadcrumb("gemini_grocery_list_ok criteria=$criteria count=${items.size}")
@@ -111,6 +117,7 @@ internal class RemoteNutritionAiAssistantService(
 
         val failure = geminiResult.exceptionOrNull() ?: geminiResult.getOrNull()?.exceptionOrNull()
         if (failure != null) {
+            if (failure is CancellationException) throw failure  // Propagate cancellation
             appLogger.recordError(TAG, "Gemini ingredient call failed; using local fallback",
                 failure, mapOf("dish" to trimmed, "lang" to lang))
         } else {
@@ -133,17 +140,21 @@ internal class RemoteNutritionAiAssistantService(
         val daysNeeded = if (scope is MealPlanGenerationScope.FullWeek) 7 else 1
         val prompt = buildMealPlanPrompt(criteria, lang, daysNeeded)
 
-        val geminiText = runCatching {
+        val geminiText = try {
             geminiApi.complete(prompt, maxOutputTokens = 1024, temperature = 0.7).getOrThrow()
-        }.getOrElse { e ->
+        } catch (e: CancellationException) {
+            throw e  // Propagate — don't return a local result for a cancelled request
+        } catch (e: Exception) {
             appLogger.recordError(TAG, "Gemini meal plan call failed; using local fallback", e,
                 mapOf("criteria" to criteria, "lang" to lang, "scope" to scope::class.simpleName.orEmpty()))
             return local.generateMealPlan(criteria, scope, currentPlan)
         }
 
-        val (generatedDays, summary) = runCatching {
+        val (generatedDays, summary) = try {
             GeminiResponseParser.parseMealPlan(geminiText)
-        }.getOrElse { e ->
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
             appLogger.recordError(TAG, "Gemini meal plan parse failed; using local fallback", e,
                 mapOf("criteria" to criteria, "lang" to lang))
             return local.generateMealPlan(criteria, scope, currentPlan)

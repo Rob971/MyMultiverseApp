@@ -28,6 +28,7 @@ import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivityKind
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.presentation.navigation.HouseholdContext
 import app.mymultiverse.ammo.presentation.navigation.toNavigationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -511,40 +512,55 @@ class NutritionScreenModel(
         updateMeal(tomorrowIndex, lunch = dinner)
     }
 
+    // Tracked so a new runAiAssistant call can cancel an in-flight request.
+    private var aiAssistantJob: Job? = null
+
     fun runAiAssistant(
         mode: NutritionAiMode,
         criteria: String,
         mealPlanScope: MealPlanGenerationScope = MealPlanGenerationScope.FullWeek,
     ) {
         if (!canWriteHouseholdData.value) return
-        scope.launch {
+        aiAssistantJob?.cancel()
+        aiAssistantJob = scope.launch {
             _aiState.value = NutritionAiState.Loading
-            when (mode) {
-                NutritionAiMode.Advice -> {
-                    aiAssistant.askAdvice(criteria)
-                        .onSuccess { answer -> _aiState.value = NutritionAiState.Advice(answer) }
-                        .onFailure { error -> _aiState.value = error.toAiErrorState() }
-                }
+            try {
+                when (mode) {
+                    NutritionAiMode.Advice -> {
+                        aiAssistant.askAdvice(criteria)
+                            .onSuccess { answer -> _aiState.value = NutritionAiState.Advice(answer) }
+                            .onFailure { error -> _aiState.value = error.toAiErrorState() }
+                    }
 
-                NutritionAiMode.GroceryList -> {
-                    aiAssistant.generateGroceryList(criteria)
-                        .onSuccess { labels ->
-                            val addedCount = appendAiGrocery(labels)
-                            _aiState.value = NutritionAiState.GroceryList(itemCount = addedCount)
-                        }
-                        .onFailure { error -> _aiState.value = error.toAiErrorState() }
-                }
+                    NutritionAiMode.GroceryList -> {
+                        aiAssistant.generateGroceryList(criteria)
+                            .onSuccess { labels ->
+                                val addedCount = appendAiGrocery(labels)
+                                _aiState.value = NutritionAiState.GroceryList(itemCount = addedCount)
+                            }
+                            .onFailure { error -> _aiState.value = error.toAiErrorState() }
+                    }
 
-                NutritionAiMode.MealPlan -> {
-                    aiAssistant.generateMealPlan(criteria, mealPlanScope, mealPlan.value)
-                        .onSuccess { generation ->
-                            _aiState.value = NutritionAiState.MealPlanPreview(
-                                plan = mealPlan.value.copy(days = generation.days),
-                                summary = generation.summary,
-                                scope = mealPlanScope,
-                            )
-                        }
-                        .onFailure { error -> _aiState.value = error.toAiErrorState() }
+                    NutritionAiMode.MealPlan -> {
+                        aiAssistant.generateMealPlan(criteria, mealPlanScope, mealPlan.value)
+                            .onSuccess { generation ->
+                                _aiState.value = NutritionAiState.MealPlanPreview(
+                                    plan = mealPlan.value.copy(days = generation.days),
+                                    summary = generation.summary,
+                                    scope = mealPlanScope,
+                                )
+                            }
+                            .onFailure { error -> _aiState.value = error.toAiErrorState() }
+                    }
+                }
+            } catch (e: CancellationException) {
+                // Intentional cancel (new request superseded this one) — reset to Idle.
+                _aiState.value = NutritionAiState.Idle
+                throw e
+            } finally {
+                // Ensure Loading is never left stuck even on unexpected exit.
+                if (_aiState.value is NutritionAiState.Loading) {
+                    _aiState.value = NutritionAiState.Idle
                 }
             }
         }
@@ -681,25 +697,28 @@ class NutritionScreenModel(
 
         scope.launch {
             _mealGroceryLoading.value = MealGroceryRequest(dayIndex, slot)
-            aiAssistant.generateGroceryForMeal(mealText)
-                .onSuccess { labels ->
-                    val addedCount = appendMealGroceryLabels(labels)
-                    _mealGroceryResult.value = MealGroceryResult(
-                        itemCount = addedCount,
-                        dayLabel = dayLabel,
-                        slot = slot,
-                    )
-                }
-                .onFailure { error ->
-                    _mealGroceryResult.value = MealGroceryResult(
-                        itemCount = 0,
-                        dayLabel = dayLabel,
-                        slot = slot,
-                        isError = true,
-                        isKeyMissing = error is AiKeyNotConfiguredException,
-                    )
-                }
-            _mealGroceryLoading.value = null
+            try {
+                aiAssistant.generateGroceryForMeal(mealText)
+                    .onSuccess { labels ->
+                        val addedCount = appendMealGroceryLabels(labels)
+                        _mealGroceryResult.value = MealGroceryResult(
+                            itemCount = addedCount,
+                            dayLabel = dayLabel,
+                            slot = slot,
+                        )
+                    }
+                    .onFailure { error ->
+                        _mealGroceryResult.value = MealGroceryResult(
+                            itemCount = 0,
+                            dayLabel = dayLabel,
+                            slot = slot,
+                            isError = true,
+                            isKeyMissing = error is AiKeyNotConfiguredException,
+                        )
+                    }
+            } finally {
+                _mealGroceryLoading.value = null  // Always clear — even on cancellation
+            }
         }
     }
 
@@ -712,19 +731,22 @@ class NutritionScreenModel(
             _bulkMealGroceryLoading.value = true
             var totalAdded = 0
             var hadError = false
-            plannedMeals.forEach { plannedMeal ->
-                _mealGroceryLoading.value = MealGroceryRequest(plannedMeal.dayIndex, plannedMeal.slot)
-                aiAssistant.generateGroceryForMeal(plannedMeal.text)
-                    .onSuccess { labels -> totalAdded += appendMealGroceryLabels(labels) }
-                    .onFailure { hadError = true }
+            try {
+                plannedMeals.forEach { plannedMeal ->
+                    _mealGroceryLoading.value = MealGroceryRequest(plannedMeal.dayIndex, plannedMeal.slot)
+                    aiAssistant.generateGroceryForMeal(plannedMeal.text)
+                        .onSuccess { labels -> totalAdded += appendMealGroceryLabels(labels) }
+                        .onFailure { hadError = true }
+                }
+                _bulkMealGroceryResult.value = BulkMealGroceryResult(
+                    addedCount = totalAdded,
+                    mealsProcessed = plannedMeals.size,
+                    isError = hadError,
+                )
+            } finally {
+                _mealGroceryLoading.value = null
+                _bulkMealGroceryLoading.value = false
             }
-            _mealGroceryLoading.value = null
-            _bulkMealGroceryResult.value = BulkMealGroceryResult(
-                addedCount = totalAdded,
-                mealsProcessed = plannedMeals.size,
-                isError = hadError,
-            )
-            _bulkMealGroceryLoading.value = false
         }
     }
 
