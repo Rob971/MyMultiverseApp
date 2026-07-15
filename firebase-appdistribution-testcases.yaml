@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 91
+version: 92
 updated: 2026-07-15
 
 summary: |
@@ -1183,3 +1183,16 @@ testcases:
     expected:
       - Account B sees the same household hub and synced grocery item after refresh.
       - Run scripts/verify-supabase-household.sh locally before distributing if you are the release owner.
+
+  - id: gemini-key-cross-device-sync
+    title: Gemini API key persists across devices
+    steps:
+      - On Device A, open the AI assistant sheet (meal plan or grocery mode).
+      - If prompted, paste a valid Gemini API key and tap Save.
+      - Confirm the key form disappears and AI generation succeeds.
+      - Sign out of Device A, then sign in to Device B with the same account.
+      - Open the AI assistant sheet on Device B without entering a key.
+    expected:
+      - Device B shows AI generation working immediately — the key form must NOT appear.
+      - Changing the language on Device B and tapping Generate returns AI results in the selected language.
+      - If the key is cleared in Account → Settings on Device B, the key form reappears on both devices after sign-in.
