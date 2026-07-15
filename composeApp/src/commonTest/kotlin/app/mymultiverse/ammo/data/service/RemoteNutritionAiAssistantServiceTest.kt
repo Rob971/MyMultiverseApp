@@ -1,5 +1,8 @@
 package app.mymultiverse.ammo.data.service
 
+import app.mymultiverse.ammo.data.observability.AppLogger
+import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
+import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
 import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +15,8 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class RemoteNutritionAiAssistantServiceTest {
+
+    private val noOpLogger = AppLogger(NoOpCrashReporter(), DiagnosticsContext())
 
     private fun makeService(
         geminiResult: Result<List<String>> = Result.success(listOf("Polpo", "Patate")),
@@ -29,6 +34,7 @@ class RemoteNutritionAiAssistantServiceTest {
             geminiClient = fakeClient,
             currentLanguageCode = { languageCode },
             aiSettings = fakeSettings,
+            appLogger = noOpLogger,
         )
     }
 
@@ -134,6 +140,7 @@ class RemoteNutritionAiAssistantServiceTest {
             geminiClient = fakeClient,
             currentLanguageCode = { "it" },
             aiSettings = fakeSettings,
+            appLogger = noOpLogger,
         )
 
         val result = service.generateGroceryForMeal("Pollo alla cacciatora")
@@ -187,6 +194,7 @@ class RemoteNutritionAiAssistantServiceTest {
             geminiClient = FakeDishIngredientClient(Result.success(emptyList())),
             currentLanguageCode = { "en" },
             aiSettings = fakeSettings,
+            appLogger = noOpLogger,
         )
 
         assertEquals("my-key", service.geminiApiKey.value)
