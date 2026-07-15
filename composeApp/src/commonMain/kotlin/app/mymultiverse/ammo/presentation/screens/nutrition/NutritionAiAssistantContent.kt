@@ -714,7 +714,7 @@ fun NutritionAiAssistantContent(
                             JourneyIcon(
                                 role = AppIconRole.AiAccent,
                                 contentDescription = null,
-                                modifier = Modifier.size(18.dp).padding(top = 2.dp),
+                                modifier = Modifier.size(18.dp),
                             )
                             Text(
                                 text = stringResource(Res.string.nutrition_ai_key_required),

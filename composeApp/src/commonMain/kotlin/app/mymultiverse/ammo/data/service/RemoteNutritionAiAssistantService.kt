@@ -9,15 +9,18 @@ import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * Enhances [LocalNutritionAiAssistantService] by delegating [generateGroceryForMeal]
- * to the Gemini API for dish-specific, language-aware ingredient lists.
+ * Enhances [LocalNutritionAiAssistantService] with Gemini-powered AI features.
  *
- * When the Gemini API key is blank (not yet configured by the user), or when Gemini is
- * unavailable (network error, empty response, or parse failure), this service falls back
- * transparently to the local heuristic implementation.
+ * **When key is not configured:** every method returns
+ * [AiKeyNotConfiguredException] so the caller can show a polite setup prompt
+ * rather than a generic error or a silent local fallback.
  *
- * All other operations (advice, grocery list by criteria, meal plan) continue to use the
- * local service unchanged.
+ * **When key is configured:**
+ * - [generateGroceryForMeal] calls Gemini for dish-specific, language-aware
+ *   ingredients; falls back to local heuristics if the network request fails.
+ * - [askAdvice], [generateGroceryList], [generateMealPlan] delegate to
+ *   [LocalNutritionAiAssistantService] (their local implementations are
+ *   already high-quality without a remote call).
  */
 internal class RemoteNutritionAiAssistantService(
     private val local: LocalNutritionAiAssistantService,

@@ -404,7 +404,7 @@
     <string name="home_ai_key_status_not_configured">Non configurata</string>
     <string name="home_ai_key_saved_snackbar">Chiave AI salvata ✓</string>
     <string name="home_ai_key_cleared_snackbar">Chiave AI levata</string>
-    <string name="nutrition_ai_setup_notice">✨ Metti 'na chiave Gemini gratuita 'nte 'e impostazioni account pe' suggerimenti intelligente sugli ingredienti.</string>
+    <string name="nutrition_ai_setup_notice">Metti 'na chiave Gemini gratuita 'nte 'e impostazioni account pe' suggerimenti intelligente sugli ingredienti.</string>
     <string name="nutrition_ai_key_required">'E funzione AI ànno bisogno 'e 'na chiave Gemini. Mettela 'nte 'e impostazioni account.</string>
     <string name="nutrition_ai_key_required_meal_grocery">Metti 'a chiave Gemini 'nte 'e impostazioni account pe' ingredienti specifice ô piatto.</string>
     <string name="home_hero_plan_meals">Planifica 'e pastate</string>

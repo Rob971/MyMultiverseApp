@@ -68,14 +68,12 @@ fun AiSetupNotice(
             )
             JourneyIconButton(
                 onClick = onDismiss,
-                modifier = Modifier
-                    .size(32.dp)
-                    .testTag(AiSetupNoticeTestTags.DISMISS),
+                modifier = Modifier.testTag(AiSetupNoticeTestTags.DISMISS),
             ) {
                 JourneyIcon(
                     role = AppIconRole.ChromeClose,
                     contentDescription = null,
-                    modifier = Modifier.size(14.dp),
+                    modifier = Modifier.size(16.dp),
                 )
             }
         }

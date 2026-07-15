@@ -404,7 +404,7 @@
     <string name="home_ai_key_status_not_configured">غير مُعدّ</string>
     <string name="home_ai_key_saved_snackbar">تم حفظ مفتاح الذكاء الاصطناعي ✓</string>
     <string name="home_ai_key_cleared_snackbar">تم مسح مفتاح الذكاء الاصطناعي</string>
-    <string name="nutrition_ai_setup_notice">✨ أضف مفتاح Gemini المجاني في إعدادات الحساب للحصول على اقتراحات مكونات ذكية.</string>
+    <string name="nutrition_ai_setup_notice">أضف مفتاح Gemini المجاني في إعدادات الحساب للحصول على اقتراحات مكونات ذكية.</string>
     <string name="nutrition_ai_key_required">ميزات الذكاء الاصطناعي تحتاج مفتاح Gemini. أضفه في إعدادات الحساب.</string>
     <string name="nutrition_ai_key_required_meal_grocery">أضف مفتاح Gemini في إعدادات الحساب للحصول على مكونات خاصة بالطبق.</string>
     <string name="home_hero_plan_meals">تخطيط الوجبات</string>

@@ -404,7 +404,7 @@
     <string name="home_ai_key_status_not_configured">Nicht konfiguriert</string>
     <string name="home_ai_key_saved_snackbar">KI-Schlüssel gespeichert ✓</string>
     <string name="home_ai_key_cleared_snackbar">KI-Schlüssel gelöscht</string>
-    <string name="nutrition_ai_setup_notice">✨ Füge einen kostenlosen Gemini-Schlüssel in Konto &amp; Einstellungen hinzu für smarte Zutatenvorschläge.</string>
+    <string name="nutrition_ai_setup_notice">Füge einen kostenlosen Gemini-Schlüssel in Konto &amp; Einstellungen hinzu für smarte Zutatenvorschläge.</string>
     <string name="nutrition_ai_key_required">KI-Funktionen benötigen einen Gemini-Schlüssel. Füge ihn in Konto &amp; Einstellungen hinzu.</string>
     <string name="nutrition_ai_key_required_meal_grocery">Füge deinen Gemini-Schlüssel in Kontoeinstellungen hinzu für gerichtspezifische Zutaten.</string>
     <string name="home_hero_plan_meals">Mahlzeiten planen</string>
