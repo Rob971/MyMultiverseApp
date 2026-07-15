@@ -1,8 +1,5 @@
-Novedades en esta versión:
-
-• Ingredientes de platos con IA — Añadir a la lista genera ahora ingredientes específicos del plato mediante Gemini AI, en tu idioma
-• Gemini AI para planificación de comidas, consejos nutricionales y listas de la compra
-• Añade tu clave Gemini directamente en el panel de IA — la configuración de la clave solo aparece cuando usas una función de IA
-• Pulsar "Añadir a la lista" en una comida sin clave abre el formulario de configuración directamente
-• Registro en 2 pasos — ahora recoge tu nombre y el nombre del hogar desde el inicio
-• Correcciones de errores y mejoras de estabilidad
+• Gemini AI para comidas, consejos y compras — añade tu clave gratuita en el panel IA
+• Ingredientes específicos del plato vía IA — Añadir a la lista usa Gemini para tu plato
+• Configuración de clave IA solo cuando se necesita — sin avisos proactivos
+• Registro en 2 pasos — captura tu nombre y el del hogar desde el inicio
+• Correcciones de estabilidad: indicadores de carga bloqueados resueltos
