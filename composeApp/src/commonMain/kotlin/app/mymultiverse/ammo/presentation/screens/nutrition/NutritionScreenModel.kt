@@ -90,7 +90,8 @@ class NutritionScreenModel(
      */
     init {
         scope.launch {
-            aiAssistant.geminiApiKey.drop(1).filter { it.isNotBlank() }.collect {
+            aiAssistant.geminiApiKey.collect { key ->
+                if (key.isBlank()) return@collect
                 val current = _aiState.value
                 if (current is NutritionAiState.Error && current.isKeyMissing) {
                     _aiState.value = NutritionAiState.Idle
