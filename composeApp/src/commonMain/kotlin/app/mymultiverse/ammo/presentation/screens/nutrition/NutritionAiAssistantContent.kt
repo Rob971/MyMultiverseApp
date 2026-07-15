@@ -38,7 +38,15 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
 import app.mymultiverse.ammo.domain.manager.LanguageManager
+import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiMode
@@ -51,6 +59,7 @@ import app.mymultiverse.ammo.presentation.components.JourneyEmptyState
 import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
 import app.mymultiverse.ammo.presentation.components.JourneyTextField
 import app.mymultiverse.ammo.presentation.components.JourneyButtonLabel
+import app.mymultiverse.ammo.presentation.components.JourneyIconButton
 import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.ammo.presentation.components.rememberFieldScrollIntoViewModifier
@@ -70,6 +79,10 @@ import ammo.composeapp.generated.resources.nutrition_ai_criteria_hint
 import ammo.composeapp.generated.resources.nutrition_ai_description
 import ammo.composeapp.generated.resources.nutrition_ai_empty_question
 import ammo.composeapp.generated.resources.nutrition_ai_error
+import ammo.composeapp.generated.resources.home_ai_key_how_to_get
+import ammo.composeapp.generated.resources.home_ai_key_label
+import ammo.composeapp.generated.resources.home_ai_key_placeholder
+import ammo.composeapp.generated.resources.home_ai_key_save
 import ammo.composeapp.generated.resources.nutrition_ai_key_required
 import ammo.composeapp.generated.resources.nutrition_ai_generate_button
 import ammo.composeapp.generated.resources.nutrition_ai_grocery_cleared
@@ -704,11 +717,10 @@ fun NutritionAiAssistantContent(
                 item { ResetButton { screenModel.resetAiState(); criteria = "" } }
             }
             is NutritionAiState.Error -> {
-                item {
-                    if (state.isKeyMissing) {
-                        // Key not configured — show icon + friendly setup prompt
+                if (state.isKeyMissing) {
+                    item(key = "ai-key-missing-header") {
                         Row(
-                            verticalAlignment = Alignment.Top,
+                            verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             JourneyIcon(
@@ -722,7 +734,12 @@ fun NutritionAiAssistantContent(
                                 color = SharedJourneyColors.TerracottaOrange,
                             )
                         }
-                    } else {
+                    }
+                    item(key = "ai-key-inline-form") {
+                        AiKeyInlineForm()
+                    }
+                } else {
+                    item {
                         Text(
                             text = when (state.message) {
                                 "empty_question", "empty_criteria" ->
@@ -889,6 +906,74 @@ private fun SuggestionChip(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
             style = MaterialTheme.typography.labelMedium,
             color = SharedJourneyColors.TerracottaOrange,
+        )
+    }
+}
+
+/**
+ * Inline API key entry form shown inside the AI assistant sheet when a Gemini key is not
+ * configured. The user can paste and save the key without leaving the sheet. Once saved,
+ * [NutritionScreenModel] auto-resets the error state so they can immediately retry.
+ */
+@Composable
+private fun AiKeyInlineForm(
+    aiSettings: AiAssistantSettings = koinInject(),
+) {
+    var keyInput by rememberSaveable { mutableStateOf("") }
+    var showKey by remember { mutableStateOf(false) }
+
+    val howToGetUrl = "https://aistudio.google.com/app/apikey"
+    val linkText = stringResource(Res.string.home_ai_key_how_to_get)
+    val linkAnnotation = buildAnnotatedString {
+        withLink(LinkAnnotation.Url(howToGetUrl)) {
+            withStyle(
+                SpanStyle(
+                    color = SharedJourneyColors.MediterraneanTeal,
+                    fontWeight = FontWeight.Medium,
+                ),
+            ) {
+                append(linkText)
+            }
+        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        JourneyTextField(
+            value = keyInput,
+            onValueChange = { keyInput = it },
+            label = { Text(stringResource(Res.string.home_ai_key_label)) },
+            placeholder = { Text(stringResource(Res.string.home_ai_key_placeholder)) },
+            visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                JourneyIconButton(onClick = { showKey = !showKey }) {
+                    JourneyIcon(
+                        imageVector = if (showKey) AppIcons.Visibility else AppIcons.VisibilityOff,
+                        role = AppIconRole.Muted,
+                        contentDescription = null,
+                    )
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        JourneyPrimaryButton(
+            onClick = {
+                val trimmed = keyInput.trim()
+                if (trimmed.isNotBlank()) {
+                    aiSettings.setGeminiApiKey(trimmed)
+                    keyInput = ""
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = keyInput.isNotBlank(),
+        ) {
+            JourneyButtonLabel(stringResource(Res.string.home_ai_key_save))
+        }
+        Text(
+            text = linkAnnotation,
+            style = MaterialTheme.typography.bodySmall,
         )
     }
 }

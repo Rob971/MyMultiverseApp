@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 89
+version: 90
 updated: 2026-07-15
 
 summary: |
@@ -38,6 +38,7 @@ summary: |
   AI dish ingredients (v88): Add to grocery list on meal plan now calls Gemini API (free tier) to generate dish-specific, language-matched ingredients; falls back to local heuristics when API key absent or network unavailable.
   AI key settings UI (v88): "AI Ingredients" section added to Account settings with password field, show/hide toggle, save/clear actions, and a tappable link to get a free Gemini API key; Plan tab shows a terracotta notice when no key is configured.
   Full Gemini AI integration (v89): All AI features (advice, grocery list, meal plan) now call Gemini 2.0 Flash Lite; key-missing state shows polite error in AI sheet; async cancellation prevents stuck spinners when a new request supersedes the previous one.
+  AI key on-demand (v90): Removed proactive "add your key" banner from Plan tab; Gemini API key is only requested when the user actively triggers an AI feature and no key is configured; inline key-entry form shown directly in the AI sheet error state so the user can save the key and retry without leaving the sheet.
   App Links hosting (v47): deploy via Rob971/mymultiverse-website; verify with scripts/verify-hosting.sh after DNS is live.
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
@@ -875,25 +876,19 @@ testcases:
       - Tap "Clear key"; key field empties and "AI key cleared" feedback appears.
       - After saving a key, the "AI setup notice" banner no longer appears on the Plan tab.
 
-  - id: ai-key-setup-notice-on-plan
-    title: Plan tab AI setup notice when key not configured
+  - id: ai-key-missing-inline-form
+    title: AI sheet shows inline key-entry form when no key configured (no proactive banner)
     steps:
       - Ensure no Gemini API key is saved (clear it in Account settings or use a fresh install).
-      - Open Plan tab.
+      - Open Plan tab — confirm no "add your key" banner appears on the plan screen itself.
+      - Tap "Plan with AI" to open the AI helper sheet.
+      - Enter criteria for any mode (e.g. "vegetarian week") and tap Generate.
     expected:
-      - A terracotta-tinted notice appears below any viewer banner prompting the user to add a Gemini API key.
-      - The notice disappears immediately after saving a valid key in Account settings (no restart needed).
-
-  - id: ai-key-missing-error-in-sheet
-    title: AI sheet shows polite key-missing error (no key configured)
-    steps:
-      - Ensure no Gemini API key is saved.
-      - Open the Plan tab and tap "Plan with AI" to open the AI helper sheet.
-      - Try each mode (advice, grocery list, meal plan) by entering criteria and tapping Generate.
-    expected:
-      - Each mode shows a Sparkles icon and a message explaining that a Gemini API key is required.
-      - No spinner stays on screen; no generic network error is shown.
-      - Tapping the X closes the sheet; the notice on the Plan tab remains visible.
+      - The Plan tab shows NO proactive AI key prompt or banner before the user taps any AI feature.
+      - After tapping Generate with no key: a Sparkles icon + directive label appear, followed by an inline key-entry form (password field with show/hide toggle + Save key button + "Get a free key" link).
+      - No spinner is stuck on screen; no generic network error is shown.
+      - Paste a valid Gemini key into the inline field and tap Save key — the error state clears automatically and the AI sheet returns to Idle, ready for the user to tap Generate again.
+      - A second Generate attempt with the key now saved succeeds and returns a result.
 
   - id: ai-advice-gemini
     title: Nutrition advice via Gemini (key configured)
