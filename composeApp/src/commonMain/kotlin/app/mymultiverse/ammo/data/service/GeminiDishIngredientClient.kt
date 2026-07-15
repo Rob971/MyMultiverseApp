@@ -10,6 +10,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.content.TextContent
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.CancellationException
 
 private const val GEMINI_BASE_URL =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
@@ -45,7 +46,7 @@ internal class GeminiDishIngredientClient(
      * by [languageCode]. Returns a [Result] failure on any network or parse error.
      */
     override suspend fun generateIngredients(dish: String, languageCode: String): Result<List<String>> =
-        runCatching {
+        try {
             val apiKey = apiKeyProvider()
             check(apiKey.isNotBlank()) { "Gemini API key is not configured" }
 
@@ -61,14 +62,17 @@ internal class GeminiDishIngredientClient(
             }
 
             if (!response.status.isSuccess()) {
-                val errorBody = runCatching { response.bodyAsText() }.getOrElse { "" }
+                val errorBody = try { response.bodyAsText() } catch (_: Exception) { "" }
                 log.w { "Gemini API error ${response.status.value}: $errorBody" }
                 error("Gemini API error ${response.status.value}")
             }
 
-            GeminiResponseParser.parseIngredients(response.bodyAsText())
-        }.onFailure { e ->
+            Result.success(GeminiResponseParser.parseIngredients(response.bodyAsText()))
+        } catch (e: CancellationException) {
+            throw e  // Always propagate cancellation
+        } catch (e: Exception) {
             log.w(e) { "generateIngredients failed for dish='$dish' language='$languageCode'" }
+            Result.failure(e)
         }
 
     private fun buildRequestBody(dish: String, languageName: String): String {

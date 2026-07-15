@@ -10,6 +10,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.content.TextContent
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.CancellationException
 
 private const val GEMINI_API_URL =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
@@ -40,7 +41,7 @@ internal class GeminiApiClient(
         prompt: String,
         maxOutputTokens: Int,
         temperature: Double,
-    ): Result<String> = runCatching {
+    ): Result<String> = try {
         val apiKey = apiKeyProvider()
         check(apiKey.isNotBlank()) { "Gemini API key is not configured" }
 
@@ -51,14 +52,17 @@ internal class GeminiApiClient(
         }
 
         if (!response.status.isSuccess()) {
-            val errorBody = runCatching { response.bodyAsText() }.getOrElse { "" }
+            val errorBody = try { response.bodyAsText() } catch (_: Exception) { "" }
             log.w { "Gemini HTTP ${response.status.value}: $errorBody" }
             error("Gemini API error ${response.status.value}")
         }
 
-        GeminiResponseParser.extractResponseText(response.bodyAsText())
-    }.onFailure { e ->
+        Result.success(GeminiResponseParser.extractResponseText(response.bodyAsText()))
+    } catch (e: CancellationException) {
+        throw e  // Always propagate cancellation — never treat it as a recoverable failure
+    } catch (e: Exception) {
         log.w(e) { "Gemini complete() failed" }
+        Result.failure(e)
     }
 
     private fun buildRequestJson(prompt: String, maxTokens: Int, temp: Double): String =
