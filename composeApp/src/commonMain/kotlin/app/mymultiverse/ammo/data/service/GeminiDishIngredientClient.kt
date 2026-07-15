@@ -12,8 +12,6 @@ import io.ktor.http.content.TextContent
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
 
-private const val GEMINI_BASE_URL =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
 private const val REQUEST_TIMEOUT_MS = 10_000L
 private val log = Logger.withTag("GeminiDishIngredientClient")
 
@@ -53,7 +51,7 @@ internal class GeminiDishIngredientClient(
             val requestBody = buildRequestBody(dish, languageCode)
 
             val response = httpClient.post {
-                url("$GEMINI_BASE_URL?key=$apiKey")
+                url("${GeminiModelConfig.GENERATE_CONTENT_URL}?key=$apiKey")
                 // TextContent sets both the body bytes and the Content-Type atomically.
                 // A separate header() call is not needed and must not be used here —
                 // it would be silently overridden by Ktor's DefaultTransformers.
