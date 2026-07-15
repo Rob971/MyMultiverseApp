@@ -18,7 +18,7 @@ class LocalNutritionAiAssistantService(
             return Result.failure(IllegalArgumentException("empty_question"))
         }
         delayIfNeeded()
-        return Result.success(NutritionAdviceBuilder.buildAdvice(question.trim()))
+        return Result.success(NutritionAdviceBuilder.buildAdvice(question.trim(), currentLanguageCode()))
     }
 
     override suspend fun generateGroceryList(criteria: String): Result<List<String>> {

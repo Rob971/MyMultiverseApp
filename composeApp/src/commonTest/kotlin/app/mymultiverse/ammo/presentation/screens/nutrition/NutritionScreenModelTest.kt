@@ -18,6 +18,7 @@ import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiMode
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
 import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
+import app.mymultiverse.ammo.domain.service.GeminiApiException
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -853,6 +854,40 @@ class NutritionScreenModelTest {
     }
 
     @Test
+    fun runAiAssistant_mealPlanMode_setsIsKeyMissingWhenGeminiAuthFails() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService(
+            mealPlanFailure = GeminiApiException(GeminiApiException.Reason.AUTH_ERROR, httpStatus = 403),
+        )
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+
+        model.runAiAssistant(NutritionAiMode.MealPlan, "protein with rice")
+        advanceUntilIdle()
+
+        val state = model.aiState.value
+        assertIs<NutritionAiState.Error>(state)
+        assertTrue(state.isKeyMissing)
+        assertEquals("gemini_auth_error", state.message)
+    }
+
+    @Test
+    fun runAiAssistant_mealPlanMode_surfacesGeminiNetworkError() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService(
+            mealPlanFailure = GeminiApiException(GeminiApiException.Reason.NETWORK),
+        )
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+
+        model.runAiAssistant(NutritionAiMode.MealPlan, "protein with rice")
+        advanceUntilIdle()
+
+        val state = model.aiState.value
+        assertIs<NutritionAiState.Error>(state)
+        assertFalse(state.isKeyMissing)
+        assertEquals("gemini_network_error", state.message)
+    }
+
+    @Test
     fun generateGroceryForMeal_setsIsKeyMissingWhenKeyNotConfigured() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         repository.mealPlan.value = repository.mealPlan.value.copy(
@@ -966,6 +1001,7 @@ private class FakeNutritionAdviceService(
     private val failureMessage: String = "error",
     /** When true, all methods return [AiKeyNotConfiguredException] (simulates unconfigured key). */
     private val keyMissing: Boolean = false,
+    private val mealPlanFailure: Throwable? = null,
 ) : NutritionAiAssistantService {
 
     override suspend fun askAdvice(question: String): Result<String> {
@@ -1001,6 +1037,7 @@ private class FakeNutritionAdviceService(
         currentPlan: WeeklyMealPlan,
     ): Result<NutritionAiPlanner.MealPlanGeneration> {
         if (keyMissing) return Result.failure(AiKeyNotConfiguredException())
+        mealPlanFailure?.let { return Result.failure(it) }
         return if (criteria.isBlank()) {
             Result.failure(IllegalArgumentException("empty_criteria"))
         } else {

@@ -79,6 +79,7 @@
     <string name="nutrition_ai_ask_button">Generate</string>
     <string name="nutrition_ai_loading">Building suggestions…</string>
     <string name="nutrition_ai_error">Couldn't build suggestions. Try again.</string>
+    <string name="nutrition_ai_gemini_error">AI generation failed. Check your connection and API key, then try again.</string>
     <string name="nutrition_ai_empty_question">Add a short note first.</string>
     <string name="nutrition_ai_idle_title">Nothing generated yet</string>
     <string name="nutrition_ai_idle_body">Choose a quick pick or describe your week, then tap Generate.</string>

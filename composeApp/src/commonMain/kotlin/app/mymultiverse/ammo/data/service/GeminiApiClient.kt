@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.data.service
 
+import app.mymultiverse.ammo.domain.service.GeminiApiException
 import co.touchlab.kermit.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
@@ -52,17 +53,25 @@ internal class GeminiApiClient(
         }
 
         if (!response.status.isSuccess()) {
+            val status = response.status.value
             val errorBody = try { response.bodyAsText() } catch (_: Exception) { "" }
-            log.w { "Gemini HTTP ${response.status.value}: $errorBody" }
-            error("Gemini API error ${response.status.value}")
+            log.w { "Gemini HTTP $status: $errorBody" }
+            val reason = if (status in AUTH_HTTP_STATUSES) {
+                GeminiApiException.Reason.AUTH_ERROR
+            } else {
+                GeminiApiException.Reason.HTTP_ERROR
+            }
+            return Result.failure(GeminiApiException(reason, httpStatus = status))
         }
 
         Result.success(GeminiResponseParser.extractResponseText(response.bodyAsText()))
     } catch (e: CancellationException) {
         throw e  // Always propagate cancellation — never treat it as a recoverable failure
+    } catch (e: GeminiApiException) {
+        Result.failure(e)
     } catch (e: Exception) {
         log.w(e) { "Gemini complete() failed" }
-        Result.failure(e)
+        Result.failure(GeminiApiException(GeminiApiException.Reason.NETWORK, cause = e))
     }
 
     private fun buildRequestJson(prompt: String, maxTokens: Int, temp: Double): String =
@@ -75,6 +84,10 @@ internal class GeminiApiClient(
             append(maxTokens)
             append("}}")
         }
+
+    private companion object {
+        val AUTH_HTTP_STATUSES = setOf(400, 401, 403)
+    }
 
     private fun String.escapeJson(): String = buildString {
         for (ch in this@escapeJson) {

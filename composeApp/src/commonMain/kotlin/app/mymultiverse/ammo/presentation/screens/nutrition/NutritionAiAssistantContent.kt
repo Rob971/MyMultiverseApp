@@ -79,6 +79,7 @@ import ammo.composeapp.generated.resources.nutrition_ai_criteria_hint
 import ammo.composeapp.generated.resources.nutrition_ai_description
 import ammo.composeapp.generated.resources.nutrition_ai_empty_question
 import ammo.composeapp.generated.resources.nutrition_ai_error
+import ammo.composeapp.generated.resources.nutrition_ai_gemini_error
 import ammo.composeapp.generated.resources.home_ai_key_how_to_get
 import ammo.composeapp.generated.resources.home_ai_key_label
 import ammo.composeapp.generated.resources.home_ai_key_placeholder
@@ -736,7 +737,13 @@ fun NutritionAiAssistantContent(
                         }
                     }
                     item(key = "ai-key-inline-form") {
-                        AiKeyInlineForm()
+                        AiKeyInlineForm(
+                            onKeySaved = {
+                                if (criteria.isNotBlank()) {
+                                    generate()
+                                }
+                            },
+                        )
                     }
                 } else {
                     item {
@@ -744,6 +751,12 @@ fun NutritionAiAssistantContent(
                             text = when (state.message) {
                                 "empty_question", "empty_criteria" ->
                                     stringResource(Res.string.nutrition_ai_empty_question)
+                                "gemini_network_error",
+                                "gemini_http_error",
+                                "gemini_parse_error",
+                                "gemini_empty_response",
+                                ->
+                                    stringResource(Res.string.nutrition_ai_gemini_error)
                                 else ->
                                     stringResource(Res.string.nutrition_ai_error)
                             },
@@ -751,6 +764,7 @@ fun NutritionAiAssistantContent(
                             color = SharedJourneyColors.TerracottaOrange,
                         )
                     }
+                    item { ResetButton { screenModel.resetAiState() } }
                 }
             }
         }
@@ -918,6 +932,7 @@ private fun SuggestionChip(
 @Composable
 private fun AiKeyInlineForm(
     aiSettings: AiAssistantSettings = koinInject(),
+    onKeySaved: () -> Unit = {},
 ) {
     var keyInput by rememberSaveable { mutableStateOf("") }
     var showKey by remember { mutableStateOf(false) }
@@ -964,6 +979,7 @@ private fun AiKeyInlineForm(
                 if (trimmed.isNotBlank()) {
                     aiSettings.setGeminiApiKey(trimmed)
                     keyInput = ""
+                    onKeySaved()
                 }
             },
             modifier = Modifier.fillMaxWidth(),

@@ -79,6 +79,7 @@
     <string name="nutrition_ai_ask_button">Erstellen</string>
     <string name="nutrition_ai_loading">Vorschläge werden erstellt…</string>
     <string name="nutrition_ai_error">Vorschläge konnten nicht erstellt werden. Bitte erneut versuchen.</string>
+    <string name="nutrition_ai_gemini_error">KI-Generierung fehlgeschlagen. Verbindung und API-Schlüssel prüfen und erneut versuchen.</string>
     <string name="nutrition_ai_empty_question">Zuerst eine kurze Notiz hinzufügen.</string>
     <string name="nutrition_ai_idle_title">Noch nichts erstellt</string>
     <string name="nutrition_ai_idle_body">Wähle einen Schnellvorschlag oder beschreibe deine Woche, dann auf Erstellen tippen.</string>

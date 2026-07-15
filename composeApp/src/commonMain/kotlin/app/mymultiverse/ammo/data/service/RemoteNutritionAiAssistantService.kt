@@ -8,6 +8,7 @@ import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
 import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
+import app.mymultiverse.ammo.domain.service.GeminiApiException
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import kotlinx.coroutines.flow.StateFlow
@@ -19,8 +20,10 @@ import kotlinx.coroutines.flow.StateFlow
  * so the UI can show a polite setup prompt.
  *
  * **When key is configured:** all four methods call Gemini 2.0 Flash Lite with
- * language-aware prompts and fall back to [LocalNutritionAiAssistantService] only
- * when Gemini fails at the network or parse level.
+ * language-aware prompts. [generateMealPlan] surfaces Gemini failures to the UI
+ * (no silent local fallback) so previews always reflect a real model response.
+ * Other methods still fall back to [LocalNutritionAiAssistantService] when Gemini
+ * fails at the network or parse level.
  *
  * Failures and successes are recorded via [AppLogger] so they appear in
  * Firebase Crashlytics breadcrumbs and non-fatal events.
@@ -47,10 +50,11 @@ internal class RemoteNutritionAiAssistantService(
         if (question.isBlank()) return Result.failure(IllegalArgumentException("empty_question"))
         if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
 
-        val lang = GeminiResponseParser.languageNameFor(currentLanguageCode())
-        val prompt = "You are a friendly nutrition assistant. " +
-            "Answer this question in 2-4 practical sentences: \"${question.escapeJson()}\". " +
-            "Reply in $lang only."
+        val languageCode = currentLanguageCode()
+        val lang = GeminiResponseParser.languageNameFor(languageCode)
+        val prompt = "${GeminiResponseParser.languagePromptDirective(languageCode)} " +
+            "You are a friendly nutrition assistant. " +
+            "Answer this question in 2-4 practical sentences: \"${question.escapeJson()}\"."
 
         return geminiApi.complete(prompt, maxOutputTokens = 512)
             .mapCatching { text ->
@@ -72,10 +76,12 @@ internal class RemoteNutritionAiAssistantService(
         if (criteria.isBlank()) return Result.failure(IllegalArgumentException("empty_criteria"))
         if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
 
-        val lang = GeminiResponseParser.languageNameFor(currentLanguageCode())
-        val prompt = "You are a nutrition assistant. Generate a grocery shopping list for: " +
-            "\"${criteria.escapeJson()}\". Reply in $lang only. " +
-            "Return ONLY a JSON array of 8 to 14 food item names, no explanation. " +
+        val languageCode = currentLanguageCode()
+        val lang = GeminiResponseParser.languageNameFor(languageCode)
+        val prompt = "${GeminiResponseParser.languagePromptDirective(languageCode)} " +
+            "You are a nutrition assistant. Generate a grocery shopping list for: " +
+            "\"${criteria.escapeJson()}\". " +
+            "Return ONLY a JSON array of 8 to 14 food item names in the user's language, no explanation. " +
             "Example: [\"item1\",\"item2\"]"
 
         val items = try {
@@ -136,33 +142,44 @@ internal class RemoteNutritionAiAssistantService(
         if (criteria.isBlank()) return Result.failure(IllegalArgumentException("empty_criteria"))
         if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
 
-        val lang = GeminiResponseParser.languageNameFor(currentLanguageCode())
-        val daysNeeded = if (scope is MealPlanGenerationScope.FullWeek) 7 else 1
-        val prompt = buildMealPlanPrompt(criteria, lang, daysNeeded)
+        val languageCode = currentLanguageCode()
+        val lang = GeminiResponseParser.languageNameFor(languageCode)
+        val prompt = buildMealPlanPrompt(criteria, languageCode, scope)
 
-        val geminiText = try {
-            geminiApi.complete(prompt, maxOutputTokens = 1024, temperature = 0.7).getOrThrow()
-        } catch (e: CancellationException) {
-            throw e  // Propagate — don't return a local result for a cancelled request
-        } catch (e: Exception) {
-            appLogger.recordError(TAG, "Gemini meal plan call failed; using local fallback", e,
-                mapOf("criteria" to criteria, "lang" to lang, "scope" to scope::class.simpleName.orEmpty()))
-            return local.generateMealPlan(criteria, scope, currentPlan)
-        }
+        val geminiText = geminiApi.complete(prompt, maxOutputTokens = 1024, temperature = 0.7)
+            .getOrElse { error ->
+                if (error is CancellationException) throw error
+                return recordMealPlanFailureAndFail(
+                    stage = "api_call",
+                    error = error,
+                    criteria = criteria,
+                    lang = lang,
+                    scope = scope,
+                )
+            }
 
         val (generatedDays, summary) = try {
             GeminiResponseParser.parseMealPlan(geminiText)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            appLogger.recordError(TAG, "Gemini meal plan parse failed; using local fallback", e,
-                mapOf("criteria" to criteria, "lang" to lang))
-            return local.generateMealPlan(criteria, scope, currentPlan)
+            return recordMealPlanFailureAndFail(
+                stage = "parse",
+                error = GeminiApiException(GeminiApiException.Reason.PARSE_ERROR, cause = e),
+                criteria = criteria,
+                lang = lang,
+                scope = scope,
+            )
         }
 
         if (generatedDays.isEmpty()) {
-            appLogger.breadcrumb("gemini_meal_plan_empty criteria=$criteria")
-            return local.generateMealPlan(criteria, scope, currentPlan)
+            return recordMealPlanFailureAndFail(
+                stage = "empty_response",
+                error = GeminiApiException(GeminiApiException.Reason.EMPTY_RESPONSE),
+                criteria = criteria,
+                lang = lang,
+                scope = scope,
+            )
         }
 
         val mergedDays = mergeDays(generatedDays, scope, currentPlan)
@@ -172,16 +189,56 @@ internal class RemoteNutritionAiAssistantService(
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
+    private fun recordMealPlanFailureAndFail(
+        stage: String,
+        error: Throwable,
+        criteria: String,
+        lang: String,
+        scope: MealPlanGenerationScope,
+    ): Result<NutritionAiPlanner.MealPlanGeneration> {
+        val geminiError = error as? GeminiApiException
+            ?: GeminiApiException(GeminiApiException.Reason.NETWORK, cause = error)
+        appLogger.recordError(
+            tag = TAG,
+            message = "Gemini meal plan $stage failed",
+            throwable = geminiError,
+            context = buildMap {
+                put("stage", stage)
+                put("criteria", criteria.take(120))
+                put("lang", lang)
+                put("scope", scope::class.simpleName.orEmpty())
+                geminiError.httpStatus?.let { put("http_status", it.toString()) }
+            },
+        )
+        return Result.failure(geminiError)
+    }
+
     private fun keyMissing(): Boolean = aiSettings.geminiApiKey.value.isBlank()
 
-    private fun buildMealPlanPrompt(criteria: String, languageName: String, daysNeeded: Int): String {
-        val daySpec = if (daysNeeded == 1) {
-            "Generate 1 day (lunch and dinner) of meal plan"
-        } else {
-            "Generate a $daysNeeded-day meal plan (each day has lunch and dinner)"
+    private fun buildMealPlanPrompt(
+        criteria: String,
+        languageCode: String,
+        scope: MealPlanGenerationScope,
+    ): String {
+        val languageName = GeminiResponseParser.languageNameFor(languageCode)
+        val daySpec = when (scope) {
+            is MealPlanGenerationScope.FullWeek ->
+                "Generate a 7-day meal plan (each day has lunch and dinner)"
+            is MealPlanGenerationScope.SingleDay ->
+                "Generate lunch and dinner for 1 day only"
+            is MealPlanGenerationScope.SingleMeal -> {
+                val meal = when (scope.slot) {
+                    MealSlot.Lunch -> "lunch"
+                    MealSlot.Dinner -> "dinner"
+                }
+                "Generate only the $meal for 1 day. Set the other meal slot to an empty string \"\"."
+            }
         }
-        return "$daySpec based on: \"${criteria.escapeJson()}\". " +
-            "Reply in $languageName only. Use dish names typical of $languageName cuisine when appropriate. " +
+        return "${GeminiResponseParser.languagePromptDirective(languageCode)} " +
+            "$daySpec based on this exact user request: \"${criteria.escapeJson()}\". " +
+            "Follow the request closely — dish names must match the user's ingredients and style. " +
+            "Use dish names typical of $languageName cuisine when appropriate. " +
+            "The summary field must also be written in $languageName. " +
             "Return ONLY valid JSON — no markdown, no explanation — in this exact format:\n" +
             "{\"days\":[{\"lunch\":\"...\",\"dinner\":\"...\"}],\"summary\":\"Brief one-sentence description\"}"
     }

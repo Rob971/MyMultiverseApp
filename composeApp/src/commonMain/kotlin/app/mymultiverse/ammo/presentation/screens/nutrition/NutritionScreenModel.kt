@@ -20,6 +20,7 @@ import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
 import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
+import app.mymultiverse.ammo.domain.service.GeminiApiException
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import app.mymultiverse.ammo.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.ammo.domain.sharing.canWriteHouseholdData
@@ -511,6 +512,7 @@ class NutritionScreenModel(
 
     // Tracked so a new runAiAssistant call can cancel an in-flight request.
     private var aiAssistantJob: Job? = null
+    private var aiAssistantJobGeneration = 0
 
     fun runAiAssistant(
         mode: NutritionAiMode,
@@ -519,6 +521,7 @@ class NutritionScreenModel(
     ) {
         if (!canWriteHouseholdData.value) return
         aiAssistantJob?.cancel()
+        val generation = ++aiAssistantJobGeneration
         aiAssistantJob = scope.launch {
             _aiState.value = NutritionAiState.Loading
             try {
@@ -551,12 +554,14 @@ class NutritionScreenModel(
                     }
                 }
             } catch (e: CancellationException) {
-                // Intentional cancel (new request superseded this one) — reset to Idle.
-                _aiState.value = NutritionAiState.Idle
+                // Intentional cancel (new request superseded this one) — reset only if still current.
+                if (generation == aiAssistantJobGeneration) {
+                    _aiState.value = NutritionAiState.Idle
+                }
                 throw e
             } finally {
                 // Ensure Loading is never left stuck even on unexpected exit.
-                if (_aiState.value is NutritionAiState.Loading) {
+                if (generation == aiAssistantJobGeneration && _aiState.value is NutritionAiState.Loading) {
                     _aiState.value = NutritionAiState.Idle
                 }
             }
@@ -949,7 +954,8 @@ class NutritionScreenModel(
     private fun Throwable.toAiErrorState(): NutritionAiState.Error =
         NutritionAiState.Error(
             message = toAiMessage(),
-            isKeyMissing = this is AiKeyNotConfiguredException,
+            isKeyMissing = this is AiKeyNotConfiguredException ||
+                (this is GeminiApiException && isAuthError),
         )
 
     private fun newId(): String = newItemId()
