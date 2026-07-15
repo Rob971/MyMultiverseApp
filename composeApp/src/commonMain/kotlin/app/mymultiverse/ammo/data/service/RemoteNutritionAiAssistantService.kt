@@ -50,10 +50,11 @@ internal class RemoteNutritionAiAssistantService(
         if (question.isBlank()) return Result.failure(IllegalArgumentException("empty_question"))
         if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
 
-        val lang = GeminiResponseParser.languageNameFor(currentLanguageCode())
-        val prompt = "You are a friendly nutrition assistant. " +
-            "Answer this question in 2-4 practical sentences: \"${question.escapeJson()}\". " +
-            "Reply in $lang only."
+        val languageCode = currentLanguageCode()
+        val lang = GeminiResponseParser.languageNameFor(languageCode)
+        val prompt = "${GeminiResponseParser.languagePromptDirective(languageCode)} " +
+            "You are a friendly nutrition assistant. " +
+            "Answer this question in 2-4 practical sentences: \"${question.escapeJson()}\"."
 
         return geminiApi.complete(prompt, maxOutputTokens = 512)
             .mapCatching { text ->
@@ -75,10 +76,12 @@ internal class RemoteNutritionAiAssistantService(
         if (criteria.isBlank()) return Result.failure(IllegalArgumentException("empty_criteria"))
         if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
 
-        val lang = GeminiResponseParser.languageNameFor(currentLanguageCode())
-        val prompt = "You are a nutrition assistant. Generate a grocery shopping list for: " +
-            "\"${criteria.escapeJson()}\". Reply in $lang only. " +
-            "Return ONLY a JSON array of 8 to 14 food item names, no explanation. " +
+        val languageCode = currentLanguageCode()
+        val lang = GeminiResponseParser.languageNameFor(languageCode)
+        val prompt = "${GeminiResponseParser.languagePromptDirective(languageCode)} " +
+            "You are a nutrition assistant. Generate a grocery shopping list for: " +
+            "\"${criteria.escapeJson()}\". " +
+            "Return ONLY a JSON array of 8 to 14 food item names in the user's language, no explanation. " +
             "Example: [\"item1\",\"item2\"]"
 
         val items = try {
@@ -139,8 +142,9 @@ internal class RemoteNutritionAiAssistantService(
         if (criteria.isBlank()) return Result.failure(IllegalArgumentException("empty_criteria"))
         if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
 
-        val lang = GeminiResponseParser.languageNameFor(currentLanguageCode())
-        val prompt = buildMealPlanPrompt(criteria, lang, scope)
+        val languageCode = currentLanguageCode()
+        val lang = GeminiResponseParser.languageNameFor(languageCode)
+        val prompt = buildMealPlanPrompt(criteria, languageCode, scope)
 
         val geminiText = geminiApi.complete(prompt, maxOutputTokens = 1024, temperature = 0.7)
             .getOrElse { error ->
@@ -213,9 +217,10 @@ internal class RemoteNutritionAiAssistantService(
 
     private fun buildMealPlanPrompt(
         criteria: String,
-        languageName: String,
+        languageCode: String,
         scope: MealPlanGenerationScope,
     ): String {
+        val languageName = GeminiResponseParser.languageNameFor(languageCode)
         val daySpec = when (scope) {
             is MealPlanGenerationScope.FullWeek ->
                 "Generate a 7-day meal plan (each day has lunch and dinner)"
@@ -229,9 +234,11 @@ internal class RemoteNutritionAiAssistantService(
                 "Generate only the $meal for 1 day. Set the other meal slot to an empty string \"\"."
             }
         }
-        return "$daySpec based on this exact user request: \"${criteria.escapeJson()}\". " +
+        return "${GeminiResponseParser.languagePromptDirective(languageCode)} " +
+            "$daySpec based on this exact user request: \"${criteria.escapeJson()}\". " +
             "Follow the request closely — dish names must match the user's ingredients and style. " +
-            "Reply in $languageName only. Use dish names typical of $languageName cuisine when appropriate. " +
+            "Use dish names typical of $languageName cuisine when appropriate. " +
+            "The summary field must also be written in $languageName. " +
             "Return ONLY valid JSON — no markdown, no explanation — in this exact format:\n" +
             "{\"days\":[{\"lunch\":\"...\",\"dinner\":\"...\"}],\"summary\":\"Brief one-sentence description\"}"
     }

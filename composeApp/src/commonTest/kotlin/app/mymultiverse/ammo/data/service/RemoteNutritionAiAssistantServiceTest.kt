@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
@@ -137,6 +138,23 @@ class RemoteNutritionAiAssistantServiceTest {
     }
 
     @Test
+    fun askAdvice_promptIncludesLanguageDirective() = runTest {
+        var capturedPrompt = ""
+        val fakeApi = object : GeminiTextClient {
+            override suspend fun complete(prompt: String, maxOutputTokens: Int, temperature: Double): Result<String> {
+                capturedPrompt = prompt
+                return Result.success("Consiglio pratico in italiano.")
+            }
+        }
+        val service = makeService(apiKey = "test-key", geminiApi = fakeApi, languageCode = "it")
+
+        service.askAdvice("Quanta proteina a pranzo?")
+
+        assertContains(capturedPrompt, "Italian")
+        assertContains(capturedPrompt, "locale: it")
+    }
+
+    @Test
     fun askAdvice_usesGemini_whenKeyPresent() = runTest {
         val fakeApi = FakeGeminiTextClient(Result.success("Eat more protein-rich foods like eggs and legumes."))
         val service = makeService(apiKey = "test-key", geminiApi = fakeApi)
@@ -150,12 +168,13 @@ class RemoteNutritionAiAssistantServiceTest {
     @Test
     fun askAdvice_fallsBackToLocal_whenGeminiFails() = runTest {
         val fakeApi = FakeGeminiTextClient(Result.failure(RuntimeException("network error")))
-        val service = makeService(apiKey = "test-key", geminiApi = fakeApi)
+        val service = makeService(apiKey = "test-key", geminiApi = fakeApi, languageCode = "it")
 
-        val result = service.askAdvice("High protein lunches")
+        val result = service.askAdvice("Pasti proteici")
 
         assertTrue(result.isSuccess)
-        assertTrue(result.getOrNull()!!.isNotEmpty())
+        val answer = result.getOrNull().orEmpty()
+        assertContains(answer.lowercase(), "proteine")
     }
 
     @Test
