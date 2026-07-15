@@ -4,6 +4,7 @@ import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
 import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
+import app.mymultiverse.ammo.domain.service.GeminiApiException
 import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,11 +19,28 @@ class RemoteNutritionAiAssistantServiceTest {
 
     private val noOpLogger = AppLogger(NoOpCrashReporter(), DiagnosticsContext())
 
+    private class RecordingCrashReporter : app.mymultiverse.ammo.domain.observability.CrashReporter {
+        val nonFatals = mutableListOf<Pair<Throwable, Map<String, String>>>()
+
+        override fun initialize() = Unit
+        override fun setUserId(userId: String?) = Unit
+        override fun logBreadcrumb(message: String) = Unit
+        override fun recordNonFatal(throwable: Throwable, context: Map<String, String>) {
+            nonFatals += throwable to context
+        }
+    }
+
+    private fun recordingLogger(): Pair<AppLogger, RecordingCrashReporter> {
+        val crashReporter = RecordingCrashReporter()
+        return AppLogger(crashReporter, DiagnosticsContext(sessionId = "test")) to crashReporter
+    }
+
     private fun makeService(
         geminiResult: Result<List<String>> = Result.success(listOf("Polpo", "Patate")),
         languageCode: String = "it",
         apiKey: String = "test-api-key",
         geminiApi: GeminiTextClient = FakeGeminiTextClient(Result.failure(UnsupportedOperationException("not used"))),
+        appLogger: AppLogger = noOpLogger,
     ): RemoteNutritionAiAssistantService {
         val local = LocalNutritionAiAssistantService(
             responseDelayMs = 0,
@@ -36,7 +54,7 @@ class RemoteNutritionAiAssistantServiceTest {
             geminiApi = geminiApi,
             currentLanguageCode = { languageCode },
             aiSettings = fakeSettings,
-            appLogger = noOpLogger,
+            appLogger = appLogger,
         )
     }
 
@@ -169,15 +187,38 @@ class RemoteNutritionAiAssistantServiceTest {
     }
 
     @Test
-    fun generateMealPlan_fallsBackToLocal_whenGeminiFails() = runTest {
+    fun generateMealPlan_returnsFailure_whenGeminiFails() = runTest {
         val fakeApi = FakeGeminiTextClient(Result.failure(RuntimeException("network error")))
-        val service = makeService(apiKey = "test-key", geminiApi = fakeApi)
+        val (logger, crashReporter) = recordingLogger()
+        val service = makeService(apiKey = "test-key", geminiApi = fakeApi, appLogger = logger)
         val emptyPlan = app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan(weekKey = "2026-07-15")
 
         val result = service.generateMealPlan("balanced", app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope.FullWeek, emptyPlan)
 
-        assertTrue(result.isSuccess)
-        assertEquals(7, result.getOrNull()!!.days.size)
+        assertFalse(result.isSuccess)
+        assertIs<GeminiApiException>(result.exceptionOrNull())
+        assertEquals(1, crashReporter.nonFatals.size)
+        assertEquals("api_call", crashReporter.nonFatals.single().second["stage"])
+    }
+
+    @Test
+    fun generateMealPlan_returnsAuthFailure_whenGeminiRejectsKey() = runTest {
+        val fakeApi = FakeGeminiTextClient(
+            Result.failure(GeminiApiException(GeminiApiException.Reason.AUTH_ERROR, httpStatus = 403)),
+        )
+        val service = makeService(apiKey = "bad-key", geminiApi = fakeApi)
+        val emptyPlan = app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan(weekKey = "2026-07-15")
+
+        val result = service.generateMealPlan(
+            "protein dinner",
+            app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope.SingleMeal(2, app.mymultiverse.ammo.domain.nutrition.MealSlot.Dinner),
+            emptyPlan,
+        )
+
+        assertFalse(result.isSuccess)
+        val error = result.exceptionOrNull()
+        assertIs<GeminiApiException>(error)
+        assertTrue(error.isAuthError)
     }
 
     @Test

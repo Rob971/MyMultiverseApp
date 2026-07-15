@@ -53,6 +53,7 @@ object NutritionStringKeys {
         "nutrition_ai_ask_button",
         "nutrition_ai_loading",
         "nutrition_ai_error",
+        "nutrition_ai_gemini_error",
         "nutrition_ai_empty_question",
         "nutrition_ai_idle_title",
         "nutrition_ai_idle_body",
