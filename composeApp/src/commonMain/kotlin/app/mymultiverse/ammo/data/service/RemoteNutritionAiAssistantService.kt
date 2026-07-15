@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
  * **When key is not configured:** every method returns [AiKeyNotConfiguredException]
  * so the UI can show a polite setup prompt.
  *
- * **When key is configured:** all four methods call Gemini 2.0 Flash Lite with
+ * **When key is configured:** all four methods call [GeminiModelConfig.MODEL_ID] with
  * language-aware prompts. [generateMealPlan] surfaces Gemini failures to the UI
  * (no silent local fallback) so previews always reflect a real model response.
  * Other methods still fall back to [LocalNutritionAiAssistantService] when Gemini

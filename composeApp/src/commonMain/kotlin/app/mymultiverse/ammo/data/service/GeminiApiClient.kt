@@ -13,13 +13,11 @@ import io.ktor.http.content.TextContent
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
 
-private const val GEMINI_API_URL =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
 private const val DEFAULT_TIMEOUT_MS = 15_000L
 private val log = Logger.withTag("GeminiApiClient")
 
 /**
- * Low-level Gemini 2.0 Flash Lite text-completion client.
+ * Low-level Gemini text-completion client ([GeminiModelConfig.MODEL_ID]).
  *
  * Sends a single-turn prompt and returns the raw text content from the first
  * candidate. All JSON parsing of the response content is left to callers
@@ -48,7 +46,7 @@ internal class GeminiApiClient(
 
         val body = buildRequestJson(prompt, maxOutputTokens, temperature)
         val response = httpClient.post {
-            url("$GEMINI_API_URL?key=$apiKey")
+            url("${GeminiModelConfig.GENERATE_CONTENT_URL}?key=$apiKey")
             setBody(TextContent(body, ContentType.Application.Json))
         }
 
