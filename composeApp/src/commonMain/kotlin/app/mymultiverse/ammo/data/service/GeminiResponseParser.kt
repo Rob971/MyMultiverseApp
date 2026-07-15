@@ -1,6 +1,8 @@
 package app.mymultiverse.ammo.data.service
 
+import app.mymultiverse.ammo.domain.manager.SupportedAppLanguages
 import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
+import app.mymultiverse.ammo.domain.nutrition.NutritionFoodSuggestionLocalization
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -107,7 +109,7 @@ internal object GeminiResponseParser {
     // ── Language mapping ─────────────────────────────────────────────────────
 
     /** Maps a BCP-47 language code to a human-readable language name for Gemini prompts. */
-    fun languageNameFor(code: String): String = when (code.lowercase().substringBefore('-')) {
+    fun languageNameFor(code: String): String = when (promptLanguageKey(code)) {
         "it" -> "Italian"
         "fr" -> "French"
         "es" -> "Spanish"
@@ -115,6 +117,36 @@ internal object GeminiResponseParser {
         "ar" -> "Arabic"
         "nap" -> "Neapolitan Italian"
         else -> "English"
+    }
+
+    /**
+     * Strong language constraint prepended to every Gemini prompt so dish names,
+     * ingredients, summaries, and advice match the user's selected app language.
+     */
+    fun languagePromptDirective(languageCode: String): String {
+        val normalized = promptLanguageKey(languageCode)
+        val name = languageNameFor(languageCode)
+        return "The user's app language is $name (locale: $normalized). " +
+            "You MUST write the entire response in $name only — every dish name, ingredient, " +
+            "summary sentence, and word of advice. " +
+            "Do not use English or any other language unless the user's language is English."
+    }
+
+    /**
+     * Resolves app/Gemini prompt locale without treating unknown codes as Napulitano.
+     * Uses [SupportedAppLanguages] when the code is configured; otherwise falls back to English.
+     */
+    private fun promptLanguageKey(code: String): String {
+        val lower = code.lowercase()
+        if (lower == "ar-rsa" || lower == "ar") return "ar"
+        if (lower in SupportedAppLanguages.codes) {
+            return NutritionFoodSuggestionLocalization.normalizeLanguageCode(lower)
+        }
+        val base = lower.substringBefore('-')
+        return when (base) {
+            "it", "fr", "es", "de", "ar", "nap", "en" -> base
+            else -> "en"
+        }
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────

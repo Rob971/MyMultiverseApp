@@ -50,8 +50,7 @@ internal class GeminiDishIngredientClient(
             val apiKey = apiKeyProvider()
             check(apiKey.isNotBlank()) { "Gemini API key is not configured" }
 
-            val languageName = GeminiResponseParser.languageNameFor(languageCode)
-            val requestBody = buildRequestBody(dish, languageName)
+            val requestBody = buildRequestBody(dish, languageCode)
 
             val response = httpClient.post {
                 url("$GEMINI_BASE_URL?key=$apiKey")
@@ -75,13 +74,14 @@ internal class GeminiDishIngredientClient(
             Result.failure(e)
         }
 
-    private fun buildRequestBody(dish: String, languageName: String): String {
+    private fun buildRequestBody(dish: String, languageCode: String): String {
         val prompt = buildString {
+            append(GeminiResponseParser.languagePromptDirective(languageCode))
+            append(' ')
             append("List the specific ingredients needed to prepare the dish: \"")
             append(dish.escapeForJson())
             append("\". ")
-            append("Reply in $languageName only. ")
-            append("Return ONLY a JSON array of ingredient names, 6 to 10 items, no explanation. ")
+            append("Return ONLY a JSON array of ingredient names in the user's language, 6 to 10 items, no explanation. ")
             append("Example format: [\"item1\",\"item2\"]")
         }
 

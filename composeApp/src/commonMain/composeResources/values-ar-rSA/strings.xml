@@ -79,6 +79,7 @@
     <string name="nutrition_ai_ask_button">إنشاء</string>
     <string name="nutrition_ai_loading">جارٍ إنشاء الاقتراحات…</string>
     <string name="nutrition_ai_error">تعذر إنشاء الاقتراحات. حاول مرة أخرى.</string>
+    <string name="nutrition_ai_gemini_error">فشل التوليد بالذكاء الاصطناعي. تحقق من الاتصال ومفتاح API ثم أعد المحاولة.</string>
     <string name="nutrition_ai_empty_question">أضف ملاحظة قصيرة أولًا.</string>
     <string name="nutrition_ai_idle_title">لم يُنشأ شيء بعد</string>
     <string name="nutrition_ai_idle_body">اختر اقتراحًا سريعًا أو صف أسبوعك، ثم اضغط على إنشاء.</string>

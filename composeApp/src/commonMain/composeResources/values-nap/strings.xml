@@ -79,6 +79,7 @@
     <string name="nutrition_ai_ask_button">Genera</string>
     <string name="nutrition_ai_loading">Sto creanno 'e suggerimente…</string>
     <string name="nutrition_ai_error">Nun aggio pututo creà 'e suggerimente. Prova arreto.</string>
+    <string name="nutrition_ai_gemini_error">Generazione IA fallita. Controlla connessione e chiave API e prova arreto.</string>
     <string name="nutrition_ai_empty_question">Azzecca primma 'na nota curta.</string>
     <string name="nutrition_ai_idle_title">Nun è stato generato niente ancora</string>
     <string name="nutrition_ai_idle_body">Scegli 'nu suggerimento rapido o descrivi 'a settimana toja, po' piglia Genera.</string>

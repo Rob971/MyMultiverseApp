@@ -79,6 +79,7 @@
     <string name="nutrition_ai_ask_button">Générer</string>
     <string name="nutrition_ai_loading">Création des suggestions…</string>
     <string name="nutrition_ai_error">Impossible de créer les suggestions. Réessayez.</string>
+    <string name="nutrition_ai_gemini_error">Échec de la génération IA. Vérifiez la connexion et la clé API, puis réessayez.</string>
     <string name="nutrition_ai_empty_question">Ajoutez d'abord une courte note.</string>
     <string name="nutrition_ai_idle_title">Rien n'a encore été généré</string>
     <string name="nutrition_ai_idle_body">Choisissez une suggestion rapide ou décrivez votre semaine, puis appuyez sur Générer.</string>

@@ -1,6 +1,7 @@
 package app.mymultiverse.ammo.data.service
 
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertTrue
@@ -182,6 +183,20 @@ class GeminiResponseParserTest {
     fun languageNameFor_unknownCode_returnsEnglish() {
         assertEquals("English", GeminiResponseParser.languageNameFor("zh"))
         assertEquals("English", GeminiResponseParser.languageNameFor("en"))
+    }
+
+    @Test
+    fun languageNameFor_arSaudiCode_returnsArabic() {
+        assertEquals("Arabic", GeminiResponseParser.languageNameFor("ar-rSA"))
+    }
+
+    @Test
+    fun languagePromptDirective_includesNormalizedLocaleAndLanguageName() {
+        val directive = GeminiResponseParser.languagePromptDirective("it")
+
+        assertContains(directive, "Italian")
+        assertContains(directive, "locale: it")
+        assertContains(directive, "MUST")
     }
 
     @Test
