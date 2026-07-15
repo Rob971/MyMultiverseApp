@@ -1,23 +1,31 @@
 package app.mymultiverse.ammo.data.service
 
+import co.touchlab.kermit.Logger
 import io.ktor.client.HttpClient
-import io.ktor.client.request.header
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
+import io.ktor.http.content.TextContent
 import io.ktor.http.isSuccess
 
 private const val GEMINI_BASE_URL =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
+private const val REQUEST_TIMEOUT_MS = 10_000L
+private val log = Logger.withTag("GeminiDishIngredientClient")
 
 /**
  * Calls the Gemini REST API (free tier) to generate a dish-specific ingredient list.
  *
  * Uses [GeminiResponseParser] for all JSON parsing so the HTTP logic stays thin
  * and the parsing stays unit-testable without a network.
+ *
+ * **Body serialisation note:** the request body is sent as [TextContent] with
+ * `Content-Type: application/json`. Do **not** use `setBody(String)` with a separate
+ * `header(ContentType)` — in Ktor 3.x the DefaultTransformers would override the
+ * header with `text/plain`, causing a 400 from the Gemini API.
  */
 internal class GeminiDishIngredientClient(
     /**
@@ -25,8 +33,13 @@ internal class GeminiDishIngredientClient(
      * settings without recreating the client.
      */
     private val apiKeyProvider: () -> String,
-    private val httpClient: HttpClient = HttpClient(),
+    private val httpClient: HttpClient = HttpClient {
+        install(HttpTimeout) {
+            requestTimeoutMillis = REQUEST_TIMEOUT_MS
+        }
+    },
 ) : DishIngredientClient {
+
     /**
      * Returns a localized list of ingredients for [dish] in the language identified
      * by [languageCode]. Returns a [Result] failure on any network or parse error.
@@ -41,15 +54,21 @@ internal class GeminiDishIngredientClient(
 
             val response = httpClient.post {
                 url("$GEMINI_BASE_URL?key=$apiKey")
-                header(HttpHeaders.ContentType, ContentType.Application.Json)
-                setBody(requestBody)
+                // TextContent sets both the body bytes and the Content-Type atomically.
+                // A separate header() call is not needed and must not be used here —
+                // it would be silently overridden by Ktor's DefaultTransformers.
+                setBody(TextContent(requestBody, ContentType.Application.Json))
             }
 
-            check(response.status.isSuccess()) {
-                "Gemini API error ${response.status.value}"
+            if (!response.status.isSuccess()) {
+                val errorBody = runCatching { response.bodyAsText() }.getOrElse { "" }
+                log.w { "Gemini API error ${response.status.value}: $errorBody" }
+                error("Gemini API error ${response.status.value}")
             }
 
             GeminiResponseParser.parseIngredients(response.bodyAsText())
+        }.onFailure { e ->
+            log.w(e) { "generateIngredients failed for dish='$dish' language='$languageCode'" }
         }
 
     private fun buildRequestBody(dish: String, languageName: String): String {
