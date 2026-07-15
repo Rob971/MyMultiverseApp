@@ -14,6 +14,10 @@ import app.mymultiverse.ammo.data.invite.InviteSessionStore
 import app.mymultiverse.ammo.data.repository.SettingsNutritionHouseholdSelectionStore
 import app.mymultiverse.ammo.data.ai.AiSecrets
 import app.mymultiverse.ammo.data.manager.SettingsAiAssistantSettings
+import app.mymultiverse.ammo.data.manager.SyncedAiAssistantSettings
+import app.mymultiverse.ammo.data.supabase.SupabaseAiSettingsRepository
+import app.mymultiverse.ammo.data.supabase.UnconfiguredAiSettingsRepository
+import app.mymultiverse.ammo.domain.repository.AiSettingsRemoteRepository
 import app.mymultiverse.ammo.data.service.GeminiApiClient
 import app.mymultiverse.ammo.data.service.GeminiDishIngredientClient
 import app.mymultiverse.ammo.data.service.GeminiTextClient
@@ -117,10 +121,20 @@ private val dataModule = module {
             diagnostics = get(),
         )
     }
+    single<AiSettingsRemoteRepository> {
+        val client = get<SupabaseClientHolder>().client
+        if (client != null) SupabaseAiSettingsRepository(client)
+        else UnconfiguredAiSettingsRepository()
+    }
     single<AiAssistantSettings> {
-        SettingsAiAssistantSettings(
-            settings = get(),
-            compiledKey = AiSecrets.GEMINI_API_KEY,
+        SyncedAiAssistantSettings(
+            local = SettingsAiAssistantSettings(
+                settings = get(),
+                compiledKey = AiSecrets.GEMINI_API_KEY,
+            ),
+            remote = get(),
+            authRepository = get(),
+            scope = get(),
         )
     }
     single<NutritionAiAssistantService> {
