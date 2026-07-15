@@ -162,8 +162,6 @@ private val presentationModule = module {
             ghostPairingDismissStore = get(),
         )
     }
-    // Note: NutritionScreenModel derives remoteAiKeyConfigured directly from
-    // aiAssistant.geminiApiKey which is wired to AiAssistantSettings above.
 }
 
 /** Core modules without platform bindings; used by unit tests with a test platform module. */

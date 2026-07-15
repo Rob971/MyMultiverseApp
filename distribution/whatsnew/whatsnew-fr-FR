@@ -2,6 +2,7 @@ Nouveautés de cette version :
 
 • Ingrédients de recettes propulsés par IA — Ajouter à la liste génère désormais des ingrédients spécifiques au plat via Gemini AI, dans votre langue
 • Gemini AI pour la planification des repas, les conseils nutritionnels et les listes de courses
-• Ajoutez votre clé API Gemini gratuite dans les paramètres du compte — lien direct vers Google AI Studio
+• Ajoutez votre clé Gemini directement dans le panneau IA — la configuration de la clé n'apparaît que lorsque vous utilisez une fonctionnalité IA
+• Appuyer sur "Ajouter à la liste" pour un repas sans clé ouvre directement le formulaire de configuration
 • Inscription en 2 étapes — collecte désormais votre nom d'affichage et le nom du foyer dès le départ
 • Corrections de bugs et améliorations de la stabilité
