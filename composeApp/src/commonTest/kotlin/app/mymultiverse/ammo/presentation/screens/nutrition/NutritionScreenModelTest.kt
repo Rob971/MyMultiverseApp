@@ -17,6 +17,7 @@ import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiMode
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
+import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -806,6 +807,102 @@ class NutritionScreenModelTest {
 
         assertEquals(NutritionScreenModel.MealPlanPartnerNudgeResult.Cooldown, model.mealPlanPartnerNudgeResult.value)
     }
+
+    // ── AI key-missing state tests ────────────────────────────────────────────
+
+    @Test
+    fun runAiAssistant_adviceMode_setsIsKeyMissingWhenKeyNotConfigured() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService(keyMissing = true)
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+
+        model.runAiAssistant(NutritionAiMode.Advice, "What should I eat?")
+        advanceUntilIdle()
+
+        val state = model.aiState.value
+        assertIs<NutritionAiState.Error>(state)
+        assertTrue(state.isKeyMissing)
+    }
+
+    @Test
+    fun runAiAssistant_groceryMode_setsIsKeyMissingWhenKeyNotConfigured() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService(keyMissing = true)
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+
+        model.runAiAssistant(NutritionAiMode.GroceryList, "high protein week")
+        advanceUntilIdle()
+
+        val state = model.aiState.value
+        assertIs<NutritionAiState.Error>(state)
+        assertTrue(state.isKeyMissing)
+    }
+
+    @Test
+    fun runAiAssistant_mealPlanMode_setsIsKeyMissingWhenKeyNotConfigured() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService(keyMissing = true)
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+
+        model.runAiAssistant(NutritionAiMode.MealPlan, "vegetarian")
+        advanceUntilIdle()
+
+        val state = model.aiState.value
+        assertIs<NutritionAiState.Error>(state)
+        assertTrue(state.isKeyMissing)
+    }
+
+    @Test
+    fun generateGroceryForMeal_setsIsKeyMissingWhenKeyNotConfigured() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.mealPlan.value = repository.mealPlan.value.copy(
+            days = repository.mealPlan.value.days.toMutableList().also {
+                it[0] = it[0].copy(lunch = "Pasta carbonara")
+            },
+        )
+        val ai = FakeNutritionAdviceService(keyMissing = true)
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+        // Let the model collect the initial mealPlan state before calling generateGroceryForMeal.
+        advanceUntilIdle()
+
+        model.generateGroceryForMeal(0, MealSlot.Lunch, "Monday")
+        advanceUntilIdle()
+
+        val result = model.mealGroceryResult.value
+        assertNotNull(result)
+        assertTrue(result.isKeyMissing)
+        assertNull(model.mealGroceryLoading.value)
+    }
+
+    // ── concurrent runAiAssistant cancellation ────────────────────────────────
+
+    @Test
+    fun runAiAssistant_secondCallCancelsPreviousAndReachesNewResult() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService(answer = "First answer")
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+
+        // Launch first call — will be cancelled before completing
+        model.runAiAssistant(NutritionAiMode.Advice, "First question")
+        // Immediately launch second call (cancels first)
+        model.runAiAssistant(NutritionAiMode.Advice, "Second question")
+        advanceUntilIdle()
+
+        // Final state must be Advice (not Loading or Idle from stale cancel)
+        assertIs<NutritionAiState.Advice>(model.aiState.value)
+    }
+
+    @Test
+    fun runAiAssistant_aiStateNeverLeftInLoadingAfterCompletion() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService()
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+
+        model.runAiAssistant(NutritionAiMode.Advice, "Any question")
+        advanceUntilIdle()
+
+        assertTrue(model.aiState.value !is NutritionAiState.Loading)
+    }
 }
 
 private class FakeNutritionRepository(
@@ -867,8 +964,12 @@ private class FakeNutritionAdviceService(
     private val mealGroceryLabels: List<String> = listOf("Lemon", "Herbs"),
     private val shouldFail: Boolean = false,
     private val failureMessage: String = "error",
+    /** When true, all methods return [AiKeyNotConfiguredException] (simulates unconfigured key). */
+    private val keyMissing: Boolean = false,
 ) : NutritionAiAssistantService {
+
     override suspend fun askAdvice(question: String): Result<String> {
+        if (keyMissing) return Result.failure(AiKeyNotConfiguredException())
         return if (shouldFail) {
             Result.failure(IllegalArgumentException(failureMessage))
         } else {
@@ -877,6 +978,7 @@ private class FakeNutritionAdviceService(
     }
 
     override suspend fun generateGroceryList(criteria: String): Result<List<String>> {
+        if (keyMissing) return Result.failure(AiKeyNotConfiguredException())
         return if (criteria.isBlank()) {
             Result.failure(IllegalArgumentException("empty_criteria"))
         } else {
@@ -885,6 +987,7 @@ private class FakeNutritionAdviceService(
     }
 
     override suspend fun generateGroceryForMeal(mealDescription: String): Result<List<String>> {
+        if (keyMissing) return Result.failure(AiKeyNotConfiguredException())
         return if (mealDescription.isBlank()) {
             Result.failure(IllegalArgumentException("empty_meal"))
         } else {
@@ -897,6 +1000,7 @@ private class FakeNutritionAdviceService(
         scope: MealPlanGenerationScope,
         currentPlan: WeeklyMealPlan,
     ): Result<NutritionAiPlanner.MealPlanGeneration> {
+        if (keyMissing) return Result.failure(AiKeyNotConfiguredException())
         return if (criteria.isBlank()) {
             Result.failure(IllegalArgumentException("empty_criteria"))
         } else {

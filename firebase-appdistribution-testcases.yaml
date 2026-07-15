@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 88
+version: 89
 updated: 2026-07-15
 
 summary: |
@@ -37,6 +37,7 @@ summary: |
   2-step registration (v87): email sign-up now collects display name on step 1 (Name / Email / Password with show/hide toggle); step 2 captures household name with option to skip; display name propagated to Supabase user metadata and household creation pre-fill.
   AI dish ingredients (v88): Add to grocery list on meal plan now calls Gemini API (free tier) to generate dish-specific, language-matched ingredients; falls back to local heuristics when API key absent or network unavailable.
   AI key settings UI (v88): "AI Ingredients" section added to Account settings with password field, show/hide toggle, save/clear actions, and a tappable link to get a free Gemini API key; Plan tab shows a terracotta notice when no key is configured.
+  Full Gemini AI integration (v89): All AI features (advice, grocery list, meal plan) now call Gemini 2.0 Flash Lite; key-missing state shows polite error in AI sheet; async cancellation prevents stuck spinners when a new request supersedes the previous one.
   App Links hosting (v47): deploy via Rob971/mymultiverse-website; verify with scripts/verify-hosting.sh after DNS is live.
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
@@ -867,7 +868,7 @@ testcases:
       - Scroll to the "AI Ingredients" section.
     expected:
       - "AI Ingredients" section header is visible below Language.
-      - Descriptive text explains that the key enables dish-specific ingredient suggestions.
+      - Descriptive text explains that the key enables all AI features (dish ingredients, meal plan, advice, grocery list).
       - A tappable link "Get a free key at aistudio.google.com/app/apikey" is shown.
       - A password-masked text field with a show/hide toggle is available.
       - Paste a valid Gemini API key; tap "Save key"; confirm button shows brief "AI key saved" feedback.
@@ -880,33 +881,64 @@ testcases:
       - Ensure no Gemini API key is saved (clear it in Account settings or use a fresh install).
       - Open Plan tab.
     expected:
-      - A terracotta-tinted notice appears below any viewer banner: "Add a free Gemini API key in Account settings for dish-specific ingredient suggestions."
+      - A terracotta-tinted notice appears below any viewer banner prompting the user to add a Gemini API key.
       - The notice disappears immediately after saving a valid key in Account settings (no restart needed).
 
-  - id: ai-advice
-    title: AI meal planning from empty slot
+  - id: ai-key-missing-error-in-sheet
+    title: AI sheet shows polite key-missing error (no key configured)
     steps:
-      - Open Plan tab with an empty lunch or dinner slot.
-      - Tap Suggest 20-min meal on that slot.
+      - Ensure no Gemini API key is saved.
+      - Open the Plan tab and tap "Plan with AI" to open the AI helper sheet.
+      - Try each mode (advice, grocery list, meal plan) by entering criteria and tapping Generate.
     expected:
-      - AI helper sheet opens scoped to that day and slot.
-      - Plan screen layout remains week overview + Daily planning only.
+      - Each mode shows a Sparkles icon and a message explaining that a Gemini API key is required.
+      - No spinner stays on screen; no generic network error is shown.
+      - Tapping the X closes the sheet; the notice on the Plan tab remains visible.
 
-  - id: ai-grocery-mode
-    title: AI grocery list from meal plan
+  - id: ai-advice-gemini
+    title: Nutrition advice via Gemini (key configured)
     steps:
-      - Open Weekly meal plan, enter a meal, tap Generate AI grocery list.
-      - Or tap Generate groceries for planned meals after filling multiple days.
+      - Ensure a valid Gemini API key is saved in Account settings.
+      - Open the AI helper sheet from Plan tab; select Advice mode.
+      - Enter a question such as "What are good high-protein breakfasts?"; tap Generate.
     expected:
-      - AI suggestion chips appear on meal plan and Grocery screens; tap Add all to list or individual chips.
+      - The sheet shows a loading indicator then a 2–4 sentence personalised answer.
+      - The answer language matches the app's current language setting.
+      - Tapping Generate again (new request) cancels any in-flight request and starts fresh; no spinner is left on screen.
 
-  - id: ai-meal-plan-mode
-    title: AI meal plan preview and apply
+  - id: ai-grocery-list-gemini
+    title: AI grocery list generation via Gemini (key configured)
     steps:
-      - Weekly meal plan → Plan week with AI (header or empty state).
-      - Enter criteria, generate preview, tap Apply to meal plan.
+      - Ensure a valid Gemini API key is saved.
+      - Open the AI helper sheet; select Grocery list mode.
+      - Enter criteria such as "Mediterranean week for 4 people"; tap Generate.
     expected:
-      - Preview shows lunch/dinner lines; apply fills the selected week's meal fields.
+      - 8–14 grocery item chips appear in the language of the app (e.g. "Tomates", "Aubergine" for French).
+      - Items can be adopted individually or all at once to the editable grocery list.
+      - If Gemini is unavailable, the app falls back to local suggestions without showing an error.
+
+  - id: ai-meal-plan-gemini
+    title: AI meal plan generation via Gemini (key configured)
+    steps:
+      - Ensure a valid Gemini API key is saved.
+      - Open Weekly meal plan → Plan with AI; enter criteria such as "Vegetarian Italian week".
+      - Tap Generate, then Apply to meal plan.
+    expected:
+      - Preview shows 7 days of lunch/dinner dish names relevant to the criteria (not generic placeholder names).
+      - Dish names are in the app language (e.g. Italian dishes in Italian when app language is Italian).
+      - Apply fills the plan; dishes match what was shown in the preview.
+
+  - id: ai-dish-ingredients-gemini
+    title: Dish-specific ingredient list via Gemini (key configured)
+    steps:
+      - Ensure a valid Gemini API key is saved.
+      - Open Plan tab, enter a specific dish (e.g. "Pasta carbonara" or "Pollo alla cacciatora").
+      - Tap Add to grocery list for that meal.
+    expected:
+      - Ingredients specific to the dish are generated (e.g. guanciale, pecorino, eggs for carbonara).
+      - Ingredient names are in the app language (e.g. "Guanciale", "Pecorino", "Uova" for Italian).
+      - No generic placeholder items such as "Protein", "Vegetables", "Grains" appear.
+      - Loading spinner on the Add button clears when the list is added; no spinner is permanently stuck.
 
   - id: wavec-dark-theme-napolitan
     title: System dark theme (Napolitan palette)
