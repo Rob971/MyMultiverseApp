@@ -3,6 +3,7 @@ package app.mymultiverse.ammo.data.service
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
+import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
@@ -27,7 +28,12 @@ internal class RemoteNutritionAiAssistantService(
     private val geminiClient: DishIngredientClient,
     private val currentLanguageCode: () -> String,
     private val aiSettings: AiAssistantSettings,
+    private val appLogger: AppLogger,
 ) : NutritionAiAssistantService {
+
+    private companion object {
+        const val TAG = "GeminiIngredients"
+    }
 
     /** Exposes the live Gemini API key so the UI can reactively show AI setup notices. */
     override val geminiApiKey: StateFlow<String>
@@ -52,18 +58,36 @@ internal class RemoteNutritionAiAssistantService(
         if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
 
         val trimmed = mealDescription.trim()
+        val lang = currentLanguageCode()
 
-        // Try Gemini; fall back to local heuristics only when the key IS set but network fails.
-        val remoteIngredients = runCatching {
-            geminiClient.generateIngredients(
-                dish = trimmed,
-                languageCode = currentLanguageCode(),
-            ).getOrNull()
-        }.getOrNull()
+        // Try Gemini; fall back to local heuristics when the key IS set but the call fails.
+        val geminiResult = runCatching {
+            geminiClient.generateIngredients(dish = trimmed, languageCode = lang)
+        }
+
+        val remoteIngredients = geminiResult.getOrNull()?.getOrNull()
 
         if (!remoteIngredients.isNullOrEmpty()) {
+            appLogger.breadcrumb("gemini_ingredients_ok dish=$trimmed lang=$lang count=${remoteIngredients.size}")
             return Result.success(remoteIngredients)
         }
+
+        // Log the reason for the fallback to Crashlytics so the team can see
+        // whether failures are transient (network) or systematic (API change).
+        val failure = geminiResult.exceptionOrNull()
+            ?: geminiResult.getOrNull()?.exceptionOrNull()
+        if (failure != null) {
+            appLogger.recordError(
+                tag = TAG,
+                message = "Gemini ingredient call failed; using local fallback",
+                throwable = failure,
+                context = mapOf("dish" to trimmed, "lang" to lang),
+            )
+        } else {
+            // Gemini returned success but an empty list — unexpected, worth a breadcrumb.
+            appLogger.breadcrumb("gemini_ingredients_empty dish=$trimmed lang=$lang")
+        }
+
         return local.generateGroceryForMeal(mealDescription)
     }
 

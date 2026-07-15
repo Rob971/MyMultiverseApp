@@ -134,6 +134,7 @@ private val dataModule = module {
             ),
             currentLanguageCode = { languageManager.currentLanguage.value },
             aiSettings = aiSettings,
+            appLogger = get(),
         )
     }
 }
