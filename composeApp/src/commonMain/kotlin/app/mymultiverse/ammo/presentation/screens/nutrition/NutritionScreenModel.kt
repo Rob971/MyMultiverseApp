@@ -759,6 +759,18 @@ class NutritionScreenModel(
         _aiState.value = NutritionAiState.Idle
     }
 
+    /**
+     * Sets [aiState] to the key-missing error so the AI sheet immediately shows the
+     * inline [AiKeyInlineForm] when opened. Called by the meal→grocery flow when it
+     * detects [AiKeyNotConfiguredException] without the sheet being open.
+     */
+    fun triggerKeySetupPrompt() {
+        _aiState.value = NutritionAiState.Error(
+            message = "ai_key_not_configured",
+            isKeyMissing = true,
+        )
+    }
+
     /** @deprecated Use [runAiAssistant] with [NutritionAiMode.Advice]. */
     fun askNutritionAdvice(question: String) {
         runAiAssistant(NutritionAiMode.Advice, question)

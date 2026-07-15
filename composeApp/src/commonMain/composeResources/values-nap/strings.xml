@@ -405,7 +405,7 @@
     <string name="home_ai_key_saved_snackbar">Chiave AI salvata ✓</string>
     <string name="home_ai_key_cleared_snackbar">Chiave AI levata</string>
     <string name="nutrition_ai_key_required">Pe' 'e funzione AI, metti 'a chiave Gemini gratuita tuia:</string>
-    <string name="nutrition_ai_key_required_meal_grocery">Metti 'a chiave Gemini 'nte 'e impostazioni account pe' ingredienti specifice ô piatto.</string>
+
     <string name="home_hero_plan_meals">Planifica 'e pastate</string>
     <string name="home_hero_grocery_list">Lista 'e spesa</string>
     <string name="home_hero_family">Famiglia</string>
