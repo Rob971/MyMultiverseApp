@@ -101,6 +101,51 @@ class GeminiResponseParserTest {
         }
     }
 
+    // ── parseMealPlan ─────────────────────────────────────────────────────────
+
+    @Test
+    fun parseMealPlan_validJson_returnsDaysAndSummary() {
+        val text = """{"days":[{"lunch":"Pasta al pomodoro","dinner":"Pollo arrosto"},{"lunch":"Insalata","dinner":"Branzino"}],"summary":"Piano equilibrato"}"""
+
+        val (days, summary) = GeminiResponseParser.parseMealPlan(text)
+
+        assertEquals(2, days.size)
+        assertEquals("Pasta al pomodoro", days[0].lunch)
+        assertEquals("Pollo arrosto", days[0].dinner)
+        assertEquals("Insalata", days[1].lunch)
+        assertEquals("Piano equilibrato", summary)
+    }
+
+    @Test
+    fun parseMealPlan_markdownFencedJson_stripsAndParses() {
+        val text = "```json\n{\"days\":[{\"lunch\":\"Salade\",\"dinner\":\"Poulet\"}],\"summary\":\"Bien équilibré\"}\n```"
+
+        val (days, summary) = GeminiResponseParser.parseMealPlan(text)
+
+        assertEquals(1, days.size)
+        assertEquals("Salade", days[0].lunch)
+        assertEquals("Bien équilibré", summary)
+    }
+
+    @Test
+    fun parseMealPlan_noJsonObject_throwsIllegalArgument() {
+        assertFails { GeminiResponseParser.parseMealPlan("No JSON here at all.") }
+    }
+
+    // ── parseAdviceText ───────────────────────────────────────────────────────
+
+    @Test
+    fun parseAdviceText_plainText_returnsTrimmed() {
+        val text = "  Eat more vegetables and lean protein.  "
+        assertEquals("Eat more vegetables and lean protein.", GeminiResponseParser.parseAdviceText(text))
+    }
+
+    @Test
+    fun parseAdviceText_markdownFenced_stripsAndReturns() {
+        val text = "```\nMangia più verdure e proteine magre.\n```"
+        assertEquals("Mangia più verdure e proteine magre.", GeminiResponseParser.parseAdviceText(text))
+    }
+
     // ── languageNameFor ───────────────────────────────────────────────────────
 
     @Test
