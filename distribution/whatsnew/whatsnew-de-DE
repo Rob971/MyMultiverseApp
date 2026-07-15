@@ -2,6 +2,7 @@ Neuigkeiten in dieser Version:
 
 • KI-gestützte Zutaten — Zur Liste hinzufügen generiert jetzt gerichtsspezifische Zutaten über Gemini AI in deiner Sprache
 • Gemini AI für Mahlzeitenplanung, Ernährungsberatung und Einkaufslisten
-• Füge deinen kostenlosen Gemini-API-Schlüssel in den Kontoeinstellungen hinzu — direkter Link zu Google AI Studio
+• Füge deinen Gemini-Schlüssel direkt im KI-Panel hinzu — die Schlüsseleinrichtung erscheint nur wenn du eine KI-Funktion nutzt
+• "Zur Liste hinzufügen" ohne Schlüssel öffnet das Einrichtungsformular direkt
 • 2-Schritt-Registrierung — erfasst jetzt deinen Anzeigenamen und den Haushaltsnamen von Anfang an
 • Fehlerbehebungen und Stabilitätsverbesserungen
