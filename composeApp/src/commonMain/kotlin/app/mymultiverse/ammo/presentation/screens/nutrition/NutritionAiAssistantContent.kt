@@ -3,6 +3,8 @@ package app.mymultiverse.ammo.presentation.screens.nutrition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -56,6 +58,7 @@ import app.mymultiverse.ammo.presentation.components.NutritionFeatureHeader
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.nutritionDayLabel
 import app.mymultiverse.ammo.presentation.components.screenListPadding
+import app.mymultiverse.ammo.presentation.components.JourneyIcon
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.AppIcons
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
@@ -702,18 +705,35 @@ fun NutritionAiAssistantContent(
             }
             is NutritionAiState.Error -> {
                 item {
-                    Text(
-                        text = when {
-                            state.isKeyMissing ->
-                                stringResource(Res.string.nutrition_ai_key_required)
-                            state.message == "empty_question" || state.message == "empty_criteria" ->
-                                stringResource(Res.string.nutrition_ai_empty_question)
-                            else ->
-                                stringResource(Res.string.nutrition_ai_error)
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = SharedJourneyColors.TerracottaOrange,
-                    )
+                    if (state.isKeyMissing) {
+                        // Key not configured — show icon + friendly setup prompt
+                        Row(
+                            verticalAlignment = Alignment.Top,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            JourneyIcon(
+                                role = AppIconRole.AiAccent,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp).padding(top = 2.dp),
+                            )
+                            Text(
+                                text = stringResource(Res.string.nutrition_ai_key_required),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = SharedJourneyColors.TerracottaOrange,
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = when (state.message) {
+                                "empty_question", "empty_criteria" ->
+                                    stringResource(Res.string.nutrition_ai_empty_question)
+                                else ->
+                                    stringResource(Res.string.nutrition_ai_error)
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = SharedJourneyColors.TerracottaOrange,
+                        )
+                    }
                 }
             }
         }

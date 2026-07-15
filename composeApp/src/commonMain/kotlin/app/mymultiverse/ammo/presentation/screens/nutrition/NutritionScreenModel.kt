@@ -88,6 +88,18 @@ class NutritionScreenModel(
         .map { it.isNotBlank() }
         .stateIn(scope, SharingStarted.Eagerly, aiAssistant.geminiApiKey.value.isNotBlank())
 
+    /**
+     * `true` once the user has tapped the dismiss button on the AI-setup notice.
+     * Resets to `false` on the next session; the notice is not shown when
+     * [remoteAiKeyConfigured] is already `true`.
+     */
+    private val _aiSetupNoticeDismissed = MutableStateFlow(false)
+    val aiSetupNoticeDismissed: StateFlow<Boolean> = _aiSetupNoticeDismissed.asStateFlow()
+
+    fun dismissAiSetupNotice() {
+        _aiSetupNoticeDismissed.value = true
+    }
+
     private val _weekOffset = MutableStateFlow(0)
     val weekOffset: StateFlow<Int> = _weekOffset.asStateFlow()
 

@@ -153,6 +153,7 @@ private fun WeeklyMealPlanScreenContent(
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val remoteAiKeyConfigured by screenModel.remoteAiKeyConfigured.collectAsState()
+    val aiSetupNoticeDismissed by screenModel.aiSetupNoticeDismissed.collectAsState()
     val showPartnerNudge by screenModel.showMealPlanPartnerNudge.collectAsState()
     val isNudgingMealPlanPartners by screenModel.isNudgingMealPlanPartners.collectAsState()
     val mealPlanPartnerNudgeResult by screenModel.mealPlanPartnerNudgeResult.collectAsState()
@@ -484,9 +485,11 @@ private fun WeeklyMealPlanScreenContent(
                         }
                     }
 
-                    if (!remoteAiKeyConfigured) {
+                    if (!remoteAiKeyConfigured && !aiSetupNoticeDismissed) {
                         item(key = "ai-setup-notice") {
-                            AiSetupNotice()
+                            AiSetupNotice(
+                                onDismiss = screenModel::dismissAiSetupNotice,
+                            )
                         }
                     }
 
