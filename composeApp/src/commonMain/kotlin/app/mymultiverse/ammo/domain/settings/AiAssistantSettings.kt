@@ -18,4 +18,10 @@ interface AiAssistantSettings {
 
     /** Removes the persisted key so [geminiApiKey] emits an empty string. */
     fun clearGeminiApiKey()
+
+    /**
+     * Pulls the encrypted key from Supabase into local storage when the user is signed in.
+     * Safe to call from settings/AI entry points; no-op when remote is empty or unavailable.
+     */
+    suspend fun refreshFromRemote()
 }

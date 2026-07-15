@@ -6,6 +6,7 @@ import app.mymultiverse.ammo.domain.repository.AuthRepository
 import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterIsInstance
@@ -16,12 +17,14 @@ import kotlinx.coroutines.launch
  * [SharedPreferences][SettingsAiAssistantSettings] and the per-user Supabase record.
  *
  * **Sync strategy:**
- * - On every sign-in, the remote key is fetched and wins over a stale local value.
+ * - On every sign-in, the remote key is fetched (with retries) and wins over a stale local value.
  *   This ensures a key saved on another device is available immediately.
  * - On [setGeminiApiKey] / [clearGeminiApiKey] the local store is updated first
  *   (instant UI feedback), then the remote is updated in the background.
  * - If the remote call fails (offline, network error) the local key is still valid
  *   for the current session and will be pushed on the next successful write.
+ * - [refreshFromRemote] can be called from settings/AI entry points to recover after
+ *   reinstall or a failed first sync.
  */
 class SyncedAiAssistantSettings(
     private val local: SettingsAiAssistantSettings,
@@ -59,8 +62,12 @@ class SyncedAiAssistantSettings(
         }
     }
 
+    override suspend fun refreshFromRemote() {
+        syncFromRemote()
+    }
+
     private suspend fun syncFromRemote() {
-        val remoteKey = remote.getGeminiApiKey()
+        val remoteKey = fetchRemoteKeyWithRetry()
             .onFailure { log.w(it) { "Remote Gemini key fetch failed on sign-in; using local" } }
             .getOrNull()
             ?: return
@@ -68,5 +75,25 @@ class SyncedAiAssistantSettings(
             log.d { "Gemini key synced from remote to local" }
             local.setGeminiApiKey(remoteKey)
         }
+    }
+
+    private suspend fun fetchRemoteKeyWithRetry(): Result<String> {
+        var lastFailure: Result<String>? = null
+        repeat(REMOTE_FETCH_ATTEMPTS) { attempt ->
+            val result = remote.getGeminiApiKey()
+            if (result.isSuccess) {
+                return result
+            }
+            lastFailure = result
+            if (attempt < REMOTE_FETCH_ATTEMPTS - 1) {
+                delay(REMOTE_FETCH_BACKOFF_MS * (attempt + 1))
+            }
+        }
+        return lastFailure ?: Result.failure(IllegalStateException("remote_fetch_exhausted"))
+    }
+
+    private companion object {
+        const val REMOTE_FETCH_ATTEMPTS = 3
+        const val REMOTE_FETCH_BACKOFF_MS = 400L
     }
 }

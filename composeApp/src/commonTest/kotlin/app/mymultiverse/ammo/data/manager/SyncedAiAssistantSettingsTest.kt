@@ -141,6 +141,24 @@ class SyncedAiAssistantSettingsTest {
     }
 
     @Test
+    fun refreshFromRemote_pullsKeyAfterTransientFailure() = runTest(dispatcher) {
+        val remote = FakeRemote(storedKey = "remote-key", failuresBeforeSuccess = 2)
+        val fakeAuth = FakeAuthRepo(AuthState.Unauthenticated)
+        val sut = SyncedAiAssistantSettings(
+            local = SettingsAiAssistantSettings(settings = MapSettings()),
+            remote = remote,
+            authRepository = fakeAuth,
+            scope = backgroundScope,
+        )
+
+        sut.refreshFromRemote()
+        advanceUntilIdle()
+
+        assertEquals("remote-key", sut.geminiApiKey.value)
+        assertEquals(3, remote.fetchCount)
+    }
+
+    @Test
     fun secondSignInWithSameUser_doesNotTriggerSync() = runTest(dispatcher) {
         val (_, remote, fakeAuth) = makeSettings(initialRemoteKey = "key")
 
@@ -171,13 +189,20 @@ class SyncedAiAssistantSettingsTest {
     private class FakeRemote(
         storedKey: String = "",
         private val failure: Throwable? = null,
+        private val failuresBeforeSuccess: Int = 0,
     ) : AiSettingsRemoteRepository {
         var storedKey: String = storedKey
         var fetchCount: Int = 0
+        private var remainingFailures = failuresBeforeSuccess
 
         override suspend fun getGeminiApiKey(): Result<String> {
             fetchCount++
-            return if (failure != null) Result.failure(failure) else Result.success(storedKey)
+            if (failure != null) return Result.failure(failure)
+            if (remainingFailures > 0) {
+                remainingFailures--
+                return Result.failure(RuntimeException("transient"))
+            }
+            return Result.success(storedKey)
         }
 
         override suspend fun upsertGeminiApiKey(key: String): Result<Unit> {
