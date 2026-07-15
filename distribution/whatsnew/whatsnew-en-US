@@ -1,6 +1,9 @@
 What's new in this release:
 
-• Food emoji thumbnails for grocery items and meal plan dishes
-• AI food suggestions now fully localized across all supported languages
-• Improved stability: fixed rare crash when adding duplicate grocery items
-• General bug fixes and performance improvements
+• AI-powered dish ingredients — Add to grocery list now generates dish-specific ingredients via Gemini AI, matched to your app language
+• Gemini AI for meal planning, nutrition advice, and grocery lists — all AI features now use Gemini 2.0 Flash Lite when a free API key is configured
+• Add your free Gemini API key in Account settings — clear setup UI with a direct link to Google AI Studio
+• Plan tab shows a prompt when no key is configured so you know exactly what to do
+• 2-step registration — sign up now captures your display name and household name upfront
+• Auth screen polish: centred branding footer with designer credit
+• Stability improvements: fixed stuck loading spinners and cancellation handling in AI flows
