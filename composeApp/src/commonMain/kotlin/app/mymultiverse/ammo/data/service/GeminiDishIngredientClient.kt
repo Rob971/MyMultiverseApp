@@ -20,7 +20,11 @@ private const val GEMINI_BASE_URL =
  * and the parsing stays unit-testable without a network.
  */
 internal class GeminiDishIngredientClient(
-    private val apiKey: String,
+    /**
+     * Provides the Gemini API key at call time so the key can be changed in user
+     * settings without recreating the client.
+     */
+    private val apiKeyProvider: () -> String,
     private val httpClient: HttpClient = HttpClient(),
 ) : DishIngredientClient {
     /**
@@ -29,6 +33,9 @@ internal class GeminiDishIngredientClient(
      */
     override suspend fun generateIngredients(dish: String, languageCode: String): Result<List<String>> =
         runCatching {
+            val apiKey = apiKeyProvider()
+            check(apiKey.isNotBlank()) { "Gemini API key is not configured" }
+
             val languageName = GeminiResponseParser.languageNameFor(languageCode)
             val requestBody = buildRequestBody(dish, languageName)
 

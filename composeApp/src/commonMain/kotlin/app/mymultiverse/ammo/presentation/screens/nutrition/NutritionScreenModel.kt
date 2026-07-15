@@ -78,6 +78,15 @@ class NutritionScreenModel(
     val weekKey: String
         get() = repository.weekKey
 
+    /**
+     * Emits `true` when the user has saved a Gemini API key in Account & settings,
+     * enabling dish-specific AI ingredient generation. Reacts immediately when the key
+     * is saved or cleared so the UI notice updates without a restart.
+     */
+    val remoteAiKeyConfigured: StateFlow<Boolean> = aiAssistant.geminiApiKey
+        .map { it.isNotBlank() }
+        .stateIn(scope, SharingStarted.Eagerly, aiAssistant.geminiApiKey.value.isNotBlank())
+
     private val _weekOffset = MutableStateFlow(0)
     val weekOffset: StateFlow<Int> = _weekOffset.asStateFlow()
 

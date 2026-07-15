@@ -5,6 +5,7 @@ import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
 import app.mymultiverse.ammo.domain.observability.CrashReporter
 import app.mymultiverse.ammo.domain.manager.LanguageManager
 import app.mymultiverse.ammo.domain.manager.ThemeManager
+import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import app.mymultiverse.ammo.domain.model.auth.AuthState
 import app.mymultiverse.ammo.domain.model.auth.AuthUser
 import app.mymultiverse.ammo.domain.platform.PersonalDataExporter
@@ -55,6 +56,7 @@ class AppModuleKoinTest : KoinTest {
         single<Settings> { MapSettings() }
         single<LanguageManager> { FakeLanguageManager() }
         single<ThemeManager> { FakeThemeManager() }
+        single<AiAssistantSettings> { FakeAiAssistantSettings() }
         single<CrashReporter> { NoOpCrashReporter() }
         single<AuthRepository> {
             FakeAuthRepository(

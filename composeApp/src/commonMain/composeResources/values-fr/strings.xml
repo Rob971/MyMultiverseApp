@@ -392,6 +392,16 @@
     <string name="home_settings_button">Ouvrir le compte et les paramètres</string>
     <string name="home_settings_appearance">Apparence</string>
     <string name="home_settings_language">Langue</string>
+    <string name="home_settings_ai_section">Ingrédients IA</string>
+    <string name="home_ai_key_label">Clé API Gemini</string>
+    <string name="home_ai_key_placeholder">Collez votre clé ici</string>
+    <string name="home_ai_key_what_it_does">Génère des suggestions d'ingrédients spécifiques au plat lorsque vous ajoutez un repas à votre liste de courses.</string>
+    <string name="home_ai_key_how_to_get">Obtenez une clé gratuite sur aistudio.google.com/app/apikey</string>
+    <string name="home_ai_key_save">Enregistrer</string>
+    <string name="home_ai_key_clear">Effacer</string>
+    <string name="home_ai_key_saved_snackbar">Clé IA enregistrée</string>
+    <string name="home_ai_key_cleared_snackbar">Clé IA effacée</string>
+    <string name="nutrition_ai_setup_notice">Ajoutez une clé API Gemini gratuite dans les paramètres du compte pour des suggestions d'ingrédients spécifiques au plat.</string>
     <string name="home_hero_plan_meals">Planifier les repas</string>
     <string name="home_hero_grocery_list">Liste de courses</string>
     <string name="home_hero_family">Famille</string>

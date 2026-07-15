@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.domain.AppBuildInfo
+import app.mymultiverse.ammo.presentation.components.AiKeySettingsSection
 import app.mymultiverse.ammo.presentation.components.HomeHouseholdButton
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.ammo.presentation.components.JourneyDestructiveTextButton
@@ -117,6 +118,13 @@ fun HomeAccountSheet(
             ThemePicker(modifier = Modifier.padding(bottom = 12.dp))
 
             LanguagePicker()
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = JourneySemanticColors.inkMuted().copy(alpha = 0.25f),
+            )
+
+            AiKeySettingsSection()
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 12.dp),

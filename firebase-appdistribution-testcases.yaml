@@ -36,6 +36,7 @@ summary: |
   Onboarding completion (v46): email/password fallback on auth screen; HTTPS invite App Links (mymultiverse.app/invite); instrumented smoke for auth + household creation screens.
   2-step registration (v87): email sign-up now collects display name on step 1 (Name / Email / Password with show/hide toggle); step 2 captures household name with option to skip; display name propagated to Supabase user metadata and household creation pre-fill.
   AI dish ingredients (v88): Add to grocery list on meal plan now calls Gemini API (free tier) to generate dish-specific, language-matched ingredients; falls back to local heuristics when API key absent or network unavailable.
+  AI key settings UI (v88): "AI Ingredients" section added to Account settings with password field, show/hide toggle, save/clear actions, and a tappable link to get a free Gemini API key; Plan tab shows a terracotta notice when no key is configured.
   App Links hosting (v47): deploy via Rob971/mymultiverse-website; verify with scripts/verify-hosting.sh after DNS is live.
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
@@ -858,6 +859,29 @@ testcases:
     expected:
       - Ingredient names are displayed in the selected app language (e.g. "Pollo", "Olive", "Capperi" for Italian).
       - No English ingredient names appear when a non-English language is set.
+
+  - id: ai-key-settings
+    title: Gemini API key setup in Account settings
+    steps:
+      - Open Account settings (profile avatar → globe/account button).
+      - Scroll to the "AI Ingredients" section.
+    expected:
+      - "AI Ingredients" section header is visible below Language.
+      - Descriptive text explains that the key enables dish-specific ingredient suggestions.
+      - A tappable link "Get a free key at aistudio.google.com/app/apikey" is shown.
+      - A password-masked text field with a show/hide toggle is available.
+      - Paste a valid Gemini API key; tap "Save key"; confirm button shows brief "AI key saved" feedback.
+      - Tap "Clear key"; key field empties and "AI key cleared" feedback appears.
+      - After saving a key, the "AI setup notice" banner no longer appears on the Plan tab.
+
+  - id: ai-key-setup-notice-on-plan
+    title: Plan tab AI setup notice when key not configured
+    steps:
+      - Ensure no Gemini API key is saved (clear it in Account settings or use a fresh install).
+      - Open Plan tab.
+    expected:
+      - A terracotta-tinted notice appears below any viewer banner: "Add a free Gemini API key in Account settings for dish-specific ingredient suggestions."
+      - The notice disappears immediately after saving a valid key in Account settings (no restart needed).
 
   - id: ai-advice
     title: AI meal planning from empty slot

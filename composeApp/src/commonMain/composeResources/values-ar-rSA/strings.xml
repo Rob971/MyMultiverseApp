@@ -392,6 +392,16 @@
     <string name="home_settings_button">فتح الحساب والإعدادات</string>
     <string name="home_settings_appearance">المظهر</string>
     <string name="home_settings_language">اللغة</string>
+    <string name="home_settings_ai_section">مكونات الذكاء الاصطناعي</string>
+    <string name="home_ai_key_label">مفتاح Gemini API</string>
+    <string name="home_ai_key_placeholder">الصق مفتاحك هنا</string>
+    <string name="home_ai_key_what_it_does">يولّد اقتراحات مكونات خاصة بالطبق عند إضافة وجبة إلى قائمة التسوق.</string>
+    <string name="home_ai_key_how_to_get">احصل على مفتاح مجاني من aistudio.google.com/app/apikey</string>
+    <string name="home_ai_key_save">حفظ المفتاح</string>
+    <string name="home_ai_key_clear">مسح المفتاح</string>
+    <string name="home_ai_key_saved_snackbar">تم حفظ مفتاح الذكاء الاصطناعي</string>
+    <string name="home_ai_key_cleared_snackbar">تم مسح مفتاح الذكاء الاصطناعي</string>
+    <string name="nutrition_ai_setup_notice">أضف مفتاح Gemini API المجاني في إعدادات الحساب للحصول على اقتراحات مكونات خاصة بكل طبق.</string>
     <string name="home_hero_plan_meals">تخطيط الوجبات</string>
     <string name="home_hero_grocery_list">قائمة البقالة</string>
     <string name="home_hero_family">العائلة</string>

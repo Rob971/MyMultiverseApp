@@ -392,6 +392,16 @@
     <string name="home_settings_button">Arè account e mpustazione</string>
     <string name="home_settings_appearance">Aspetto</string>
     <string name="home_settings_language">Lengua</string>
+    <string name="home_settings_ai_section">Ingredienti AI</string>
+    <string name="home_ai_key_label">Chiave API Gemini</string>
+    <string name="home_ai_key_placeholder">Metti 'a chiave ccà</string>
+    <string name="home_ai_key_what_it_does">Genera suggerimenti specifiche pe' 'o piatto quanno aggiunge 'na pasta a lista 'e spesa.</string>
+    <string name="home_ai_key_how_to_get">Pigliati 'na chiave gratuita a aistudio.google.com/app/apikey</string>
+    <string name="home_ai_key_save">Salva 'a chiave</string>
+    <string name="home_ai_key_clear">Leva 'a chiave</string>
+    <string name="home_ai_key_saved_snackbar">Chiave AI salvata</string>
+    <string name="home_ai_key_cleared_snackbar">Chiave AI levata</string>
+    <string name="nutrition_ai_setup_notice">Metti 'na chiave API Gemini gratuita 'nte 'e impostazioni account pe' suggerimenti specifice ô piatto.</string>
     <string name="home_hero_plan_meals">Planifica 'e pastate</string>
     <string name="home_hero_grocery_list">Lista 'e spesa</string>
     <string name="home_hero_family">Famiglia</string>

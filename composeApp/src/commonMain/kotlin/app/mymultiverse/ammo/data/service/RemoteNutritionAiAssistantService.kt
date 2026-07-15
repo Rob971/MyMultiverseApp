@@ -4,21 +4,30 @@ import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
+import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Enhances [LocalNutritionAiAssistantService] by delegating [generateGroceryForMeal]
  * to the Gemini API for dish-specific, language-aware ingredient lists.
  *
- * If Gemini is unavailable (network error, empty response, or parse failure),
- * this service falls back transparently to the local heuristic implementation.
- * All other operations (advice, grocery list by criteria, meal plan) continue to
- * use the local service unchanged.
+ * When the Gemini API key is blank (not yet configured by the user), or when Gemini is
+ * unavailable (network error, empty response, or parse failure), this service falls back
+ * transparently to the local heuristic implementation.
+ *
+ * All other operations (advice, grocery list by criteria, meal plan) continue to use the
+ * local service unchanged.
  */
 internal class RemoteNutritionAiAssistantService(
     private val local: LocalNutritionAiAssistantService,
     private val geminiClient: DishIngredientClient,
     private val currentLanguageCode: () -> String,
+    private val aiSettings: AiAssistantSettings,
 ) : NutritionAiAssistantService {
+
+    /** Exposes the live Gemini API key so the UI can reactively show AI setup notices. */
+    override val geminiApiKey: StateFlow<String>
+        get() = aiSettings.geminiApiKey
 
     override suspend fun askAdvice(question: String): Result<String> =
         local.askAdvice(question)
@@ -32,7 +41,12 @@ internal class RemoteNutritionAiAssistantService(
         }
         val trimmed = mealDescription.trim()
 
-        // Attempt Gemini remote generation first
+        // Skip Gemini immediately if no key is configured — no network call needed.
+        if (aiSettings.geminiApiKey.value.isBlank()) {
+            return local.generateGroceryForMeal(mealDescription)
+        }
+
+        // Try Gemini; fall back to local on any network or parse error.
         val remoteIngredients = runCatching {
             geminiClient.generateIngredients(
                 dish = trimmed,
@@ -43,8 +57,6 @@ internal class RemoteNutritionAiAssistantService(
         if (!remoteIngredients.isNullOrEmpty()) {
             return Result.success(remoteIngredients)
         }
-
-        // Fall back to local heuristics when Gemini fails or returns nothing
         return local.generateGroceryForMeal(mealDescription)
     }
 

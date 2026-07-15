@@ -392,6 +392,16 @@
     <string name="home_settings_button">Open account and settings</string>
     <string name="home_settings_appearance">Appearance</string>
     <string name="home_settings_language">Language</string>
+    <string name="home_settings_ai_section">AI Ingredients</string>
+    <string name="home_ai_key_label">Gemini API Key</string>
+    <string name="home_ai_key_placeholder">Paste your key here</string>
+    <string name="home_ai_key_what_it_does">Generates dish-specific ingredient suggestions when you add a meal to your grocery list.</string>
+    <string name="home_ai_key_how_to_get">Get a free key at aistudio.google.com/app/apikey</string>
+    <string name="home_ai_key_save">Save key</string>
+    <string name="home_ai_key_clear">Clear key</string>
+    <string name="home_ai_key_saved_snackbar">AI key saved</string>
+    <string name="home_ai_key_cleared_snackbar">AI key cleared</string>
+    <string name="nutrition_ai_setup_notice">Add a free Gemini API key in Account settings for dish-specific ingredient suggestions.</string>
     <string name="home_hero_plan_meals">Plan meals</string>
     <string name="home_hero_grocery_list">Grocery list</string>
     <string name="home_hero_family">Family</string>
