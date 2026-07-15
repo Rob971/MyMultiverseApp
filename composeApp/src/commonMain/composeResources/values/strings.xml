@@ -404,8 +404,7 @@
     <string name="home_ai_key_status_not_configured">Not configured</string>
     <string name="home_ai_key_saved_snackbar">AI key saved ✓</string>
     <string name="home_ai_key_cleared_snackbar">AI key cleared</string>
-    <string name="nutrition_ai_setup_notice">Add a free Gemini API key in Account settings for smart ingredient suggestions.</string>
-    <string name="nutrition_ai_key_required">AI features need a Gemini API key. Add it in Account &amp; settings.</string>
+    <string name="nutrition_ai_key_required">To use AI features, add your free Gemini API key:</string>
     <string name="nutrition_ai_key_required_meal_grocery">Add your Gemini API key in Account settings for dish-specific ingredients.</string>
     <string name="home_hero_plan_meals">Plan meals</string>
     <string name="home_hero_grocery_list">Grocery list</string>

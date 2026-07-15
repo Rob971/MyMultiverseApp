@@ -43,7 +43,6 @@ import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiMode
 import app.mymultiverse.ammo.domain.nutrition.NutritionHubSummary
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
-import app.mymultiverse.ammo.presentation.components.AiSetupNotice
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.ammo.presentation.components.HouseholdViewerReadOnlyNotice
 import app.mymultiverse.ammo.presentation.components.JourneyEmptyState
@@ -152,8 +151,6 @@ private fun WeeklyMealPlanScreenContent(
     val mealPlan by screenModel.mealPlan.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
-    val remoteAiKeyConfigured by screenModel.remoteAiKeyConfigured.collectAsState()
-    val aiSetupNoticeDismissed by screenModel.aiSetupNoticeDismissed.collectAsState()
     val showPartnerNudge by screenModel.showMealPlanPartnerNudge.collectAsState()
     val isNudgingMealPlanPartners by screenModel.isNudgingMealPlanPartners.collectAsState()
     val mealPlanPartnerNudgeResult by screenModel.mealPlanPartnerNudgeResult.collectAsState()
@@ -482,14 +479,6 @@ private fun WeeklyMealPlanScreenContent(
                     if (!canWrite) {
                         item(key = "viewer-notice") {
                             HouseholdViewerReadOnlyNotice()
-                        }
-                    }
-
-                    if (!remoteAiKeyConfigured && !aiSetupNoticeDismissed) {
-                        item(key = "ai-setup-notice") {
-                            AiSetupNotice(
-                                onDismiss = screenModel::dismissAiSetupNotice,
-                            )
                         }
                     }
 

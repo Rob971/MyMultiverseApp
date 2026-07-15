@@ -34,7 +34,6 @@ object NutritionStringKeys {
         "nutrition_meal_lunch",
         "nutrition_meal_dinner",
         "nutrition_meal_generate_grocery",
-        "nutrition_ai_setup_notice",
         "nutrition_ai_key_required",
         "nutrition_ai_key_required_meal_grocery",
         "nutrition_meal_suggest_quick_ai",

@@ -29,7 +29,9 @@ import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.presentation.navigation.HouseholdContext
 import app.mymultiverse.ammo.presentation.navigation.toNavigationContext
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flatMapLatest
@@ -81,24 +83,19 @@ class NutritionScreenModel(
         get() = repository.weekKey
 
     /**
-     * Emits `true` when the user has saved a Gemini API key in Account & settings,
-     * enabling dish-specific AI ingredient generation. Reacts immediately when the key
-     * is saved or cleared so the UI notice updates without a restart.
+     * Auto-reset key-missing AI error state when the user saves a key while the
+     * sheet is showing an [AiKeyNotConfiguredException] error, so they can retry
+     * immediately without having to manually dismiss and re-open the sheet.
      */
-    val remoteAiKeyConfigured: StateFlow<Boolean> = aiAssistant.geminiApiKey
-        .map { it.isNotBlank() }
-        .stateIn(scope, SharingStarted.Eagerly, aiAssistant.geminiApiKey.value.isNotBlank())
-
-    /**
-     * `true` once the user has tapped the dismiss button on the AI-setup notice.
-     * Resets to `false` on the next session; the notice is not shown when
-     * [remoteAiKeyConfigured] is already `true`.
-     */
-    private val _aiSetupNoticeDismissed = MutableStateFlow(false)
-    val aiSetupNoticeDismissed: StateFlow<Boolean> = _aiSetupNoticeDismissed.asStateFlow()
-
-    fun dismissAiSetupNotice() {
-        _aiSetupNoticeDismissed.value = true
+    init {
+        scope.launch {
+            aiAssistant.geminiApiKey.drop(1).filter { it.isNotBlank() }.collect {
+                val current = _aiState.value
+                if (current is NutritionAiState.Error && current.isKeyMissing) {
+                    _aiState.value = NutritionAiState.Idle
+                }
+            }
+        }
     }
 
     private val _weekOffset = MutableStateFlow(0)
