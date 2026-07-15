@@ -5,6 +5,11 @@
 supabase.url=https://ammo.mymultiverse.app
 supabase.anonKey=your_supabase_anon_or_publishable_key_here
 
+# Optional: Gemini API key for AI-powered dish ingredient generation.
+# Get a free key at https://aistudio.google.com/app/apikey
+# When omitted, the app falls back to local heuristic ingredient suggestions.
+gemini.apiKey=your_gemini_api_key_here
+
 # Optional: Play Store / release signing (alternative to keystore.properties at repo root).
 # ammo.upload.storeFile=ammo-upload.jks
 # ammo.upload.storePassword=your_store_password

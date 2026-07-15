@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 87
-updated: 2026-07-14
+version: 88
+updated: 2026-07-15
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -35,6 +35,8 @@ summary: |
   Dark mode accessibility (v45): household members card rows with role chips and overflow (⋮) menus; semantic ink tokens on auth, invite, join, loading, coming-soon, viewer banner, and AI grocery subtitles for WCAG-readable text in system dark theme.
   Onboarding completion (v46): email/password fallback on auth screen; HTTPS invite App Links (mymultiverse.app/invite); instrumented smoke for auth + household creation screens.
   2-step registration (v87): email sign-up now collects display name on step 1 (Name / Email / Password with show/hide toggle); step 2 captures household name with option to skip; display name propagated to Supabase user metadata and household creation pre-fill.
+  AI dish ingredients (v88): Add to grocery list on meal plan now calls Gemini API (free tier) to generate dish-specific, language-matched ingredients; falls back to local heuristics when API key absent or network unavailable.
+  AI key settings UI (v88): "AI Ingredients" section added to Account settings with password field, show/hide toggle, save/clear actions, and a tappable link to get a free Gemini API key; Plan tab shows a terracotta notice when no key is configured.
   App Links hosting (v47): deploy via Rob971/mymultiverse-website; verify with scripts/verify-hosting.sh after DNS is live.
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
@@ -834,15 +836,52 @@ testcases:
       - All meal fields reset for the selected week.
 
   - id: meal-plan-meal-grocery
-    title: Add grocery items from a single meal
+    title: Add grocery items from a single meal (AI dish-specific)
     steps:
-      - On Plan tab, enter a non-empty lunch (e.g. Pasta primavera).
-      - Tap Add to grocery list under the lunch field.
+      - On Plan tab, enter a specific dish name as lunch or dinner (e.g. "Polpo e patate con prezzemolo" in Italian, or "Poulet rôti aux herbes" in French).
+      - Tap Add to grocery list under that slot.
       - Open Groceries tab.
     expected:
       - Snackbar confirms items were generated (or none new if duplicates).
       - Plan tab stays uncluttered (no pantry or suggestion chip sections).
       - New items appear under To buy on Groceries immediately (no adopt step).
+      - Ingredients are specific to the dish entered (e.g. "Polpo", "Patate", "Prezzemolo") not a generic list.
+      - Ingredient names are in the same language as the dish entered (matches app language setting).
+      - If the Gemini API key is absent or the network is unavailable, a fallback ingredient list is still generated.
+
+  - id: meal-plan-meal-grocery-ai-language
+    title: Dish ingredients match user language
+    steps:
+      - Change the app language (globe icon in header) to Italian, French, or Spanish.
+      - On Plan tab, enter a dish name relevant to that language (e.g. "Pollo alla cacciatora" for Italian).
+      - Tap Add to grocery list.
+      - Open Groceries tab.
+    expected:
+      - Ingredient names are displayed in the selected app language (e.g. "Pollo", "Olive", "Capperi" for Italian).
+      - No English ingredient names appear when a non-English language is set.
+
+  - id: ai-key-settings
+    title: Gemini API key setup in Account settings
+    steps:
+      - Open Account settings (profile avatar → globe/account button).
+      - Scroll to the "AI Ingredients" section.
+    expected:
+      - "AI Ingredients" section header is visible below Language.
+      - Descriptive text explains that the key enables dish-specific ingredient suggestions.
+      - A tappable link "Get a free key at aistudio.google.com/app/apikey" is shown.
+      - A password-masked text field with a show/hide toggle is available.
+      - Paste a valid Gemini API key; tap "Save key"; confirm button shows brief "AI key saved" feedback.
+      - Tap "Clear key"; key field empties and "AI key cleared" feedback appears.
+      - After saving a key, the "AI setup notice" banner no longer appears on the Plan tab.
+
+  - id: ai-key-setup-notice-on-plan
+    title: Plan tab AI setup notice when key not configured
+    steps:
+      - Ensure no Gemini API key is saved (clear it in Account settings or use a fresh install).
+      - Open Plan tab.
+    expected:
+      - A terracotta-tinted notice appears below any viewer banner: "Add a free Gemini API key in Account settings for dish-specific ingredient suggestions."
+      - The notice disappears immediately after saving a valid key in Account settings (no restart needed).
 
   - id: ai-advice
     title: AI meal planning from empty slot

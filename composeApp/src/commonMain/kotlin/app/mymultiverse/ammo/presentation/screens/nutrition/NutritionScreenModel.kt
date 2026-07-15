@@ -19,6 +19,7 @@ import app.mymultiverse.ammo.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
+import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import app.mymultiverse.ammo.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.ammo.domain.sharing.canWriteHouseholdData
@@ -54,7 +55,7 @@ sealed class NutritionAiState {
         val summary: String,
         val scope: MealPlanGenerationScope,
     ) : NutritionAiState()
-    data class Error(val message: String) : NutritionAiState()
+    data class Error(val message: String, val isKeyMissing: Boolean = false) : NutritionAiState()
 }
 
 class NutritionScreenModel(
@@ -77,6 +78,27 @@ class NutritionScreenModel(
 
     val weekKey: String
         get() = repository.weekKey
+
+    /**
+     * Emits `true` when the user has saved a Gemini API key in Account & settings,
+     * enabling dish-specific AI ingredient generation. Reacts immediately when the key
+     * is saved or cleared so the UI notice updates without a restart.
+     */
+    val remoteAiKeyConfigured: StateFlow<Boolean> = aiAssistant.geminiApiKey
+        .map { it.isNotBlank() }
+        .stateIn(scope, SharingStarted.Eagerly, aiAssistant.geminiApiKey.value.isNotBlank())
+
+    /**
+     * `true` once the user has tapped the dismiss button on the AI-setup notice.
+     * Resets to `false` on the next session; the notice is not shown when
+     * [remoteAiKeyConfigured] is already `true`.
+     */
+    private val _aiSetupNoticeDismissed = MutableStateFlow(false)
+    val aiSetupNoticeDismissed: StateFlow<Boolean> = _aiSetupNoticeDismissed.asStateFlow()
+
+    fun dismissAiSetupNotice() {
+        _aiSetupNoticeDismissed.value = true
+    }
 
     private val _weekOffset = MutableStateFlow(0)
     val weekOffset: StateFlow<Int> = _weekOffset.asStateFlow()
@@ -288,6 +310,7 @@ class NutritionScreenModel(
         val dayLabel: String,
         val slot: MealSlot,
         val isError: Boolean = false,
+        val isKeyMissing: Boolean = false,
     )
 
     private val _mealGroceryLoading = MutableStateFlow<MealGroceryRequest?>(null)
@@ -500,7 +523,7 @@ class NutritionScreenModel(
                 NutritionAiMode.Advice -> {
                     aiAssistant.askAdvice(criteria)
                         .onSuccess { answer -> _aiState.value = NutritionAiState.Advice(answer) }
-                        .onFailure { error -> _aiState.value = NutritionAiState.Error(error.toAiMessage()) }
+                        .onFailure { error -> _aiState.value = error.toAiErrorState() }
                 }
 
                 NutritionAiMode.GroceryList -> {
@@ -509,7 +532,7 @@ class NutritionScreenModel(
                             val addedCount = appendAiGrocery(labels)
                             _aiState.value = NutritionAiState.GroceryList(itemCount = addedCount)
                         }
-                        .onFailure { error -> _aiState.value = NutritionAiState.Error(error.toAiMessage()) }
+                        .onFailure { error -> _aiState.value = error.toAiErrorState() }
                 }
 
                 NutritionAiMode.MealPlan -> {
@@ -521,7 +544,7 @@ class NutritionScreenModel(
                                 scope = mealPlanScope,
                             )
                         }
-                        .onFailure { error -> _aiState.value = NutritionAiState.Error(error.toAiMessage()) }
+                        .onFailure { error -> _aiState.value = error.toAiErrorState() }
                 }
             }
         }
@@ -667,12 +690,13 @@ class NutritionScreenModel(
                         slot = slot,
                     )
                 }
-                .onFailure {
+                .onFailure { error ->
                     _mealGroceryResult.value = MealGroceryResult(
                         itemCount = 0,
                         dayLabel = dayLabel,
                         slot = slot,
                         isError = true,
+                        isKeyMissing = error is AiKeyNotConfiguredException,
                     )
                 }
             _mealGroceryLoading.value = null
@@ -890,6 +914,12 @@ class NutritionScreenModel(
     }
 
     private fun Throwable.toAiMessage(): String = message ?: "unknown_error"
+
+    private fun Throwable.toAiErrorState(): NutritionAiState.Error =
+        NutritionAiState.Error(
+            message = toAiMessage(),
+            isKeyMissing = this is AiKeyNotConfiguredException,
+        )
 
     private fun newId(): String = newItemId()
 }

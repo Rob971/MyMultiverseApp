@@ -76,6 +76,36 @@ val generateAppBuildInfo = tasks.register("generateAppBuildInfo") {
     }
 }
 
+val generateAiSecrets = tasks.register("generateAiSecrets") {
+    val localPropsFile = rootProject.layout.projectDirectory.file("local.properties")
+    val outputDir = layout.buildDirectory.dir("generated/ai/kotlin/app/mymultiverse/ammo/data/ai")
+
+    inputs.files(localPropsFile).optional().withPathSensitivity(PathSensitivity.NONE)
+    outputs.dir(outputDir)
+
+    doLast {
+        val properties = Properties().apply {
+            val file = localPropsFile.asFile
+            if (file.exists()) {
+                file.inputStream().use { load(it) }
+            }
+        }
+        val geminiApiKey = properties.getProperty("gemini.apiKey", "").trim()
+
+        val dir = outputDir.get().asFile
+        dir.mkdirs()
+        dir.resolve("AiSecrets.kt").writeText(
+            """
+            package app.mymultiverse.ammo.data.ai
+
+            internal object AiSecrets {
+                const val GEMINI_API_KEY: String = ${geminiApiKey.quoteForKotlin()}
+            }
+            """.trimIndent(),
+        )
+    }
+}
+
 val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
     val localPropsFile = rootProject.layout.projectDirectory.file("local.properties")
     val outputDir = layout.buildDirectory.dir("generated/supabase/kotlin/app/mymultiverse/ammo/data/supabase")
@@ -209,12 +239,13 @@ kotlin {
     sourceSets.named("commonMain") {
         kotlin.srcDir(layout.buildDirectory.dir("generated/supabase/kotlin"))
         kotlin.srcDir(layout.buildDirectory.dir("generated/appinfo/kotlin"))
+        kotlin.srcDir(layout.buildDirectory.dir("generated/ai/kotlin"))
     }
 }
 
 tasks.matching { it.name.contains("compile", ignoreCase = true) && it.name.contains("Kotlin") }
     .configureEach {
-        dependsOn(generateSupabaseSecrets, generateAppBuildInfo, generateFirebaseBuildFlags)
+        dependsOn(generateSupabaseSecrets, generateAppBuildInfo, generateFirebaseBuildFlags, generateAiSecrets)
     }
 
 android {

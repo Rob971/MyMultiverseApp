@@ -12,7 +12,12 @@ import app.mymultiverse.ammo.data.home.HomeWeekPlanNudgeStore
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.ammo.data.invite.InviteSessionStore
 import app.mymultiverse.ammo.data.repository.SettingsNutritionHouseholdSelectionStore
+import app.mymultiverse.ammo.data.ai.AiSecrets
+import app.mymultiverse.ammo.data.manager.SettingsAiAssistantSettings
+import app.mymultiverse.ammo.data.service.GeminiDishIngredientClient
 import app.mymultiverse.ammo.data.service.LocalNutritionAiAssistantService
+import app.mymultiverse.ammo.data.service.RemoteNutritionAiAssistantService
+import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import app.mymultiverse.ammo.data.supabase.SupabaseAuthRepository
 import app.mymultiverse.ammo.data.supabase.SupabaseClientHolder
 import app.mymultiverse.ammo.data.supabase.SupabaseHouseholdRepository
@@ -110,10 +115,25 @@ private val dataModule = module {
             diagnostics = get(),
         )
     }
+    single<AiAssistantSettings> {
+        SettingsAiAssistantSettings(
+            settings = get(),
+            compiledKey = AiSecrets.GEMINI_API_KEY,
+        )
+    }
     single<NutritionAiAssistantService> {
         val languageManager = get<LanguageManager>()
-        LocalNutritionAiAssistantService(
+        val aiSettings = get<AiAssistantSettings>()
+        val local = LocalNutritionAiAssistantService(
             currentLanguageCode = { languageManager.currentLanguage.value },
+        )
+        RemoteNutritionAiAssistantService(
+            local = local,
+            geminiClient = GeminiDishIngredientClient(
+                apiKeyProvider = { aiSettings.geminiApiKey.value },
+            ),
+            currentLanguageCode = { languageManager.currentLanguage.value },
+            aiSettings = aiSettings,
         )
     }
 }
@@ -138,6 +158,8 @@ private val presentationModule = module {
             ghostPairingDismissStore = get(),
         )
     }
+    // Note: NutritionScreenModel derives remoteAiKeyConfigured directly from
+    // aiAssistant.geminiApiKey which is wired to AiAssistantSettings above.
 }
 
 /** Core modules without platform bindings; used by unit tests with a test platform module. */
