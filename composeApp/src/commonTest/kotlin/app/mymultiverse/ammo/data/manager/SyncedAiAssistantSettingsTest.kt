@@ -186,6 +186,59 @@ class SyncedAiAssistantSettingsTest {
         assertTrue(remote.fetchCount > firstFetchCount, "New user sign-in must trigger a fresh remote sync")
     }
 
+    @Test
+    fun differentUserSignIn_clearsStaleLocalKeyBeforeSync() = runTest(dispatcher) {
+        val (sut, remote, fakeAuth) = makeSettings(
+            initialRemoteKey = "",
+            initialLocalKey = "user-a-local-key",
+        )
+
+        fakeAuth.signIn(userId = "user-a")
+        advanceUntilIdle()
+        assertEquals("user-a-local-key", sut.geminiApiKey.value)
+
+        remote.storedKey = "user-b-key"
+        fakeAuth.signIn(userId = "user-b")
+        advanceUntilIdle()
+
+        assertEquals("user-b-key", sut.geminiApiKey.value)
+    }
+
+    @Test
+    fun signIn_backfillsLocalKeyWhenRemoteEmpty() = runTest(dispatcher) {
+        val (sut, remote, fakeAuth) = makeSettings(
+            initialRemoteKey = "",
+            initialLocalKey = "local-only-key",
+        )
+
+        fakeAuth.signIn()
+        advanceUntilIdle()
+
+        assertEquals("local-only-key", sut.geminiApiKey.value)
+        assertEquals("local-only-key", remote.storedKey)
+    }
+
+    @Test
+    fun refreshFromRemote_backfillsLocalKeyWhenRemoteEmpty() = runTest(dispatcher) {
+        val remote = FakeRemote(storedKey = "")
+        val fakeAuth = FakeAuthRepo(AuthState.Unauthenticated)
+        val localSettings = MapSettings().also {
+            it.putString(SettingsAiAssistantSettings.KEY, "offline-key")
+        }
+        val sut = SyncedAiAssistantSettings(
+            local = SettingsAiAssistantSettings(settings = localSettings),
+            remote = remote,
+            authRepository = fakeAuth,
+            scope = backgroundScope,
+        )
+
+        sut.refreshFromRemote()
+        advanceUntilIdle()
+
+        assertEquals("offline-key", sut.geminiApiKey.value)
+        assertEquals("offline-key", remote.storedKey)
+    }
+
     private class FakeRemote(
         storedKey: String = "",
         private val failure: Throwable? = null,
