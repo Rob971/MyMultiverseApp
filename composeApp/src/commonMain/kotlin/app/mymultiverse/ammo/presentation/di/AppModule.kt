@@ -126,7 +126,7 @@ private val dataModule = module {
         if (client != null) SupabaseAiSettingsRepository(client)
         else UnconfiguredAiSettingsRepository()
     }
-    single<AiAssistantSettings> {
+    single<AiAssistantSettings>(createdAtStart = true) {
         SyncedAiAssistantSettings(
             local = SettingsAiAssistantSettings(
                 settings = get(),

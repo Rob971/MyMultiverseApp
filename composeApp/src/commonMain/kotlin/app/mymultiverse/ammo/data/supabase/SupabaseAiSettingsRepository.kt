@@ -1,6 +1,6 @@
 package app.mymultiverse.ammo.data.supabase
 
-import app.mymultiverse.ammo.data.supabase.dto.GeminiKeyRow
+import app.mymultiverse.ammo.data.supabase.dto.GeminiKeyRpcDecoder
 import app.mymultiverse.ammo.data.supabase.dto.UpsertGeminiKeyParams
 import app.mymultiverse.ammo.domain.repository.AiSettingsRemoteRepository
 import io.github.jan.supabase.SupabaseClient
@@ -21,11 +21,8 @@ internal class SupabaseAiSettingsRepository(
 
     override suspend fun getGeminiApiKey(): Result<String> = runCatching {
         client.auth.awaitInitialization()
-        client.postgrest
-            .rpc("get_gemini_api_key")
-            .decodeSingleOrNull<GeminiKeyRow>()
-            ?.key
-            .orEmpty()
+        val result = client.postgrest.rpc("get_gemini_api_key")
+        GeminiKeyRpcDecoder.decodeKey(result)
     }
 
     override suspend fun upsertGeminiApiKey(key: String): Result<Unit> = runCatching {

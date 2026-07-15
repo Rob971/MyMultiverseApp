@@ -35,6 +35,8 @@ class SettingsAiAssistantSettings(
         _geminiApiKey.value = ""
     }
 
+    override suspend fun refreshFromRemote() = Unit
+
     companion object {
         const val KEY = "gemini_api_key"
     }

@@ -154,6 +154,7 @@ fun NutritionAiAssistantContent(
     val mealPlan by screenModel.mealPlan.collectAsState()
     val groceryItems by screenModel.groceryItems.collectAsState()
     val languageManager = koinInject<LanguageManager>()
+    val aiSettings = koinInject<AiAssistantSettings>()
     val currentLanguage by languageManager.currentLanguage.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val mealGroceryLoading by screenModel.mealGroceryLoading.collectAsState()
@@ -187,6 +188,10 @@ fun NutritionAiAssistantContent(
         launchContext.targetMealSlot != null &&
         (launchContext.mealPlanScope is MealPlanGenerationScope.SingleDay ||
             launchContext.mealPlanScope is MealPlanGenerationScope.SingleMeal)
+
+    LaunchedEffect(Unit) {
+        aiSettings.refreshFromRemote()
+    }
 
     val adoptAllNoneMessage = stringResource(Res.string.nutrition_ai_adopt_all_grocery_none)
     val adoptAllSummaryMessage = adoptAllResult?.let { count ->

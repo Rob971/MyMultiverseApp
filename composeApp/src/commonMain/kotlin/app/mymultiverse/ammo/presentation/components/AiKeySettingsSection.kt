@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -102,6 +103,10 @@ fun AiKeySettingsSection(
     val clearedLabel = stringResource(Res.string.home_ai_key_cleared_snackbar)
     val inputTrimmed = keyInput.trim()
     val isNewKey = inputTrimmed.isNotBlank() && inputTrimmed != currentKey
+
+    LaunchedEffect(Unit) {
+        aiSettings.refreshFromRemote()
+    }
 
     fun showFeedback(text: String) {
         feedbackText = text
