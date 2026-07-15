@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.data.service
 
+import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
 import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -7,6 +8,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class RemoteNutritionAiAssistantServiceTest {
@@ -103,8 +105,8 @@ class RemoteNutritionAiAssistantServiceTest {
     }
 
     @Test
-    fun askAdvice_delegatesToLocal() = runTest {
-        val service = makeService()
+    fun askAdvice_delegatesToLocal_whenKeyPresent() = runTest {
+        val service = makeService(apiKey = "test-key")
 
         val result = service.askAdvice("High protein lunches")
 
@@ -113,8 +115,8 @@ class RemoteNutritionAiAssistantServiceTest {
     }
 
     @Test
-    fun generateGroceryList_delegatesToLocal() = runTest {
-        val service = makeService()
+    fun generateGroceryList_delegatesToLocal_whenKeyPresent() = runTest {
+        val service = makeService(apiKey = "test-key")
 
         val result = service.generateGroceryList("vegetarian")
 
@@ -123,7 +125,7 @@ class RemoteNutritionAiAssistantServiceTest {
     }
 
     @Test
-    fun generateGroceryForMeal_skipsGemini_whenApiKeyBlank() = runTest {
+    fun generateGroceryForMeal_declines_whenApiKeyBlank() = runTest {
         val fakeClient = FakeDishIngredientClient(Result.success(listOf("Remote ingredient")))
         val fakeSettings = FakeAiAssistantSettings(key = "")
         val local = LocalNutritionAiAssistantService(responseDelayMs = 0, currentLanguageCode = { "it" })
@@ -136,10 +138,44 @@ class RemoteNutritionAiAssistantServiceTest {
 
         val result = service.generateGroceryForMeal("Pollo alla cacciatora")
 
-        assertTrue(result.isSuccess)
-        assertEquals(0, fakeClient.callCount, "Gemini should not be called when API key is blank")
-        // Falls back to local — returns something (local planner generates for "Pollo")
-        assertTrue(result.getOrNull()!!.isNotEmpty())
+        assertFalse(result.isSuccess, "Should decline when API key is blank")
+        assertIs<AiKeyNotConfiguredException>(result.exceptionOrNull())
+        assertEquals(0, fakeClient.callCount, "Gemini must not be called when key is blank")
+    }
+
+    @Test
+    fun askAdvice_declines_whenApiKeyBlank() = runTest {
+        val service = makeService(apiKey = "")
+
+        val result = service.askAdvice("High protein lunches")
+
+        assertFalse(result.isSuccess)
+        assertIs<AiKeyNotConfiguredException>(result.exceptionOrNull())
+    }
+
+    @Test
+    fun generateGroceryList_declines_whenApiKeyBlank() = runTest {
+        val service = makeService(apiKey = "")
+
+        val result = service.generateGroceryList("vegetarian")
+
+        assertFalse(result.isSuccess)
+        assertIs<AiKeyNotConfiguredException>(result.exceptionOrNull())
+    }
+
+    @Test
+    fun generateMealPlan_declines_whenApiKeyBlank() = runTest {
+        val service = makeService(apiKey = "")
+        val emptyPlan = app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan(weekKey = "2026-07-15")
+
+        val result = service.generateMealPlan(
+            "balanced",
+            app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope.FullWeek,
+            emptyPlan,
+        )
+
+        assertFalse(result.isSuccess)
+        assertIs<AiKeyNotConfiguredException>(result.exceptionOrNull())
     }
 
     @Test

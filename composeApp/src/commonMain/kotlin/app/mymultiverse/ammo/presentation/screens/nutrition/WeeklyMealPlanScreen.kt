@@ -76,6 +76,7 @@ import ammo.composeapp.generated.resources.nutrition_meal_copy_to_lunch
 import ammo.composeapp.generated.resources.nutrition_meal_dinner
 import ammo.composeapp.generated.resources.nutrition_meal_generate_grocery
 import ammo.composeapp.generated.resources.nutrition_meal_grocery_added
+import ammo.composeapp.generated.resources.nutrition_ai_key_required_meal_grocery
 import ammo.composeapp.generated.resources.nutrition_meal_grocery_error
 import ammo.composeapp.generated.resources.nutrition_meal_grocery_none_new
 import ammo.composeapp.generated.resources.nutrition_meal_lunch
@@ -190,6 +191,7 @@ private fun WeeklyMealPlanScreenContent(
     val suggestQuickMealLabel = stringResource(Res.string.nutrition_meal_suggest_quick_ai)
     val groceryNoneNew = stringResource(Res.string.nutrition_meal_grocery_none_new)
     val groceryError = stringResource(Res.string.nutrition_meal_grocery_error)
+    val groceryKeyRequired = stringResource(Res.string.nutrition_ai_key_required_meal_grocery)
 
     val partnerNudgeTitle = stringResource(Res.string.nutrition_meal_plan_partner_nudge_title)
     val partnerNudgeBody = stringResource(Res.string.nutrition_meal_plan_partner_nudge_body)
@@ -212,6 +214,7 @@ private fun WeeklyMealPlanScreenContent(
             MealSlot.Dinner -> dinnerLabel
         }
         when {
+            result.isKeyMissing -> groceryKeyRequired
             result.isError -> groceryError
             result.itemCount == 0 -> groceryNoneNew
             else -> stringResource(

@@ -402,6 +402,8 @@
     <string name="home_ai_key_saved_snackbar">Clave IA guardada</string>
     <string name="home_ai_key_cleared_snackbar">Clave IA borrada</string>
     <string name="nutrition_ai_setup_notice">Añade una clave API de Gemini gratuita en los ajustes de cuenta para sugerencias de ingredientes específicas de cada plato.</string>
+    <string name="nutrition_ai_key_required">Para usar las funciones de IA, añade tu clave API de Gemini gratuita en los ajustes de cuenta.</string>
+    <string name="nutrition_ai_key_required_meal_grocery">Para generar ingredientes específicos del plato, añade tu clave API de Gemini gratuita en los ajustes de cuenta.</string>
     <string name="home_hero_plan_meals">Planificar comidas</string>
     <string name="home_hero_grocery_list">Lista de la compra</string>
     <string name="home_hero_family">Familia</string>

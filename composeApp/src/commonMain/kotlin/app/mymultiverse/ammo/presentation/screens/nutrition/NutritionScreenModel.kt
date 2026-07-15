@@ -19,6 +19,7 @@ import app.mymultiverse.ammo.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
+import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import app.mymultiverse.ammo.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.ammo.domain.sharing.canWriteHouseholdData
@@ -54,7 +55,7 @@ sealed class NutritionAiState {
         val summary: String,
         val scope: MealPlanGenerationScope,
     ) : NutritionAiState()
-    data class Error(val message: String) : NutritionAiState()
+    data class Error(val message: String, val isKeyMissing: Boolean = false) : NutritionAiState()
 }
 
 class NutritionScreenModel(
@@ -297,6 +298,7 @@ class NutritionScreenModel(
         val dayLabel: String,
         val slot: MealSlot,
         val isError: Boolean = false,
+        val isKeyMissing: Boolean = false,
     )
 
     private val _mealGroceryLoading = MutableStateFlow<MealGroceryRequest?>(null)
@@ -509,7 +511,7 @@ class NutritionScreenModel(
                 NutritionAiMode.Advice -> {
                     aiAssistant.askAdvice(criteria)
                         .onSuccess { answer -> _aiState.value = NutritionAiState.Advice(answer) }
-                        .onFailure { error -> _aiState.value = NutritionAiState.Error(error.toAiMessage()) }
+                        .onFailure { error -> _aiState.value = error.toAiErrorState() }
                 }
 
                 NutritionAiMode.GroceryList -> {
@@ -518,7 +520,7 @@ class NutritionScreenModel(
                             val addedCount = appendAiGrocery(labels)
                             _aiState.value = NutritionAiState.GroceryList(itemCount = addedCount)
                         }
-                        .onFailure { error -> _aiState.value = NutritionAiState.Error(error.toAiMessage()) }
+                        .onFailure { error -> _aiState.value = error.toAiErrorState() }
                 }
 
                 NutritionAiMode.MealPlan -> {
@@ -530,7 +532,7 @@ class NutritionScreenModel(
                                 scope = mealPlanScope,
                             )
                         }
-                        .onFailure { error -> _aiState.value = NutritionAiState.Error(error.toAiMessage()) }
+                        .onFailure { error -> _aiState.value = error.toAiErrorState() }
                 }
             }
         }
@@ -676,12 +678,13 @@ class NutritionScreenModel(
                         slot = slot,
                     )
                 }
-                .onFailure {
+                .onFailure { error ->
                     _mealGroceryResult.value = MealGroceryResult(
                         itemCount = 0,
                         dayLabel = dayLabel,
                         slot = slot,
                         isError = true,
+                        isKeyMissing = error is AiKeyNotConfiguredException,
                     )
                 }
             _mealGroceryLoading.value = null
@@ -899,6 +902,12 @@ class NutritionScreenModel(
     }
 
     private fun Throwable.toAiMessage(): String = message ?: "unknown_error"
+
+    private fun Throwable.toAiErrorState(): NutritionAiState.Error =
+        NutritionAiState.Error(
+            message = toAiMessage(),
+            isKeyMissing = this is AiKeyNotConfiguredException,
+        )
 
     private fun newId(): String = newItemId()
 }

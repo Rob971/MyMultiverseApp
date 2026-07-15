@@ -3,6 +3,7 @@ package app.mymultiverse.ammo.data.service
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
+import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import kotlinx.coroutines.flow.StateFlow
@@ -29,24 +30,27 @@ internal class RemoteNutritionAiAssistantService(
     override val geminiApiKey: StateFlow<String>
         get() = aiSettings.geminiApiKey
 
-    override suspend fun askAdvice(question: String): Result<String> =
-        local.askAdvice(question)
+    override suspend fun askAdvice(question: String): Result<String> {
+        if (question.isBlank()) return Result.failure(IllegalArgumentException("empty_question"))
+        if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
+        return local.askAdvice(question)
+    }
 
-    override suspend fun generateGroceryList(criteria: String): Result<List<String>> =
-        local.generateGroceryList(criteria)
+    override suspend fun generateGroceryList(criteria: String): Result<List<String>> {
+        if (criteria.isBlank()) return Result.failure(IllegalArgumentException("empty_criteria"))
+        if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
+        return local.generateGroceryList(criteria)
+    }
 
     override suspend fun generateGroceryForMeal(mealDescription: String): Result<List<String>> {
         if (mealDescription.isBlank()) {
             return Result.failure(IllegalArgumentException("empty_meal"))
         }
+        if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
+
         val trimmed = mealDescription.trim()
 
-        // Skip Gemini immediately if no key is configured — no network call needed.
-        if (aiSettings.geminiApiKey.value.isBlank()) {
-            return local.generateGroceryForMeal(mealDescription)
-        }
-
-        // Try Gemini; fall back to local on any network or parse error.
+        // Try Gemini; fall back to local heuristics only when the key IS set but network fails.
         val remoteIngredients = runCatching {
             geminiClient.generateIngredients(
                 dish = trimmed,
@@ -64,6 +68,11 @@ internal class RemoteNutritionAiAssistantService(
         criteria: String,
         scope: MealPlanGenerationScope,
         currentPlan: WeeklyMealPlan,
-    ): Result<NutritionAiPlanner.MealPlanGeneration> =
-        local.generateMealPlan(criteria, scope, currentPlan)
+    ): Result<NutritionAiPlanner.MealPlanGeneration> {
+        if (criteria.isBlank()) return Result.failure(IllegalArgumentException("empty_criteria"))
+        if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
+        return local.generateMealPlan(criteria, scope, currentPlan)
+    }
+
+    private fun keyMissing(): Boolean = aiSettings.geminiApiKey.value.isBlank()
 }

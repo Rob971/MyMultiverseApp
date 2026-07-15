@@ -67,6 +67,7 @@ import ammo.composeapp.generated.resources.nutrition_ai_criteria_hint
 import ammo.composeapp.generated.resources.nutrition_ai_description
 import ammo.composeapp.generated.resources.nutrition_ai_empty_question
 import ammo.composeapp.generated.resources.nutrition_ai_error
+import ammo.composeapp.generated.resources.nutrition_ai_key_required
 import ammo.composeapp.generated.resources.nutrition_ai_generate_button
 import ammo.composeapp.generated.resources.nutrition_ai_grocery_cleared
 import ammo.composeapp.generated.resources.nutrition_ai_grocery_result_title
@@ -702,10 +703,13 @@ fun NutritionAiAssistantContent(
             is NutritionAiState.Error -> {
                 item {
                     Text(
-                        text = when (state.message) {
-                            "empty_question", "empty_criteria" ->
+                        text = when {
+                            state.isKeyMissing ->
+                                stringResource(Res.string.nutrition_ai_key_required)
+                            state.message == "empty_question" || state.message == "empty_criteria" ->
                                 stringResource(Res.string.nutrition_ai_empty_question)
-                            else -> stringResource(Res.string.nutrition_ai_error)
+                            else ->
+                                stringResource(Res.string.nutrition_ai_error)
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = SharedJourneyColors.TerracottaOrange,

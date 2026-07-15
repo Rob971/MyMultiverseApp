@@ -402,6 +402,8 @@
     <string name="home_ai_key_saved_snackbar">KI-Schlüssel gespeichert</string>
     <string name="home_ai_key_cleared_snackbar">KI-Schlüssel gelöscht</string>
     <string name="nutrition_ai_setup_notice">Füge in den Kontoeinstellungen einen kostenlosen Gemini API-Schlüssel hinzu für gerichtspezifische Zutatenvorschläge.</string>
+    <string name="nutrition_ai_key_required">Um KI-Funktionen zu nutzen, füge deinen kostenlosen Gemini API-Schlüssel in den Kontoeinstellungen hinzu.</string>
+    <string name="nutrition_ai_key_required_meal_grocery">Um gerichtspezifische Zutaten zu generieren, füge deinen kostenlosen Gemini API-Schlüssel in den Kontoeinstellungen hinzu.</string>
     <string name="home_hero_plan_meals">Mahlzeiten planen</string>
     <string name="home_hero_grocery_list">Einkaufsliste</string>
     <string name="home_hero_family">Familie</string>

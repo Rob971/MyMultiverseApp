@@ -402,6 +402,8 @@
     <string name="home_ai_key_saved_snackbar">AI key saved</string>
     <string name="home_ai_key_cleared_snackbar">AI key cleared</string>
     <string name="nutrition_ai_setup_notice">Add a free Gemini API key in Account settings for dish-specific ingredient suggestions.</string>
+    <string name="nutrition_ai_key_required">To use AI features, add your free Gemini API key in Account settings.</string>
+    <string name="nutrition_ai_key_required_meal_grocery">To generate dish-specific ingredients, add your free Gemini API key in Account settings.</string>
     <string name="home_hero_plan_meals">Plan meals</string>
     <string name="home_hero_grocery_list">Grocery list</string>
     <string name="home_hero_family">Family</string>
