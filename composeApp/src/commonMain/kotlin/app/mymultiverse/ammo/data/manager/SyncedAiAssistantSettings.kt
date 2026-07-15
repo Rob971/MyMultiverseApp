@@ -19,6 +19,10 @@ import kotlinx.coroutines.launch
  * **Sync strategy:**
  * - On every sign-in, the remote key is fetched (with retries) and wins over a stale local value.
  *   This ensures a key saved on another device is available immediately.
+ * - When the signed-in user changes, any locally cached key from the previous account is cleared
+ *   before syncing so household device hand-offs never reuse another user's key.
+ * - When remote is empty but local still has a key (e.g. first save while offline), the local
+ *   value is pushed to Supabase so reinstall / new-device sign-in can restore it.
  * - On [setGeminiApiKey] / [clearGeminiApiKey] the local store is updated first
  *   (instant UI feedback), then the remote is updated in the background.
  * - If the remote call fails (offline, network error) the local key is still valid
@@ -36,13 +40,21 @@ class SyncedAiAssistantSettings(
     override val geminiApiKey: StateFlow<String> = local.geminiApiKey
 
     private val log = Logger.withTag("SyncedAiSettings")
+    private var lastSyncedUserId: String? = null
 
     init {
         scope.launch {
             authRepository.authState
                 .filterIsInstance<AuthState.Authenticated>()
                 .distinctUntilChangedBy { it.user.id }
-                .collect { syncFromRemote() }
+                .collect { auth ->
+                    if (lastSyncedUserId != null && lastSyncedUserId != auth.user.id) {
+                        log.d { "Signed-in user changed; clearing stale local Gemini key" }
+                        local.clearGeminiApiKey()
+                    }
+                    lastSyncedUserId = auth.user.id
+                    syncFromRemote()
+                }
         }
     }
 
@@ -67,13 +79,21 @@ class SyncedAiAssistantSettings(
     }
 
     private suspend fun syncFromRemote() {
-        val remoteKey = fetchRemoteKeyWithRetry()
+        val remoteResult = fetchRemoteKeyWithRetry()
             .onFailure { log.w(it) { "Remote Gemini key fetch failed on sign-in; using local" } }
-            .getOrNull()
-            ?: return
-        if (remoteKey.isNotBlank() && remoteKey != local.geminiApiKey.value) {
-            log.d { "Gemini key synced from remote to local" }
-            local.setGeminiApiKey(remoteKey)
+        val remoteKey = remoteResult.getOrNull() ?: return
+
+        val localKey = local.geminiApiKey.value
+        when {
+            remoteKey.isNotBlank() && remoteKey != localKey -> {
+                log.d { "Gemini key synced from remote to local" }
+                local.setGeminiApiKey(remoteKey)
+            }
+            remoteKey.isBlank() && localKey.isNotBlank() -> {
+                log.d { "Backfilling local Gemini key to remote" }
+                remote.upsertGeminiApiKey(localKey)
+                    .onFailure { log.w(it) { "Remote backfill of Gemini key failed; local still valid" } }
+            }
         }
     }
 
