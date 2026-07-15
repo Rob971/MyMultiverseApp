@@ -22,6 +22,7 @@ class RemoteNutritionAiAssistantServiceTest {
         geminiResult: Result<List<String>> = Result.success(listOf("Polpo", "Patate")),
         languageCode: String = "it",
         apiKey: String = "test-api-key",
+        geminiApi: GeminiTextClient = FakeGeminiTextClient(Result.failure(UnsupportedOperationException("not used"))),
     ): RemoteNutritionAiAssistantService {
         val local = LocalNutritionAiAssistantService(
             responseDelayMs = 0,
@@ -32,10 +33,17 @@ class RemoteNutritionAiAssistantServiceTest {
         return RemoteNutritionAiAssistantService(
             local = local,
             geminiClient = fakeClient,
+            geminiApi = geminiApi,
             currentLanguageCode = { languageCode },
             aiSettings = fakeSettings,
             appLogger = noOpLogger,
         )
+    }
+
+    private class FakeGeminiTextClient(
+        private val result: Result<String>,
+    ) : GeminiTextClient {
+        override suspend fun complete(prompt: String, maxOutputTokens: Int, temperature: Double) = result
     }
 
     private class FakeDishIngredientClient(
@@ -111,23 +119,65 @@ class RemoteNutritionAiAssistantServiceTest {
     }
 
     @Test
-    fun askAdvice_delegatesToLocal_whenKeyPresent() = runTest {
-        val service = makeService(apiKey = "test-key")
+    fun askAdvice_usesGemini_whenKeyPresent() = runTest {
+        val fakeApi = FakeGeminiTextClient(Result.success("Eat more protein-rich foods like eggs and legumes."))
+        val service = makeService(apiKey = "test-key", geminiApi = fakeApi)
 
         val result = service.askAdvice("High protein lunches")
 
         assertTrue(result.isSuccess)
-        assertTrue(result.getOrNull()!!.contains("protein", ignoreCase = true))
+        assertEquals("Eat more protein-rich foods like eggs and legumes.", result.getOrNull())
     }
 
     @Test
-    fun generateGroceryList_delegatesToLocal_whenKeyPresent() = runTest {
-        val service = makeService(apiKey = "test-key")
+    fun askAdvice_fallsBackToLocal_whenGeminiFails() = runTest {
+        val fakeApi = FakeGeminiTextClient(Result.failure(RuntimeException("network error")))
+        val service = makeService(apiKey = "test-key", geminiApi = fakeApi)
 
-        val result = service.generateGroceryList("vegetarian")
+        val result = service.askAdvice("High protein lunches")
 
         assertTrue(result.isSuccess)
         assertTrue(result.getOrNull()!!.isNotEmpty())
+    }
+
+    @Test
+    fun generateGroceryList_usesGemini_whenKeyPresent() = runTest {
+        val fakeApi = FakeGeminiTextClient(Result.success("[\"Chicken\",\"Quinoa\",\"Spinach\"]"))
+        val service = makeService(apiKey = "test-key", geminiApi = fakeApi)
+
+        val result = service.generateGroceryList("high protein")
+
+        assertTrue(result.isSuccess)
+        assertEquals(listOf("Chicken", "Quinoa", "Spinach"), result.getOrNull())
+    }
+
+    @Test
+    fun generateMealPlan_usesGemini_whenKeyPresent() = runTest {
+        val mealPlanJson = """{"days":[{"lunch":"Pasta al pomodoro","dinner":"Pollo arrosto"},{"lunch":"Insalata","dinner":"Branzino"},{"lunch":"Risotto","dinner":"Cotoletta"},{"lunch":"Zuppa","dinner":"Salmone"},{"lunch":"Panino","dinner":"Polpette"},{"lunch":"Frittata","dinner":"Tagliata"},{"lunch":"Pasta","dinner":"Pizza"}],"summary":"Piano settimanale equilibrato"}"""
+        val fakeApi = FakeGeminiTextClient(Result.success(mealPlanJson))
+        val service = makeService(apiKey = "test-key", geminiApi = fakeApi)
+        val emptyPlan = app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan(weekKey = "2026-07-15")
+
+        val result = service.generateMealPlan("equilibrato", app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope.FullWeek, emptyPlan)
+
+        assertTrue(result.isSuccess)
+        val gen = result.getOrNull()!!
+        assertEquals(7, gen.days.size)
+        assertEquals("Pasta al pomodoro", gen.days[0].lunch)
+        assertEquals("Pollo arrosto", gen.days[0].dinner)
+        assertEquals("Piano settimanale equilibrato", gen.summary)
+    }
+
+    @Test
+    fun generateMealPlan_fallsBackToLocal_whenGeminiFails() = runTest {
+        val fakeApi = FakeGeminiTextClient(Result.failure(RuntimeException("network error")))
+        val service = makeService(apiKey = "test-key", geminiApi = fakeApi)
+        val emptyPlan = app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan(weekKey = "2026-07-15")
+
+        val result = service.generateMealPlan("balanced", app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope.FullWeek, emptyPlan)
+
+        assertTrue(result.isSuccess)
+        assertEquals(7, result.getOrNull()!!.days.size)
     }
 
     @Test
@@ -138,6 +188,7 @@ class RemoteNutritionAiAssistantServiceTest {
         val service = RemoteNutritionAiAssistantService(
             local = local,
             geminiClient = fakeClient,
+            geminiApi = FakeGeminiTextClient(Result.failure(UnsupportedOperationException())),
             currentLanguageCode = { "it" },
             aiSettings = fakeSettings,
             appLogger = noOpLogger,
@@ -192,6 +243,7 @@ class RemoteNutritionAiAssistantServiceTest {
         val service = RemoteNutritionAiAssistantService(
             local = local,
             geminiClient = FakeDishIngredientClient(Result.success(emptyList())),
+            geminiApi = FakeGeminiTextClient(Result.failure(UnsupportedOperationException())),
             currentLanguageCode = { "en" },
             aiSettings = fakeSettings,
             appLogger = noOpLogger,

@@ -14,7 +14,9 @@ import app.mymultiverse.ammo.data.invite.InviteSessionStore
 import app.mymultiverse.ammo.data.repository.SettingsNutritionHouseholdSelectionStore
 import app.mymultiverse.ammo.data.ai.AiSecrets
 import app.mymultiverse.ammo.data.manager.SettingsAiAssistantSettings
+import app.mymultiverse.ammo.data.service.GeminiApiClient
 import app.mymultiverse.ammo.data.service.GeminiDishIngredientClient
+import app.mymultiverse.ammo.data.service.GeminiTextClient
 import app.mymultiverse.ammo.data.service.LocalNutritionAiAssistantService
 import app.mymultiverse.ammo.data.service.RemoteNutritionAiAssistantService
 import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
@@ -127,11 +129,12 @@ private val dataModule = module {
         val local = LocalNutritionAiAssistantService(
             currentLanguageCode = { languageManager.currentLanguage.value },
         )
+        val keyProvider: () -> String = { aiSettings.geminiApiKey.value }
+        val geminiApi: GeminiTextClient = GeminiApiClient(apiKeyProvider = keyProvider)
         RemoteNutritionAiAssistantService(
             local = local,
-            geminiClient = GeminiDishIngredientClient(
-                apiKeyProvider = { aiSettings.geminiApiKey.value },
-            ),
+            geminiClient = GeminiDishIngredientClient(apiKeyProvider = keyProvider),
+            geminiApi = geminiApi,
             currentLanguageCode = { languageManager.currentLanguage.value },
             aiSettings = aiSettings,
             appLogger = get(),
