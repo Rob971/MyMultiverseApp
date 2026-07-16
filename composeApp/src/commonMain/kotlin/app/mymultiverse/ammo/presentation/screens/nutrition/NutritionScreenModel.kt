@@ -272,7 +272,8 @@ class NutritionScreenModel(
     fun selectWeekOffset(offset: Int) {
         if (offset !in 0..MAX_WEEK_OFFSET) return
         if (offset == _weekOffset.value) return
-        scope.launch {
+        weekSelectJob?.cancel()
+        weekSelectJob = scope.launch {
             _weekOffset.value = offset
             session.selectWeek(WeekCalendar.weekKeyForOffset(offset = offset))
         }
@@ -512,6 +513,10 @@ class NutritionScreenModel(
     }
 
     // Tracked so a new runAiAssistant call can cancel an in-flight request.
+    // Week selection is serialized: each new call cancels the prior bind to prevent
+    // a slow previous bind overwriting the freshly-selected week's data.
+    private var weekSelectJob: Job? = null
+
     private var aiAssistantJob: Job? = null
     private var aiAssistantJobGeneration = 0
 
@@ -727,6 +732,7 @@ class NutritionScreenModel(
 
     fun generateGroceryForAllPlannedMeals() {
         if (!canWriteHouseholdData.value) return
+        if (_bulkMealGroceryLoading.value) return  // Re-entry guard: don't start twice
         val plannedMeals = MealPlanPresentation.plannedMeals(mealPlan.value.days)
         if (plannedMeals.isEmpty()) return
 
@@ -739,7 +745,10 @@ class NutritionScreenModel(
                     _mealGroceryLoading.value = MealGroceryRequest(plannedMeal.dayIndex, plannedMeal.slot)
                     aiAssistant.generateGroceryForMeal(plannedMeal.text)
                         .onSuccess { labels -> totalAdded += appendMealGroceryLabels(labels) }
-                        .onFailure { hadError = true }
+                        .onFailure { error ->
+                            if (error is CancellationException) throw error
+                            hadError = true
+                        }
                 }
                 _bulkMealGroceryResult.value = BulkMealGroceryResult(
                     addedCount = totalAdded,

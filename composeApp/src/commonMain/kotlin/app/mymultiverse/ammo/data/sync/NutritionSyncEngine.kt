@@ -6,6 +6,7 @@ import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,6 +37,8 @@ class NutritionSyncEngine(
         _status.value = NutritionSyncStatus.Syncing
         val rows = try {
             api.fetchWeek(householdId, weekKey)
+        } catch (e: CancellationException) {
+            throw e
         } catch (error: Exception) {
             logger.recordError(
                 tag = TAG,
@@ -64,6 +67,8 @@ class NutritionSyncEngine(
             api.upsert(householdId, weekKey, dataKind, payload)
             outbox.removeFor(householdId, weekKey, dataKind)
             refreshStatus(householdId, weekKey)
+        } catch (e: CancellationException) {
+            throw e
         } catch (error: Exception) {
             logger.recordError(
                 tag = TAG,
@@ -99,6 +104,8 @@ class NutritionSyncEngine(
             try {
                 api.upsert(item.householdId, item.weekKey, item.dataKind, item.payload)
                 outbox.remove(item)
+            } catch (e: CancellationException) {
+                throw e
             } catch (error: Exception) {
                 logger.recordError(
                     tag = TAG,

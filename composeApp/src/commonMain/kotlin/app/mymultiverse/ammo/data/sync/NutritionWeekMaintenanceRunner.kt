@@ -9,6 +9,7 @@ import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.nutrition.NutritionWeekMaintenance
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import com.russhwolf.settings.Settings
+import app.mymultiverse.ammo.domain.coroutines.runCatchingCancellable
 import kotlin.random.Random
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -46,9 +47,10 @@ class NutritionWeekMaintenanceRunner(
         }
 
         val previousWeekKey = WeekCalendar.previousWeekKey(weekKey)
-        val carried = NutritionWeekMaintenance.uncheckedGroceryToCarry(
-            loadGroceryItems(householdId, previousWeekKey),
-        )
+        val remoteLoadResult = runCatchingCancellable { loadGroceryItems(householdId, previousWeekKey) }
+        // If remote fetch fails (network), do not mark maintained — carry will retry on next bind.
+        val previousItems = remoteLoadResult.getOrElse { return }
+        val carried = NutritionWeekMaintenance.uncheckedGroceryToCarry(previousItems)
         val merged = NutritionWeekMaintenance.mergeCarriedGrocery(
             carried = carried,
             current = repository.currentGroceryItems(),
@@ -81,13 +83,13 @@ class NutritionWeekMaintenanceRunner(
 
     private suspend fun loadRemoteGrocery(householdId: String, weekKey: String): List<GroceryItem> {
         val api = remoteApi ?: return emptyList()
-        return runCatching {
+        return runCatchingCancellable {
             api.fetchWeek(householdId, weekKey)
                 .filter { row -> row.dataKind == "grocery" }
                 .maxByOrNull { row -> row.updatedAtEpochMilliseconds() }
                 ?.let { row -> NutritionStorageCodec.decodeGrocery(row.payload) }
                 .orEmpty()
-        }.getOrDefault(emptyList())
+        }.getOrThrow()  // Propagate to caller — remote failure prevents false carry-mark
     }
 
     private fun NutritionWeekDataRow.updatedAtEpochMilliseconds(): Long =

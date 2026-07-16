@@ -4,6 +4,7 @@ import app.mymultiverse.ammo.data.invite.InviteRedirectEvents
 import app.mymultiverse.ammo.data.invite.InviteRedirectUrls
 import app.mymultiverse.ammo.data.invite.InviteSessionStore
 import app.mymultiverse.ammo.data.observability.AppLogger
+import kotlinx.coroutines.CancellationException
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdInvitePreview
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.ammo.domain.repository.HouseholdCollaborationRepository
@@ -111,6 +112,10 @@ class InviteJoinFlowCoordinator(
             try {
                 val preview = completeJoinFromToken(token)
                 _acceptState.value = InviteJoinAcceptState.Succeeded(preview.householdName)
+            } catch (e: CancellationException) {
+                // Coroutine cancelled (e.g. user navigated away) — reset silently, don't show failure.
+                _acceptState.value = InviteJoinAcceptState.Idle
+                throw e
             } catch (throwable: Throwable) {
                 if (_acceptState.value !is InviteJoinAcceptState.Failed) {
                     logger.recordError(
