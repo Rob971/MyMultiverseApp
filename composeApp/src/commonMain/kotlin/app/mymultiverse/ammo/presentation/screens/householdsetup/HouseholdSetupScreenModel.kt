@@ -15,6 +15,7 @@ import app.mymultiverse.ammo.domain.sharing.HouseholdDefaultName
 import app.mymultiverse.ammo.domain.sharing.HouseholdNameRules
 import app.mymultiverse.ammo.presentation.registration.RegistrationData
 import app.mymultiverse.ammo.presentation.screens.home.HouseholdNameAvailability
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -190,7 +191,22 @@ class HouseholdSetupScreenModel(
         }
 
     private suspend fun activateNutritionSession(householdId: String) {
-        runCatching { sessionCoordinator.activateHousehold(householdId) }
+        try {
+            sessionCoordinator.activateHousehold(householdId)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (throwable: Throwable) {
+            logger.recordError(
+                tag = "HouseholdSetup",
+                message = "activate_nutrition_session_failed: ${throwable.message}",
+                throwable = throwable,
+            )
+            // Best-effort retry after a short delay — transient failures self-heal on next bind.
+            scope.launch {
+                delay(3_000L)
+                try { sessionCoordinator.activateHousehold(householdId) } catch (_: Throwable) { }
+            }
+        }
     }
 
     private fun mapFailure(throwable: Throwable): HouseholdGateError =

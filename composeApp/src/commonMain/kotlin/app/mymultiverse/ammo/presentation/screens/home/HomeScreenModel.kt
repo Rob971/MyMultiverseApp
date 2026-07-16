@@ -545,6 +545,7 @@ class HomeScreenModel(
 
     private companion object {
         const val NAME_CHECK_DEBOUNCE_MS = 400L
+        const val ACTIVATE_RETRY_DELAY_MS = 3_000L
     }
 
     private fun registerPushNotificationsIfAuthenticated() {
@@ -703,7 +704,26 @@ class HomeScreenModel(
     }
 
     private suspend fun activateNutritionSession(householdId: String) {
-        runCatching { sessionCoordinator.activateHousehold(householdId) }
+        try {
+            sessionCoordinator.activateHousehold(householdId)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (throwable: Throwable) {
+            // Nutrition session failed to bind — log so it surfaces in Crashlytics and schedule
+            // a retry via the next refreshMembership so the user is not silently stuck on
+            // the personal (offline) repo while their household is active.
+            logger.recordError(
+                tag = "HomeScreen",
+                message = "activate_nutrition_session_failed: ${throwable.message}",
+                throwable = throwable,
+            )
+            // Best-effort retry: re-bind after a short delay so transient failures self-heal.
+            scope.launch {
+                kotlinx.coroutines.delay(ACTIVATE_RETRY_DELAY_MS)
+                try { sessionCoordinator.activateHousehold(householdId) }
+                catch (_: Throwable) { /* Failure on retry is silent — pull-to-refresh will recover */ }
+            }
+        }
     }
 
     private fun syncFirstWinDismissed(householdId: String) {

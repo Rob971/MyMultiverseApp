@@ -110,6 +110,46 @@ class OfflineFirstNutritionRepositoryTest {
     }
 
     @Test
+    fun applyRemoteWeekData_skippedWhenOutboxHasPendingForSameKind() = runTest {
+        val settings = MapSettings()
+        val store = NutritionLocalStore(settings, householdId, weekKey)
+        val outbox = NutritionSyncOutbox(settings)
+        outbox.enqueue(
+            app.mymultiverse.ammo.data.local.nutrition.PendingNutritionPush(
+                householdId = householdId,
+                weekKey = weekKey,
+                dataKind = "grocery",
+                payload = "local-unsent",
+                enqueuedAtEpochMs = 1L,
+            ),
+        )
+        val repository = repository(settings, store = store, outbox = outbox, remoteEnabled = true)
+
+        // A remote update arrives while local edits are pending.
+        val remotePayload = store.encodeGrocery(listOf(GroceryItem("remote", "Remote item", false)))
+        repository.applyRemoteWeekData(
+            NutritionWeekDataRow(householdId = householdId, weekKey = weekKey, dataKind = "grocery", payload = remotePayload)
+        )
+
+        // Local store must NOT be overwritten — local-pending wins.
+        assertTrue(repository.observeGroceryItems().first().isEmpty())
+    }
+
+    @Test
+    fun applyRemoteWeekData_appliesWhenOutboxEmptyForSameKind() = runTest {
+        val settings = MapSettings()
+        val store = NutritionLocalStore(settings, householdId, weekKey)
+        val repository = repository(settings, store = store, remoteEnabled = true)
+
+        val remotePayload = store.encodeGrocery(listOf(GroceryItem("r1", "Remote item", false)))
+        repository.applyRemoteWeekData(
+            NutritionWeekDataRow(householdId = householdId, weekKey = weekKey, dataKind = "grocery", payload = remotePayload)
+        )
+
+        assertEquals("Remote item", repository.observeGroceryItems().first().single().label)
+    }
+
+    @Test
     fun applyRemoteWeekData_ignoresOtherHouseholdOrWeek() = runTest {
         val settings = MapSettings()
         val store = NutritionLocalStore(settings, householdId, weekKey)
