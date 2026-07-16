@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.data.manager
 
+import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.domain.model.auth.AuthState
 import app.mymultiverse.ammo.domain.repository.AiSettingsRemoteRepository
 import app.mymultiverse.ammo.domain.repository.AuthRepository
@@ -35,6 +36,7 @@ class SyncedAiAssistantSettings(
     private val remote: AiSettingsRemoteRepository,
     authRepository: AuthRepository,
     private val scope: CoroutineScope,
+    private val appLogger: AppLogger? = null,
 ) : AiAssistantSettings {
 
     override val geminiApiKey: StateFlow<String> = local.geminiApiKey
@@ -80,7 +82,14 @@ class SyncedAiAssistantSettings(
 
     private suspend fun syncFromRemote() {
         val remoteResult = fetchRemoteKeyWithRetry()
-            .onFailure { log.w(it) { "Remote Gemini key fetch failed on sign-in; using local" } }
+            .onFailure { error ->
+                log.w(error) { "Remote Gemini key fetch failed on sign-in; using local" }
+                appLogger?.recordError(
+                    tag = TAG,
+                    message = "gemini_key_fetch_failed",
+                    throwable = error,
+                )
+            }
         val remoteKey = remoteResult.getOrNull() ?: return
 
         val localKey = local.geminiApiKey.value
@@ -113,6 +122,7 @@ class SyncedAiAssistantSettings(
     }
 
     private companion object {
+        const val TAG = "SyncedAiSettings"
         const val REMOTE_FETCH_ATTEMPTS = 3
         const val REMOTE_FETCH_BACKOFF_MS = 400L
     }

@@ -66,7 +66,7 @@ object WeekCalendar {
     ): Int? {
         if (weekKeyFor(today) != weekKey) return null
         val start = LocalDate.parse(weekKey)
-        val index = (today.toEpochDays() - start.toEpochDays()).toInt()
+        val index = today.toEpochDays() - start.toEpochDays()
         return index.takeIf { it in 0 until WeeklyMealPlan.DAYS_IN_WEEK }
     }
 

@@ -135,6 +135,7 @@ private val dataModule = module {
             remote = get(),
             authRepository = get(),
             scope = get(),
+            appLogger = get(),
         )
     }
     single<NutritionAiAssistantService> {

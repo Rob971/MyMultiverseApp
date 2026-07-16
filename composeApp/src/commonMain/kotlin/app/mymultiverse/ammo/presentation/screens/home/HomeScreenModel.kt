@@ -1,3 +1,4 @@
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 package app.mymultiverse.ammo.presentation.screens.home
 
 import app.mymultiverse.ammo.data.home.HomeFirstWinChecklistStore
