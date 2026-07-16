@@ -19,6 +19,7 @@ import androidx.compose.ui.backhandler.BackHandler
 import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.domain.model.auth.AuthState
 import app.mymultiverse.ammo.domain.manager.AppThemePreferences
+import app.mymultiverse.ammo.domain.manager.LanguageManager
 import app.mymultiverse.ammo.domain.manager.ThemeManager
 import app.mymultiverse.ammo.domain.repository.AuthRepository
 import app.mymultiverse.ammo.presentation.components.NapolitanBackground
@@ -67,6 +68,8 @@ fun App() {
         val authRepository = koinInject<AuthRepository>()
         val inviteFlow = koinInject<InviteJoinFlowCoordinator>()
         val logger = koinInject<AppLogger>()
+        val languageManager = koinInject<LanguageManager>()
+        val currentLanguage by languageManager.currentLanguage.collectAsState()
         val authState by authRepository.authState.collectAsState(initial = AuthState.Loading)
         val pendingInviteToken by inviteFlow.pendingInviteToken.collectAsState()
 
@@ -75,6 +78,11 @@ fun App() {
         LaunchedEffect(Unit) {
             logger.startSession()
             inviteFlow.start()
+        }
+
+        // Track locale in diagnostics context so every Crashlytics event carries the user's language.
+        LaunchedEffect(currentLanguage) {
+            logger.setLocale(currentLanguage)
         }
 
         // Requests location permission for Italian users (first launch only) and
@@ -228,6 +236,10 @@ private fun AuthenticatedMainApp() {
     var selectedTab by rememberSaveable { mutableStateOf(AppMainTab.Home) }
     var nutritionHousehold by remember { mutableStateOf<HouseholdContext?>(null) }
 
+    val logger = koinInject<AppLogger>()
+    LaunchedEffect(selectedTab) {
+        logger.breadcrumb("main_tab_selected tab=${selectedTab.name.lowercase()}")
+    }
     val nutritionContext by homeScreenModel.nutritionHouseholdContext.collectAsState()
     val resolvedHousehold = nutritionHousehold ?: nutritionContext
 

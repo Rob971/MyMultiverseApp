@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.presentation.screens.auth
 
+import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.domain.auth.AuthFailureCodes
 import app.mymultiverse.ammo.domain.auth.EmailAuthCredentials
 import app.mymultiverse.ammo.domain.auth.EmailAuthValidationError
@@ -63,6 +64,7 @@ data class LoginUiState(
 
 class LoginScreenModel(
     private val authRepository: AuthRepository,
+    private val logger: AppLogger,
     private val registrationData: RegistrationData = RegistrationData(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
@@ -181,11 +183,11 @@ class LoginScreenModel(
     }
 
     fun signInWithGoogle() {
-        signInWithProvider { authRepository.signInWithGoogle() }
+        signInWithProvider("google") { authRepository.signInWithGoogle() }
     }
 
     fun signInWithApple() {
-        signInWithProvider { authRepository.signInWithApple() }
+        signInWithProvider("apple") { authRepository.signInWithApple() }
     }
 
     private fun performSignIn(snapshot: LoginUiState) {
@@ -201,8 +203,13 @@ class LoginScreenModel(
         }
 
         scope.launch {
+            logger.breadcrumb("auth_sign_in_started")
             _uiState.update { it.copy(isLoading = true, message = null) }
             val result = authRepository.signInWithEmail(snapshot.email, snapshot.password)
+            result.fold(
+                onSuccess = { logger.breadcrumb("auth_sign_in_ok") },
+                onFailure = { t -> logger.breadcrumb("auth_sign_in_failed code=${AuthFailureCodes.fromThrowable(t) ?: "generic"}") },
+            )
             _uiState.update { state ->
                 state.copy(
                     isLoading = false,
@@ -217,6 +224,7 @@ class LoginScreenModel(
 
     private fun performSignUp(snapshot: LoginUiState) {
         scope.launch {
+            logger.breadcrumb("auth_sign_up_started")
             _uiState.update { it.copy(isLoading = true, message = null) }
             val householdName = snapshot.householdName.trim()
             val displayName = snapshot.displayName.trim().takeIf { it.isNotBlank() }
@@ -227,10 +235,14 @@ class LoginScreenModel(
             )
             val mappedMessage = result.fold(
                 onSuccess = {
+                    logger.breadcrumb("auth_sign_up_ok")
                     if (householdName.isNotBlank()) registrationData.pendingHouseholdName = householdName
                     null
                 },
-                onFailure = { throwable -> mapAuthFailure(throwable) },
+                onFailure = { throwable ->
+                    logger.breadcrumb("auth_sign_up_failed code=${AuthFailureCodes.fromThrowable(throwable) ?: "generic"}")
+                    mapAuthFailure(throwable)
+                },
             )
             val isConfirmationPending = mappedMessage is LoginMessage.EmailConfirmationSent
             if (isConfirmationPending && householdName.isNotBlank()) {
@@ -260,12 +272,17 @@ class LoginScreenModel(
         }
     }
 
-    private fun signInWithProvider(action: suspend () -> Result<Unit>) {
+    private fun signInWithProvider(providerName: String, action: suspend () -> Result<Unit>) {
         if (_uiState.value.isLoading) return
 
         scope.launch {
+            logger.breadcrumb("auth_sso_started provider=$providerName")
             _uiState.update { it.copy(isLoading = true, message = null) }
             val result = action()
+            result.fold(
+                onSuccess = { logger.breadcrumb("auth_sso_ok provider=$providerName") },
+                onFailure = { logger.breadcrumb("auth_sso_failed provider=$providerName") },
+            )
             _uiState.update { state ->
                 state.copy(
                     isLoading = false,

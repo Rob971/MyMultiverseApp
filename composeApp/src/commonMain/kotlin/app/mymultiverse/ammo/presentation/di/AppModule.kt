@@ -174,6 +174,7 @@ private val presentationModule = module {
             collaborationRepository = get(),
             aiAssistant = get(),
             ghostPairingDismissStore = get(),
+            logger = get(),
         )
     }
 }

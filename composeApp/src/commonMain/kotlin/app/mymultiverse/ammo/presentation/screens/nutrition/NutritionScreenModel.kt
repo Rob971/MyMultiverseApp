@@ -68,6 +68,7 @@ class NutritionScreenModel(
     private val collaborationRepository: HouseholdCollaborationRepository,
     private val aiAssistant: NutritionAiAssistantService,
     private val ghostPairingDismissStore: GroceryGhostPairingDismissStore,
+    private val logger: app.mymultiverse.ammo.data.observability.AppLogger,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
     private val newItemId: () -> String = { "${Random.nextLong()}_${Random.nextInt()}" },
 ) {
@@ -274,7 +275,9 @@ class NutritionScreenModel(
         if (offset == _weekOffset.value) return
         scope.launch {
             _weekOffset.value = offset
-            session.selectWeek(WeekCalendar.weekKeyForOffset(offset = offset))
+            val weekKey = WeekCalendar.weekKeyForOffset(offset = offset)
+            logger.breadcrumb("week_selected offset=$offset week_key=$weekKey")
+            session.selectWeek(weekKey)
         }
     }
 
@@ -346,6 +349,7 @@ class NutritionScreenModel(
                 GroceryItem(id = newId(), label = trimmed),
             ) + groceryItems.value
             repository.saveGroceryItems(updated)
+            logger.breadcrumb("grocery_add total=${updated.size}")
             if (!skipPairingPrompt) {
                 maybeShowGhostPairing(trimmed, updated)
             }
@@ -446,6 +450,8 @@ class NutritionScreenModel(
             val updated = groceryItems.value.map { item ->
                 if (item.id == id) item.copy(isChecked = !item.isChecked) else item
             }
+            val checked = updated.count { it.isChecked }
+            logger.breadcrumb("grocery_toggle checked=$checked total=${updated.size}")
             repository.saveGroceryItems(updated)
         }
     }
@@ -453,7 +459,9 @@ class NutritionScreenModel(
     fun removeGroceryItem(id: String) {
         if (!canWriteHouseholdData.value) return
         scope.launch {
-            repository.saveGroceryItems(groceryItems.value.filterNot { it.id == id })
+            val updated = groceryItems.value.filterNot { it.id == id }
+            repository.saveGroceryItems(updated)
+            logger.breadcrumb("grocery_remove total=${updated.size}")
         }
     }
 
@@ -479,6 +487,12 @@ class NutritionScreenModel(
                 lunch = lunch ?: existing.lunch,
                 dinner = dinner ?: existing.dinner,
             )
+            val slot = when {
+                lunch != null && dinner != null -> "both"
+                lunch != null -> "lunch"
+                else -> "dinner"
+            }
+            logger.breadcrumb("meal_update day=$dayIndex slot=$slot")
             repository.saveMealPlan(current.copy(days = days))
         }
     }
@@ -524,6 +538,7 @@ class NutritionScreenModel(
         aiAssistantJob?.cancel()
         val generation = ++aiAssistantJobGeneration
         aiAssistantJob = scope.launch {
+            logger.breadcrumb("ai_start mode=${mode.name.lowercase()}")
             _aiState.value = NutritionAiState.Loading
             try {
                 when (mode) {

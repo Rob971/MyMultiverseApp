@@ -40,9 +40,16 @@ class AppLogger(
             AuthState.Unauthenticated -> {
                 diagnostics.userId = null
                 crashReporter.setUserId(null)
+                breadcrumb("auth_unauthenticated")
             }
+            AuthState.ConfigurationMissing -> breadcrumb("auth_config_missing")
             else -> Unit
         }
+    }
+
+    fun setLocale(tag: String) {
+        diagnostics.localeTag = tag
+        breadcrumb("locale_set lang=$tag")
     }
 
     private fun enrich(message: String, context: Map<String, String> = emptyMap()): String =

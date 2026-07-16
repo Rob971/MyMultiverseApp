@@ -65,6 +65,7 @@ class NutritionSessionCoordinatorImpl(
         diagnostics.activeHouseholdId = null
         activeHouseholdId = null
         _nutrition.value = personalRepository
+        logger.breadcrumb("nutrition_session_deactivated")
     }
 
     private suspend fun bindRepository(householdId: String, weekKey: String) {
@@ -85,11 +86,17 @@ class NutritionSessionCoordinatorImpl(
         _nutrition.value = repository
         repository.refreshFromRemote()
         if (weekKey == WeekCalendar.currentWeekKey()) {
+            val beforeCarry = repository.currentGroceryItems().size
             weekMaintenanceRunner.runForCurrentWeek(
                 repository = repository,
                 householdId = householdId,
                 weekKey = weekKey,
             )
+            val afterCarry = repository.currentGroceryItems().size
+            val carried = (afterCarry - beforeCarry).coerceAtLeast(0)
+            if (carried > 0) {
+                logger.breadcrumb("week_maintenance_carry carried=$carried")
+            }
         }
         realtimeSync?.start(
             householdId = householdId,
