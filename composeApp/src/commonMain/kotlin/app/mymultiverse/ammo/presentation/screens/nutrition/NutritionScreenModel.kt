@@ -91,6 +91,13 @@ class NutritionScreenModel(
     val weekKey: String
         get() = repository.weekKey
 
+    // Declared here (before the init block below) so that the coroutine launched in init
+    // can safely reference _aiState.  With Dispatchers.Main.immediate the coroutine body
+    // executes synchronously during construction; accessing a MutableStateFlow declared
+    // after the init block would cause a NullPointerException.
+    private val _aiState = MutableStateFlow<NutritionAiState>(NutritionAiState.Idle)
+    val aiState: StateFlow<NutritionAiState> = _aiState.asStateFlow()
+
     /**
      * Auto-reset key-missing AI error state when the user saves a key while the
      * sheet is showing an [AiKeyNotConfiguredException] error, so they can retry
@@ -285,9 +292,6 @@ class NutritionScreenModel(
             session.selectWeek(WeekCalendar.weekKeyForOffset(offset = offset))
         }
     }
-
-    private val _aiState = MutableStateFlow<NutritionAiState>(NutritionAiState.Idle)
-    val aiState: StateFlow<NutritionAiState> = _aiState.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()

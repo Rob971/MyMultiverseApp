@@ -29,6 +29,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -63,6 +64,26 @@ class NutritionScreenModelTest {
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    /**
+     * Regression for v1.5.2 crash: NutritionScreenModel.init launches a coroutine that
+     * accesses _aiState.  With Dispatchers.Main.immediate on the main thread the coroutine
+     * runs synchronously during construction — before _aiState is initialized if it was
+     * declared after the init block — causing a NullPointerException.
+     *
+     * Reproduces by creating the model with a NON-BLANK Gemini key so the init-block
+     * coroutine does not exit early on the key.isBlank() check.
+     */
+    @Test
+    fun construction_doesNotCrash_whenGeminiKeyIsConfigured() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val adviceWithKey = FakeNutritionAdviceService(configuredKey = "test-api-key")
+        // Should not throw — _aiState must be initialized before the init block coroutine runs.
+        val model = nutritionScreenModel(repository, advice = adviceWithKey, scope = modelScope)
+        advanceUntilIdle()
+        // Verify the model is functional after construction.
+        assertIs<NutritionAiState.Idle>(model.aiState.value)
     }
 
     @Test
@@ -1007,7 +1028,11 @@ private class FakeNutritionAdviceService(
     /** When true, all methods return [AiKeyNotConfiguredException] (simulates unconfigured key). */
     private val keyMissing: Boolean = false,
     private val mealPlanFailure: Throwable? = null,
+    /** Simulates a configured Gemini key (non-blank) so the init-block observer fires. */
+    configuredKey: String = "",
 ) : NutritionAiAssistantService {
+    private val _geminiApiKey = MutableStateFlow(configuredKey)
+    override val geminiApiKey: StateFlow<String> = _geminiApiKey
 
     override suspend fun askAdvice(question: String): Result<String> {
         if (keyMissing) return Result.failure(AiKeyNotConfiguredException())
