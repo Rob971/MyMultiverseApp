@@ -71,6 +71,7 @@ class InviteJoinFlowCoordinator(
 
     fun handleInviteRedirect(url: String) {
         val token = InviteRedirectUrls.parseToken(url) ?: return
+        logger.breadcrumb("invite_token_received")
         persistPendingToken(token)
     }
 
@@ -109,7 +110,9 @@ class InviteJoinFlowCoordinator(
         _acceptState.value = InviteJoinAcceptState.Accepting
         scope.launch {
             try {
+                logger.breadcrumb("invite_accept_started")
                 val preview = completeJoinFromToken(token)
+                logger.breadcrumb("invite_accept_ok household=${preview.householdName.take(32)}")
                 _acceptState.value = InviteJoinAcceptState.Succeeded(preview.householdName)
             } catch (throwable: Throwable) {
                 if (_acceptState.value !is InviteJoinAcceptState.Failed) {

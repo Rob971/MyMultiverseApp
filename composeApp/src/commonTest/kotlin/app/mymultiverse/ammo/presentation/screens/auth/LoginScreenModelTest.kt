@@ -1,8 +1,11 @@
 package app.mymultiverse.ammo.presentation.screens.auth
 
+import app.mymultiverse.ammo.data.observability.AppLogger
+import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
 import app.mymultiverse.ammo.domain.auth.AuthFailureCodes
 import app.mymultiverse.ammo.domain.model.auth.AuthState
 import app.mymultiverse.ammo.domain.model.auth.AuthUser
+import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.repository.AuthRepository
 import app.mymultiverse.ammo.presentation.registration.RegistrationData
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +47,7 @@ class LoginScreenModelTest {
         registrationData: RegistrationData = RegistrationData(),
     ) = LoginScreenModel(
         authRepository = authRepository,
+        logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "test")),
         registrationData = registrationData,
         scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
     )

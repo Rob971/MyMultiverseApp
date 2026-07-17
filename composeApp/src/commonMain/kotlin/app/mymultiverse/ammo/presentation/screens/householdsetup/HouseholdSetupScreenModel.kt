@@ -101,9 +101,11 @@ class HouseholdSetupScreenModel(
 
     private fun performCreateHousehold(name: String) {
         scope.launch {
+            logger.breadcrumb("household_create_started")
             _uiState.update { it.copy(isCreating = true, gateError = null) }
             householdRepository.createHousehold(name)
                 .onSuccess { created ->
+                    logger.breadcrumb("household_create_ok household_id=${created.id}")
                     firstWinChecklistStore.clearDismissed(created.id)
                     householdRepository.refreshMembership()
                         .onSuccess { status ->

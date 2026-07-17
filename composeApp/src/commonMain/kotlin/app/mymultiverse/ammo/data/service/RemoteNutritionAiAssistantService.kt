@@ -84,13 +84,19 @@ internal class RemoteNutritionAiAssistantService(
             "Return ONLY a JSON array of 8 to 14 food item names in the user's language, no explanation. " +
             "Example: [\"item1\",\"item2\"]"
 
-        val items = try {
+        val geminiResult = runCatching {
             geminiApi.complete(prompt, maxOutputTokens = 512).getOrThrow()
                 .let { GeminiResponseParser.extractJsonArray(it) }
-        } catch (e: CancellationException) {
-            throw e  // Never treat cancellation as "no items found"
-        } catch (_: Exception) {
-            null
+        }
+        val items = when {
+            geminiResult.isSuccess -> geminiResult.getOrNull()
+            else -> {
+                val e = geminiResult.exceptionOrNull()!!
+                if (e is CancellationException) throw e
+                appLogger.recordError(TAG, "Gemini grocery list failed; using local fallback", e,
+                    mapOf("criteria" to criteria.take(80), "lang" to lang))
+                null
+            }
         }
 
         if (!items.isNullOrEmpty()) {

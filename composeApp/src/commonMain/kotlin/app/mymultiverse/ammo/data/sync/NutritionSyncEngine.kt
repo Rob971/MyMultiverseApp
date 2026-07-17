@@ -46,7 +46,9 @@ class NutritionSyncEngine(
             markRemoteFailure(householdId, weekKey)
             return
         }
-        rows.latestByDataKind().forEach(applyRow)
+        val fetched = rows.latestByDataKind()
+        fetched.forEach(applyRow)
+        logger.breadcrumb("sync_pull_ok rows=${fetched.size} week_key=$weekKey")
         refreshStatus(householdId, weekKey)
     }
 
@@ -63,6 +65,7 @@ class NutritionSyncEngine(
         try {
             api.upsert(householdId, weekKey, dataKind, payload)
             outbox.removeFor(householdId, weekKey, dataKind)
+            logger.breadcrumb("sync_push_ok kind=$dataKind week_key=$weekKey")
             refreshStatus(householdId, weekKey)
         } catch (error: Exception) {
             logger.recordError(
@@ -110,6 +113,7 @@ class NutritionSyncEngine(
                 return
             }
         }
+        logger.breadcrumb("sync_flush_ok flushed=${pending.size} week_key=$weekKey")
         refreshStatus(householdId, weekKey)
     }
 
