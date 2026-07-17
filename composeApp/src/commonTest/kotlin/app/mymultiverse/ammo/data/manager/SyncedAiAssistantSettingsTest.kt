@@ -1,7 +1,10 @@
 package app.mymultiverse.ammo.data.manager
 
+import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.domain.model.auth.AuthState
 import app.mymultiverse.ammo.domain.model.auth.AuthUser
+import app.mymultiverse.ammo.domain.observability.CrashReporter
+import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.repository.AiSettingsRemoteRepository
 import app.mymultiverse.ammo.domain.repository.AuthRepository
 import com.russhwolf.settings.MapSettings
@@ -15,6 +18,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -27,18 +31,21 @@ class SyncedAiAssistantSettingsTest {
         initialLocalKey: String = "",
         initialAuthState: AuthState = AuthState.Unauthenticated,
         remoteFailure: Throwable? = null,
+        crashReporter: RecordingCrashReporter = RecordingCrashReporter(),
     ): Triple<SyncedAiAssistantSettings, FakeRemote, FakeAuthRepo> {
         val fakeRemote = FakeRemote(storedKey = initialRemoteKey, failure = remoteFailure)
         val fakeAuth = FakeAuthRepo(initialAuthState)
         val localSettings = MapSettings().also {
             if (initialLocalKey.isNotBlank()) it.putString(SettingsAiAssistantSettings.KEY, initialLocalKey)
         }
+        val logger = AppLogger(crashReporter, DiagnosticsContext(sessionId = "test"))
         // backgroundScope: its coroutines are cancelled (not failed) at test end → no UncompletedCoroutinesError
         val sut = SyncedAiAssistantSettings(
             local = SettingsAiAssistantSettings(settings = localSettings),
             remote = fakeRemote,
             authRepository = fakeAuth,
             scope = backgroundScope,
+            appLogger = logger,
         )
         return Triple(sut, fakeRemote, fakeAuth)
     }
@@ -128,6 +135,32 @@ class SyncedAiAssistantSettingsTest {
         advanceUntilIdle()
 
         assertEquals("safe-key", sut.geminiApiKey.value)
+    }
+
+    @Test
+    fun refreshFromRemote_recordsNonFatalViaCrashlytics_whenAllFetchAttemptsFail() = runTest(dispatcher) {
+        val recorder = RecordingCrashReporter()
+        val remote = FakeRemote(
+            storedKey = "",
+            failure = IllegalStateException("get_gemini_api_key_decode_failed: unexpected JSON"),
+        )
+        val logger = AppLogger(recorder, DiagnosticsContext(sessionId = "test"))
+        val sut = SyncedAiAssistantSettings(
+            local = SettingsAiAssistantSettings(settings = MapSettings()),
+            remote = remote,
+            authRepository = FakeAuthRepo(AuthState.Unauthenticated),
+            scope = backgroundScope,
+            appLogger = logger,
+        )
+
+        sut.refreshFromRemote()
+        advanceUntilIdle()
+
+        assertNotNull(recorder.lastThrowable, "Expected decode failure to be recorded as non-fatal in Crashlytics")
+        assertTrue(
+            recorder.lastThrowable!!.message.orEmpty().contains("get_gemini_api_key_decode_failed"),
+            "Non-fatal message should contain the decode error code",
+        )
     }
 
     @Test
@@ -268,6 +301,16 @@ class SyncedAiAssistantSettingsTest {
             if (failure != null) return Result.failure(failure)
             storedKey = ""
             return Result.success(Unit)
+        }
+    }
+
+    class RecordingCrashReporter : CrashReporter {
+        var lastThrowable: Throwable? = null
+        override fun initialize() = Unit
+        override fun setUserId(userId: String?) = Unit
+        override fun logBreadcrumb(message: String) = Unit
+        override fun recordNonFatal(throwable: Throwable, context: Map<String, String>) {
+            lastThrowable = throwable
         }
     }
 

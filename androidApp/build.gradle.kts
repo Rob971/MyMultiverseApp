@@ -38,11 +38,17 @@ val appVersionName = if (appVersionPrerelease.isEmpty()) {
 
 // Track-encoded version code for Play Store upload uniqueness.
 //
-// In CI: GITHUB_RUN_NUMBER is the monotonically-increasing counter; multiplying by 3 and adding
-// a per-track offset (0=debug/alpha, 1=beta, 2=production) guarantees:
-//   - every CI build has a unique code (run numbers never repeat)
-//   - within the same run, alpha < beta < production
-//   - all CI codes are ≥ 100_000, well above any historic debug code committed to the repo
+// In CI: GITHUB_RUN_NUMBER is the monotonically-increasing counter.
+//
+// Release tracks (beta, production) use a dense formula so Play Store versionCodes are ordered:
+//   beta versionCode < production versionCode (within the same run: beta = N*3+1, prod = N*3+2)
+//
+// Debug/alpha builds use a separate range starting at 1_000_000 + run_number so that:
+//   - A tester who has beta installed (≤ ~120_000 for years) can always install a debug alpha
+//     (≥ 1_000_000) without an Android versionCode downgrade block.
+//   - Debug builds do NOT go to Play Store; the separation only affects Firebase App Distribution.
+//   - To revert to beta/production after installing a debug build, the user must uninstall first
+//     (standard developer workflow; debug and release are effectively separate app slots).
 //
 // Locally (no GITHUB_RUN_NUMBER): falls back to the raw appVersionCode from properties so
 // local debug builds and IDE runs are unaffected.
@@ -51,12 +57,16 @@ val releaseTrack: String = System.getenv("RELEASE_TRACK")?.trim()?.lowercase() ?
 val trackOffset: Long = when (releaseTrack) {
     "beta"       -> 1L
     "production" -> 2L
-    else         -> 0L  // debug, alpha, or unset
+    else         -> 0L
 }
 val versionCodeFinal: Int = if (ciRunNumber != null) {
-    (100_000L + ciRunNumber * 3L + trackOffset)
-        .coerceAtMost(Int.MAX_VALUE.toLong())
-        .toInt()
+    when (releaseTrack) {
+        "beta", "production" ->
+            (100_000L + ciRunNumber * 3L + trackOffset).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+        else ->
+            // Debug/alpha: range 1_000_000+ guarantees alpha > any concurrent beta build.
+            (1_000_000L + ciRunNumber).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+    }
 } else {
     appVersionCode
 }

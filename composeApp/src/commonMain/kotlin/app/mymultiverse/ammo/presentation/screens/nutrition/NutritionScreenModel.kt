@@ -1,3 +1,4 @@
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 package app.mymultiverse.ammo.presentation.screens.nutrition
 
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore

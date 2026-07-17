@@ -184,7 +184,7 @@ fun NutritionAiAssistantContent(
     val scopeLocked = launchContext?.mealPlanScope is MealPlanGenerationScope.SingleDay ||
         launchContext?.mealPlanScope is MealPlanGenerationScope.SingleMeal
     val ingredientsAfterApplyFlow = chipFirstSheet &&
-        launchContext?.offerIngredientsAfterApply == true &&
+        launchContext.offerIngredientsAfterApply &&
         launchContext.targetMealSlot != null &&
         (launchContext.mealPlanScope is MealPlanGenerationScope.SingleDay ||
             launchContext.mealPlanScope is MealPlanGenerationScope.SingleMeal)
@@ -695,13 +695,13 @@ fun NutritionAiAssistantContent(
                     Button(
                         onClick = {
                             if (ingredientsAfterApplyFlow) {
-                                val ctx = launchContext ?: return@Button
+                                val ctx = launchContext
                                 val dayIndex = when (val s = ctx.mealPlanScope) {
                                     is MealPlanGenerationScope.SingleMeal -> s.dayIndex
                                     is MealPlanGenerationScope.SingleDay -> s.dayIndex
-                                    else -> return@Button
+                                    is MealPlanGenerationScope.FullWeek -> return@Button
                                 }
-                                val slot = ctx.targetMealSlot ?: return@Button
+                                val slot = ctx.targetMealSlot
                                 coroutineScope.launch {
                                     screenModel.applyPreviewedMealPlanAndAwait()
                                     showIngredientsStep = true
