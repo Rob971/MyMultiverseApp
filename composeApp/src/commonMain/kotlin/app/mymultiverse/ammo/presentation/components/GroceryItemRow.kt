@@ -106,9 +106,9 @@ private fun DrawScope.drawTrashIcon(color: Color) {
         lineTo(bR, bT)
         // Taper slightly inward toward bottom
         lineTo(bR - r * 0.5f, bB - r)
-        quadraticBezierTo(bR, bB, bR - r, bB)
+        quadraticTo(bR, bB, bR - r, bB)
         lineTo(bL + r, bB)
-        quadraticBezierTo(bL, bB, bL + r * 0.5f, bB - r)
+        quadraticTo(bL, bB, bL + r * 0.5f, bB - r)
         close()
     }
     drawPath(body, color = color)

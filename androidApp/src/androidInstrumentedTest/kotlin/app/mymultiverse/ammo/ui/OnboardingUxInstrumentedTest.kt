@@ -75,6 +75,7 @@ class OnboardingUxInstrumentedTest {
                         onBackToSso = { showEmailAuth = false },
                         screenModel = LoginScreenModel(
                             authRepository = InstrumentedFakeAuthRepository(AuthState.Unauthenticated),
+                            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "instrumented")),
                         ),
                     )
                 } else {

@@ -1,7 +1,10 @@
 package app.mymultiverse.ammo.presentation.screens.nutrition
 
+import app.mymultiverse.ammo.data.observability.AppLogger
+import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.ammo.data.service.LocalNutritionAiAssistantService
+import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
@@ -445,6 +448,7 @@ class NutritionScreenModelTest {
             collaborationRepository = collaborationRepository,
             aiAssistant = FakeNutritionAdviceService(),
             ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
+            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "test")),
             scope = modelScope,
         )
         val household = HouseholdContext(
@@ -989,6 +993,7 @@ private fun nutritionScreenModel(
         collaborationRepository = collaborationRepository,
         aiAssistant = advice,
         ghostPairingDismissStore = ghostPairingDismissStore,
+        logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "test")),
         scope = scope,
         newItemId = newItemId,
     )

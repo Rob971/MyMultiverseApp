@@ -1,3 +1,4 @@
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 package app.mymultiverse.ammo.presentation.screens.home
 
 import app.mymultiverse.ammo.data.home.HomeFirstWinChecklistStore
@@ -31,6 +32,7 @@ import app.mymultiverse.ammo.presentation.navigation.HouseholdContext
 import app.mymultiverse.ammo.presentation.navigation.toNavigationContext
 import app.mymultiverse.ammo.presentation.screens.household.InviteActionMessage
 import app.mymultiverse.ammo.presentation.screens.household.SwitchHouseholdPrompt
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -274,8 +276,10 @@ class HomeScreenModel(
             _isRefreshing.value = true
             try {
                 _greeting.value = getGreetingUseCase()
-                runCatching { sessionCoordinator.nutrition.value.refreshFromRemote() }
-            } catch (_: Throwable) {
+                try { sessionCoordinator.nutrition.value.refreshFromRemote() } catch (_: Exception) { /* offline — keep cached data */ }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
                 // Keep the last greeting when refresh fails.
             } finally {
                 _isRefreshing.value = false
@@ -545,6 +549,7 @@ class HomeScreenModel(
 
     private companion object {
         const val NAME_CHECK_DEBOUNCE_MS = 400L
+        const val ACTIVATE_RETRY_DELAY_MS = 3_000L
     }
 
     private fun registerPushNotificationsIfAuthenticated() {
@@ -703,7 +708,26 @@ class HomeScreenModel(
     }
 
     private suspend fun activateNutritionSession(householdId: String) {
-        runCatching { sessionCoordinator.activateHousehold(householdId) }
+        try {
+            sessionCoordinator.activateHousehold(householdId)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (throwable: Throwable) {
+            // Nutrition session failed to bind — log so it surfaces in Crashlytics and schedule
+            // a retry via the next refreshMembership so the user is not silently stuck on
+            // the personal (offline) repo while their household is active.
+            logger.recordError(
+                tag = "HomeScreen",
+                message = "activate_nutrition_session_failed: ${throwable.message}",
+                throwable = throwable,
+            )
+            // Best-effort retry: re-bind after a short delay so transient failures self-heal.
+            scope.launch {
+                kotlinx.coroutines.delay(ACTIVATE_RETRY_DELAY_MS)
+                try { sessionCoordinator.activateHousehold(householdId) }
+                catch (_: Throwable) { /* Failure on retry is silent — pull-to-refresh will recover */ }
+            }
+        }
     }
 
     private fun syncFirstWinDismissed(householdId: String) {

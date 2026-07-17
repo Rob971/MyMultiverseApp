@@ -149,6 +149,40 @@ class NutritionWeekMaintenanceRunnerTest {
     }
 
     @Test
+    fun runForCurrentWeek_doesNotMarkMaintainedWhenRemoteFetchFails() = runTest {
+        val settings = MapSettings()
+        val householdId = "household-fail"
+        val currentWeek = "2026-06-15"
+        val wednesday = LocalDate(2026, 6, 17)
+        val repository = offlineRepository(settings, householdId, currentWeek)
+
+        val failingRemote = object : NutritionRemoteDataSource {
+            override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
+                throw RuntimeException("network_unavailable")
+            }
+            override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
+        }
+
+        val runner = NutritionWeekMaintenanceRunner(
+            settings = settings,
+            maintenanceStore = NutritionWeekMaintenanceStore(settings),
+            remoteApi = failingRemote,
+        )
+
+        runner.runForCurrentWeek(
+            repository = repository,
+            householdId = householdId,
+            weekKey = currentWeek,
+            today = wednesday,
+        )
+
+        // Maintain mark must NOT be set — carry will retry on next session bind.
+        assertEquals(null, NutritionWeekMaintenanceStore(settings).lastMaintainedWeekKey(householdId))
+        // Grocery list must be untouched.
+        assertTrue(repository.currentGroceryItems().isEmpty())
+    }
+
+    @Test
     fun runForCurrentWeek_multipleCarriedItemsHaveUniqueIds() = runTest {
         val settings = MapSettings()
         val householdId = "household-d"

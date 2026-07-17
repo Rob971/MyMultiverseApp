@@ -22,6 +22,9 @@ import androidx.compose.ui.test.doubleClick
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
+import app.mymultiverse.ammo.data.observability.AppLogger
+import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
+import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.model.Greeting
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.sharing.NutritionSharingFeature
@@ -102,6 +105,7 @@ class NutritionUxInstrumentedTest {
             collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(adviceAnswer),
             ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
+            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "instrumented")),
             scope = scope,
             newItemId = {
                 if (nextItemId == 0) {
