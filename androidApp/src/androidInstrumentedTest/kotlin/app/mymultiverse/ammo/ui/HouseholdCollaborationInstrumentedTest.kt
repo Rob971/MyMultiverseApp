@@ -7,7 +7,10 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
+import app.mymultiverse.ammo.data.observability.AppLogger
+import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
+import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import com.russhwolf.settings.MapSettings
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.presentation.components.GroceryInputBarTestTags
@@ -42,6 +45,7 @@ class HouseholdCollaborationInstrumentedTest {
             collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(),
             ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
+            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "instrumented")),
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
         )
 
@@ -76,6 +80,7 @@ class HouseholdCollaborationInstrumentedTest {
             collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(),
             ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
+            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "instrumented")),
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
         )
 

@@ -15,7 +15,10 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
+import app.mymultiverse.ammo.data.observability.AppLogger
+import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
 import app.mymultiverse.ammo.domain.model.Greeting
+import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.model.auth.AuthState
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.presentation.components.GroceryInputBarTestTags
@@ -62,6 +65,7 @@ class WideLayoutInstrumentedTest {
             collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(),
             ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
+            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "instrumented")),
             scope = scope,
             newItemId = { "wide-layout-item-${nextItemId++}" },
         )
@@ -246,6 +250,7 @@ class WideLayoutInstrumentedTest {
                         showConfigMissing = false,
                         screenModel = LoginScreenModel(
                             authRepository = InstrumentedFakeAuthRepository(AuthState.Unauthenticated),
+                            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "instrumented")),
                         ),
                     )
                 }
@@ -265,6 +270,7 @@ class WideLayoutInstrumentedTest {
                         showConfigMissing = false,
                         screenModel = LoginScreenModel(
                             authRepository = InstrumentedFakeAuthRepository(AuthState.Unauthenticated),
+                            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "instrumented")),
                         ),
                     )
                 }
