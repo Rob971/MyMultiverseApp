@@ -13,6 +13,7 @@ import app.mymultiverse.ammo.presentation.di.FakeHouseholdCollaborationRepositor
 import app.mymultiverse.ammo.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.ammo.presentation.di.FakeNutritionSessionCoordinator
 import com.russhwolf.settings.MapSettings
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -156,6 +157,21 @@ class InviteJoinFlowCoordinatorTest {
         assertTrue(signedOut)
         assertIs<InviteJoinAcceptState.Idle>(coordinator.acceptState.value)
         assertEquals("token-abc", store.getPendingInviteToken())
+    }
+
+    @Test
+    fun acceptPendingInvite_cancellationResetsToIdle_notFailed() = runTest(testDispatcher) {
+        val store = InviteSessionStore(MapSettings()).also { it.setPendingInviteToken("token-abc") }
+        val collaboration = FakeHouseholdCollaborationRepository().also {
+            it.previewInviteResult = Result.failure(CancellationException("scope cancelled"))
+        }
+        val coordinator = createCoordinator(this, store = store, collaboration = collaboration)
+
+        coordinator.acceptPendingInviteIfNeeded()
+        advanceUntilIdle()
+
+        // Cancellation must NOT leave the UI stuck on Failed (would show error sheet permanently).
+        assertIs<InviteJoinAcceptState.Idle>(coordinator.acceptState.value)
     }
 
     private fun createCoordinator(

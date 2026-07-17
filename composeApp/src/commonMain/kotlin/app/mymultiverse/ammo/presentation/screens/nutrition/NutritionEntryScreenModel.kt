@@ -6,6 +6,7 @@ import app.mymultiverse.ammo.domain.repository.NutritionHouseholdSelectionStore
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.presentation.navigation.HouseholdContext
 import app.mymultiverse.ammo.presentation.navigation.toNavigationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -46,6 +47,10 @@ class NutritionEntryScreenModel(
                 selectionStore.setActiveHouseholdId(context.id)
                 sessionCoordinator.activateHousehold(context.id)
                 _state.value = NutritionEntryState.Ready(context)
+            } catch (e: CancellationException) {
+                // Coroutine cancelled — leave state as Loading so next call retries cleanly.
+                _state.value = NutritionEntryState.Loading
+                throw e
             } catch (throwable: Throwable) {
                 logger.recordError(
                     tag = "NutritionEntry",

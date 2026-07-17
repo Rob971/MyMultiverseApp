@@ -32,6 +32,7 @@ import app.mymultiverse.ammo.presentation.navigation.HouseholdContext
 import app.mymultiverse.ammo.presentation.navigation.toNavigationContext
 import app.mymultiverse.ammo.presentation.screens.household.InviteActionMessage
 import app.mymultiverse.ammo.presentation.screens.household.SwitchHouseholdPrompt
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -275,8 +276,10 @@ class HomeScreenModel(
             _isRefreshing.value = true
             try {
                 _greeting.value = getGreetingUseCase()
-                runCatching { sessionCoordinator.nutrition.value.refreshFromRemote() }
-            } catch (_: Throwable) {
+                try { sessionCoordinator.nutrition.value.refreshFromRemote() } catch (_: Exception) { /* offline — keep cached data */ }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
                 // Keep the last greeting when refresh fails.
             } finally {
                 _isRefreshing.value = false
