@@ -13,6 +13,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class NutritionSyncEngineTest {
 
@@ -155,6 +156,29 @@ class NutritionSyncEngineTest {
                 enqueuedAtEpochMs = 0L,
             )
         }
+    }
+
+    @Test
+    fun hasPending_returnsFalseWhenOutboxEmpty() = runTest {
+        val outbox = NutritionSyncOutbox(MapSettings())
+        val engine = NutritionSyncEngine(null, outbox, TestObservability.logger)
+
+        assertFalse(engine.hasPending("household-1", "2025-W24", "grocery"))
+    }
+
+    @Test
+    fun hasPending_returnsTrueAfterEnqueue() = runTest {
+        val outbox = NutritionSyncOutbox(MapSettings())
+        outbox.enqueue(
+            PendingNutritionPush(
+                householdId = "household-1", weekKey = "2025-W24", dataKind = "grocery",
+                payload = "payload", enqueuedAtEpochMs = 1L,
+            ),
+        )
+        val engine = NutritionSyncEngine(null, outbox, TestObservability.logger)
+
+        assertTrue(engine.hasPending("household-1", "2025-W24", "grocery"))
+        assertFalse(engine.hasPending("household-1", "2025-W24", "meal_plan"))
     }
 
     private class StaticRemote(

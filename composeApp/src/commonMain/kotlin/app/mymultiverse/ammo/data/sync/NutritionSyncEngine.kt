@@ -132,6 +132,14 @@ class NutritionSyncEngine(
         _status.value = NutritionSyncStatus.RemoteUnavailable
     }
 
+    /**
+     * Returns true when the outbox holds at least one unsent entry for [dataKind] in the
+     * given household/week.  Used by [OfflineFirstNutritionRepository.applyRemoteWeekData]
+     * to skip a realtime overwrite while the user has pending local edits.
+     */
+    fun hasPending(householdId: String, weekKey: String, dataKind: String): Boolean =
+        outbox.pendingFor(householdId, weekKey).any { it.dataKind == dataKind }
+
     private fun refreshStatus(householdId: String, weekKey: String) {
         val pendingCount = outbox.pendingFor(householdId, weekKey).size
         _status.value = when {

@@ -4,6 +4,7 @@ import app.mymultiverse.ammo.domain.auth.AuthFailureCodes
 import app.mymultiverse.ammo.domain.model.auth.AuthState
 import app.mymultiverse.ammo.domain.model.auth.AuthUser
 import app.mymultiverse.ammo.domain.repository.AuthRepository
+import app.mymultiverse.ammo.domain.coroutines.runCatchingCancellable
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.functions.functions
@@ -12,6 +13,7 @@ import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.providers.builtin.OTP
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import io.github.jan.supabase.auth.status.SessionStatus
@@ -49,10 +51,14 @@ class SupabaseAuthRepository(
     }
 
     override suspend fun restoreSession() {
-        runCatching {
+        try {
             client.auth.awaitInitialization()
             AuthRedirectEvents.consumePending()?.let { processOAuthRedirect(it) }
             syncAuthStateFromCurrentSession()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // Session restore is best-effort; fall through to the Unauthenticated guard below.
         }
         if (_authState.value == AuthState.Loading && currentAuthUser() == null) {
             _authState.value = AuthState.Unauthenticated
@@ -60,7 +66,7 @@ class SupabaseAuthRepository(
     }
 
     override suspend fun signInWithEmail(email: String, password: String): Result<Unit> =
-        runCatching {
+        runCatchingCancellable {
             client.auth.awaitInitialization()
             client.auth.signInWith(Email) {
                 this.email = email.trim()
@@ -75,7 +81,7 @@ class SupabaseAuthRepository(
         password: String,
         displayName: String?,
     ): Result<Unit> =
-        runCatching {
+        runCatchingCancellable {
             client.auth.awaitInitialization()
             client.auth.signUpWith(Email) {
                 this.email = email.trim()
@@ -93,7 +99,7 @@ class SupabaseAuthRepository(
         }
 
     override suspend fun sendEmailOtp(email: String): Result<Unit> =
-        runCatching {
+        runCatchingCancellable {
             client.auth.awaitInitialization()
             client.auth.signInWith(OTP) {
                 this.email = email.trim()
@@ -101,7 +107,7 @@ class SupabaseAuthRepository(
         }
 
     override suspend fun verifyEmailOtp(email: String, code: String): Result<Unit> =
-        runCatching {
+        runCatchingCancellable {
             client.auth.awaitInitialization()
             client.auth.verifyEmailOtp(
                 type = OtpType.Email.EMAIL,
@@ -113,12 +119,12 @@ class SupabaseAuthRepository(
         }
 
     override suspend fun signInWithGoogle(): Result<Unit> =
-        runCatching {
+        runCatchingCancellable {
             client.auth.signInWith(Google, redirectUrl = AuthRedirectUrls.REDIRECT)
         }
 
     override suspend fun signInWithApple(): Result<Unit> =
-        runCatching {
+        runCatchingCancellable {
             client.auth.signInWith(Apple, redirectUrl = AuthRedirectUrls.REDIRECT)
         }
 
@@ -126,12 +132,12 @@ class SupabaseAuthRepository(
         client.auth.signOut()
     }
 
-    override suspend fun exportPersonalData(): Result<String> = runCatching {
+    override suspend fun exportPersonalData(): Result<String> = runCatchingCancellable {
         client.auth.awaitInitialization()
         client.postgrest.rpc("export_my_personal_data").data
     }
 
-    override suspend fun deleteAccount(): Result<Unit> = runCatching {
+    override suspend fun deleteAccount(): Result<Unit> = runCatchingCancellable {
         client.auth.awaitInitialization()
         client.functions.invoke("delete-account")
         client.auth.signOut()
@@ -144,7 +150,7 @@ class SupabaseAuthRepository(
             _authState.value = AuthState.Loading
         }
         client.auth.awaitInitialization()
-        runCatching { handleAuthDeeplink(client, url) }
+        try { handleAuthDeeplink(client, url) } catch (e: CancellationException) { throw e } catch (_: Exception) { }
         syncAuthStateFromCurrentSession()
     }
 
@@ -158,7 +164,7 @@ class SupabaseAuthRepository(
         val userId = client.auth.currentUserOrNull()?.id
             ?: client.auth.currentSessionOrNull()?.user?.id
             ?: return
-        runCatching { client.ensureCurrentProfile(userId) }
+        try { client.ensureCurrentProfile(userId) } catch (e: CancellationException) { throw e } catch (_: Exception) { }
     }
 
     private fun mapSessionStatus(status: SessionStatus): AuthState =

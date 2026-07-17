@@ -10,6 +10,7 @@ import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembership
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.ammo.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
+import app.mymultiverse.ammo.domain.coroutines.runCatchingCancellable
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
@@ -37,7 +38,7 @@ class SupabaseHouseholdRepository(
 
     override fun observeMembershipStatus(): Flow<HouseholdMembershipStatus> = membershipStatus.asStateFlow()
 
-    override suspend fun refreshMembership(): Result<HouseholdMembershipStatus> = runCatching {
+    override suspend fun refreshMembership(): Result<HouseholdMembershipStatus> = runCatchingCancellable {
         client.auth.awaitInitialization()
         val userId = requireUserId()
         client.ensureCurrentProfile(userId)
@@ -60,7 +61,7 @@ class SupabaseHouseholdRepository(
         }
     }
 
-    override suspend fun createHousehold(name: String): Result<Household> = runCatching {
+    override suspend fun createHousehold(name: String): Result<Household> = runCatchingCancellable {
         client.auth.awaitInitialization()
         requireUserId()
 
@@ -88,7 +89,7 @@ class SupabaseHouseholdRepository(
     override suspend fun checkHouseholdNameAvailable(
         name: String,
         excludeHouseholdId: String?,
-    ): Result<Boolean> = runCatching {
+    ): Result<Boolean> = runCatchingCancellable {
         client.auth.awaitInitialization()
         requireUserId()
 
@@ -104,7 +105,7 @@ class SupabaseHouseholdRepository(
         row.available
     }
 
-    override suspend fun renameHousehold(newName: String): Result<Household> = runCatching {
+    override suspend fun renameHousehold(newName: String): Result<Household> = runCatchingCancellable {
         client.auth.awaitInitialization()
         requireUserId()
         val current = membershipStatus.value
@@ -136,7 +137,7 @@ class SupabaseHouseholdRepository(
         updatedHousehold
     }
 
-    override suspend fun ensureHousehold(): Result<Household> = runCatching {
+    override suspend fun ensureHousehold(): Result<Household> = runCatchingCancellable {
         client.auth.awaitInitialization()
         val userId = requireUserId()
         client.ensureCurrentProfile(userId)
@@ -151,10 +152,25 @@ class SupabaseHouseholdRepository(
             authDisplayName = authDisplayName,
         ).also { resolved ->
             household.update { resolved }
+            // Align the membership observer so the home auth-gate and nutrition entry
+            // both see Active status without waiting for a separate refreshMembership call.
+            membershipStatus.update { current ->
+                if (current is HouseholdMembershipStatus.Active &&
+                    current.household.id == resolved.id) {
+                    current // already Active for this household — no change needed
+                } else {
+                    HouseholdMembershipStatus.Active(
+                        membership = HouseholdMembership(
+                            household = resolved,
+                            role = HouseholdMemberRole.Owner, // ensure always creates the household
+                        ),
+                    )
+                }
+            }
         }
     }
 
-    override suspend fun leaveHousehold(): Result<Unit> = runCatching {
+    override suspend fun leaveHousehold(): Result<Unit> = runCatchingCancellable {
         client.auth.awaitInitialization()
         requireUserId()
         client.postgrest.rpc("leave_household")
@@ -162,7 +178,7 @@ class SupabaseHouseholdRepository(
         household.update { null }
     }
 
-    override suspend fun dissolveHousehold(): Result<Unit> = runCatching {
+    override suspend fun dissolveHousehold(): Result<Unit> = runCatchingCancellable {
         client.auth.awaitInitialization()
         requireUserId()
         client.postgrest.rpc("dissolve_household")
@@ -170,7 +186,7 @@ class SupabaseHouseholdRepository(
         household.update { null }
     }
 
-    override suspend fun transferOwnership(newOwnerUserId: String): Result<Unit> = runCatching {
+    override suspend fun transferOwnership(newOwnerUserId: String): Result<Unit> = runCatchingCancellable {
         client.auth.awaitInitialization()
         requireUserId()
         client.postgrest.rpc(
@@ -261,7 +277,7 @@ class SupabaseHouseholdRepository(
         householdId: String,
         imageBytes: ByteArray,
         contentType: String,
-    ): Result<Unit> = runCatching {
+    ): Result<Unit> = runCatchingCancellable {
         client.auth.awaitInitialization()
         requireUserId()
 

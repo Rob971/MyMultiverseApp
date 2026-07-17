@@ -1,4 +1,3 @@
-@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 package app.mymultiverse.ammo.presentation.screens.nutrition
 
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
@@ -48,6 +47,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.random.Random
 
 sealed class NutritionAiState {
@@ -78,6 +79,11 @@ class NutritionScreenModel(
         private const val SYNCED_PULSE_MS = 2_500L
         private const val COLLABORATION_DEBOUNCE_MS = 2_000L
     }
+
+    // Serializes all grocery and meal-plan writes to prevent read-modify-write races
+    // when multiple concurrent coroutines each read the current list then overwrite it.
+    private val groceryMutex = Mutex()
+    private val mealPlanMutex = Mutex()
 
     private val repository: NutritionRepository
         get() = session.nutrition.value
@@ -274,12 +280,9 @@ class NutritionScreenModel(
     fun selectWeekOffset(offset: Int) {
         if (offset !in 0..MAX_WEEK_OFFSET) return
         if (offset == _weekOffset.value) return
-        weekSelectJob?.cancel()
-        weekSelectJob = scope.launch {
+        scope.launch {
             _weekOffset.value = offset
-            val weekKey = WeekCalendar.weekKeyForOffset(offset = offset)
-            logger.breadcrumb("week_selected offset=$offset week_key=$weekKey")
-            session.selectWeek(weekKey)
+            session.selectWeek(WeekCalendar.weekKeyForOffset(offset = offset))
         }
     }
 
@@ -347,13 +350,14 @@ class NutritionScreenModel(
             return true
         }
         scope.launch {
-            val updated = listOf(
-                GroceryItem(id = newId(), label = trimmed),
-            ) + groceryItems.value
-            repository.saveGroceryItems(updated)
-            logger.breadcrumb("grocery_add total=${updated.size}")
-            if (!skipPairingPrompt) {
-                maybeShowGhostPairing(trimmed, updated)
+            groceryMutex.withLock {
+                // Re-check for duplicate inside the lock (another launch may have added it).
+                if (GroceryListPresentation.findItemByNormalizedLabel(groceryItems.value, trimmed) == null) {
+                    val updated = listOf(GroceryItem(id = newId(), label = trimmed)) + groceryItems.value
+                    repository.saveGroceryItems(updated)
+                    logger.breadcrumb("grocery_add total=${updated.size}")
+                    if (!skipPairingPrompt) maybeShowGhostPairing(trimmed, updated)
+                }
             }
         }
         return true
@@ -372,16 +376,16 @@ class NutritionScreenModel(
         if (_ghostPairingOffer.value == null) return
         _ghostPairingOffer.value = null
         scope.launch {
-            var current = groceryItems.value
-            localizedLabels.forEach { label ->
-                val trimmed = label.trim()
-                if (trimmed.isEmpty()) return@forEach
-                if (GroceryListPresentation.findItemByNormalizedLabel(current, trimmed) == null) {
-                    current = listOf(GroceryItem(id = newId(), label = trimmed)) + current
+            groceryMutex.withLock {
+                var current = groceryItems.value
+                localizedLabels.forEach { label ->
+                    val trimmed = label.trim()
+                    if (trimmed.isEmpty()) return@forEach
+                    if (GroceryListPresentation.findItemByNormalizedLabel(current, trimmed) == null) {
+                        current = listOf(GroceryItem(id = newId(), label = trimmed)) + current
+                    }
                 }
-            }
-            if (current != groceryItems.value) {
-                repository.saveGroceryItems(current)
+                if (current != groceryItems.value) repository.saveGroceryItems(current)
             }
         }
     }
@@ -404,10 +408,12 @@ class NutritionScreenModel(
             return false
         }
         scope.launch {
-            val updated = groceryItems.value.map { item ->
-                if (item.id == id) item.copy(label = trimmed) else item
+            groceryMutex.withLock {
+                val updated = groceryItems.value.map { item ->
+                    if (item.id == id) item.copy(label = trimmed) else item
+                }
+                repository.saveGroceryItems(updated)
             }
-            repository.saveGroceryItems(updated)
         }
         return true
     }
@@ -415,65 +421,77 @@ class NutritionScreenModel(
     fun restoreGroceryItem(item: GroceryItem, index: Int) {
         if (!canWriteHouseholdData.value) return
         scope.launch {
-            val current = groceryItems.value.toMutableList()
-            val insertAt = index.coerceIn(0, current.size)
-            if (current.none { it.id == item.id }) {
-                current.add(insertAt, item)
-                repository.saveGroceryItems(current)
+            groceryMutex.withLock {
+                val current = groceryItems.value.toMutableList()
+                val insertAt = index.coerceIn(0, current.size)
+                if (current.none { it.id == item.id }) {
+                    current.add(insertAt, item)
+                    repository.saveGroceryItems(current)
+                }
             }
         }
     }
 
     fun clearCheckedGroceryItems(): List<GroceryItem> {
         if (!canWriteHouseholdData.value) return emptyList()
-        val snapshot = groceryItems.value
-        val updated = snapshot.filterNot { it.isChecked }
-        if (updated.size == snapshot.size) return emptyList()
+        // Snapshot before launch for the undo payload; actual save is serialized inside the lock.
+        val undoSnapshot = groceryItems.value
         scope.launch {
-            repository.saveGroceryItems(updated)
+            groceryMutex.withLock {
+                val current = groceryItems.value
+                val updated = current.filterNot { it.isChecked }
+                if (updated.size < current.size) repository.saveGroceryItems(updated)
+            }
         }
-        return snapshot
+        return undoSnapshot
     }
 
     fun restoreGroceryItemsSnapshot(items: List<GroceryItem>) {
         if (!canWriteHouseholdData.value || items.isEmpty()) return
         scope.launch {
-            val currentById = groceryItems.value.associateBy { it.id }
-            val restoredIds = items.map { it.id }.toSet()
-            val restored = items.map { item -> currentById[item.id] ?: item }
-            val newItems = groceryItems.value.filterNot { it.id in restoredIds }
-            repository.saveGroceryItems(restored + newItems)
+            groceryMutex.withLock {
+                val current = groceryItems.value
+                val currentById = current.associateBy { it.id }
+                val restoredIds = items.map { it.id }.toSet()
+                val restored = items.map { item -> currentById[item.id] ?: item }
+                val newItems = current.filterNot { it.id in restoredIds }
+                repository.saveGroceryItems(restored + newItems)
+            }
         }
     }
 
     fun toggleGroceryItem(id: String) {
         if (!canWriteHouseholdData.value) return
         scope.launch {
-            val updated = groceryItems.value.map { item ->
-                if (item.id == id) item.copy(isChecked = !item.isChecked) else item
+            groceryMutex.withLock {
+                val updated = groceryItems.value.map { item ->
+                    if (item.id == id) item.copy(isChecked = !item.isChecked) else item
+                }
+                val checked = updated.count { it.isChecked }
+                logger.breadcrumb("grocery_toggle checked=$checked total=${updated.size}")
+                repository.saveGroceryItems(updated)
             }
-            val checked = updated.count { it.isChecked }
-            logger.breadcrumb("grocery_toggle checked=$checked total=${updated.size}")
-            repository.saveGroceryItems(updated)
         }
     }
 
     fun removeGroceryItem(id: String) {
         if (!canWriteHouseholdData.value) return
         scope.launch {
-            val updated = groceryItems.value.filterNot { it.id == id }
-            repository.saveGroceryItems(updated)
-            logger.breadcrumb("grocery_remove total=${updated.size}")
+            groceryMutex.withLock {
+                val updated = groceryItems.value.filterNot { it.id == id }
+                repository.saveGroceryItems(updated)
+                logger.breadcrumb("grocery_remove total=${updated.size}")
+            }
         }
     }
 
     fun moveActiveGroceryItem(itemId: String, direction: Int) {
         if (!canWriteHouseholdData.value || direction == 0) return
         scope.launch {
-            val current = groceryItems.value
-            val updated = GroceryListPresentation.moveActiveItem(current, itemId, direction)
-            if (updated != current) {
-                repository.saveGroceryItems(updated)
+            groceryMutex.withLock {
+                val current = groceryItems.value
+                val updated = GroceryListPresentation.moveActiveItem(current, itemId, direction)
+                if (updated != current) repository.saveGroceryItems(updated)
             }
         }
     }
@@ -482,20 +500,22 @@ class NutritionScreenModel(
         if (!canWriteHouseholdData.value) return
         if (dayIndex !in 0 until WeeklyMealPlan.DAYS_IN_WEEK) return
         scope.launch {
-            val current = mealPlan.value
-            val days = current.days.toMutableList()
-            val existing = days[dayIndex]
-            days[dayIndex] = existing.copy(
-                lunch = lunch ?: existing.lunch,
-                dinner = dinner ?: existing.dinner,
-            )
-            val slot = when {
-                lunch != null && dinner != null -> "both"
-                lunch != null -> "lunch"
-                else -> "dinner"
+            mealPlanMutex.withLock {
+                val current = mealPlan.value
+                val days = current.days.toMutableList()
+                val existing = days[dayIndex]
+                days[dayIndex] = existing.copy(
+                    lunch = lunch ?: existing.lunch,
+                    dinner = dinner ?: existing.dinner,
+                )
+                val slot = when {
+                    lunch != null && dinner != null -> "both"
+                    lunch != null -> "lunch"
+                    else -> "dinner"
+                }
+                logger.breadcrumb("meal_update day=$dayIndex slot=$slot")
+                repository.saveMealPlan(current.copy(days = days))
             }
-            logger.breadcrumb("meal_update day=$dayIndex slot=$slot")
-            repository.saveMealPlan(current.copy(days = days))
         }
     }
 
@@ -513,9 +533,11 @@ class NutritionScreenModel(
     fun clearMealPlanWeek() {
         if (!canWriteHouseholdData.value) return
         scope.launch {
-            repository.saveMealPlan(
-                mealPlan.value.copy(days = List(WeeklyMealPlan.DAYS_IN_WEEK) { DayMeals() }),
-            )
+            mealPlanMutex.withLock {
+                repository.saveMealPlan(
+                    mealPlan.value.copy(days = List(WeeklyMealPlan.DAYS_IN_WEEK) { DayMeals() }),
+                )
+            }
         }
     }
 
@@ -528,10 +550,6 @@ class NutritionScreenModel(
     }
 
     // Tracked so a new runAiAssistant call can cancel an in-flight request.
-    // Week selection is serialized: each new call cancels the prior bind to prevent
-    // a slow previous bind overwriting the freshly-selected week's data.
-    private var weekSelectJob: Job? = null
-
     private var aiAssistantJob: Job? = null
     private var aiAssistantJobGeneration = 0
 
@@ -544,7 +562,6 @@ class NutritionScreenModel(
         aiAssistantJob?.cancel()
         val generation = ++aiAssistantJobGeneration
         aiAssistantJob = scope.launch {
-            logger.breadcrumb("ai_start mode=${mode.name.lowercase()}")
             _aiState.value = NutritionAiState.Loading
             try {
                 when (mode) {
@@ -611,12 +628,14 @@ class NutritionScreenModel(
         val trimmed = suggestion.label.trim()
         if (trimmed.isEmpty()) return false
         scope.launch {
-            val remainingAi = aiGroceryItems.value.filterNot { it.id == itemId }
-            if (!GroceryListPresentation.isDuplicateLabel(groceryItems.value, trimmed)) {
-                val updated = listOf(GroceryItem(id = newId(), label = trimmed)) + groceryItems.value
-                repository.saveGroceryItems(updated)
+            groceryMutex.withLock {
+                val remainingAi = aiGroceryItems.value.filterNot { it.id == itemId }
+                if (!GroceryListPresentation.isDuplicateLabel(groceryItems.value, trimmed)) {
+                    val updated = listOf(GroceryItem(id = newId(), label = trimmed)) + groceryItems.value
+                    repository.saveGroceryItems(updated)
+                }
+                repository.saveAiGroceryItems(remainingAi)
             }
-            repository.saveAiGroceryItems(remainingAi)
         }
         return true
     }
@@ -626,27 +645,31 @@ class NutritionScreenModel(
         val suggestions = aiGroceryItems.value.filterNot { it.isPantryCheck }
         if (suggestions.isEmpty()) return
         scope.launch {
-            var adoptedCount = 0
-            var grocery = groceryItems.value
-            suggestions.forEach { suggestion ->
-                val trimmed = suggestion.label.trim()
-                if (trimmed.isEmpty()) return@forEach
-                if (!GroceryListPresentation.isDuplicateLabel(grocery, trimmed)) {
-                    grocery = listOf(GroceryItem(id = newId(), label = trimmed)) + grocery
-                    adoptedCount++
+            groceryMutex.withLock {
+                var adoptedCount = 0
+                var grocery = groceryItems.value
+                suggestions.forEach { suggestion ->
+                    val trimmed = suggestion.label.trim()
+                    if (trimmed.isEmpty()) return@forEach
+                    if (!GroceryListPresentation.isDuplicateLabel(grocery, trimmed)) {
+                        grocery = listOf(GroceryItem(id = newId(), label = trimmed)) + grocery
+                        adoptedCount++
+                    }
                 }
+                repository.saveGroceryItems(grocery)
+                val remainingPantry = aiGroceryItems.value.filter { it.isPantryCheck }
+                repository.saveAiGroceryItems(remainingPantry)
+                _adoptAllGroceryResult.value = adoptedCount
             }
-            repository.saveGroceryItems(grocery)
-            val remainingPantry = aiGroceryItems.value.filter { it.isPantryCheck }
-            repository.saveAiGroceryItems(remainingPantry)
-            _adoptAllGroceryResult.value = adoptedCount
         }
     }
 
     fun dismissPantryCheckItem(itemId: String) {
         if (!canWriteHouseholdData.value) return
         scope.launch {
-            repository.saveAiGroceryItems(aiGroceryItems.value.filterNot { it.id == itemId })
+            groceryMutex.withLock {
+                repository.saveAiGroceryItems(aiGroceryItems.value.filterNot { it.id == itemId })
+            }
         }
     }
 
@@ -655,6 +678,7 @@ class NutritionScreenModel(
         val pantry = aiGroceryItems.value.filter { it.isPantryCheck }
         if (pantry.isEmpty()) return
         scope.launch {
+            groceryMutex.withLock {
             var grocery = groceryItems.value
             pantry.forEach { item ->
                 val trimmed = item.label.trim()
@@ -664,6 +688,7 @@ class NutritionScreenModel(
             }
             repository.saveGroceryItems(grocery)
             repository.saveAiGroceryItems(aiGroceryItems.value.filterNot { it.isPantryCheck })
+            }
         }
     }
 
@@ -702,6 +727,11 @@ class NutritionScreenModel(
         _mealGroceryLoading.value = MealGroceryRequest(dayIndex, slot)
         return try {
             aiAssistant.generateGroceryForMeal(mealText)
+                .onFailure { error ->
+                    // Surface key-missing so the AI sheet opens the inline key form
+                    // even when called from the silent (ingredients-after-apply) path.
+                    if (error is AiKeyNotConfiguredException) triggerKeySetupPrompt()
+                }
                 .getOrElse { return 0 }
                 .let { labels -> appendMealGroceryLabels(labels) }
         } finally {
@@ -748,7 +778,6 @@ class NutritionScreenModel(
 
     fun generateGroceryForAllPlannedMeals() {
         if (!canWriteHouseholdData.value) return
-        if (_bulkMealGroceryLoading.value) return  // Re-entry guard: don't start twice
         val plannedMeals = MealPlanPresentation.plannedMeals(mealPlan.value.days)
         if (plannedMeals.isEmpty()) return
 
@@ -761,10 +790,7 @@ class NutritionScreenModel(
                     _mealGroceryLoading.value = MealGroceryRequest(plannedMeal.dayIndex, plannedMeal.slot)
                     aiAssistant.generateGroceryForMeal(plannedMeal.text)
                         .onSuccess { labels -> totalAdded += appendMealGroceryLabels(labels) }
-                        .onFailure { error ->
-                            if (error is CancellationException) throw error
-                            hadError = true
-                        }
+                        .onFailure { hadError = true }
                 }
                 _bulkMealGroceryResult.value = BulkMealGroceryResult(
                     addedCount = totalAdded,
@@ -818,23 +844,25 @@ class NutritionScreenModel(
      */
     private suspend fun appendMealGroceryLabels(labels: List<String>): Int {
         if (!canWriteHouseholdData.value) return 0
-        var grocery = groceryItems.value
-        val seenInBatch = mutableSetOf<String>()
-        val newItems = buildList {
-            labels.forEach { raw ->
-                val label = raw.trim()
-                val key = label.lowercase()
-                if (label.isEmpty() || key in seenInBatch) return@forEach
-                if (GroceryListPresentation.isDuplicateLabel(grocery, label)) return@forEach
-                seenInBatch += key
-                val item = GroceryItem(id = newId(), label = label)
-                add(item)
-                grocery = listOf(item) + grocery
+        return groceryMutex.withLock {
+            var grocery = groceryItems.value
+            val seenInBatch = mutableSetOf<String>()
+            val newItems = buildList {
+                labels.forEach { raw ->
+                    val label = raw.trim()
+                    val key = label.lowercase()
+                    if (label.isEmpty() || key in seenInBatch) return@forEach
+                    if (GroceryListPresentation.isDuplicateLabel(grocery, label)) return@forEach
+                    seenInBatch += key
+                    val item = GroceryItem(id = newId(), label = label)
+                    add(item)
+                    grocery = listOf(item) + grocery
+                }
             }
+            if (newItems.isEmpty()) return@withLock 0
+            repository.saveGroceryItems(grocery)
+            newItems.size
         }
-        if (newItems.isEmpty()) return 0
-        repository.saveGroceryItems(grocery)
-        return newItems.size
     }
 
     private suspend fun appendAiGroceryItems(labels: List<String>, isPantryCheck: Boolean): Int {
@@ -843,22 +871,24 @@ class NutritionScreenModel(
 
     private suspend fun appendLabeledAiGroceryItems(labels: List<Pair<String, Boolean>>): Int {
         if (!canWriteHouseholdData.value) return 0
-        val seen = aiGroceryItems.value
-            .map { it.label.trim().lowercase() }
-            .toMutableSet()
-        val newItems = buildList {
-            labels.forEach { (raw, isPantryCheck) ->
-                val label = raw.trim()
-                val key = label.lowercase()
-                if (label.isNotEmpty() && key !in seen) {
-                    seen += key
-                    add(GroceryItem(id = newId(), label = label, isPantryCheck = isPantryCheck))
+        return groceryMutex.withLock {
+            val seen = aiGroceryItems.value
+                .map { it.label.trim().lowercase() }
+                .toMutableSet()
+            val newItems = buildList {
+                labels.forEach { (raw, isPantryCheck) ->
+                    val label = raw.trim()
+                    val key = label.lowercase()
+                    if (label.isNotEmpty() && key !in seen) {
+                        seen += key
+                        add(GroceryItem(id = newId(), label = label, isPantryCheck = isPantryCheck))
+                    }
                 }
             }
+            if (newItems.isEmpty()) return@withLock 0
+            repository.saveAiGroceryItems(aiGroceryItems.value + newItems)
+            newItems.size
         }
-        if (newItems.isEmpty()) return 0
-        repository.saveAiGroceryItems(aiGroceryItems.value + newItems)
-        return newItems.size
     }
 
     fun consumeCollaborationSnackbar() {

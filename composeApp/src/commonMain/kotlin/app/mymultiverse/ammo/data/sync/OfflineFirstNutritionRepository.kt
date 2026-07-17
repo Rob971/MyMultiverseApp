@@ -40,6 +40,9 @@ class OfflineFirstNutritionRepository(
 
     fun applyRemoteWeekData(row: NutritionWeekDataRow) {
         if (row.householdId != householdId || row.weekKey != weekKey) return
+        // Skip the apply when unsent local edits exist for this data kind: local-pending wins.
+        // The next refreshFromRemote / pull will reconcile once the outbox is flushed.
+        if (syncEngine.hasPending(householdId, weekKey, row.dataKind)) return
         localStore.applyPayload(row.dataKind, row.payload)
     }
 
