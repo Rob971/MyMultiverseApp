@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 92
-updated: 2026-07-15
+version: 93
+updated: 2026-07-18
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -40,6 +40,7 @@ summary: |
   Full Gemini AI integration (v89): All AI features (advice, grocery list, meal plan) now call Gemini 2.0 Flash Lite; key-missing state shows polite error in AI sheet; async cancellation prevents stuck spinners when a new request supersedes the previous one.
   AI key on-demand (v90): Removed proactive "add your key" banner from Plan tab; Gemini API key is only requested when the user actively triggers an AI feature and no key is configured; inline key-entry form shown directly in the AI sheet error state so the user can save the key and retry without leaving the sheet.
   Consistent key-request for Add to grocery list (v91): Tapping "Add to grocery list" on a meal slot with no key configured now opens the AI sheet showing the inline key-entry form instead of directing the user to Account settings via a snackbar; the flow is now consistent with the AI sheet Generate button.
+  Product tour (v93): first-time users see a 4-step spotlight walkthrough — welcome modal, home hub, meal plan tab, grocery tab; the tour shows once per app version and is permanently dismissed after completion or skip.
   App Links hosting (v47): deploy via Rob971/mymultiverse-website; verify with scripts/verify-hosting.sh after DNS is live.
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
@@ -1196,3 +1197,51 @@ testcases:
       - Device B shows AI generation working immediately — the key form must NOT appear.
       - Changing the language on Device B and tapping Generate returns AI results in the selected language.
       - If the key is cleared in Account → Settings on Device B, the key form reappears on both devices after sign-in.
+
+  - id: product-tour-first-launch
+    title: Product tour appears once on first launch per version (v93)
+    steps:
+      - Install a fresh build (or clear app data / storage so no previous tour state is stored).
+      - Sign in with a valid account.
+      - Wait for the authenticated Home tab shell to appear.
+    expected:
+      - A dimmed full-screen overlay appears with a tooltip card showing "Welcome to Ammò" (step 1 of 4).
+      - The overlay contains a step counter ("1 of 4"), a Skip tour link, and a Next button.
+      - No spotlight cutout is shown for the welcome step — the entire screen is dimly covered.
+      - Tapping Next advances to step 2 ("Your planning hub"); a spotlight rectangle with rounded corners highlights the home content area with a visible cutout through the scrim.
+      - Tapping Next again advances to step 3 ("Plan the week"); the spotlight moves to highlight the meal plan bottom nav tab.
+      - Tapping Next advances to step 4 ("Grocery list"); the spotlight highlights the grocery bottom nav tab; the Next button label changes to "Done".
+      - Tapping Done dismisses the overlay with a fade-out animation.
+      - The Previous button appears on steps 2–4 and returns to the previous step.
+      - All transitions between steps are animated (smooth fade + slide).
+
+  - id: product-tour-skip
+    title: Skipping the product tour permanently dismisses it (v93)
+    steps:
+      - Ensure the tour has not been seen yet (fresh install or cleared data).
+      - Sign in; wait for the tour overlay to appear.
+      - Tap "Skip tour" at any step (e.g. step 2).
+    expected:
+      - The overlay fades out immediately.
+      - Force-close and reopen the app, then sign in again.
+      - The tour overlay does NOT appear again on this version.
+
+  - id: product-tour-show-once
+    title: Tour does not repeat once completed (v93)
+    steps:
+      - Complete the tour (step through all 4 steps and tap Done).
+      - Force-close and reopen the app, then sign in.
+    expected:
+      - The tour overlay does NOT appear — the home shell loads directly without any overlay.
+      - This behaviour persists across multiple app restarts and background/foreground cycles.
+
+  - id: product-tour-dark-theme
+    title: Product tour renders correctly in dark theme (v93)
+    steps:
+      - Enable dark theme (system or in-app Account → Appearance).
+      - Clear app data and sign in to trigger the tour on a fresh install of the dark-themed build.
+    expected:
+      - The scrim is visibly dark (not a mid-grey wash); the spotlight cutout is clearly transparent against the dark background.
+      - The tooltip card uses the dark elevated surface colour (dark slate, not white).
+      - Step counter, title, description, and button labels are all legible on the dark card surface.
+      - Journey button colours (teal primary, outlined secondary) are consistent with the dark palette used elsewhere in the app.

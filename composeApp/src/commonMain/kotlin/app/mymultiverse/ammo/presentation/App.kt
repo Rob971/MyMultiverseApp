@@ -279,11 +279,15 @@ private fun AuthenticatedMainApp() {
         )
     }
 
-    LaunchedEffect(Unit) {
-        tourScreenModel.maybeShowTour(
-            versionKey = app.mymultiverse.ammo.domain.AppBuildInfo.VERSION_NAME,
-            steps = tourSteps,
-        )
+    // Wait for HomePhase.Welcome so the home hub spotlight rect is registered by
+    // HomeWelcomeContent before the tour advances to step 2 (home_hub target).
+    LaunchedEffect(homePhase) {
+        if (homePhase is HomePhase.Welcome) {
+            tourScreenModel.maybeShowTour(
+                versionKey = app.mymultiverse.ammo.domain.AppBuildInfo.VERSION_NAME,
+                steps = tourSteps,
+            )
+        }
     }
 
     val logger = koinInject<AppLogger>()
