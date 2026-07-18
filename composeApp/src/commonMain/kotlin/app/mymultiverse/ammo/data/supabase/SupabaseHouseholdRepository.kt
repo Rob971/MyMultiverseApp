@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.data.supabase
 
+import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdMembershipRpcRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdRpcDecoder
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdRpcRow
@@ -29,6 +30,7 @@ import kotlinx.serialization.json.put
 
 class SupabaseHouseholdRepository(
     private val client: SupabaseClient,
+    private val logger: AppLogger,
 ) : HouseholdRepository {
 
     private val household = MutableStateFlow<Household?>(null)
@@ -281,6 +283,8 @@ class SupabaseHouseholdRepository(
         client.auth.awaitInitialization()
         requireUserId()
 
+        logger.breadcrumb("household_avatar_upload_start household=$householdId")
+
         val extension = when {
             contentType.contains("png") -> "png"
             contentType.contains("webp") -> "webp"
@@ -315,6 +319,13 @@ class SupabaseHouseholdRepository(
                 status
             }
         }
+        logger.breadcrumb("household_avatar_upload_success household=$householdId")
+    }.onFailure { throwable ->
+        logger.recordError(
+            tag = "AvatarUpload",
+            message = "household_avatar_upload_failed household=$householdId",
+            throwable = throwable,
+        )
     }
 
     private fun String?.toHouseholdMemberRole(): HouseholdMemberRole =

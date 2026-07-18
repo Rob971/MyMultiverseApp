@@ -929,6 +929,8 @@
     <string name="sharing_household_avatar_content_description">Family photo</string>
     <string name="sharing_household_avatar_change_label">Change family photo</string>
     <string name="sharing_members_avatar_change">Change photo</string>
+    <string name="sharing_avatar_upload_success">Photo updated successfully.</string>
+    <string name="sharing_members_error_avatar_upload_failed">We could not save your photo. Please check your connection and try again.</string>
         <string name="auth_household_joined_success">You joined %1$s.</string>
 
     <string name="invite_join_title">Join %1$s</string>

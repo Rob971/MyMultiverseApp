@@ -16,6 +16,9 @@ import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.ammo.domain.model.sharing.NutritionSharingFeature
+import app.mymultiverse.ammo.data.observability.AppLogger
+import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
+import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.platform.PersonalDataExporter
 import app.mymultiverse.ammo.presentation.navigation.HouseholdContext
 import app.mymultiverse.ammo.presentation.screens.household.HouseholdMembersScreen
@@ -72,6 +75,7 @@ class HouseholdMembersAdminInstrumentedTest {
             sessionCoordinator = InstrumentedNutritionSessionCoordinator(
                 repository = InstrumentedNutritionRepository(weekKey = "2026-06-16"),
             ),
+            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext()),
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
         )
         val authRepository = InstrumentedFakeAuthRepository(
@@ -139,6 +143,7 @@ class HouseholdMembersAdminInstrumentedTest {
             sessionCoordinator = InstrumentedNutritionSessionCoordinator(
                 repository = InstrumentedNutritionRepository(weekKey = "2026-06-16"),
             ),
+            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext()),
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
         )
         val authRepository = InstrumentedFakeAuthRepository(

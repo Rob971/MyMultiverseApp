@@ -928,6 +928,8 @@
     <string name="sharing_household_avatar_content_description">Photo de famille</string>
     <string name="sharing_household_avatar_change_label">Changer la photo de famille</string>
     <string name="sharing_members_avatar_change">Changer la photo</string>
+    <string name="sharing_avatar_upload_success">Photo mise à jour avec succès.</string>
+    <string name="sharing_members_error_avatar_upload_failed">Nous ne pouvons pas enregistrer votre photo. Vérifiez votre connexion et réessayez.</string>
         <string name="auth_household_joined_success">Vous avez rejoint %1$s.</string>
 
     <string name="invite_join_title">Rejoindre %1$s</string>

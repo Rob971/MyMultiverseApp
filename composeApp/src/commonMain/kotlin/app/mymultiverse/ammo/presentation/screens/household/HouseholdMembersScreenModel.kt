@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.presentation.screens.household
 
+import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.domain.model.sharing.AddMemberResult
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
@@ -18,6 +19,7 @@ import app.mymultiverse.ammo.domain.sharing.canAssignAdminRole
 import app.mymultiverse.ammo.domain.sharing.canChangeRoleOf
 import app.mymultiverse.ammo.domain.sharing.canInviteWithRole
 import app.mymultiverse.ammo.domain.sharing.canRemoveMember
+import app.mymultiverse.ammo.domain.sharing.canWriteHouseholdData
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +39,8 @@ sealed interface HouseholdMembersError {
     data object OwnerMustTransferOrDissolve : HouseholdMembersError
     data object InvalidTransferTarget : HouseholdMembersError
     data object TransferTargetNotMember : HouseholdMembersError
+    /** Storage or DB update failed during a profile/dependant/household photo upload. */
+    data object AvatarUploadFailed : HouseholdMembersError
 }
 
 enum class HouseholdMembersLeaveAction {
@@ -53,6 +57,8 @@ data class HouseholdMembersUiState(
     val members: List<HouseholdMember> = emptyList(),
     val outboundInvites: List<HouseholdInvite> = emptyList(),
     val canManageMembers: Boolean = false,
+    /** True when the current user can write household nutrition data (owner, admin, or editor). */
+    val canWriteHouseholdData: Boolean = false,
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
     val showAddPersonDialog: Boolean = false,
@@ -92,12 +98,14 @@ enum class HouseholdMembersSuccess {
     OwnershipTransferred,
     DependantAdded,
     RoleUpdated,
+    AvatarUploaded,
 }
 
 class HouseholdMembersScreenModel(
     private val collaborationRepository: HouseholdCollaborationRepository,
     private val householdRepository: HouseholdRepository,
     private val sessionCoordinator: NutritionSessionCoordinator,
+    private val logger: AppLogger,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
     private val _uiState = MutableStateFlow(HouseholdMembersUiState())
@@ -173,10 +181,12 @@ class HouseholdMembersScreenModel(
         activeUserRole = role
         activeUserIsOwner = role == HouseholdMemberRole.Owner
         val canManage = role?.canManageHouseholdMembers() == true
+        val canWrite = role?.canWriteHouseholdData() == true
         _uiState.update {
             it.copy(
                 currentUserRole = role,
                 canManageMembers = canManage,
+                canWriteHouseholdData = canWrite,
                 canLeave = role != null && role != HouseholdMemberRole.Owner,
             )
         }
@@ -559,13 +569,24 @@ class HouseholdMembersScreenModel(
                 contentType = contentType,
             )
                 .onSuccess {
-                    _uiState.update { it.copy(isUploadingHouseholdAvatar = false) }
-                }
-                .onFailure { throwable ->
                     _uiState.update {
                         it.copy(
                             isUploadingHouseholdAvatar = false,
-                            error = mapFailure(throwable),
+                            successMessageKey = HouseholdMembersSuccess.AvatarUploaded,
+                        )
+                    }
+                }
+                .onFailure { throwable ->
+                    val error = mapAvatarFailure(throwable)
+                    logger.recordError(
+                        tag = "HouseholdMembers",
+                        message = "household_avatar_upload_ui_error error=$error",
+                        throwable = throwable,
+                    )
+                    _uiState.update {
+                        it.copy(
+                            isUploadingHouseholdAvatar = false,
+                            error = error,
                         )
                     }
                 }
@@ -593,18 +614,42 @@ class HouseholdMembersScreenModel(
             )
                 .onSuccess {
                     collaborationRepository.refreshMembers(householdId, activeOwnerId, activeOwnerDisplayName)
-                    _uiState.update { it.copy(uploadingAvatarMemberId = null) }
-                }
-                .onFailure { throwable ->
                     _uiState.update {
                         it.copy(
                             uploadingAvatarMemberId = null,
-                            error = mapFailure(throwable),
+                            successMessageKey = HouseholdMembersSuccess.AvatarUploaded,
+                        )
+                    }
+                }
+                .onFailure { throwable ->
+                    val error = mapAvatarFailure(throwable)
+                    logger.recordError(
+                        tag = "HouseholdMembers",
+                        message = "member_avatar_upload_ui_error member=${member.id} error=$error",
+                        throwable = throwable,
+                    )
+                    _uiState.update {
+                        it.copy(
+                            uploadingAvatarMemberId = null,
+                            error = error,
                         )
                     }
                 }
         }
     }
+
+    /**
+     * Maps avatar-upload failures to a user-facing error.
+     * InsufficientRole is preserved to give a specific message; everything else
+     * collapses to [HouseholdMembersError.AvatarUploadFailed] so the user sees
+     * a friendly "couldn't save your photo" prompt rather than a generic error.
+     */
+    private fun mapAvatarFailure(throwable: Throwable): HouseholdMembersError =
+        if (CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INSUFFICIENT_ROLE, throwable.message)) {
+            HouseholdMembersError.InsufficientRole
+        } else {
+            HouseholdMembersError.AvatarUploadFailed
+        }
 
     fun confirmLeaveOrDissolve() {
         val action = _uiState.value.pendingLeaveAction ?: return

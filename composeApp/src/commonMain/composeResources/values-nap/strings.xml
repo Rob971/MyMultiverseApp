@@ -928,6 +928,8 @@
     <string name="sharing_household_avatar_content_description">Foto 'e famiglia</string>
     <string name="sharing_household_avatar_change_label">Cagna foto 'e famiglia</string>
     <string name="sharing_members_avatar_change">Cagnà 'a foto</string>
+    <string name="sharing_avatar_upload_success">Foto aggiurnata cu successo.</string>
+    <string name="sharing_members_error_avatar_upload_failed">Nun simmo riuscit a salva 'a foto toja. Controlla 'a connessione e riprova.</string>
         <string name="auth_household_joined_success">T'ê unito a %1$s.</string>
 
     <string name="invite_join_title">Tràve a %1$s</string>
