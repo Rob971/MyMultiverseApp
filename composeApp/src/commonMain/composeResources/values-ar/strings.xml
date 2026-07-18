@@ -991,4 +991,17 @@
     <string name="sharing_members_role_admin_description">يمكنه دعوة الأشخاص وإدارة الأعضاء وتعديل القوائم والخطط المشتركة.</string>
     <string name="sharing_members_role_editor_description">يمكنه تعديل قوائم البقالة وخطط الوجبات المشتركة.</string>
     <string name="sharing_members_role_viewer_description">يمكنه عرض القوائم والخطط المشتركة فقط.</string>
+    <string name="tour_step_counter">%1$d من %2$d</string>
+    <string name="tour_action_skip">تخطي</string>
+    <string name="tour_action_next">التالي</string>
+    <string name="tour_action_previous">السابق</string>
+    <string name="tour_action_finish">تم</string>
+    <string name="tour_step_welcome_title">مرحباً بك في Ammò</string>
+    <string name="tour_step_welcome_body">مساحتك المشتركة للتخطيط لوجبات الأسرة والتسوق معاً. لنأخذ جولة سريعة.</string>
+    <string name="tour_step_home_title">مركز التخطيط</string>
+    <string name="tour_step_home_body">اطّلع على عشاء الليلة وحالة قائمة التسوق ونشاط الأسرة في مكان واحد.</string>
+    <string name="tour_step_meal_plan_title">خطط للأسبوع</string>
+    <string name="tour_step_meal_plan_body">حدد الغداء والعشاء لكل يوم. تطّلع الأسرة بأكملها على نفس الخطة في الوقت الفعلي.</string>
+    <string name="tour_step_grocery_title">قائمة التسوق</string>
+    <string name="tour_step_grocery_body">أضف المنتجات للأسبوع وضع علامة عليها أثناء التسوق. كل شيء يبقى متزامناً.</string>
 </resources>

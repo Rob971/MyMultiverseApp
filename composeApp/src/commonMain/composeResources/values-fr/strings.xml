@@ -991,4 +991,17 @@
     <string name="sharing_members_role_admin_description">Peut inviter, gérer les membres et modifier les listes et plans partagés.</string>
     <string name="sharing_members_role_editor_description">Peut modifier les listes de courses et plans de repas partagés.</string>
     <string name="sharing_members_role_viewer_description">Peut uniquement consulter les listes et plans partagés.</string>
+    <string name="tour_step_counter">%1$d sur %2$d</string>
+    <string name="tour_action_skip">Passer</string>
+    <string name="tour_action_next">Suivant</string>
+    <string name="tour_action_previous">Précédent</string>
+    <string name="tour_action_finish">Terminé</string>
+    <string name="tour_step_welcome_title">Bienvenue sur Ammò</string>
+    <string name="tour_step_welcome_body">Votre espace commun pour planifier repas et courses en famille. Faisons un rapide tour d'horizon.</string>
+    <string name="tour_step_home_title">Votre tableau de bord</string>
+    <string name="tour_step_home_body">Consultez le dîner du soir, l'état des courses et l'activité familiale en un seul endroit.</string>
+    <string name="tour_step_meal_plan_title">Planifier la semaine</string>
+    <string name="tour_step_meal_plan_body">Définissez le déjeuner et le dîner pour chaque jour. Toute la famille voit le même plan en temps réel.</string>
+    <string name="tour_step_grocery_title">Liste de courses</string>
+    <string name="tour_step_grocery_body">Ajoutez des articles pour la semaine et cochez-les au fil de vos achats. Tout reste synchronisé.</string>
 </resources>

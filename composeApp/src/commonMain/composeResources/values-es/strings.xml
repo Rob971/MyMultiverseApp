@@ -991,4 +991,17 @@
     <string name="sharing_members_role_admin_description">Puede invitar, gestionar miembros y editar listas y planes compartidos.</string>
     <string name="sharing_members_role_editor_description">Puede editar listas de la compra y planes de comidas compartidos.</string>
     <string name="sharing_members_role_viewer_description">Solo puede ver listas y planes compartidos.</string>
+    <string name="tour_step_counter">%1$d de %2$d</string>
+    <string name="tour_action_skip">Saltar</string>
+    <string name="tour_action_next">Siguiente</string>
+    <string name="tour_action_previous">Anterior</string>
+    <string name="tour_action_finish">Listo</string>
+    <string name="tour_step_welcome_title">Bienvenido a Ammò</string>
+    <string name="tour_step_welcome_body">Tu espacio compartido para planificar las comidas y las compras en familia. Hagamos un recorrido rápido.</string>
+    <string name="tour_step_home_title">Tu centro de planificación</string>
+    <string name="tour_step_home_body">Ve la cena de esta noche, el estado de la lista de la compra y la actividad familiar en un solo lugar.</string>
+    <string name="tour_step_meal_plan_title">Planifica la semana</string>
+    <string name="tour_step_meal_plan_body">Programa el almuerzo y la cena para cada día. Toda la familia ve el mismo plan en tiempo real.</string>
+    <string name="tour_step_grocery_title">Lista de la compra</string>
+    <string name="tour_step_grocery_body">Añade artículos para la semana y márcalos mientras compras. Todo se mantiene sincronizado.</string>
 </resources>

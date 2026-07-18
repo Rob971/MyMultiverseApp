@@ -20,6 +20,7 @@ import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import app.mymultiverse.ammo.presentation.screens.home.HomeScreenModel
 import app.mymultiverse.ammo.presentation.screens.nutrition.NutritionEntryScreenModel
 import app.mymultiverse.ammo.presentation.screens.nutrition.NutritionScreenModel
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourScreenModel
 import com.russhwolf.settings.MapSettings
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.Dispatchers
@@ -173,6 +174,12 @@ class AppModuleKoinTest : KoinTest {
     @Test
     fun nutritionEntryScreenModel_resolvesFromKoinGraph() {
         val model = get<NutritionEntryScreenModel>()
+        assertNotNull(model)
+    }
+
+    @Test
+    fun productTourScreenModel_resolvesFromKoinGraph() {
+        val model = get<ProductTourScreenModel>()
         assertNotNull(model)
     }
 

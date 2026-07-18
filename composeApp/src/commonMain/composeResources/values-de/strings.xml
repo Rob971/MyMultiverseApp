@@ -991,4 +991,17 @@
     <string name="sharing_members_role_admin_description">Kann einladen, Mitglieder verwalten und geteilte Listen und Pläne bearbeiten.</string>
     <string name="sharing_members_role_editor_description">Kann geteilte Einkaufslisten und Essenspläne bearbeiten.</string>
     <string name="sharing_members_role_viewer_description">Kann geteilte Listen und Pläne nur ansehen.</string>
+    <string name="tour_step_counter">%1$d von %2$d</string>
+    <string name="tour_action_skip">Überspringen</string>
+    <string name="tour_action_next">Weiter</string>
+    <string name="tour_action_previous">Zurück</string>
+    <string name="tour_action_finish">Fertig</string>
+    <string name="tour_step_welcome_title">Willkommen bei Ammò</string>
+    <string name="tour_step_welcome_body">Euer gemeinsamer Bereich für Familienessen und Einkaufslisten. Lasst uns eine kurze Tour machen.</string>
+    <string name="tour_step_home_title">Euer Planungszentrum</string>
+    <string name="tour_step_home_body">Seht das Abendessen, den Einkaufslistenstatus und Familienaktivitäten auf einen Blick.</string>
+    <string name="tour_step_meal_plan_title">Die Woche planen</string>
+    <string name="tour_step_meal_plan_body">Plant Mittag- und Abendessen für jeden Tag. Die ganze Familie sieht denselben Plan in Echtzeit.</string>
+    <string name="tour_step_grocery_title">Einkaufsliste</string>
+    <string name="tour_step_grocery_body">Fügt Artikel für die Woche hinzu und hakt sie beim Einkaufen ab. Alles bleibt synchronisiert.</string>
 </resources>

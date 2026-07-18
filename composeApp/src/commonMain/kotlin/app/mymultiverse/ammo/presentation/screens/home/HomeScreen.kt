@@ -67,6 +67,8 @@ import app.mymultiverse.ammo.presentation.theme.SharedJourneyColors
 import app.mymultiverse.ammo.presentation.invite.InviteJoinAcceptState
 import app.mymultiverse.ammo.presentation.invite.InviteJoinFlowCoordinator
 import app.mymultiverse.ammo.presentation.screens.household.InviteActionMessage
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourTestTags
+import app.mymultiverse.ammo.presentation.screens.tour.productTourTarget
 import org.koin.compose.koinInject
 
 object HomeTestTags {
@@ -322,7 +324,10 @@ fun HomeScreen(
                     isRefreshing = isRefreshing,
                     onRefresh = screenModel::refresh,
                     embeddedInMainTabs = embeddedInMainTabs,
-                    modifier = Modifier.padding(padding).then(modifier),
+                    modifier = Modifier
+                        .padding(padding)
+                        .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB)
+                        .then(modifier),
                 )
             }
         }
