@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.presentation.screens.household
 
+import app.mymultiverse.ammo.data.observability.TestObservability
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
@@ -23,6 +24,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -46,6 +48,7 @@ class HouseholdMembersScreenModelTest {
             collaborationRepository = repository,
             householdRepository = householdRepository,
             sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
     }
@@ -142,12 +145,14 @@ class HouseholdMembersScreenModelTest {
             collaborationRepository = repository,
             householdRepository = householdRepository,
             sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
         model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "editor-1")
         advanceUntilIdle()
 
         assertFalse(model.uiState.value.canManageMembers)
+        assertTrue(model.uiState.value.canWriteHouseholdData)
         assertEquals(HouseholdMemberRole.Editor, model.uiState.value.currentUserRole)
     }
 
@@ -227,6 +232,7 @@ class HouseholdMembersScreenModelTest {
             collaborationRepository = repository,
             householdRepository = householdRepository,
             sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
         repository.seedMember(
@@ -271,6 +277,7 @@ class HouseholdMembersScreenModelTest {
             collaborationRepository = repository,
             householdRepository = householdRepository,
             sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
             scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
         )
         model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "admin-1")
@@ -408,27 +415,117 @@ class HouseholdMembersScreenModelTest {
     }
 
     @Test
-    fun uploadHouseholdAvatar_setsLoadingThenClearsOnSuccess() = runTest(testDispatcher) {
+    fun uploadHouseholdAvatar_setsLoadingThenShowsSuccessSnackbar() = runTest(testDispatcher) {
         model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
         advanceUntilIdle()
 
-        model.uploadHouseholdAvatar("household-1", ByteArray(0), "image/jpeg")
+        model.uploadHouseholdAvatar("household-1", ByteArray(1), "image/jpeg")
         advanceUntilIdle()
 
         assertFalse(model.uiState.value.isUploadingHouseholdAvatar)
+        assertNull(model.uiState.value.error)
+        assertEquals(HouseholdMembersSuccess.AvatarUploaded, model.uiState.value.successMessageKey)
         assertEquals(1, householdRepository.updateHouseholdAvatarCalls)
     }
 
     @Test
-    fun uploadHouseholdAvatar_onFailure_clearsLoadingAndSetsError() = runTest(testDispatcher) {
+    fun uploadHouseholdAvatar_onFailure_clearsLoadingAndSetsAvatarUploadFailedError() = runTest(testDispatcher) {
         householdRepository.updateHouseholdAvatarResult = Result.failure(IllegalStateException("upload_failed"))
         model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
         advanceUntilIdle()
 
-        model.uploadHouseholdAvatar("household-1", ByteArray(0), "image/jpeg")
+        model.uploadHouseholdAvatar("household-1", ByteArray(1), "image/jpeg")
         advanceUntilIdle()
 
         assertFalse(model.uiState.value.isUploadingHouseholdAvatar)
-        assertEquals(HouseholdMembersError.Generic, model.uiState.value.error)
+        assertEquals(HouseholdMembersError.AvatarUploadFailed, model.uiState.value.error)
+    }
+
+    @Test
+    fun uploadMemberAvatar_onSuccess_showsSuccessSnackbar() = runTest(testDispatcher) {
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Alice",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "user-alice",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        val member = model.uiState.value.members.single { it.id == "member-1" }
+        model.uploadMemberAvatar("household-1", member, ByteArray(1), "image/jpeg")
+        advanceUntilIdle()
+
+        assertNull(model.uiState.value.uploadingAvatarMemberId)
+        assertNull(model.uiState.value.error)
+        assertEquals(HouseholdMembersSuccess.AvatarUploaded, model.uiState.value.successMessageKey)
+    }
+
+    @Test
+    fun uploadMemberAvatar_onFailure_setsAvatarUploadFailedError() = runTest(testDispatcher) {
+        repository.updateMemberAvatarResult = Result.failure(RuntimeException("network_error"))
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Alice",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "user-alice",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        val member = model.uiState.value.members.single { it.id == "member-1" }
+        model.uploadMemberAvatar("household-1", member, ByteArray(1), "image/jpeg")
+        advanceUntilIdle()
+
+        assertNull(model.uiState.value.uploadingAvatarMemberId)
+        assertEquals(HouseholdMembersError.AvatarUploadFailed, model.uiState.value.error)
+    }
+
+    @Test
+    fun editor_hasCanWriteHouseholdDataButNotCanManageMembers() = runTest(testDispatcher) {
+        householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Editor)
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "editor-1")
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.canManageMembers)
+        assertTrue(model.uiState.value.canWriteHouseholdData)
+    }
+
+    @Test
+    fun viewer_hasBothCanManageMembersAndCanWriteHouseholdDataFalse() = runTest(testDispatcher) {
+        householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Viewer)
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "viewer-1")
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.canManageMembers)
+        assertFalse(model.uiState.value.canWriteHouseholdData)
     }
 }

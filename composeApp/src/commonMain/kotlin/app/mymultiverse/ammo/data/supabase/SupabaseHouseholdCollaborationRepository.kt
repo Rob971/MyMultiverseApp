@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.data.supabase
 
+import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdDependantAvatarUpdateRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdDependantRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdRpcDecoder
@@ -39,6 +40,7 @@ import kotlinx.serialization.json.put
 
 class SupabaseHouseholdCollaborationRepository(
     private val client: SupabaseClient,
+    private val logger: AppLogger,
 ) : HouseholdCollaborationRepository {
 
     private val membersByHousehold = mutableMapOf<String, MutableStateFlow<List<HouseholdMember>>>()
@@ -367,6 +369,7 @@ class SupabaseHouseholdCollaborationRepository(
             HouseholdMemberKind.Dependant -> Unit
             HouseholdMemberKind.Group -> error(CollaborationErrorCodes.INSUFFICIENT_ROLE)
         }
+        logger.breadcrumb("member_avatar_upload_start kind=${member.kind} household=$householdId")
 
         val extension = avatarExtensionFor(contentType)
         val storagePath = when (member.kind) {
@@ -402,6 +405,13 @@ class SupabaseHouseholdCollaborationRepository(
                 if (current.id == member.id) current.copy(avatarUrl = publicUrl) else current
             }
         }
+        logger.breadcrumb("member_avatar_upload_success kind=${member.kind} household=$householdId")
+    }.onFailure { throwable ->
+        logger.recordError(
+            tag = "AvatarUpload",
+            message = "member_avatar_upload_failed kind=${member.kind} household=$householdId",
+            throwable = throwable,
+        )
     }
 
     private suspend fun sendOrRefreshInvite(

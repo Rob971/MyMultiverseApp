@@ -1,5 +1,8 @@
 package app.mymultiverse.ammo.domain.sharing
 
+import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
+import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
+
 /** Initials for member avatar chips (up to two characters). */
 fun memberAvatarInitials(displayName: String): String {
     val name = displayName.trim()
@@ -13,17 +16,30 @@ fun memberAvatarInitials(displayName: String): String {
     }
 }
 
+/**
+ * Returns true when the current user is allowed to upload a new photo for [member].
+ *
+ * Rules:
+ * - **Person member**: only the person themselves can change their own profile photo.
+ *   Owner/admin roles do NOT grant edit rights over another person's picture —
+ *   both the storage RLS (`profiles/{auth.uid()}` folder) and the data layer
+ *   enforce this; the UI must match.
+ * - **Dependant**: any member who can write household data (owner, admin, editor)
+ *   may manage a dependant's photo, consistent with the storage RLS function
+ *   `can_upload_dependant_avatar` → `household_member_can_write_nutrition`.
+ * - **Group**: never editable (no photo concept for groups).
+ *
+ * @param canWriteHouseholdData true when the current user's role is Owner, Admin, or Editor.
+ */
 fun canEditMemberAvatar(
-    member: app.mymultiverse.ammo.domain.model.sharing.HouseholdMember,
+    member: HouseholdMember,
     currentUserId: String?,
-    canManageMembers: Boolean,
+    canWriteHouseholdData: Boolean,
 ): Boolean {
     if (currentUserId == null) return false
     return when (member.kind) {
-        app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind.Person ->
-            member.referenceId == currentUserId || canManageMembers
-        app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind.Dependant ->
-            canManageMembers
-        app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind.Group -> false
+        HouseholdMemberKind.Person -> member.referenceId == currentUserId
+        HouseholdMemberKind.Dependant -> canWriteHouseholdData
+        HouseholdMemberKind.Group -> false
     }
 }

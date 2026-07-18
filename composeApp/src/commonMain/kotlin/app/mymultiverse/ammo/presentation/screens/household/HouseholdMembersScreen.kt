@@ -138,6 +138,8 @@ import ammo.composeapp.generated.resources.sharing_members_role_viewer
 import ammo.composeapp.generated.resources.sharing_members_select_role
 import ammo.composeapp.generated.resources.sharing_members_subtitle
 import ammo.composeapp.generated.resources.sharing_members_title
+import ammo.composeapp.generated.resources.sharing_avatar_upload_success
+import ammo.composeapp.generated.resources.sharing_members_error_avatar_upload_failed
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -211,6 +213,8 @@ fun HouseholdMembersScreen(
                 )
             HouseholdMembersSuccess.RoleUpdated ->
                 stringResource(Res.string.sharing_members_role_updated)
+            HouseholdMembersSuccess.AvatarUploaded ->
+                stringResource(Res.string.sharing_avatar_upload_success)
         }
     }
     val currentUserId = (authState as? AuthState.Authenticated)?.user?.id
@@ -383,6 +387,7 @@ fun HouseholdMembersScreen(
                             member = member,
                             actorRole = uiState.currentUserRole,
                             canManage = uiState.canManageMembers,
+                            canWriteHouseholdData = uiState.canWriteHouseholdData,
                             currentUserId = currentUserId,
                             isUploadingAvatar = uiState.uploadingAvatarMemberId == member.id,
                             onRemove = { screenModel.removeMember(member, household.id) },
@@ -820,6 +825,8 @@ private fun mapErrorMessage(error: HouseholdMembersError): String =
             stringResource(Res.string.sharing_members_error_transfer_target)
         HouseholdMembersError.TransferTargetNotMember ->
             stringResource(Res.string.sharing_members_error_transfer_failed)
+        HouseholdMembersError.AvatarUploadFailed ->
+            stringResource(Res.string.sharing_members_error_avatar_upload_failed)
     }
 
 @Composable
@@ -859,6 +866,7 @@ private fun MemberRow(
     member: HouseholdMember,
     actorRole: HouseholdMemberRole?,
     canManage: Boolean,
+    canWriteHouseholdData: Boolean,
     currentUserId: String?,
     isUploadingAvatar: Boolean,
     onRemove: () -> Unit,
@@ -878,7 +886,7 @@ private fun MemberRow(
         Res.string.sharing_members_avatar_content_description,
         member.displayName,
     )
-    val canChangeAvatar = canEditMemberAvatar(member, currentUserId, canManage)
+    val canChangeAvatar = canEditMemberAvatar(member, currentUserId, canWriteHouseholdData)
     var menuExpanded by remember { mutableStateOf(false) }
 
     FamilyLogisticsCardSurface(

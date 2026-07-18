@@ -87,7 +87,7 @@ private val dataModule = module {
     single<HouseholdRepository> {
         val client = get<SupabaseClientHolder>().client
         if (client != null) {
-            SupabaseHouseholdRepository(client)
+            SupabaseHouseholdRepository(client, get())
         } else {
             UnconfiguredHouseholdRepository()
         }
@@ -95,7 +95,7 @@ private val dataModule = module {
     single<HouseholdCollaborationRepository> {
         val client = get<SupabaseClientHolder>().client
         if (client != null) {
-            SupabaseHouseholdCollaborationRepository(client)
+            SupabaseHouseholdCollaborationRepository(client, get())
         } else {
             UnconfiguredHouseholdCollaborationRepository()
         }
