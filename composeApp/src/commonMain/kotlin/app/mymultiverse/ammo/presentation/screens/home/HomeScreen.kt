@@ -298,6 +298,7 @@ fun HomeScreen(
                 onSignOut = screenModel::signOut,
                 onExportPersonalData = screenModel::exportPersonalData,
                 onDeleteAccount = screenModel::requestDeleteAccount,
+                onCheckForUpdates = screenModel::checkForUpdates,
             )
             Scaffold(
                 contentWindowInsets = WindowInsets.safeDrawing,

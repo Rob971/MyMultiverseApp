@@ -210,6 +210,7 @@
     <string name="nutrition_ai_criteria_use_up">وجبات عائلية باستخدام %1$s الموجود في قائمتنا</string>
     <string name="home_refresh_inspirations">تحديث الإلهامات</string>
     <string name="home_app_version">الإصدار %1$s</string>
+    <string name="home_check_for_updates">البحث عن تحديثات</string>
     <string name="home_copyright_notice">© %1$d Roberto Cornano (MyMultiverse). جميع الحقوق محفوظة.</string>
     <string name="home_trademark_notice">MyMultiverse™ · Ammò™</string>
     <string name="home_designer_credit">تصميم Carola Zeno</string>

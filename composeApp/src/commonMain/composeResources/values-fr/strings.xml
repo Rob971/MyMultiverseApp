@@ -210,6 +210,7 @@
     <string name="nutrition_ai_criteria_use_up">Repas de famille avec le %1$s déjà sur notre liste</string>
     <string name="home_refresh_inspirations">Rafraîchir les Inspirations</string>
     <string name="home_app_version">Version %1$s</string>
+    <string name="home_check_for_updates">Rechercher des mises à jour</string>
     <string name="home_copyright_notice">© %1$d Roberto Cornano (MyMultiverse). Tous droits réservés.</string>
     <string name="home_trademark_notice">MyMultiverse™ · Ammò™</string>
     <string name="home_designer_credit">Conçu par Carola Zeno</string>

@@ -210,6 +210,7 @@
     <string name="nutrition_ai_criteria_use_up">Comidas familiares con %1$s que ya tenemos en la lista</string>
     <string name="home_refresh_inspirations">Actualizar Inspiraciones</string>
     <string name="home_app_version">Versión %1$s</string>
+    <string name="home_check_for_updates">Buscar actualizaciones</string>
     <string name="home_copyright_notice">© %1$d Roberto Cornano (MyMultiverse). Todos los derechos reservados.</string>
     <string name="home_trademark_notice">MyMultiverse™ · Ammò™</string>
     <string name="home_designer_credit">Diseñado por Carola Zeno</string>

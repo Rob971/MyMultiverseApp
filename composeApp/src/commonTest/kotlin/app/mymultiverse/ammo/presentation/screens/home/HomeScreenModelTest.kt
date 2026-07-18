@@ -27,6 +27,8 @@ import app.mymultiverse.ammo.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.ammo.presentation.di.FakeAuthRepository
 import app.mymultiverse.ammo.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.ammo.presentation.di.FakeNutritionSessionCoordinator
+import app.mymultiverse.ammo.domain.platform.ReleaseChannel
+import app.mymultiverse.ammo.presentation.di.FakeAppStoreLauncher
 import app.mymultiverse.ammo.presentation.di.FakePersonalDataExporter
 import app.mymultiverse.ammo.presentation.di.FakePushNotificationRegistrar
 import app.mymultiverse.ammo.presentation.di.FakeHouseholdCollaborationRepository
@@ -76,6 +78,7 @@ class HomeScreenModelTest {
         householdRepository: FakeHouseholdRepository = FakeHouseholdRepository(),
         collaborationRepository: FakeHouseholdCollaborationRepository = FakeHouseholdCollaborationRepository(),
         personalDataExporter: FakePersonalDataExporter = FakePersonalDataExporter(),
+        appStoreLauncher: FakeAppStoreLauncher = FakeAppStoreLauncher(),
         pushNotificationRegistrar: FakePushNotificationRegistrar = FakePushNotificationRegistrar(),
         sessionCoordinator: FakeNutritionSessionCoordinator = FakeNutritionSessionCoordinator(
             initialRepository = NutritionRepositoryImpl(MapSettings()),
@@ -90,6 +93,7 @@ class HomeScreenModelTest {
             collaborationRepository = collaborationRepository,
             sessionCoordinator = sessionCoordinator,
             personalDataExporter = personalDataExporter,
+            appStoreLauncher = appStoreLauncher,
             pushNotificationRegistrar = pushNotificationRegistrar,
             firstWinChecklistStore = firstWinChecklistStore,
             weekPlanNudgeStore = weekPlanNudgeStore,
@@ -310,6 +314,7 @@ class HomeScreenModelTest {
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
             ),
             personalDataExporter = FakePersonalDataExporter(),
+            appStoreLauncher = FakeAppStoreLauncher(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
             firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
             weekPlanNudgeStore = HomeWeekPlanNudgeStore(MapSettings()),
@@ -338,6 +343,7 @@ class HomeScreenModelTest {
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
             ),
             personalDataExporter = FakePersonalDataExporter(),
+            appStoreLauncher = FakeAppStoreLauncher(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
             firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
             weekPlanNudgeStore = HomeWeekPlanNudgeStore(MapSettings()),
@@ -377,6 +383,7 @@ class HomeScreenModelTest {
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
             ),
             personalDataExporter = FakePersonalDataExporter(),
+            appStoreLauncher = FakeAppStoreLauncher(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
             firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
             weekPlanNudgeStore = HomeWeekPlanNudgeStore(MapSettings()),
@@ -407,6 +414,7 @@ class HomeScreenModelTest {
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
             ),
             personalDataExporter = FakePersonalDataExporter(),
+            appStoreLauncher = FakeAppStoreLauncher(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
             firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
             weekPlanNudgeStore = HomeWeekPlanNudgeStore(MapSettings()),
@@ -663,6 +671,7 @@ class HomeScreenModelTest {
                 initialRepository = NutritionRepositoryImpl(MapSettings()),
             ),
             personalDataExporter = FakePersonalDataExporter(),
+            appStoreLauncher = FakeAppStoreLauncher(),
             pushNotificationRegistrar = FakePushNotificationRegistrar(),
             firstWinChecklistStore = HomeFirstWinChecklistStore(MapSettings()),
             weekPlanNudgeStore = HomeWeekPlanNudgeStore(MapSettings()),
@@ -777,6 +786,21 @@ class HomeScreenModelTest {
         screenModel.createHousehold()
         advanceUntilIdle()
         assertEquals("household-1", sessionCoordinator.activatedHouseholdId)
+    }
+
+    @Test
+    fun checkForUpdates_delegatesToAppStoreLauncher() = runTest(testDispatcher) {
+        val launcher = FakeAppStoreLauncher()
+        val screenModel = model(
+            repository = FakeGreetingRepository(Greeting("Welcome home")),
+            appStoreLauncher = launcher,
+        )
+        advanceUntilIdle()
+        assertEquals(0, launcher.openStoreListingCalls)
+        screenModel.checkForUpdates()
+        assertEquals(1, launcher.openStoreListingCalls)
+        // In the test build VERSION_NAME has no prerelease suffix → Production channel.
+        assertEquals(ReleaseChannel.Production, launcher.lastChannel)
     }
 }
 

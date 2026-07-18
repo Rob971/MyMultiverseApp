@@ -31,6 +31,7 @@ import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.auth_sign_out
 import ammo.composeapp.generated.resources.home_app_version
+import ammo.composeapp.generated.resources.home_check_for_updates
 import ammo.composeapp.generated.resources.home_copyright_notice
 import ammo.composeapp.generated.resources.home_trademark_notice
 import ammo.composeapp.generated.resources.home_designer_credit
@@ -50,6 +51,7 @@ object HomeAccountSheetTestTags {
     const val EXPORT = HomeTestTags.EXPORT_DATA_BUTTON
     const val DELETE = HomeTestTags.DELETE_ACCOUNT_BUTTON
     const val VERSION = HomeTestTags.APP_VERSION_LABEL
+    const val CHECK_FOR_UPDATES = "home_account_check_for_updates"
     const val COPYRIGHT = "home_account_copyright"
     const val TRADEMARK = "home_account_trademark"
     const val DESIGNER = "home_account_designer"
@@ -67,6 +69,7 @@ fun HomeAccountSheet(
     onSignOut: () -> Unit,
     onExportPersonalData: () -> Unit,
     onDeleteAccount: () -> Unit,
+    onCheckForUpdates: () -> Unit,
 ) {
     if (!visible) return
 
@@ -190,6 +193,18 @@ fun HomeAccountSheet(
                     .testTag(HomeAccountSheetTestTags.VERSION),
                 textAlign = TextAlign.Center,
             )
+            TextButton(
+                onClick = onCheckForUpdates,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(HomeAccountSheetTestTags.CHECK_FOR_UPDATES),
+            ) {
+                Text(
+                    text = stringResource(Res.string.home_check_for_updates),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = JourneySemanticColors.inkMuted(),
+                )
+            }
             Text(
                 text = stringResource(Res.string.home_designer_credit),
                 style = MaterialTheme.typography.labelSmall,
