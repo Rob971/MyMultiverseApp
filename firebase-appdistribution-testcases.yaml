@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 92
-updated: 2026-07-15
+version: 93
+updated: 2026-07-18
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -329,15 +329,39 @@ testcases:
       - Rename dialog opens only from the edit icon when permitted.
 
   - id: household-member-avatar
-    title: Family member profile photo
+    title: Family member profile photo (owner / admin / editor)
     steps:
-      - Sign in and open Family members from Home.
-      - Confirm each member row shows a circular avatar to the left of the name (initials when no photo yet).
-      - Tap your own avatar and choose a photo from the gallery.
-      - If you manage members, add a dependant and tap their avatar to set a photo for them.
+      - Sign in as the household owner and open Family members from Home (profile icon → family row).
+      - Verify each member row shows a circular avatar left of the name (initials when no photo).
+      - Tap your own avatar and pick a photo from the gallery.
+      - Confirm a "Photo updated successfully" snackbar appears after upload.
+      - Verify the photo appears on your row immediately; other family members see it after refresh.
+      - Add a dependant (invite chooser → Add child / dependant), then tap the dependant's avatar and pick a photo.
+      - Confirm success snackbar; dependant photo should appear on the row.
+      - Sign in as an editor on a second device; open Family members.
+      - As the editor, tap your own avatar → pick a photo → confirm success snackbar.
+      - Tap a dependant's avatar (editors can manage dependant photos) → pick a photo → confirm success snackbar.
+      - Verify the editor cannot tap another adult member's avatar (no action when tapping someone else's avatar).
     expected:
-      - Selected photo appears on the member row after upload.
-      - Other household members see the updated avatar on refresh.
+      - Each role can tap only the avatars they are permitted to change (self for persons; own + dependants for editors; own + dependants + family photo for owners/admins).
+      - Every successful upload shows the "Photo updated successfully" snackbar.
+      - If the upload fails (airplane mode), a polite "We could not save your photo" inline error appears; no crash.
+      - Family photo (large avatar at top) is tappable only for owner and admin; tapping shows a change label button.
+      - All photos persist across app restarts (backed by DB, not in-memory only).
+
+  - id: household-family-photo
+    title: Family (household) photo upload and persistence
+    steps:
+      - Sign in as household owner or admin; open Family members.
+      - Observe the large circular avatar at the top showing household name initials (or existing family photo).
+      - Tap the avatar or the "Change family photo" button below it.
+      - Pick a photo from the gallery.
+    expected:
+      - "Photo updated successfully" snackbar appears.
+      - The family photo is shown at the top of the Family members screen immediately.
+      - After closing the screen and reopening (or restarting the app), the same family photo persists.
+      - An editor or viewer does not see the "Change family photo" button and cannot tap the family photo.
+      - If upload fails, "We could not save your photo. Please check your connection and try again." appears inline.
 
   - id: household-two-member-list
     title: Two-person family shows both members (not solo invite)
