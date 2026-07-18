@@ -11,6 +11,8 @@ import app.mymultiverse.ammo.data.home.HomeFirstWinChecklistStore
 import app.mymultiverse.ammo.data.home.HomeWeekPlanNudgeStore
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.ammo.data.invite.InviteSessionStore
+import app.mymultiverse.ammo.data.tour.ProductTourStore
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourScreenModel
 import app.mymultiverse.ammo.data.repository.SettingsNutritionHouseholdSelectionStore
 import app.mymultiverse.ammo.data.ai.AiSecrets
 import app.mymultiverse.ammo.data.manager.SettingsAiAssistantSettings
@@ -105,6 +107,7 @@ private val dataModule = module {
     single { HomeFirstWinChecklistStore(get()) }
     single { HomeWeekPlanNudgeStore(get()) }
     single { GroceryGhostPairingDismissStore(get()) }
+    single { ProductTourStore(get()) }
     single<ThemeManager> { SettingsThemeManager(get()) }
     single<GreetingRepository> { GreetingRepositoryImpl(get()) }
     single<NutritionRepository> { NutritionRepositoryImpl(get()) }
@@ -159,6 +162,7 @@ private val dataModule = module {
 
 private val presentationModule = module {
     single { RegistrationData() }
+    singleOf(::ProductTourScreenModel)
     singleOf(::HomeScreenModel)
     singleOf(::LoginScreenModel)
     singleOf(::OnboardingScreenModel)

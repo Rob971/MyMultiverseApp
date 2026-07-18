@@ -50,8 +50,21 @@ import app.mymultiverse.ammo.presentation.invite.InviteJoinFlowCoordinator
 import app.mymultiverse.ammo.presentation.screens.invite.InviteEmailMismatchScreen
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import app.mymultiverse.ammo.presentation.screens.nutrition.NutritionFlow
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourScreenModel
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourStep
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourTestTags
+import app.mymultiverse.ammo.presentation.screens.tour.SpotlightTourOverlay
 import app.mymultiverse.ammo.presentation.theme.AppTheme
 import app.mymultiverse.ammo.presentation.theme.ProvideAppDarkTheme
+import ammo.composeapp.generated.resources.Res
+import ammo.composeapp.generated.resources.tour_step_grocery_body
+import ammo.composeapp.generated.resources.tour_step_grocery_title
+import ammo.composeapp.generated.resources.tour_step_home_body
+import ammo.composeapp.generated.resources.tour_step_home_title
+import ammo.composeapp.generated.resources.tour_step_meal_plan_body
+import ammo.composeapp.generated.resources.tour_step_meal_plan_title
+import ammo.composeapp.generated.resources.tour_step_welcome_body
+import ammo.composeapp.generated.resources.tour_step_welcome_title
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -236,6 +249,43 @@ private fun AuthenticatedMainApp() {
     var selectedTab by rememberSaveable { mutableStateOf(AppMainTab.Home) }
     var nutritionHousehold by remember { mutableStateOf<HouseholdContext?>(null) }
 
+    val tourScreenModel = koinInject<ProductTourScreenModel>()
+    val tourSteps = remember {
+        listOf(
+            ProductTourStep(
+                id = "welcome",
+                title = Res.string.tour_step_welcome_title,
+                description = Res.string.tour_step_welcome_body,
+                targetTag = null,
+            ),
+            ProductTourStep(
+                id = "home_hub",
+                title = Res.string.tour_step_home_title,
+                description = Res.string.tour_step_home_body,
+                targetTag = ProductTourTestTags.TARGET_HOME_HUB,
+            ),
+            ProductTourStep(
+                id = "meal_plan_tab",
+                title = Res.string.tour_step_meal_plan_title,
+                description = Res.string.tour_step_meal_plan_body,
+                targetTag = ProductTourTestTags.TARGET_MEAL_PLAN_TAB,
+            ),
+            ProductTourStep(
+                id = "grocery_tab",
+                title = Res.string.tour_step_grocery_title,
+                description = Res.string.tour_step_grocery_body,
+                targetTag = ProductTourTestTags.TARGET_GROCERY_TAB,
+            ),
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        tourScreenModel.maybeShowTour(
+            versionKey = app.mymultiverse.ammo.domain.AppBuildInfo.VERSION_NAME,
+            steps = tourSteps,
+        )
+    }
+
     val logger = koinInject<AppLogger>()
     LaunchedEffect(selectedTab) {
         logger.breadcrumb("main_tab_selected tab=${selectedTab.name.lowercase()}")
@@ -367,50 +417,55 @@ private fun AuthenticatedMainApp() {
         }
     }
 
-    MainTabShell(
-        selectedTab = selectedTab,
-        onTabSelected = { selectedTab = it },
-        showBottomBar = showBottomBar,
-        modifier = Modifier.fillMaxSize(),
-    ) { contentModifier ->
-        when (selectedTab) {
-            AppMainTab.Home -> HomeScreen(
-                onOpenMealPlan = { selectedTab = AppMainTab.MealPlan },
-                onOpenGrocery = { selectedTab = AppMainTab.Grocery },
-                onOpenHouseholdMembers = {
-                    navigator.navigateTo(AppRoute.HouseholdMembers(household = resolvedHousehold))
-                },
-                embeddedInMainTabs = showBottomBar,
-                modifier = contentModifier,
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        MainTabShell(
+            selectedTab = selectedTab,
+            onTabSelected = { selectedTab = it },
+            showBottomBar = showBottomBar,
+            modifier = Modifier.fillMaxSize(),
+        ) { contentModifier ->
+            when (selectedTab) {
+                AppMainTab.Home -> HomeScreen(
+                    onOpenMealPlan = { selectedTab = AppMainTab.MealPlan },
+                    onOpenGrocery = { selectedTab = AppMainTab.Grocery },
+                    onOpenHouseholdMembers = {
+                        navigator.navigateTo(AppRoute.HouseholdMembers(household = resolvedHousehold))
+                    },
+                    embeddedInMainTabs = showBottomBar,
+                    modifier = contentModifier,
+                )
 
-            AppMainTab.MealPlan -> NutritionFlow(
-                household = resolvedHousehold,
-                section = NutritionSection.MealPlan,
-                onBack = { selectedTab = AppMainTab.Home },
-                onOpenSection = { section, initialAiMode ->
-                    navigator.navigateTo(
-                        AppRoute.Nutrition(
-                            household = resolvedHousehold,
-                            section = section,
-                            initialAiMode = initialAiMode,
-                        ),
-                    )
-                },
-                onHouseholdSelected = { nutritionHousehold = it },
-                embeddedInTabs = true,
-                modifier = contentModifier,
-            )
+                AppMainTab.MealPlan -> NutritionFlow(
+                    household = resolvedHousehold,
+                    section = NutritionSection.MealPlan,
+                    onBack = { selectedTab = AppMainTab.Home },
+                    onOpenSection = { section, initialAiMode ->
+                        navigator.navigateTo(
+                            AppRoute.Nutrition(
+                                household = resolvedHousehold,
+                                section = section,
+                                initialAiMode = initialAiMode,
+                            ),
+                        )
+                    },
+                    onHouseholdSelected = { nutritionHousehold = it },
+                    embeddedInTabs = true,
+                    modifier = contentModifier,
+                )
 
-            AppMainTab.Grocery -> NutritionFlow(
-                household = resolvedHousehold,
-                section = NutritionSection.Grocery,
-                onBack = { selectedTab = AppMainTab.Home },
-                onOpenSection = { _, _ -> },
-                onHouseholdSelected = { nutritionHousehold = it },
-                embeddedInTabs = true,
-                modifier = contentModifier,
-            )
+                AppMainTab.Grocery -> NutritionFlow(
+                    household = resolvedHousehold,
+                    section = NutritionSection.Grocery,
+                    onBack = { selectedTab = AppMainTab.Home },
+                    onOpenSection = { _, _ -> },
+                    onHouseholdSelected = { nutritionHousehold = it },
+                    embeddedInTabs = true,
+                    modifier = contentModifier,
+                )
+            }
         }
+
+        // Product tour spotlight overlay — renders above the tab shell and all screens.
+        SpotlightTourOverlay(screenModel = tourScreenModel)
     }
 }

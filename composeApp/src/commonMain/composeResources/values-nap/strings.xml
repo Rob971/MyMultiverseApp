@@ -991,4 +991,17 @@
     <string name="sharing_members_role_admin_description">Pò invità, gestì membri e cagnà liste e piani condivisi.</string>
     <string name="sharing_members_role_editor_description">Pò cagnà liste d' 'a spesa e piani pasti condivisi.</string>
     <string name="sharing_members_role_viewer_description">Pò guardà liste e piani condivisi sulamente.</string>
+    <string name="tour_step_counter">%1$d 'e %2$d</string>
+    <string name="tour_action_skip">Sàuta</string>
+    <string name="tour_action_next">Avanti</string>
+    <string name="tour_action_previous">Arret</string>
+    <string name="tour_action_finish">Fatto</string>
+    <string name="tour_step_welcome_title">Benvenuto 'ncopp a Ammò</string>
+    <string name="tour_step_welcome_body">O' spazio tuio pe' fa' 'a spesa e pianificà 'e mmagnà cu 'a famiglia. Facimme 'nu piccolo giro.</string>
+    <string name="tour_step_home_title">O' tuio centro 'e pianificazione</string>
+    <string name="tour_step_home_body">Vide 'a cena 'e stanotte, 'a lista 'e spesa e 'e novità 'e famiglia tuttu insiem'.</string>
+    <string name="tour_step_meal_plan_title">Pianifica 'a settimana</string>
+    <string name="tour_step_meal_plan_body">Metti pranzo e cena pe' ogni jurno. Tutta 'a famiglia vede 'o stesso piano.</string>
+    <string name="tour_step_grocery_title">'A lista 'e spesa</string>
+    <string name="tour_step_grocery_body">Aggiunne 'e rrobba p' 'a settimana e sparricella mentrei faie 'a spesa. Tutto rimane sincronizzato.</string>
 </resources>

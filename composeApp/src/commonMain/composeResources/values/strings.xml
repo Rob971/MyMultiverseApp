@@ -992,4 +992,17 @@
     <string name="sharing_members_role_admin_description">Can invite people, manage members, and edit shared lists and meal plans.</string>
     <string name="sharing_members_role_editor_description">Can edit shared grocery lists and meal plans.</string>
     <string name="sharing_members_role_viewer_description">Can view shared lists and meal plans only.</string>
+    <string name="tour_step_counter">%1$d of %2$d</string>
+    <string name="tour_action_skip">Skip tour</string>
+    <string name="tour_action_next">Next</string>
+    <string name="tour_action_previous">Previous</string>
+    <string name="tour_action_finish">Done</string>
+    <string name="tour_step_welcome_title">Welcome to Ammò</string>
+    <string name="tour_step_welcome_body">Your shared space for family meal planning and grocery shopping. Let's take a quick tour.</string>
+    <string name="tour_step_home_title">Your planning hub</string>
+    <string name="tour_step_home_body">See tonight's dinner, grocery list status, and family activity — all in one place.</string>
+    <string name="tour_step_meal_plan_title">Plan the week</string>
+    <string name="tour_step_meal_plan_body">Set lunch and dinner for every day. The whole family sees the same plan in real time.</string>
+    <string name="tour_step_grocery_title">Grocery list</string>
+    <string name="tour_step_grocery_body">Add items for the week and check them off as you shop. Everything stays in sync.</string>
 </resources>

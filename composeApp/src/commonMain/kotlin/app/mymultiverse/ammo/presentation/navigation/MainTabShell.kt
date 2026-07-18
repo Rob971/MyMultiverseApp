@@ -17,6 +17,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.presentation.components.MainTabIconArt
 import app.mymultiverse.ammo.presentation.components.MainTabIconKind
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourTestTags
+import app.mymultiverse.ammo.presentation.screens.tour.productTourTarget
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.nav_tab_grocery
@@ -79,7 +81,9 @@ fun MainTabShell(
                                 )
                             },
                             label = { Text(mealPlanTabLabel) },
-                            modifier = Modifier.testTag(NavigationTestTags.TAB_MEAL_PLAN),
+                            modifier = Modifier
+                                .testTag(NavigationTestTags.TAB_MEAL_PLAN)
+                                .productTourTarget(ProductTourTestTags.TARGET_MEAL_PLAN_TAB),
                             colors = navigationBarItemColors(),
                         )
                         NavigationBarItem(
@@ -93,7 +97,9 @@ fun MainTabShell(
                                 )
                             },
                             label = { Text(groceryTabLabel) },
-                            modifier = Modifier.testTag(NavigationTestTags.TAB_GROCERY),
+                            modifier = Modifier
+                                .testTag(NavigationTestTags.TAB_GROCERY)
+                                .productTourTarget(ProductTourTestTags.TARGET_GROCERY_TAB),
                             colors = navigationBarItemColors(),
                         )
                     }
