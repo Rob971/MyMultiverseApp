@@ -27,6 +27,7 @@ import app.mymultiverse.ammo.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.ammo.presentation.di.FakeAuthRepository
 import app.mymultiverse.ammo.presentation.di.FakeHouseholdRepository
 import app.mymultiverse.ammo.presentation.di.FakeNutritionSessionCoordinator
+import app.mymultiverse.ammo.domain.platform.ReleaseChannel
 import app.mymultiverse.ammo.presentation.di.FakeAppStoreLauncher
 import app.mymultiverse.ammo.presentation.di.FakePersonalDataExporter
 import app.mymultiverse.ammo.presentation.di.FakePushNotificationRegistrar
@@ -798,6 +799,8 @@ class HomeScreenModelTest {
         assertEquals(0, launcher.openStoreListingCalls)
         screenModel.checkForUpdates()
         assertEquals(1, launcher.openStoreListingCalls)
+        // In the test build VERSION_NAME has no prerelease suffix → Production channel.
+        assertEquals(ReleaseChannel.Production, launcher.lastChannel)
     }
 }
 

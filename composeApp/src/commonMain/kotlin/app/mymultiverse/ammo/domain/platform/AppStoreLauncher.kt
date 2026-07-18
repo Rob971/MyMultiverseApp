@@ -1,9 +1,12 @@
 package app.mymultiverse.ammo.domain.platform
 
 /**
- * Opens the platform app store listing so users can check for and install updates.
- * Android opens the Play Store; iOS opens the App Store.
+ * Opens the appropriate platform store or distribution page for users to get
+ * the latest build for their [channel]:
+ *  - [ReleaseChannel.Alpha]      → Firebase App Distribution (Android) / TestFlight (iOS)
+ *  - [ReleaseChannel.Beta]       → Play Store Closed Testing (Android) / TestFlight (iOS)
+ *  - [ReleaseChannel.Production] → Play Store (Android) / App Store (iOS)
  */
 interface AppStoreLauncher {
-    fun openStoreListing()
+    fun openStoreListing(channel: ReleaseChannel)
 }

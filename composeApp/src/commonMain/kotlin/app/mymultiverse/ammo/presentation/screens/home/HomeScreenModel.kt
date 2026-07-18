@@ -22,7 +22,9 @@ import app.mymultiverse.ammo.domain.repository.AuthRepository
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.HouseholdCollaborationRepository
+import app.mymultiverse.ammo.domain.AppBuildInfo
 import app.mymultiverse.ammo.domain.platform.AppStoreLauncher
+import app.mymultiverse.ammo.domain.platform.ReleaseChannel
 import app.mymultiverse.ammo.domain.platform.PersonalDataExporter
 import app.mymultiverse.ammo.domain.platform.PushNotificationRegistrar
 import app.mymultiverse.ammo.domain.sharing.CollaborationErrorCodes
@@ -631,7 +633,8 @@ class HomeScreenModel(
     }
 
     fun checkForUpdates() {
-        appStoreLauncher.openStoreListing()
+        val channel = ReleaseChannel.fromVersionName(AppBuildInfo.VERSION_NAME)
+        appStoreLauncher.openStoreListing(channel)
     }
 
     fun onAcceptInviteClicked(invite: HouseholdInvite) {
