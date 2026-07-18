@@ -22,6 +22,7 @@ import app.mymultiverse.ammo.domain.repository.AuthRepository
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.HouseholdCollaborationRepository
+import app.mymultiverse.ammo.domain.platform.AppStoreLauncher
 import app.mymultiverse.ammo.domain.platform.PersonalDataExporter
 import app.mymultiverse.ammo.domain.platform.PushNotificationRegistrar
 import app.mymultiverse.ammo.domain.sharing.CollaborationErrorCodes
@@ -60,6 +61,7 @@ class HomeScreenModel(
     private val collaborationRepository: HouseholdCollaborationRepository,
     private val sessionCoordinator: NutritionSessionCoordinator,
     private val personalDataExporter: PersonalDataExporter,
+    private val appStoreLauncher: AppStoreLauncher,
     private val pushNotificationRegistrar: PushNotificationRegistrar,
     private val firstWinChecklistStore: HomeFirstWinChecklistStore,
     private val weekPlanNudgeStore: HomeWeekPlanNudgeStore,
@@ -626,6 +628,10 @@ class HomeScreenModel(
 
     fun clearPersonalDataExportMessage() {
         _personalDataExportMessage.value = null
+    }
+
+    fun checkForUpdates() {
+        appStoreLauncher.openStoreListing()
     }
 
     fun onAcceptInviteClicked(invite: HouseholdInvite) {

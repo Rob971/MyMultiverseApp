@@ -1,5 +1,6 @@
 package app.mymultiverse.ammo.presentation.di
 
+import app.mymultiverse.ammo.domain.platform.AppStoreLauncher
 import app.mymultiverse.ammo.domain.platform.PersonalDataExporter
 import app.mymultiverse.ammo.domain.platform.PushNotificationRegistrar
 
@@ -24,5 +25,13 @@ class FakePushNotificationRegistrar : PushNotificationRegistrar {
 
     override suspend fun registerCurrentDeviceToken() {
         registerCalls++
+    }
+}
+
+class FakeAppStoreLauncher : AppStoreLauncher {
+    var openStoreListingCalls = 0
+
+    override fun openStoreListing() {
+        openStoreListingCalls++
     }
 }
