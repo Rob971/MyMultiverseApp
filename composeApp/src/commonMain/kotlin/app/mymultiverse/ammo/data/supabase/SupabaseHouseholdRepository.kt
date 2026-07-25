@@ -1,6 +1,7 @@
 package app.mymultiverse.ammo.data.supabase
 
 import app.mymultiverse.ammo.data.observability.AppLogger
+import app.mymultiverse.ammo.data.supabase.dto.HouseholdIdRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdMembershipRpcRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdRpcDecoder
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdRpcRow
@@ -16,7 +17,7 @@ import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
-import io.github.jan.supabase.postgrest.query.Count
+import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.rpc
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
@@ -300,14 +301,17 @@ class SupabaseHouseholdRepository(
         val publicUrl = bucket.publicUrl(storagePath)
         logger.breadcrumb("household_avatar_storage_ok household=$householdId path=$storagePath")
 
-        val rowsUpdated = client.postgrest["households"]
+        // select("id") returns the updated row when a row was affected; null when 0 rows matched.
+        // count(Count.EXACT) + countOrNull() is NOT used because PostgREST does not honour
+        // Prefer: count=exact for UPDATE operations, causing countOrNull() to return null → 0.
+        val updated = client.postgrest["households"]
             .update(HouseholdAvatarUpdateRow(avatarUrl = publicUrl)) {
                 filter { eq("id", householdId) }
-                count(Count.EXACT)
+                select(Columns.raw("id"))
             }
-            .countOrNull() ?: 0L
+            .decodeSingleOrNull<HouseholdIdRow>()
 
-        if (rowsUpdated == 0L) {
+        if (updated == null) {
             logger.recordError(
                 tag = "AvatarUpload",
                 message = "household_avatar_db_0_rows household=$householdId — " +
@@ -316,7 +320,7 @@ class SupabaseHouseholdRepository(
             )
             error("avatar_db_update_no_rows")
         }
-        logger.breadcrumb("household_avatar_db_ok household=$householdId rows=$rowsUpdated")
+        logger.breadcrumb("household_avatar_db_ok household=$householdId updated=true")
 
         household.update { current ->
             current?.takeIf { it.id == householdId }?.copy(avatarUrl = publicUrl) ?: current
