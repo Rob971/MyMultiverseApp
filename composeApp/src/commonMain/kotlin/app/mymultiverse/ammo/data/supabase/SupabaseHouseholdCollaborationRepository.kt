@@ -1,10 +1,12 @@
 package app.mymultiverse.ammo.data.supabase
 
 import app.mymultiverse.ammo.data.observability.AppLogger
+import app.mymultiverse.ammo.data.supabase.dto.DependantIdRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdDependantAvatarUpdateRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdDependantRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdRpcDecoder
 import app.mymultiverse.ammo.data.supabase.dto.ProfileAvatarUpdateRow
+import app.mymultiverse.ammo.data.supabase.dto.ProfileIdRow
 import app.mymultiverse.ammo.data.supabase.dto.ProfileRow
 import app.mymultiverse.ammo.domain.auth.resolvedDisplayName
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdInviteInsertRow
@@ -28,7 +30,6 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
-import io.github.jan.supabase.postgrest.query.Count
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
 import kotlinx.coroutines.flow.Flow
@@ -391,27 +392,32 @@ class SupabaseHouseholdCollaborationRepository(
             "member_avatar_storage_ok kind=${member.kind} path=$storagePath",
         )
 
-        val rowsUpdated: Long = when (member.kind) {
+        // Use select("id") inside the update builder so PostgREST returns the updated row
+        // in the response body. decodeSingleOrNull() returns null when 0 rows were affected.
+        // This is more reliable than count(Count.EXACT) + countOrNull(), because PostgREST
+        // does not honour Prefer: count=exact for UPDATE (only SELECT), making countOrNull()
+        // always return null → false 0 result.
+        val updated: Boolean = when (member.kind) {
             HouseholdMemberKind.Dependant -> {
                 client.postgrest["household_dependants"]
                     .update(HouseholdDependantAvatarUpdateRow(avatarUrl = publicUrl)) {
                         filter { eq("id", member.referenceId) }
-                        count(Count.EXACT)
+                        select(Columns.raw("id"))
                     }
-                    .countOrNull() ?: 0L
+                    .decodeSingleOrNull<DependantIdRow>() != null
             }
             else -> {
                 client.ensureCurrentProfile(member.referenceId)
                 client.postgrest["profiles"]
                     .update(ProfileAvatarUpdateRow(avatarUrl = publicUrl)) {
                         filter { eq("id", member.referenceId) }
-                        count(Count.EXACT)
+                        select(Columns.raw("id"))
                     }
-                    .countOrNull() ?: 0L
+                    .decodeSingleOrNull<ProfileIdRow>() != null
             }
         }
 
-        if (rowsUpdated == 0L) {
+        if (!updated) {
             val table = if (member.kind == HouseholdMemberKind.Dependant) "household_dependants" else "profiles"
             logger.recordError(
                 tag = "AvatarUpload",
@@ -422,7 +428,7 @@ class SupabaseHouseholdCollaborationRepository(
             error("avatar_db_update_no_rows")
         }
         logger.breadcrumb(
-            "member_avatar_db_ok kind=${member.kind} rows=$rowsUpdated",
+            "member_avatar_db_ok kind=${member.kind} updated=true",
         )
 
         membersFlow(householdId).update { members ->
