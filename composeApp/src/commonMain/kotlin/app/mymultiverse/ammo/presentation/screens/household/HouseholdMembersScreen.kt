@@ -140,6 +140,7 @@ import ammo.composeapp.generated.resources.sharing_members_subtitle
 import ammo.composeapp.generated.resources.sharing_members_title
 import ammo.composeapp.generated.resources.sharing_avatar_upload_success
 import ammo.composeapp.generated.resources.sharing_members_error_avatar_upload_failed
+import ammo.composeapp.generated.resources.sharing_members_error_avatar_persist_failed
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -827,6 +828,8 @@ private fun mapErrorMessage(error: HouseholdMembersError): String =
             stringResource(Res.string.sharing_members_error_transfer_failed)
         HouseholdMembersError.AvatarUploadFailed ->
             stringResource(Res.string.sharing_members_error_avatar_upload_failed)
+        HouseholdMembersError.AvatarPersistFailed ->
+            stringResource(Res.string.sharing_members_error_avatar_persist_failed)
     }
 
 @Composable

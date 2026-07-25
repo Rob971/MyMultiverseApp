@@ -931,6 +931,7 @@
     <string name="sharing_members_avatar_change">تغيير الصورة</string>
     <string name="sharing_avatar_upload_success">تم تحديث الصورة بنجاح.</string>
     <string name="sharing_members_error_avatar_upload_failed">لم نتمكن من حفظ صورتك. يرجى التحقق من اتصالك والمحاولة مجدداً.</string>
+    <string name="sharing_members_error_avatar_persist_failed">تم تحميل صورتك لكن تعذّر حفظها في ملفك الشخصي. يرجى المحاولة مجدداً.</string>
         <string name="auth_household_joined_success">انضممت إلى %1$s.</string>
 
     <string name="invite_join_title">انضم إلى %1$s</string>
