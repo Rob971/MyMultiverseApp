@@ -242,6 +242,43 @@ if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
     exit 1
   fi
   echo "OK: register_device_token succeeded"
+
+  echo "==> Probing households avatar_url UPDATE (PostgREST direct write path)"
+  AVATAR_PROBE_URL="https://example.com/member-avatars/households/${HOUSEHOLD_ID}/avatar.jpg?v=ci-probe"
+  PATCH_BODY_FILE="$(mktemp)"
+  AVATAR_PATCH_STATUS="$(curl -s -o "${PATCH_BODY_FILE}" -w '%{http_code}' \
+    -X PATCH "${REST_URL}/households?id=eq.${HOUSEHOLD_ID}" \
+    -H "apikey: ${ANON_KEY}" \
+    -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -H "Prefer: return=representation" \
+    -d "{\"avatar_url\":\"${AVATAR_PROBE_URL}\"}")"
+  PATCH_BODY="$(cat "${PATCH_BODY_FILE}")"
+  rm -f "${PATCH_BODY_FILE}"
+
+  if [[ "${AVATAR_PATCH_STATUS}" != "200" ]]; then
+    echo "ERROR: households avatar_url PATCH failed with status ${AVATAR_PATCH_STATUS}" >&2
+    echo "Hint: check households_select_member + households_update_manager RLS policies are deployed." >&2
+    exit 1
+  fi
+
+  if ! echo "${PATCH_BODY}" | jq -e '.[0].id != null' >/dev/null; then
+    echo "ERROR: households avatar_url PATCH returned 200 but updated 0 rows (body=${PATCH_BODY})" >&2
+    echo "Hint: households_select_member RLS policy is likely missing on remote." >&2
+    exit 1
+  fi
+
+  FETCHED_AVATAR="$(curl -fsS \
+    "${REST_URL}/households?id=eq.${HOUSEHOLD_ID}&select=avatar_url" \
+    -H "apikey: ${ANON_KEY}" \
+    -H "Authorization: Bearer ${ACCESS_TOKEN}")"
+
+  if ! echo "${FETCHED_AVATAR}" | jq -e --arg url "${AVATAR_PROBE_URL}" '.[0].avatar_url == $url' >/dev/null; then
+    echo "ERROR: households avatar_url did not persist after PATCH" >&2
+    echo "${FETCHED_AVATAR}" >&2
+    exit 1
+  fi
+  echo "OK: households avatar_url PostgREST round-trip succeeded"
 else
   echo "SKIP: set SUPABASE_TEST_EMAIL and SUPABASE_TEST_PASSWORD to run authenticated persistence + P2 RPC round-trip"
 fi

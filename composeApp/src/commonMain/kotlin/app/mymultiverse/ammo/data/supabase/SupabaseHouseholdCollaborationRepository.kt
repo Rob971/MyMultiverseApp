@@ -19,6 +19,9 @@ import app.mymultiverse.ammo.data.supabase.dto.HouseholdRow
 import app.mymultiverse.ammo.domain.model.sharing.AddMemberResult
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdInvitePreview
+import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadStep
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadTarget
 import app.mymultiverse.ammo.domain.sharing.avatarExtensionForContentType
 import app.mymultiverse.ammo.domain.sharing.emailsMatch
 import app.mymultiverse.ammo.domain.sharing.versionedAvatarUrl
@@ -373,9 +376,17 @@ class SupabaseHouseholdCollaborationRepository(
             HouseholdMemberKind.Dependant -> Unit
             HouseholdMemberKind.Group -> error(CollaborationErrorCodes.INSUFFICIENT_ROLE)
         }
-        logger.breadcrumb(
-            "member_avatar_upload_start kind=${member.kind} " +
-                "member=${member.id} household=$householdId bytes=${imageBytes.size}",
+        val uploadTarget = when (member.kind) {
+            HouseholdMemberKind.Dependant -> AvatarUploadTarget.Dependant
+            HouseholdMemberKind.Person -> AvatarUploadTarget.MemberProfile
+            HouseholdMemberKind.Group -> error(CollaborationErrorCodes.INSUFFICIENT_ROLE)
+        }
+        logger.logAvatarUploadStep(
+            target = uploadTarget,
+            step = AvatarUploadStep.Start,
+            householdId = householdId,
+            extra = "member=${member.id} bytes=${imageBytes.size}",
+            context = mapOf("content_type" to contentType),
         )
 
         val extension = avatarExtensionForContentType(contentType)
@@ -390,8 +401,11 @@ class SupabaseHouseholdCollaborationRepository(
             this.contentType = ContentType.parse(contentType)
         }
         val publicUrl = versionedAvatarUrl(bucket.publicUrl(storagePath))
-        logger.breadcrumb(
-            "member_avatar_storage_ok kind=${member.kind} path=$storagePath",
+        logger.logAvatarUploadStep(
+            target = uploadTarget,
+            step = AvatarUploadStep.StorageUpload,
+            householdId = householdId,
+            extra = "path=$storagePath member=${member.id}",
         )
 
         // Use select("id") inside the update builder so PostgREST returns the updated row
@@ -421,16 +435,33 @@ class SupabaseHouseholdCollaborationRepository(
 
         if (!updated) {
             val table = if (member.kind == HouseholdMemberKind.Dependant) "household_dependants" else "profiles"
-            logger.recordError(
-                tag = "AvatarUpload",
-                message = "member_avatar_db_0_rows kind=${member.kind} table=$table " +
-                    "member=${member.id} — check RLS UPDATE+SELECT on $table",
-                throwable = IllegalStateException("avatar_db_update_no_rows"),
+            val persistError = AvatarPersistException(
+                target = uploadTarget,
+                dbTable = table,
+                householdId = householdId,
+                storagePath = storagePath,
+                memberId = member.id,
+                contentType = contentType,
+                imageBytes = imageBytes.size,
             )
-            error("avatar_db_update_no_rows")
+            logger.recordAvatarUploadFailure(
+                target = uploadTarget,
+                step = AvatarUploadStep.DbPersist,
+                householdId = householdId,
+                throwable = persistError,
+                storagePath = storagePath,
+                memberId = member.id,
+                dbTable = table,
+                contentType = contentType,
+                imageBytes = imageBytes.size,
+            )
+            throw persistError
         }
-        logger.breadcrumb(
-            "member_avatar_db_ok kind=${member.kind} updated=true",
+        logger.logAvatarUploadStep(
+            target = uploadTarget,
+            step = AvatarUploadStep.DbPersist,
+            householdId = householdId,
+            extra = "member=${member.id}",
         )
 
         membersFlow(householdId).update { members ->
@@ -438,12 +469,27 @@ class SupabaseHouseholdCollaborationRepository(
                 if (current.id == member.id) current.copy(avatarUrl = publicUrl) else current
             }
         }
-        logger.breadcrumb("member_avatar_upload_success kind=${member.kind} household=$householdId")
+        logger.logAvatarUploadStep(
+            target = uploadTarget,
+            step = AvatarUploadStep.Success,
+            householdId = householdId,
+            extra = "member=${member.id}",
+        )
     }.onFailure { throwable ->
-        logger.recordError(
-            tag = "AvatarUpload",
-            message = "member_avatar_upload_failed kind=${member.kind} member=${member.id} household=$householdId",
+        if (throwable is AvatarPersistException) return@onFailure
+        val uploadTarget = when (member.kind) {
+            HouseholdMemberKind.Dependant -> AvatarUploadTarget.Dependant
+            HouseholdMemberKind.Person -> AvatarUploadTarget.MemberProfile
+            HouseholdMemberKind.Group -> AvatarUploadTarget.MemberProfile
+        }
+        logger.recordAvatarUploadFailure(
+            target = uploadTarget,
+            step = AvatarUploadStep.StorageUpload,
+            householdId = householdId,
             throwable = throwable,
+            memberId = member.id,
+            contentType = contentType,
+            imageBytes = imageBytes.size,
         )
     }
 

@@ -89,6 +89,7 @@ object SharingStringKeys {
         "sharing_avatar_upload_success",
         "sharing_members_error_avatar_upload_failed",
         "sharing_members_error_avatar_persist_failed",
+        "sharing_household_avatar_error_persist_failed",
     )
 
     val localeDirectories: List<String> = NutritionStringKeys.localeDirectories

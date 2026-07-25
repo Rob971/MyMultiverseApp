@@ -3,6 +3,8 @@ package app.mymultiverse.ammo.presentation.screens.household
 import app.mymultiverse.ammo.data.observability.TestObservability
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
+import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadTarget
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.ammo.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.ammo.domain.sharing.HOUSEHOLD_RECOMMENDED_MIN_MEMBERS
@@ -553,8 +555,16 @@ class HouseholdMembersScreenModelTest {
     }
 
     @Test
-    fun uploadMemberAvatar_persistFailure_setsAvatarPersistFailed() = runTest(testDispatcher) {
-        repository.updateMemberAvatarResult = Result.failure(IllegalStateException("avatar_db_update_no_rows"))
+    fun uploadMemberAvatar_persistFailure_setsMemberAvatarPersistFailed() = runTest(testDispatcher) {
+        repository.updateMemberAvatarResult = Result.failure(
+            AvatarPersistException(
+                target = AvatarUploadTarget.MemberProfile,
+                dbTable = "profiles",
+                householdId = "household-1",
+                storagePath = "profiles/user-carola/avatar.jpg",
+                memberId = "member-1",
+            ),
+        )
         repository.seedMember(
             householdId = "household-1",
             member = HouseholdMember(
@@ -575,19 +585,26 @@ class HouseholdMembersScreenModelTest {
         model.uploadMemberAvatar("household-1", member, ByteArray(1), "image/jpeg")
         advanceUntilIdle()
 
-        assertEquals(HouseholdMembersError.AvatarPersistFailed, model.uiState.value.error)
+        assertEquals(HouseholdMembersError.MemberAvatarPersistFailed, model.uiState.value.error)
     }
 
     @Test
-    fun uploadHouseholdAvatar_persistFailure_setsAvatarPersistFailed() = runTest(testDispatcher) {
+    fun uploadHouseholdAvatar_persistFailure_setsHouseholdAvatarPersistFailed() = runTest(testDispatcher) {
         householdRepository.updateHouseholdAvatarResult =
-            Result.failure(IllegalStateException("avatar_db_update_no_rows"))
+            Result.failure(
+                AvatarPersistException(
+                    target = AvatarUploadTarget.Household,
+                    dbTable = "households",
+                    householdId = "household-1",
+                    storagePath = "households/household-1/avatar.jpg",
+                ),
+            )
         model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
         advanceUntilIdle()
 
         model.uploadHouseholdAvatar("household-1", ByteArray(1), "image/jpeg")
         advanceUntilIdle()
 
-        assertEquals(HouseholdMembersError.AvatarPersistFailed, model.uiState.value.error)
+        assertEquals(HouseholdMembersError.HouseholdAvatarPersistFailed, model.uiState.value.error)
     }
 }
