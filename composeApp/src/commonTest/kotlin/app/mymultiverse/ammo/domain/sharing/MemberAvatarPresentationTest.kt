@@ -15,6 +15,31 @@ class MemberAvatarPresentationTest {
         assertEquals("RC", memberAvatarInitials("Rosa Costa"))
     }
 
+    @Test
+    fun memberAvatarInitials_singleWordNameUsesFirstTwoLetters() {
+        assertEquals("CA", memberAvatarInitials("Carola"))
+    }
+
+    @Test
+    fun memberAvatarInitials_handlesApostropheNames() {
+        assertEquals("OB", memberAvatarInitials("O'Brien"))
+    }
+
+    @Test
+    fun memberAvatarInitials_handlesHyphenatedSingleWord() {
+        assertEquals("JE", memberAvatarInitials("Jean-Luc"))
+    }
+
+    @Test
+    fun memberAvatarInitials_handlesArabicNames() {
+        assertEquals("مع", memberAvatarInitials("محمد علي"))
+    }
+
+    @Test
+    fun memberAvatarInitials_emptyNameReturnsQuestionMark() {
+        assertEquals("?", memberAvatarInitials("   "))
+    }
+
     // ── Person members ────────────────────────────────────────────────────────
 
     @Test
@@ -60,10 +85,31 @@ class MemberAvatarPresentationTest {
     }
 
     @Test
+    fun canEditMemberAvatar_deniesGroupMembers() {
+        val member = HouseholdMember(
+            id = "group-1",
+            householdId = "household-1",
+            kind = HouseholdMemberKind.Group,
+            displayName = "Everyone",
+            role = HouseholdMemberRole.Viewer,
+            referenceId = "group-1",
+        )
+        assertFalse(canEditMemberAvatar(member, currentUserId = "user-1", canWriteHouseholdData = true))
+    }
+
+    @Test
     fun canEditMemberAvatar_deniesViewerForDependants() {
         val member = dependantMember()
         // Viewers have canWriteHouseholdData = false.
         assertFalse(canEditMemberAvatar(member, currentUserId = "user-1", canWriteHouseholdData = false))
+    }
+
+    @Test
+    fun canEditMemberAvatar_adminCanEditDependantButNotOtherAdult() {
+        val dependant = dependantMember()
+        val otherAdult = personMember(referenceId = "user-2")
+        assertTrue(canEditMemberAvatar(dependant, currentUserId = "admin-1", canWriteHouseholdData = true))
+        assertFalse(canEditMemberAvatar(otherAdult, currentUserId = "admin-1", canWriteHouseholdData = true))
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

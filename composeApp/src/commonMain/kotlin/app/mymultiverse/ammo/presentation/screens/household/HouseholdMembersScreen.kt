@@ -304,7 +304,7 @@ fun HouseholdMembersScreen(
                 item {
                     HouseholdAvatarSection(
                         householdName = household.name,
-                        avatarUrl = household.avatarUrl,
+                        avatarUrl = uiState.householdAvatarUrl ?: household.avatarUrl,
                         canManage = uiState.canManageMembers,
                         isLoading = uiState.isUploadingHouseholdAvatar,
                         onChangePhoto = {
