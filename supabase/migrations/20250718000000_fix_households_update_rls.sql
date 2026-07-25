@@ -1,4 +1,4 @@
--- Restore households table RLS policies dropped by CASCADE.
+-- Restore households table SELECT and UPDATE RLS policies dropped by CASCADE.
 --
 -- History: migration 20250615120000 created `sharing_spaces_select` and
 -- `sharing_spaces_update` on what is now `public.households`, both guarded by
