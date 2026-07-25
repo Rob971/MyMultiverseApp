@@ -16,6 +16,7 @@ import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Count
 import io.github.jan.supabase.postgrest.rpc
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
@@ -283,7 +284,7 @@ class SupabaseHouseholdRepository(
         client.auth.awaitInitialization()
         requireUserId()
 
-        logger.breadcrumb("household_avatar_upload_start household=$householdId")
+        logger.breadcrumb("household_avatar_upload_start household=$householdId bytes=${imageBytes.size}")
 
         val extension = when {
             contentType.contains("png") -> "png"
@@ -297,11 +298,25 @@ class SupabaseHouseholdRepository(
             this.contentType = ContentType.parse(contentType)
         }
         val publicUrl = bucket.publicUrl(storagePath)
+        logger.breadcrumb("household_avatar_storage_ok household=$householdId path=$storagePath")
 
-        client.postgrest["households"]
+        val rowsUpdated = client.postgrest["households"]
             .update(HouseholdAvatarUpdateRow(avatarUrl = publicUrl)) {
                 filter { eq("id", householdId) }
+                count(Count.EXACT)
             }
+            .countOrNull() ?: 0L
+
+        if (rowsUpdated == 0L) {
+            logger.recordError(
+                tag = "AvatarUpload",
+                message = "household_avatar_db_0_rows household=$householdId — " +
+                    "households UPDATE+SELECT RLS policy missing or not deployed",
+                throwable = IllegalStateException("avatar_db_update_no_rows"),
+            )
+            error("avatar_db_update_no_rows")
+        }
+        logger.breadcrumb("household_avatar_db_ok household=$householdId rows=$rowsUpdated")
 
         household.update { current ->
             current?.takeIf { it.id == householdId }?.copy(avatarUrl = publicUrl) ?: current
