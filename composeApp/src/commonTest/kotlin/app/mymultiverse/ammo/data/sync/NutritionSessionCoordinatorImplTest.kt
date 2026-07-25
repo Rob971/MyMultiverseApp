@@ -4,9 +4,16 @@ import app.mymultiverse.ammo.data.observability.TestObservability
 import app.mymultiverse.ammo.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
+import app.mymultiverse.ammo.domain.sync.NetworkConnectivityMonitor
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import com.russhwolf.settings.MapSettings
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,7 +27,6 @@ class NutritionSessionCoordinatorImplTest {
         val coordinator = coordinator()
 
         coordinator.activateHousehold("household-family")
-        advance()
 
         assertEquals("household-family", coordinator.nutrition.value.householdId)
     }
@@ -30,7 +36,6 @@ class NutritionSessionCoordinatorImplTest {
         val coordinator = coordinator()
 
         coordinator.activateHousehold("household-family")
-        advance()
         coordinator.deactivate()
 
         assertNull(coordinator.nutrition.value.householdId)
@@ -40,17 +45,12 @@ class NutritionSessionCoordinatorImplTest {
     @Test
     fun activateHousehold_withoutRemote_reportsRemoteUnavailableAfterRefresh() = runTest {
         val settings = MapSettings()
-        val coordinator = NutritionSessionCoordinatorImpl.create(
+        val coordinator = createCoordinator(
             settings = settings,
             remoteApi = null,
-            outbox = NutritionSyncOutbox(settings),
-            realtimeSync = null,
-            logger = TestObservability.logger,
-            diagnostics = TestObservability.diagnostics,
         )
 
         coordinator.activateHousehold("household-offline")
-        advance()
 
         assertEquals(NutritionSyncStatus.RemoteUnavailable, coordinator.observeSyncStatus().first())
         assertEquals("household-offline", coordinator.nutrition.value.householdId)
@@ -61,13 +61,9 @@ class NutritionSessionCoordinatorImplTest {
         val settings = MapSettings()
         lateinit var coordinator: NutritionSessionCoordinatorImpl
         val remote = ObservingRemote { coordinator.nutrition.value.householdId }
-        coordinator = NutritionSessionCoordinatorImpl.create(
+        coordinator = createCoordinator(
             settings = settings,
             remoteApi = remote,
-            outbox = NutritionSyncOutbox(settings),
-            realtimeSync = null,
-            logger = TestObservability.logger,
-            diagnostics = TestObservability.diagnostics,
         )
 
         coordinator.activateHousehold("household-family")
@@ -79,13 +75,9 @@ class NutritionSessionCoordinatorImplTest {
     @Test
     fun activateHousehold_whenRemoteRefreshFails_keepsSharedRepository() = runTest {
         val settings = MapSettings()
-        val coordinator = NutritionSessionCoordinatorImpl.create(
+        val coordinator = createCoordinator(
             settings = settings,
             remoteApi = FailingFetchRemote,
-            outbox = NutritionSyncOutbox(settings),
-            realtimeSync = null,
-            logger = TestObservability.logger,
-            diagnostics = TestObservability.diagnostics,
         )
 
         coordinator.activateHousehold("household-family")
@@ -97,12 +89,8 @@ class NutritionSessionCoordinatorImplTest {
     @Test
     fun activateHousehold_setsDiagnosticsActiveHouseholdId() = runTest {
         val diagnostics = TestObservability.diagnostics
-        val coordinator = NutritionSessionCoordinatorImpl.create(
+        val coordinator = createCoordinator(
             settings = MapSettings(),
-            remoteApi = null,
-            outbox = NutritionSyncOutbox(MapSettings()),
-            realtimeSync = null,
-            logger = TestObservability.logger,
             diagnostics = diagnostics,
         )
 
@@ -120,40 +108,81 @@ class NutritionSessionCoordinatorImplTest {
             crashReporter,
             TestObservability.diagnostics,
         )
-        val coordinator = NutritionSessionCoordinatorImpl.create(
+        val coordinator = createCoordinator(
             settings = MapSettings(),
-            remoteApi = null,
-            outbox = NutritionSyncOutbox(MapSettings()),
-            realtimeSync = null,
             logger = logger,
-            diagnostics = TestObservability.diagnostics,
         )
 
         coordinator.activateHousehold("household-family")
 
-        assertEquals(
-            1,
-            crashReporter.breadcrumbs.size,
-        )
+        assertEquals(1, crashReporter.breadcrumbs.size)
         assertTrue(
             crashReporter.breadcrumbs.single()
                 .startsWith("nutrition_household_activated household_id=household-family week_key="),
         )
     }
 
-    private fun coordinator(): NutritionSessionCoordinatorImpl =
-        NutritionSessionCoordinatorImpl.create(
-            settings = MapSettings(),
-            remoteApi = null,
-            outbox = NutritionSyncOutbox(MapSettings()),
-            realtimeSync = null,
-            logger = TestObservability.logger,
-            diagnostics = TestObservability.diagnostics,
+    @Test
+    fun connectivityReturningOnline_retriesPendingFlush() = runTest {
+        val settings = MapSettings()
+        val outbox = NutritionSyncOutbox(settings)
+        outbox.enqueue(
+            app.mymultiverse.ammo.data.local.nutrition.PendingNutritionPush(
+                householdId = "household-family",
+                weekKey = "2025-W24",
+                dataKind = "grocery",
+                payload = "pending",
+                enqueuedAtEpochMs = 1L,
+            ),
+        )
+        val connectivity = FakeConnectivityMonitor(initialOnline = false)
+        val remote = ConnectivityAwareRemote(connectivity)
+        val supervisor = SupervisorJob()
+        val coordinator = createCoordinator(
+            settings = settings,
+            remoteApi = remote,
+            outbox = outbox,
+            connectivity = connectivity,
+            scope = CoroutineScope(coroutineContext + supervisor),
         )
 
-    private suspend fun advance() {
-        // Session coordinator activate is suspend; no extra dispatcher work required in these tests.
+        try {
+            coordinator.activateHousehold("household-family")
+            assertEquals(1, outbox.pendingForHousehold("household-family").size)
+
+            connectivity.setOnline(true)
+            advanceUntilIdle()
+
+            assertTrue(outbox.pendingForHousehold("household-family").isEmpty())
+            assertEquals(1, remote.upsertCount)
+        } finally {
+            coordinator.deactivate()
+            supervisor.cancel()
+        }
     }
+
+    private fun coordinator(): NutritionSessionCoordinatorImpl =
+        createCoordinator(settings = MapSettings())
+
+    private fun createCoordinator(
+        settings: MapSettings = MapSettings(),
+        remoteApi: NutritionRemoteDataSource? = null,
+        outbox: NutritionSyncOutbox = NutritionSyncOutbox(settings),
+        connectivity: FakeConnectivityMonitor = FakeConnectivityMonitor(initialOnline = true),
+        scope: CoroutineScope = CoroutineScope(SupervisorJob()),
+        logger: app.mymultiverse.ammo.data.observability.AppLogger = TestObservability.logger,
+        diagnostics: app.mymultiverse.ammo.domain.observability.DiagnosticsContext = TestObservability.diagnostics,
+    ): NutritionSessionCoordinatorImpl =
+        NutritionSessionCoordinatorImpl.create(
+            settings = settings,
+            remoteApi = remoteApi,
+            outbox = outbox,
+            realtimeSync = null,
+            connectivityMonitor = connectivity,
+            scope = scope,
+            logger = logger,
+            diagnostics = diagnostics,
+        )
 
     private class ObservingRemote(
         private val activeHouseholdId: () -> String?,
@@ -174,6 +203,43 @@ class NutritionSessionCoordinatorImplTest {
         }
 
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
+    }
+
+    private class RecordingRemote : NutritionRemoteDataSource {
+        var upsertCount = 0
+
+        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
+
+        override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) {
+            upsertCount++
+        }
+    }
+
+    private class ConnectivityAwareRemote(
+        private val connectivity: FakeConnectivityMonitor,
+    ) : NutritionRemoteDataSource {
+        var upsertCount = 0
+
+        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
+
+        override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) {
+            if (!connectivity.isOnline()) throw IllegalStateException("offline")
+            upsertCount++
+        }
+    }
+
+    private class FakeConnectivityMonitor(
+        initialOnline: Boolean,
+    ) : NetworkConnectivityMonitor {
+        private val online = MutableStateFlow(initialOnline)
+
+        override fun observeOnline(): Flow<Boolean> = online
+
+        override fun isOnline(): Boolean = online.value
+
+        fun setOnline(value: Boolean) {
+            online.value = value
+        }
     }
 
     private class RecordingCrashReporter : app.mymultiverse.ammo.domain.observability.CrashReporter {

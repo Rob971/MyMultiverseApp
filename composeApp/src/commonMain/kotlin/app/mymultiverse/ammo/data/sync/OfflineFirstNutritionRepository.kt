@@ -30,7 +30,7 @@ class OfflineFirstNutritionRepository(
             syncEngine.markRemoteUnavailable()
             return
         }
-        syncEngine.flushPending(householdId, weekKey)
+        syncEngine.flushAllPendingForHousehold(householdId)
         syncEngine.pullRemote(householdId, weekKey) { applyRemoteWeekData(it) }
     }
 
@@ -40,9 +40,14 @@ class OfflineFirstNutritionRepository(
 
     fun applyRemoteWeekData(row: NutritionWeekDataRow) {
         if (row.householdId != householdId || row.weekKey != weekKey) return
-        // Skip the apply when unsent local edits exist for this data kind: local-pending wins.
-        // The next refreshFromRemote / pull will reconcile once the outbox is flushed.
-        if (syncEngine.hasPending(householdId, weekKey, row.dataKind)) return
+        val pending = syncEngine.pendingFor(householdId, weekKey, row.dataKind)
+        if (pending != null) {
+            if (syncEngine.shouldApplyRemoteOverPending(row, pending)) {
+                syncEngine.dropPending(householdId, weekKey, row.dataKind)
+                localStore.applyPayload(row.dataKind, row.payload)
+            }
+            return
+        }
         localStore.applyPayload(row.dataKind, row.payload)
     }
 

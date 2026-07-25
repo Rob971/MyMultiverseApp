@@ -119,7 +119,9 @@ private val dataModule = module {
             settings = settings,
             remoteApi = client?.let { NutritionRemoteApi(it) },
             outbox = get(),
-            realtimeSync = client?.let { NutritionHouseholdRealtimeSync(it, get()) },
+            realtimeSync = client?.let { NutritionHouseholdRealtimeSync(it, get(), get()) },
+            connectivityMonitor = get(),
+            scope = get(),
             logger = get(),
             diagnostics = get(),
         )

@@ -12,19 +12,26 @@ import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
+import app.mymultiverse.ammo.domain.sync.NetworkConnectivityMonitor
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import com.russhwolf.settings.Settings
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 
 class NutritionSessionCoordinatorImpl(
     private val settings: Settings,
     private val remoteApi: NutritionRemoteDataSource?,
     private val syncEngine: NutritionSyncEngine,
     private val realtimeSync: NutritionHouseholdRealtimeSync?,
+    private val connectivityMonitor: NetworkConnectivityMonitor,
+    private val scope: CoroutineScope,
     private val diagnostics: DiagnosticsContext,
     private val logger: AppLogger,
     private val weekMaintenanceRunner: NutritionWeekMaintenanceRunner = NutritionWeekMaintenanceRunner(
@@ -38,6 +45,16 @@ class NutritionSessionCoordinatorImpl(
     private val _nutrition = MutableStateFlow<NutritionRepository>(personalRepository)
     private val _collaborationActivity = MutableSharedFlow<NutritionCollaborationActivity>(extraBufferCapacity = 8)
     private var activeHouseholdId: String? = null
+    private var activeWeekKey: String? = null
+
+    init {
+        scope.launch {
+            connectivityMonitor.observeOnline()
+                .distinctUntilChanged()
+                .filter { it }
+                .collect { retrySyncWhenOnline() }
+        }
+    }
 
     override val nutrition = _nutrition.asStateFlow()
 
@@ -64,12 +81,14 @@ class NutritionSessionCoordinatorImpl(
         syncEngine.markIdle()
         diagnostics.activeHouseholdId = null
         activeHouseholdId = null
+        activeWeekKey = null
         _nutrition.value = personalRepository
         logger.breadcrumb("nutrition_session_deactivated")
     }
 
     private suspend fun bindRepository(householdId: String, weekKey: String) {
         realtimeSync?.stop()
+        activeWeekKey = weekKey
         diagnostics.activeHouseholdId = householdId
         logger.breadcrumb("nutrition_household_activated household_id=$householdId week_key=$weekKey")
         val repository = OfflineFirstNutritionRepository(
@@ -101,22 +120,33 @@ class NutritionSessionCoordinatorImpl(
         realtimeSync?.start(
             householdId = householdId,
             weekKey = weekKey,
-        ) { row ->
-            if (row.dataKind == "grocery") {
-                val before = repository.currentGroceryItems()
-                repository.applyRemoteWeekData(row)
-                val after = repository.currentGroceryItems()
-                NutritionCollaborationActivityDetector.detectGroceryChanges(
-                    before = before,
-                    after = after,
-                    actorUserId = row.updatedBy,
-                ).forEach { activity ->
-                    _collaborationActivity.tryEmit(activity)
+            onUpdate = { row ->
+                if (row.dataKind == "grocery") {
+                    val before = repository.currentGroceryItems()
+                    repository.applyRemoteWeekData(row)
+                    val after = repository.currentGroceryItems()
+                    NutritionCollaborationActivityDetector.detectGroceryChanges(
+                        before = before,
+                        after = after,
+                        actorUserId = row.updatedBy,
+                    ).forEach { activity ->
+                        _collaborationActivity.tryEmit(activity)
+                    }
+                } else {
+                    repository.applyRemoteWeekData(row)
                 }
-            } else {
-                repository.applyRemoteWeekData(row)
-            }
-        }
+            },
+            onReconnect = { repository.refreshFromRemote() },
+        )
+    }
+
+    private suspend fun retrySyncWhenOnline() {
+        val householdId = activeHouseholdId ?: return
+        if (!connectivityMonitor.isOnline() || remoteApi == null) return
+        val repository = _nutrition.value as? OfflineFirstNutritionRepository ?: return
+        logger.breadcrumb("sync_retry_online household_id=$householdId week_key=${activeWeekKey.orEmpty()}")
+        syncEngine.flushAllPendingForHousehold(householdId)
+        repository.refreshFromRemote()
     }
 
     companion object {
@@ -125,6 +155,8 @@ class NutritionSessionCoordinatorImpl(
             remoteApi: NutritionRemoteDataSource?,
             outbox: NutritionSyncOutbox,
             realtimeSync: NutritionHouseholdRealtimeSync?,
+            connectivityMonitor: NetworkConnectivityMonitor,
+            scope: CoroutineScope,
             logger: AppLogger,
             diagnostics: DiagnosticsContext,
         ): NutritionSessionCoordinatorImpl =
@@ -133,6 +165,8 @@ class NutritionSessionCoordinatorImpl(
                 remoteApi = remoteApi,
                 syncEngine = NutritionSyncEngine(remoteApi, outbox, logger),
                 realtimeSync = realtimeSync,
+                connectivityMonitor = connectivityMonitor,
+                scope = scope,
                 diagnostics = diagnostics,
                 logger = logger,
             )

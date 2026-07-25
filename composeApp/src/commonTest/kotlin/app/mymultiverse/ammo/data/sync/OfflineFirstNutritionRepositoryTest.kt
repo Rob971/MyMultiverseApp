@@ -110,7 +110,7 @@ class OfflineFirstNutritionRepositoryTest {
     }
 
     @Test
-    fun applyRemoteWeekData_skippedWhenOutboxHasPendingForSameKind() = runTest {
+    fun applyRemoteWeekData_skippedWhenOutboxHasPendingForSameKindAndRemoteIsOlder() = runTest {
         val settings = MapSettings()
         val store = NutritionLocalStore(settings, householdId, weekKey)
         val outbox = NutritionSyncOutbox(settings)
@@ -120,19 +120,79 @@ class OfflineFirstNutritionRepositoryTest {
                 weekKey = weekKey,
                 dataKind = "grocery",
                 payload = "local-unsent",
-                enqueuedAtEpochMs = 1L,
+                enqueuedAtEpochMs = 9_000_000_000_000L,
             ),
         )
         val repository = repository(settings, store = store, outbox = outbox, remoteEnabled = true)
 
-        // A remote update arrives while local edits are pending.
         val remotePayload = store.encodeGrocery(listOf(GroceryItem("remote", "Remote item", false)))
         repository.applyRemoteWeekData(
-            NutritionWeekDataRow(householdId = householdId, weekKey = weekKey, dataKind = "grocery", payload = remotePayload)
+            NutritionWeekDataRow(
+                householdId = householdId,
+                weekKey = weekKey,
+                dataKind = "grocery",
+                payload = remotePayload,
+                updatedAt = "2020-01-01T00:00:00Z",
+            ),
         )
 
-        // Local store must NOT be overwritten — local-pending wins.
         assertTrue(repository.observeGroceryItems().first().isEmpty())
+        assertEquals(1, outbox.pendingFor(householdId, weekKey).size)
+    }
+
+    @Test
+    fun applyRemoteWeekData_appliesWhenRemoteIsNewerThanPending() = runTest {
+        val settings = MapSettings()
+        val store = NutritionLocalStore(settings, householdId, weekKey)
+        val outbox = NutritionSyncOutbox(settings)
+        outbox.enqueue(
+            app.mymultiverse.ammo.data.local.nutrition.PendingNutritionPush(
+                householdId = householdId,
+                weekKey = weekKey,
+                dataKind = "grocery",
+                payload = "local-unsent",
+                enqueuedAtEpochMs = 1_000L,
+            ),
+        )
+        val repository = repository(settings, store = store, outbox = outbox, remoteEnabled = true)
+
+        val remotePayload = store.encodeGrocery(listOf(GroceryItem("remote", "Remote item", false)))
+        repository.applyRemoteWeekData(
+            NutritionWeekDataRow(
+                householdId = householdId,
+                weekKey = weekKey,
+                dataKind = "grocery",
+                payload = remotePayload,
+                updatedAt = "2026-06-16T12:00:00Z",
+            ),
+        )
+
+        assertEquals("Remote item", repository.observeGroceryItems().first().single().label)
+        assertTrue(outbox.pendingFor(householdId, weekKey).isEmpty())
+    }
+
+    @Test
+    fun refreshFromRemote_flushesPendingFromOtherWeeksBeforePull() = runTest {
+        val settings = MapSettings()
+        val store = NutritionLocalStore(settings, householdId, weekKey)
+        val outbox = NutritionSyncOutbox(settings)
+        outbox.enqueue(
+            app.mymultiverse.ammo.data.local.nutrition.PendingNutritionPush(
+                householdId = householdId,
+                weekKey = "2025-W20",
+                dataKind = "grocery",
+                payload = "other-week",
+                enqueuedAtEpochMs = 1L,
+            ),
+        )
+        val remote = RecordingRemote()
+        val repository = repository(settings, store = store, remote = remote, outbox = outbox, remoteEnabled = true)
+
+        repository.refreshFromRemote()
+
+        assertTrue(outbox.pendingForHousehold(householdId).isEmpty())
+        assertEquals(1, remote.upsertCount)
+        assertEquals("other-week", remote.upserts.single().payload)
     }
 
     @Test
@@ -202,5 +262,23 @@ class OfflineFirstNutritionRepositoryTest {
         }
 
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
+    }
+
+    private class RecordingRemote : NutritionRemoteDataSource {
+        var upsertCount = 0
+        val upserts = mutableListOf<app.mymultiverse.ammo.data.local.nutrition.PendingNutritionPush>()
+
+        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
+
+        override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) {
+            upsertCount++
+            upserts += app.mymultiverse.ammo.data.local.nutrition.PendingNutritionPush(
+                householdId = householdId,
+                weekKey = weekKey,
+                dataKind = dataKind,
+                payload = payload,
+                enqueuedAtEpochMs = 0L,
+            )
+        }
     }
 }

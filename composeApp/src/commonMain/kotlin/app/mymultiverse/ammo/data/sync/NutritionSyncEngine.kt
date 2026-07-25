@@ -34,6 +34,7 @@ class NutritionSyncEngine(
             _status.value = NutritionSyncStatus.RemoteUnavailable
             return
         }
+        logOutboxCorruptionIfNeeded(householdId, weekKey, "pull")
         _status.value = NutritionSyncStatus.Syncing
         val rows = try {
             api.fetchWeek(householdId, weekKey)
@@ -46,13 +47,13 @@ class NutritionSyncEngine(
                 throwable = error,
                 context = syncContext(householdId, weekKey, "pull"),
             )
-            markRemoteFailure(householdId, weekKey)
+            markRemoteFailure(householdId)
             return
         }
         val fetched = rows.latestByDataKind()
         fetched.forEach(applyRow)
         logger.breadcrumb("sync_pull_ok rows=${fetched.size} week_key=$weekKey")
-        refreshStatus(householdId, weekKey)
+        refreshStatus(householdId)
     }
 
     suspend fun pushNowOrEnqueue(
@@ -65,11 +66,12 @@ class NutritionSyncEngine(
             _status.value = NutritionSyncStatus.RemoteUnavailable
             return
         }
+        logOutboxCorruptionIfNeeded(householdId, weekKey, "push", dataKind)
         try {
             api.upsert(householdId, weekKey, dataKind, payload)
             outbox.removeFor(householdId, weekKey, dataKind)
             logger.breadcrumb("sync_push_ok kind=$dataKind week_key=$weekKey")
-            refreshStatus(householdId, weekKey)
+            refreshStatus(householdId)
         } catch (e: CancellationException) {
             throw e
         } catch (error: Exception) {
@@ -88,25 +90,40 @@ class NutritionSyncEngine(
                     enqueuedAtEpochMs = Clock.System.now().toEpochMilliseconds(),
                 ),
             )
-            refreshStatus(householdId, weekKey)
+            refreshStatus(householdId)
         }
     }
 
-    suspend fun flushPending(householdId: String, weekKey: String) {
+    suspend fun flushPending(householdId: String, weekKey: String): FlushResult {
         val api = remote ?: run {
             _status.value = NutritionSyncStatus.RemoteUnavailable
-            return
+            return FlushResult()
         }
+        logOutboxCorruptionIfNeeded(householdId, weekKey, "flush")
         val pending = outbox.pendingFor(householdId, weekKey)
         if (pending.isEmpty()) {
-            refreshStatus(householdId, weekKey)
-            return
+            refreshStatus(householdId)
+            return FlushResult()
         }
         _status.value = NutritionSyncStatus.Syncing
+        var flushed = 0
+        var skippedStale = 0
+        var failed = 0
         for (item in pending) {
             try {
+                val remoteRows = api.fetchWeek(item.householdId, item.weekKey)
+                val remoteRow = remoteRows.latestForDataKind(item.dataKind)
+                if (isRemoteNewerThanPending(remoteRow, item)) {
+                    outbox.remove(item)
+                    skippedStale++
+                    logger.breadcrumb(
+                        "sync_flush_skip_stale kind=${item.dataKind} week_key=${item.weekKey}",
+                    )
+                    continue
+                }
                 api.upsert(item.householdId, item.weekKey, item.dataKind, item.payload)
                 outbox.remove(item)
+                flushed++
             } catch (e: CancellationException) {
                 throw e
             } catch (error: Exception) {
@@ -116,12 +133,25 @@ class NutritionSyncEngine(
                     throwable = error,
                     context = syncContext(householdId, weekKey, "flush", item.dataKind),
                 )
-                refreshStatus(householdId, weekKey)
-                return
+                failed++
             }
         }
-        logger.breadcrumb("sync_flush_ok flushed=${pending.size} week_key=$weekKey")
-        refreshStatus(householdId, weekKey)
+        if (flushed > 0 || skippedStale > 0) {
+            logger.breadcrumb(
+                "sync_flush_ok flushed=$flushed skipped_stale=$skippedStale failed=$failed week_key=$weekKey",
+            )
+        }
+        refreshStatus(householdId)
+        return FlushResult(flushed = flushed, skippedStale = skippedStale, failed = failed)
+    }
+
+    suspend fun flushAllPendingForHousehold(householdId: String): FlushResult {
+        val weekKeys = outbox.pendingForHousehold(householdId).map { it.weekKey }.distinct()
+        var total = FlushResult()
+        for (weekKey in weekKeys) {
+            total += flushPending(householdId, weekKey)
+        }
+        return total
     }
 
     fun markIdle() {
@@ -134,14 +164,27 @@ class NutritionSyncEngine(
 
     /**
      * Returns true when the outbox holds at least one unsent entry for [dataKind] in the
-     * given household/week.  Used by [OfflineFirstNutritionRepository.applyRemoteWeekData]
-     * to skip a realtime overwrite while the user has pending local edits.
+     * given household/week. Used by [OfflineFirstNutritionRepository.applyRemoteWeekData]
+     * to apply timestamp-aware conflict resolution while local edits are pending.
      */
     fun hasPending(householdId: String, weekKey: String, dataKind: String): Boolean =
-        outbox.pendingFor(householdId, weekKey).any { it.dataKind == dataKind }
+        outbox.pendingFor(householdId, weekKey, dataKind) != null
 
-    private fun refreshStatus(householdId: String, weekKey: String) {
-        val pendingCount = outbox.pendingFor(householdId, weekKey).size
+    fun pendingFor(householdId: String, weekKey: String, dataKind: String): PendingNutritionPush? =
+        outbox.pendingFor(householdId, weekKey, dataKind)
+
+    fun dropPending(householdId: String, weekKey: String, dataKind: String) {
+        outbox.removeFor(householdId, weekKey, dataKind)
+        refreshStatus(householdId)
+    }
+
+    fun shouldApplyRemoteOverPending(
+        row: NutritionWeekDataRow,
+        pending: PendingNutritionPush,
+    ): Boolean = row.updatedAtEpochMilliseconds() > pending.enqueuedAtEpochMs
+
+    private fun refreshStatus(householdId: String) {
+        val pendingCount = outbox.pendingForHousehold(householdId).size
         _status.value = when {
             remote == null -> NutritionSyncStatus.RemoteUnavailable
             pendingCount > 0 -> NutritionSyncStatus.PendingPush(pendingCount)
@@ -149,8 +192,8 @@ class NutritionSyncEngine(
         }
     }
 
-    private fun markRemoteFailure(householdId: String, weekKey: String) {
-        val pendingCount = outbox.pendingFor(householdId, weekKey).size
+    private fun markRemoteFailure(householdId: String) {
+        val pendingCount = outbox.pendingForHousehold(householdId).size
         _status.value = if (pendingCount > 0) {
             NutritionSyncStatus.PendingPush(pendingCount)
         } else {
@@ -158,19 +201,31 @@ class NutritionSyncEngine(
         }
     }
 
+    private fun logOutboxCorruptionIfNeeded(
+        householdId: String,
+        weekKey: String,
+        operation: String,
+        dataKind: String? = null,
+    ) {
+        if (!outbox.isCorrupted()) return
+        val error = outbox.corruptionError() ?: IllegalStateException("outbox_corrupted")
+        logger.recordError(
+            tag = TAG,
+            message = "outbox_corrupted",
+            throwable = error,
+            context = syncContext(householdId, weekKey, operation, dataKind),
+        )
+    }
+
+    private fun isRemoteNewerThanPending(
+        remote: NutritionWeekDataRow?,
+        pending: PendingNutritionPush,
+    ): Boolean = remote != null && remote.updatedAtEpochMilliseconds() > pending.enqueuedAtEpochMs
+
     private fun List<NutritionWeekDataRow>.latestByDataKind(): List<NutritionWeekDataRow> =
         groupBy { it.dataKind }
             .values
-            .mapNotNull { rows ->
-                rows.maxWithOrNull(
-                    compareBy<NutritionWeekDataRow> { it.updatedAtEpochMilliseconds() },
-                )
-            }
-
-    private fun NutritionWeekDataRow.updatedAtEpochMilliseconds(): Long =
-        updatedAt
-            ?.let { raw -> runCatching { Instant.parse(raw).toEpochMilliseconds() }.getOrNull() }
-            ?: Long.MIN_VALUE
+            .mapNotNull { rows -> rows.maxWithOrNull(compareBy { it.updatedAtEpochMilliseconds() }) }
 
     private fun syncContext(
         householdId: String,
@@ -182,6 +237,19 @@ class NutritionSyncEngine(
         put("household_id", householdId)
         put("week_key", weekKey)
         dataKind?.let { put("data_kind", it) }
+    }
+
+    data class FlushResult(
+        val flushed: Int = 0,
+        val skippedStale: Int = 0,
+        val failed: Int = 0,
+    ) {
+        operator fun plus(other: FlushResult): FlushResult =
+            FlushResult(
+                flushed = flushed + other.flushed,
+                skippedStale = skippedStale + other.skippedStale,
+                failed = failed + other.failed,
+            )
     }
 
     private companion object {

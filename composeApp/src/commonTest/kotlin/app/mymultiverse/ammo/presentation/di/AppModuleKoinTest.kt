@@ -16,6 +16,8 @@ import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import app.mymultiverse.ammo.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
+import app.mymultiverse.ammo.data.sync.AlwaysOnlineNetworkConnectivityMonitor
+import app.mymultiverse.ammo.domain.sync.NetworkConnectivityMonitor
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import app.mymultiverse.ammo.presentation.screens.home.HomeScreenModel
 import app.mymultiverse.ammo.presentation.screens.nutrition.NutritionEntryScreenModel
@@ -74,6 +76,7 @@ class AppModuleKoinTest : KoinTest {
         single<HouseholdCollaborationRepository> { FakeHouseholdCollaborationRepository() }
         single<PersonalDataExporter> { FakePersonalDataExporter() }
         single<PushNotificationRegistrar> { FakePushNotificationRegistrar() }
+        single<NetworkConnectivityMonitor> { AlwaysOnlineNetworkConnectivityMonitor() }
     }
 
     private val testAppModule = module {
