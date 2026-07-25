@@ -19,7 +19,9 @@ import app.mymultiverse.ammo.data.supabase.dto.HouseholdRow
 import app.mymultiverse.ammo.domain.model.sharing.AddMemberResult
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdInvitePreview
+import app.mymultiverse.ammo.domain.sharing.avatarExtensionForContentType
 import app.mymultiverse.ammo.domain.sharing.emailsMatch
+import app.mymultiverse.ammo.domain.sharing.versionedAvatarUrl
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
@@ -376,7 +378,7 @@ class SupabaseHouseholdCollaborationRepository(
                 "member=${member.id} household=$householdId bytes=${imageBytes.size}",
         )
 
-        val extension = avatarExtensionFor(contentType)
+        val extension = avatarExtensionForContentType(contentType)
         val storagePath = when (member.kind) {
             HouseholdMemberKind.Dependant -> "dependants/${member.referenceId}/avatar.$extension"
             else -> "profiles/${member.referenceId}/avatar.$extension"
@@ -387,7 +389,7 @@ class SupabaseHouseholdCollaborationRepository(
             upsert = true
             this.contentType = ContentType.parse(contentType)
         }
-        val publicUrl = bucket.publicUrl(storagePath)
+        val publicUrl = versionedAvatarUrl(bucket.publicUrl(storagePath))
         logger.breadcrumb(
             "member_avatar_storage_ok kind=${member.kind} path=$storagePath",
         )
@@ -635,10 +637,3 @@ class SupabaseHouseholdCollaborationRepository(
         const val MEMBER_AVATARS_BUCKET = "member-avatars"
     }
 }
-
-private fun avatarExtensionFor(contentType: String): String =
-    when {
-        contentType.contains("png", ignoreCase = true) -> "png"
-        contentType.contains("webp", ignoreCase = true) -> "webp"
-        else -> "jpg"
-    }

@@ -9,12 +9,36 @@ fun memberAvatarInitials(displayName: String): String {
     if (name.isEmpty()) return "?"
     val parts = name.split(Regex("\\s+")).filter { it.isNotEmpty() }
     return when {
-        parts.size >= 2 -> "${parts.first().first()}${parts[1].first()}".uppercase()
-        parts.size == 1 && parts[0].length >= 2 -> parts[0].take(2).uppercase()
-        parts.size == 1 -> parts[0].first().uppercase()
+        parts.size >= 2 -> twoPartInitials(parts[0], parts[1])
+        parts.size == 1 -> singlePartInitials(parts[0])
         else -> "?"
     }
 }
+
+private fun twoPartInitials(first: String, second: String): String {
+    val initialA = meaningfulInitialChar(first)
+    val initialB = meaningfulInitialChar(second)
+    return when {
+        initialA != null && initialB != null -> "${initialA}${initialB}".uppercase()
+        initialA != null -> initialA.uppercaseChar().toString()
+        initialB != null -> initialB.uppercaseChar().toString()
+        else -> "?"
+    }
+}
+
+private fun singlePartInitials(token: String): String {
+    val letters = token.filter { it.isLetter() }
+    return when {
+        letters.length >= 2 -> letters.take(2).uppercase()
+        letters.length == 1 -> letters.uppercase()
+        token.length >= 2 -> token.take(2).uppercase()
+        token.isNotEmpty() -> token.first().uppercaseChar().toString()
+        else -> "?"
+    }
+}
+
+private fun meaningfulInitialChar(token: String): Char? =
+    token.firstOrNull { it.isLetter() } ?: token.firstOrNull()
 
 /**
  * Returns true when the current user is allowed to upload a new photo for [member].
