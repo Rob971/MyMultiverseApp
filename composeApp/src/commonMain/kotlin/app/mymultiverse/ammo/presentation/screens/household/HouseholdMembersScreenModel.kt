@@ -39,8 +39,13 @@ sealed interface HouseholdMembersError {
     data object OwnerMustTransferOrDissolve : HouseholdMembersError
     data object InvalidTransferTarget : HouseholdMembersError
     data object TransferTargetNotMember : HouseholdMembersError
-    /** Storage or DB update failed during a profile/dependant/household photo upload. */
+    /** Storage upload step failed (network, bucket policy, size limit). */
     data object AvatarUploadFailed : HouseholdMembersError
+    /**
+     * Storage upload succeeded but the DB row was not written (0 rows updated).
+     * Most likely cause: missing RLS SELECT or UPDATE policy on the target table.
+     */
+    data object AvatarPersistFailed : HouseholdMembersError
 }
 
 enum class HouseholdMembersLeaveAction {
@@ -640,16 +645,21 @@ class HouseholdMembersScreenModel(
 
     /**
      * Maps avatar-upload failures to a user-facing error.
-     * InsufficientRole is preserved to give a specific message; everything else
-     * collapses to [HouseholdMembersError.AvatarUploadFailed] so the user sees
-     * a friendly "couldn't save your photo" prompt rather than a generic error.
+     * - InsufficientRole: user tried to edit someone else's photo
+     * - AvatarPersistFailed: storage OK but DB update wrote 0 rows (RLS issue)
+     * - AvatarUploadFailed: all other failures (network, bucket policy, etc.)
      */
-    private fun mapAvatarFailure(throwable: Throwable): HouseholdMembersError =
-        if (CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INSUFFICIENT_ROLE, throwable.message)) {
-            HouseholdMembersError.InsufficientRole
-        } else {
-            HouseholdMembersError.AvatarUploadFailed
+    private fun mapAvatarFailure(throwable: Throwable): HouseholdMembersError {
+        val msg = throwable.message
+        return when {
+            CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INSUFFICIENT_ROLE, msg) ->
+                HouseholdMembersError.InsufficientRole
+            msg?.contains("avatar_db_update_no_rows") == true ->
+                HouseholdMembersError.AvatarPersistFailed
+            else ->
+                HouseholdMembersError.AvatarUploadFailed
         }
+    }
 
     fun confirmLeaveOrDissolve() {
         val action = _uiState.value.pendingLeaveAction ?: return

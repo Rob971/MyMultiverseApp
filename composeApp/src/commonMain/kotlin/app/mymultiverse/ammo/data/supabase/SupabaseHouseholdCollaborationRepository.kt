@@ -28,6 +28,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.query.Count
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
 import kotlinx.coroutines.flow.Flow
@@ -369,7 +370,10 @@ class SupabaseHouseholdCollaborationRepository(
             HouseholdMemberKind.Dependant -> Unit
             HouseholdMemberKind.Group -> error(CollaborationErrorCodes.INSUFFICIENT_ROLE)
         }
-        logger.breadcrumb("member_avatar_upload_start kind=${member.kind} household=$householdId")
+        logger.breadcrumb(
+            "member_avatar_upload_start kind=${member.kind} " +
+                "member=${member.id} household=$householdId bytes=${imageBytes.size}",
+        )
 
         val extension = avatarExtensionFor(contentType)
         val storagePath = when (member.kind) {
@@ -383,22 +387,43 @@ class SupabaseHouseholdCollaborationRepository(
             this.contentType = ContentType.parse(contentType)
         }
         val publicUrl = bucket.publicUrl(storagePath)
+        logger.breadcrumb(
+            "member_avatar_storage_ok kind=${member.kind} path=$storagePath",
+        )
 
-        when (member.kind) {
+        val rowsUpdated: Long = when (member.kind) {
             HouseholdMemberKind.Dependant -> {
                 client.postgrest["household_dependants"]
                     .update(HouseholdDependantAvatarUpdateRow(avatarUrl = publicUrl)) {
                         filter { eq("id", member.referenceId) }
+                        count(Count.EXACT)
                     }
+                    .countOrNull() ?: 0L
             }
             else -> {
                 client.ensureCurrentProfile(member.referenceId)
                 client.postgrest["profiles"]
                     .update(ProfileAvatarUpdateRow(avatarUrl = publicUrl)) {
                         filter { eq("id", member.referenceId) }
+                        count(Count.EXACT)
                     }
+                    .countOrNull() ?: 0L
             }
         }
+
+        if (rowsUpdated == 0L) {
+            val table = if (member.kind == HouseholdMemberKind.Dependant) "household_dependants" else "profiles"
+            logger.recordError(
+                tag = "AvatarUpload",
+                message = "member_avatar_db_0_rows kind=${member.kind} table=$table " +
+                    "member=${member.id} — check RLS UPDATE+SELECT on $table",
+                throwable = IllegalStateException("avatar_db_update_no_rows"),
+            )
+            error("avatar_db_update_no_rows")
+        }
+        logger.breadcrumb(
+            "member_avatar_db_ok kind=${member.kind} rows=$rowsUpdated",
+        )
 
         membersFlow(householdId).update { members ->
             members.map { current ->
@@ -409,7 +434,7 @@ class SupabaseHouseholdCollaborationRepository(
     }.onFailure { throwable ->
         logger.recordError(
             tag = "AvatarUpload",
-            message = "member_avatar_upload_failed kind=${member.kind} household=$householdId",
+            message = "member_avatar_upload_failed kind=${member.kind} member=${member.id} household=$householdId",
             throwable = throwable,
         )
     }
