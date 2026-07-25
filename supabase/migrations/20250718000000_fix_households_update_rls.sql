@@ -41,3 +41,4 @@ create policy households_update_manager
     to authenticated
     using  (public.is_household_manager(id))
     with check (public.is_household_manager(id));
+
