@@ -95,6 +95,8 @@ data class HouseholdMembersUiState(
     val currentUserRole: HouseholdMemberRole? = null,
     val uploadingAvatarMemberId: String? = null,
     val isUploadingHouseholdAvatar: Boolean = false,
+    /** Live household photo URL from repository (updates immediately after upload). */
+    val householdAvatarUrl: String? = null,
 )
 
 enum class HouseholdMembersSuccess {
@@ -124,6 +126,15 @@ class HouseholdMembersScreenModel(
     private var activeUserIsOwner: Boolean = false
     private var activeUserRole: HouseholdMemberRole? = null
     private var observeJob: Job? = null
+    private var householdObserveJob: Job? = null
+
+    init {
+        householdObserveJob = scope.launch {
+            householdRepository.observeHousehold().collect { household ->
+                _uiState.update { it.copy(householdAvatarUrl = household?.avatarUrl) }
+            }
+        }
+    }
 
     fun bindHousehold(
         householdId: String,
@@ -566,6 +577,10 @@ class HouseholdMembersScreenModel(
         imageBytes: ByteArray,
         contentType: String,
     ) {
+        if (imageBytes.isEmpty()) {
+            _uiState.update { it.copy(error = HouseholdMembersError.AvatarUploadFailed) }
+            return
+        }
         scope.launch {
             _uiState.update { it.copy(isUploadingHouseholdAvatar = true, error = null) }
             householdRepository.updateHouseholdAvatar(
@@ -604,6 +619,10 @@ class HouseholdMembersScreenModel(
         imageBytes: ByteArray,
         contentType: String,
     ) {
+        if (imageBytes.isEmpty()) {
+            _uiState.update { it.copy(error = HouseholdMembersError.AvatarUploadFailed) }
+            return
+        }
         scope.launch {
             _uiState.update {
                 it.copy(

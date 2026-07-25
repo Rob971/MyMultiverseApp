@@ -8,6 +8,7 @@ import app.mymultiverse.ammo.domain.manager.ThemeManager
 import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import app.mymultiverse.ammo.domain.model.auth.AuthState
 import app.mymultiverse.ammo.domain.model.auth.AuthUser
+import app.mymultiverse.ammo.domain.platform.AppStoreLauncher
 import app.mymultiverse.ammo.domain.platform.PersonalDataExporter
 import app.mymultiverse.ammo.domain.platform.PushNotificationRegistrar
 import app.mymultiverse.ammo.domain.repository.AuthRepository
@@ -73,6 +74,7 @@ class AppModuleKoinTest : KoinTest {
         single<HouseholdRepository> { FakeHouseholdRepository() }
         single<HouseholdCollaborationRepository> { FakeHouseholdCollaborationRepository() }
         single<PersonalDataExporter> { FakePersonalDataExporter() }
+        single<AppStoreLauncher> { FakeAppStoreLauncher() }
         single<PushNotificationRegistrar> { FakePushNotificationRegistrar() }
     }
 

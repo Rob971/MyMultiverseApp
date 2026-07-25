@@ -14,6 +14,8 @@ import app.mymultiverse.ammo.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.ammo.domain.coroutines.runCatchingCancellable
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
+import app.mymultiverse.ammo.domain.sharing.avatarExtensionForContentType
+import app.mymultiverse.ammo.domain.sharing.versionedAvatarUrl
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
@@ -287,18 +289,14 @@ class SupabaseHouseholdRepository(
 
         logger.breadcrumb("household_avatar_upload_start household=$householdId bytes=${imageBytes.size}")
 
-        val extension = when {
-            contentType.contains("png") -> "png"
-            contentType.contains("webp") -> "webp"
-            else -> "jpg"
-        }
+        val extension = avatarExtensionForContentType(contentType)
         val storagePath = "households/$householdId/avatar.$extension"
         val bucket = client.storage.from("member-avatars")
         bucket.upload(storagePath, imageBytes) {
             upsert = true
             this.contentType = ContentType.parse(contentType)
         }
-        val publicUrl = bucket.publicUrl(storagePath)
+        val publicUrl = versionedAvatarUrl(bucket.publicUrl(storagePath))
         logger.breadcrumb("household_avatar_storage_ok household=$householdId path=$storagePath")
 
         // select("id") returns the updated row when a row was affected; null when 0 rows matched.

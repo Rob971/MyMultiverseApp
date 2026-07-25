@@ -6,11 +6,13 @@ import app.mymultiverse.ammo.domain.manager.IOSLanguageManager
 import app.mymultiverse.ammo.domain.manager.LanguageManager
 import app.mymultiverse.ammo.data.platform.IosApnsTokenProvider
 import app.mymultiverse.ammo.data.platform.IosDeviceRegionService
+import app.mymultiverse.ammo.data.platform.IosAppStoreLauncher
 import app.mymultiverse.ammo.data.platform.IosPersonalDataExporter
 import app.mymultiverse.ammo.data.platform.NoOpPushNotificationRegistrar
 import app.mymultiverse.ammo.data.platform.SupabasePushNotificationRegistrar
 import app.mymultiverse.ammo.data.supabase.SupabaseClientHolder
 import app.mymultiverse.ammo.domain.location.DeviceRegionService
+import app.mymultiverse.ammo.domain.platform.AppStoreLauncher
 import app.mymultiverse.ammo.domain.platform.PersonalDataExporter
 import app.mymultiverse.ammo.domain.platform.PushNotificationRegistrar
 import com.russhwolf.settings.NSUserDefaultsSettings
@@ -25,6 +27,7 @@ actual fun platformModule(): Module = module {
     // iOS Crashlytics pending Firebase CocoaPods + GoogleService-Info.plist setup.
     single<CrashReporter> { NoOpCrashReporter() }
     single<PersonalDataExporter> { IosPersonalDataExporter() }
+    single<AppStoreLauncher> { IosAppStoreLauncher() }
     single<DeviceRegionService> { IosDeviceRegionService() }
     single<PushNotificationRegistrar> {
         val client = get<SupabaseClientHolder>().client

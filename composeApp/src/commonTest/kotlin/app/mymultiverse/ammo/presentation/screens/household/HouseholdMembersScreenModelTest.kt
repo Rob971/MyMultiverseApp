@@ -528,4 +528,66 @@ class HouseholdMembersScreenModelTest {
         assertFalse(model.uiState.value.canManageMembers)
         assertFalse(model.uiState.value.canWriteHouseholdData)
     }
+
+    @Test
+    fun uploadHouseholdAvatar_updatesHouseholdAvatarUrlInUiState() = runTest(testDispatcher) {
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        model.uploadHouseholdAvatar("household-1", ByteArray(1), "image/jpeg")
+        advanceUntilIdle()
+
+        assertEquals(householdRepository.lastHouseholdAvatarUrl, model.uiState.value.householdAvatarUrl)
+    }
+
+    @Test
+    fun uploadHouseholdAvatar_emptyBytes_setsAvatarUploadFailedWithoutCallingRepository() = runTest(testDispatcher) {
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        model.uploadHouseholdAvatar("household-1", ByteArray(0), "image/jpeg")
+        advanceUntilIdle()
+
+        assertEquals(0, householdRepository.updateHouseholdAvatarCalls)
+        assertEquals(HouseholdMembersError.AvatarUploadFailed, model.uiState.value.error)
+    }
+
+    @Test
+    fun uploadMemberAvatar_persistFailure_setsAvatarPersistFailed() = runTest(testDispatcher) {
+        repository.updateMemberAvatarResult = Result.failure(IllegalStateException("avatar_db_update_no_rows"))
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Carola",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "user-carola",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "user-carola")
+        advanceUntilIdle()
+
+        val member = model.uiState.value.members.single { it.displayName == "Carola" }
+        model.uploadMemberAvatar("household-1", member, ByteArray(1), "image/jpeg")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersError.AvatarPersistFailed, model.uiState.value.error)
+    }
+
+    @Test
+    fun uploadHouseholdAvatar_persistFailure_setsAvatarPersistFailed() = runTest(testDispatcher) {
+        householdRepository.updateHouseholdAvatarResult =
+            Result.failure(IllegalStateException("avatar_db_update_no_rows"))
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        model.uploadHouseholdAvatar("household-1", ByteArray(1), "image/jpeg")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersError.AvatarPersistFailed, model.uiState.value.error)
+    }
 }

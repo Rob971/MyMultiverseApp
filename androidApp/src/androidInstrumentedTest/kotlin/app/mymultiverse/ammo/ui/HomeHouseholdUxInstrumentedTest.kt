@@ -154,6 +154,7 @@ class HomeHouseholdUxInstrumentedTest {
                         onSignOut = {},
                         onExportPersonalData = {},
                         onDeleteAccount = {},
+                        onCheckForUpdates = {},
                     )
                 }
             }
@@ -180,6 +181,7 @@ class HomeHouseholdUxInstrumentedTest {
                         onSignOut = {},
                         onExportPersonalData = {},
                         onDeleteAccount = {},
+                        onCheckForUpdates = {},
                     )
                 }
             }
@@ -204,6 +206,7 @@ class HomeHouseholdUxInstrumentedTest {
                         onSignOut = {},
                         onExportPersonalData = {},
                         onDeleteAccount = {},
+                        onCheckForUpdates = {},
                     )
                 }
             }

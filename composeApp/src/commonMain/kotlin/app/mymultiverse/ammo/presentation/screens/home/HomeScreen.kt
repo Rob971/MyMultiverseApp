@@ -298,6 +298,7 @@ fun HomeScreen(
                 onSignOut = screenModel::signOut,
                 onExportPersonalData = screenModel::exportPersonalData,
                 onDeleteAccount = screenModel::requestDeleteAccount,
+                onCheckForUpdates = screenModel::checkForUpdates,
             )
             Scaffold(
                 contentWindowInsets = WindowInsets.safeDrawing,
@@ -690,20 +691,30 @@ fun HomeWelcomeContent(
         ) {
             val isWideLayout = maxWidth >= ScreenLayout.expandedMinWidth
             val greetingBlock: @Composable () -> Unit = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     Text(
                         text = greetingLine,
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
                         color = JourneySemanticColors.inkDeep(),
-                        modifier = Modifier.testTag(HomeTestTags.GREETING_LINE),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag(HomeTestTags.GREETING_LINE),
                     )
                     if (showGreetingLoading) {
                         Text(
                             text = loadingLine,
                             style = MaterialTheme.typography.bodyMedium,
                             color = JourneySemanticColors.inkMuted(),
-                            modifier = Modifier.testTag(HomeTestTags.LOADING_INDICATOR),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(HomeTestTags.LOADING_INDICATOR),
                         )
                     }
                 }
