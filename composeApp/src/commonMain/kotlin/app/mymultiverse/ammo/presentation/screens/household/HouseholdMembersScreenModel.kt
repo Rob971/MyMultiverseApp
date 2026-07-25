@@ -13,6 +13,8 @@ import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadTarget
 import app.mymultiverse.ammo.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.ammo.domain.sharing.canManageHouseholdMembers
 import app.mymultiverse.ammo.domain.sharing.canAssignAdminRole
@@ -42,10 +44,15 @@ sealed interface HouseholdMembersError {
     /** Storage upload step failed (network, bucket policy, size limit). */
     data object AvatarUploadFailed : HouseholdMembersError
     /**
-     * Storage upload succeeded but the DB row was not written (0 rows updated).
-     * Most likely cause: missing RLS SELECT or UPDATE policy on the target table.
+     * Storage upload succeeded but the household family-photo row was not written (0 rows).
+     * Most likely cause: missing RLS SELECT or UPDATE policy on `households`.
      */
-    data object AvatarPersistFailed : HouseholdMembersError
+    data object HouseholdAvatarPersistFailed : HouseholdMembersError
+    /**
+     * Storage upload succeeded but the member profile row was not written (0 rows).
+     * Most likely cause: missing RLS SELECT or UPDATE policy on `profiles` / `household_dependants`.
+     */
+    data object MemberAvatarPersistFailed : HouseholdMembersError
 }
 
 enum class HouseholdMembersLeaveAction {
@@ -665,18 +672,26 @@ class HouseholdMembersScreenModel(
     /**
      * Maps avatar-upload failures to a user-facing error.
      * - InsufficientRole: user tried to edit someone else's photo
-     * - AvatarPersistFailed: storage OK but DB update wrote 0 rows (RLS issue)
+     * - HouseholdAvatarPersistFailed / MemberAvatarPersistFailed: storage OK but DB 0 rows (RLS)
      * - AvatarUploadFailed: all other failures (network, bucket policy, etc.)
      */
     private fun mapAvatarFailure(throwable: Throwable): HouseholdMembersError {
-        val msg = throwable.message
-        return when {
-            CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INSUFFICIENT_ROLE, msg) ->
-                HouseholdMembersError.InsufficientRole
-            msg?.contains("avatar_db_update_no_rows") == true ->
-                HouseholdMembersError.AvatarPersistFailed
-            else ->
-                HouseholdMembersError.AvatarUploadFailed
+        return when (val persist = throwable as? AvatarPersistException) {
+            null -> when {
+                CollaborationErrorCodes.messageContains(
+                    CollaborationErrorCodes.INSUFFICIENT_ROLE,
+                    throwable.message,
+                ) -> HouseholdMembersError.InsufficientRole
+                throwable.message?.contains(AvatarPersistException.ERROR_CODE) == true ->
+                    HouseholdMembersError.MemberAvatarPersistFailed
+                else -> HouseholdMembersError.AvatarUploadFailed
+            }
+            else -> when (persist.target) {
+                AvatarUploadTarget.Household -> HouseholdMembersError.HouseholdAvatarPersistFailed
+                AvatarUploadTarget.MemberProfile,
+                AvatarUploadTarget.Dependant,
+                -> HouseholdMembersError.MemberAvatarPersistFailed
+            }
         }
     }
 

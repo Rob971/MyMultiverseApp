@@ -14,6 +14,9 @@ import app.mymultiverse.ammo.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.ammo.domain.coroutines.runCatchingCancellable
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
+import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadStep
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadTarget
 import app.mymultiverse.ammo.domain.sharing.avatarExtensionForContentType
 import app.mymultiverse.ammo.domain.sharing.versionedAvatarUrl
 import io.github.jan.supabase.SupabaseClient
@@ -287,7 +290,13 @@ class SupabaseHouseholdRepository(
         client.auth.awaitInitialization()
         requireUserId()
 
-        logger.breadcrumb("household_avatar_upload_start household=$householdId bytes=${imageBytes.size}")
+        logger.logAvatarUploadStep(
+            target = AvatarUploadTarget.Household,
+            step = AvatarUploadStep.Start,
+            householdId = householdId,
+            extra = "bytes=${imageBytes.size}",
+            context = mapOf("content_type" to contentType),
+        )
 
         val extension = avatarExtensionForContentType(contentType)
         val storagePath = "households/$householdId/avatar.$extension"
@@ -297,7 +306,12 @@ class SupabaseHouseholdRepository(
             this.contentType = ContentType.parse(contentType)
         }
         val publicUrl = versionedAvatarUrl(bucket.publicUrl(storagePath))
-        logger.breadcrumb("household_avatar_storage_ok household=$householdId path=$storagePath")
+        logger.logAvatarUploadStep(
+            target = AvatarUploadTarget.Household,
+            step = AvatarUploadStep.StorageUpload,
+            householdId = householdId,
+            extra = "path=$storagePath",
+        )
 
         // select("id") returns the updated row when a row was affected; null when 0 rows matched.
         // count(Count.EXACT) + countOrNull() is NOT used because PostgREST does not honour
@@ -310,15 +324,31 @@ class SupabaseHouseholdRepository(
             .decodeSingleOrNull<HouseholdIdRow>()
 
         if (updated == null) {
-            logger.recordError(
-                tag = "AvatarUpload",
-                message = "household_avatar_db_0_rows household=$householdId — " +
-                    "households UPDATE+SELECT RLS policy missing or not deployed",
-                throwable = IllegalStateException("avatar_db_update_no_rows"),
+            val persistError = AvatarPersistException(
+                target = AvatarUploadTarget.Household,
+                dbTable = "households",
+                householdId = householdId,
+                storagePath = storagePath,
+                contentType = contentType,
+                imageBytes = imageBytes.size,
             )
-            error("avatar_db_update_no_rows")
+            logger.recordAvatarUploadFailure(
+                target = AvatarUploadTarget.Household,
+                step = AvatarUploadStep.DbPersist,
+                householdId = householdId,
+                throwable = persistError,
+                storagePath = storagePath,
+                dbTable = "households",
+                contentType = contentType,
+                imageBytes = imageBytes.size,
+            )
+            throw persistError
         }
-        logger.breadcrumb("household_avatar_db_ok household=$householdId updated=true")
+        logger.logAvatarUploadStep(
+            target = AvatarUploadTarget.Household,
+            step = AvatarUploadStep.DbPersist,
+            householdId = householdId,
+        )
 
         household.update { current ->
             current?.takeIf { it.id == householdId }?.copy(avatarUrl = publicUrl) ?: current
@@ -336,13 +366,22 @@ class SupabaseHouseholdRepository(
                 status
             }
         }
-        logger.breadcrumb("household_avatar_upload_success household=$householdId")
-    }.onFailure { throwable ->
-        logger.recordError(
-            tag = "AvatarUpload",
-            message = "household_avatar_upload_failed household=$householdId",
-            throwable = throwable,
+        logger.logAvatarUploadStep(
+            target = AvatarUploadTarget.Household,
+            step = AvatarUploadStep.Success,
+            householdId = householdId,
         )
+    }.onFailure { throwable ->
+        if (throwable !is AvatarPersistException) {
+            logger.recordAvatarUploadFailure(
+                target = AvatarUploadTarget.Household,
+                step = AvatarUploadStep.StorageUpload,
+                householdId = householdId,
+                throwable = throwable,
+                contentType = contentType,
+                imageBytes = imageBytes.size,
+            )
+        }
     }
 
     private fun String?.toHouseholdMemberRole(): HouseholdMemberRole =

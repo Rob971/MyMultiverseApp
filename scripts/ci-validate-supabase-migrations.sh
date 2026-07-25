@@ -49,4 +49,9 @@ if [[ -x "./scripts/ci-test-invite-preview-rpc.sh" ]]; then
   ./scripts/ci-test-invite-preview-rpc.sh
 fi
 
+if [[ -x "./scripts/ci-validate-avatar-rls.sh" ]]; then
+  echo "==> Validating avatar RLS policies on local stack"
+  ./scripts/ci-validate-avatar-rls.sh
+fi
+
 echo "All Supabase migration checks passed."

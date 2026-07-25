@@ -1,5 +1,8 @@
 package app.mymultiverse.ammo.data.observability
 
+import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadStep
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadTarget
 import app.mymultiverse.ammo.domain.model.auth.AuthState
 import app.mymultiverse.ammo.domain.model.auth.AuthUser
 import kotlin.test.Test
@@ -46,6 +49,36 @@ class AppLoggerTest {
         )
 
         assertEquals("user-42", crashReporter.recordedUserId)
+    }
+
+    @Test
+    fun recordAvatarUploadFailure_forwardsStructuredContext() {
+        val crashReporter = RecordingCrashReporter()
+        val diagnostics = app.mymultiverse.ammo.domain.observability.DiagnosticsContext(sessionId = "sess-3")
+        val logger = AppLogger(crashReporter, diagnostics)
+
+        val error = AvatarPersistException(
+            target = AvatarUploadTarget.Household,
+            dbTable = "households",
+            householdId = "hh-9",
+            storagePath = "households/hh-9/avatar.jpg",
+        )
+        logger.recordAvatarUploadFailure(
+            target = AvatarUploadTarget.Household,
+            step = AvatarUploadStep.DbPersist,
+            householdId = "hh-9",
+            throwable = error,
+            storagePath = "households/hh-9/avatar.jpg",
+            dbTable = "households",
+        )
+
+        assertEquals(1, crashReporter.nonFatals.size)
+        val recorded = crashReporter.nonFatals.single()
+        assertEquals("household", recorded.context["avatar_target"])
+        assertEquals("db_persist", recorded.context["avatar_step"])
+        assertEquals("rls_zero_rows", recorded.context["avatar_failure_reason"])
+        assertEquals("households", recorded.context["avatar_db_table"])
+        assertEquals("hh-9", recorded.context["household_id"])
     }
 
     private class RecordingCrashReporter : app.mymultiverse.ammo.domain.observability.CrashReporter {
