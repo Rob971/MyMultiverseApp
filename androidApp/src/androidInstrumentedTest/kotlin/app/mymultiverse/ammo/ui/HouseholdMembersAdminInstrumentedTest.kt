@@ -185,6 +185,95 @@ class HouseholdMembersAdminInstrumentedTest {
     }
 
     @Test
+    fun admin_hidesSelfRemovalAndCanRemoveOtherMember() {
+        val adminUserId = "admin-user"
+        val adminMemberId = "member-admin-1"
+        val removableMemberId = "member-viewer-1"
+        val collaborationRepository = InstrumentedHouseholdCollaborationRepository()
+        collaborationRepository.seedMembers(
+            householdId = householdId,
+            ownerId = ownerId,
+            ownerDisplayName = "Owner",
+            members = listOf(
+                HouseholdMember(
+                    id = adminMemberId,
+                    householdId = householdId,
+                    kind = HouseholdMemberKind.Person,
+                    displayName = "Current Admin",
+                    role = HouseholdMemberRole.Admin,
+                    referenceId = adminUserId,
+                ),
+                HouseholdMember(
+                    id = removableMemberId,
+                    householdId = householdId,
+                    kind = HouseholdMemberKind.Person,
+                    displayName = "Viewer User",
+                    role = HouseholdMemberRole.Viewer,
+                    referenceId = "viewer-user",
+                ),
+            ),
+        )
+        val screenModel = HouseholdMembersScreenModel(
+            collaborationRepository = collaborationRepository,
+            householdRepository = InstrumentedHouseholdRepository(role = HouseholdMemberRole.Admin),
+            sessionCoordinator = InstrumentedNutritionSessionCoordinator(
+                repository = InstrumentedNutritionRepository(weekKey = "2026-06-16"),
+            ),
+            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext()),
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+        )
+        val authRepository = InstrumentedFakeAuthRepository(
+            initialState = AuthState.Authenticated(
+                AuthUser(id = adminUserId, email = "admin@example.com", displayName = "Current Admin"),
+            ),
+        )
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HouseholdMembersScreen(
+                        household = HouseholdContext(
+                            id = householdId,
+                            name = "Our Household",
+                            ownerId = ownerId,
+                            ownerDisplayName = "Owner",
+                            nutritionFeatures = setOf(NutritionSharingFeature.Grocery),
+                        ),
+                        onBack = {},
+                        screenModel = screenModel,
+                        authRepository = authRepository,
+                        personalDataExporter = noopPersonalDataExporter,
+                    )
+                }
+            }
+        }
+
+        composeRule.waitFor(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag("${HouseholdMembersTestTags.MEMBER_ROW}_$adminMemberId")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithTag("${HouseholdMembersTestTags.MEMBER_ROW}_$adminMemberId")
+            .performScrollTo()
+        assertTrue(
+            composeRule.onAllNodesWithTag("${HouseholdMembersTestTags.MEMBER_ROW_OVERFLOW}_$adminMemberId")
+                .fetchSemanticsNodes().isEmpty(),
+        )
+
+        composeRule.onNodeWithTag("${HouseholdMembersTestTags.MEMBER_ROW}_$removableMemberId")
+            .performScrollTo()
+        composeRule.onNodeWithTag("${HouseholdMembersTestTags.MEMBER_ROW_OVERFLOW}_$removableMemberId")
+            .performClick()
+        composeRule.onNodeWithTag(HouseholdMembersTestTags.MEMBER_REMOVE_MENU).performClick()
+
+        composeRule.waitFor(timeoutMillis = 5_000) {
+            collaborationRepository.lastRemovedMemberId == removableMemberId &&
+                composeRule.onAllNodesWithTag("${HouseholdMembersTestTags.MEMBER_ROW}_$removableMemberId")
+                    .fetchSemanticsNodes().isEmpty()
+        }
+    }
+
+    @Test
     fun owner_canOpenOtherMemberPhotoFullscreenAndClose() {
         val collaborationRepository = InstrumentedHouseholdCollaborationRepository()
         collaborationRepository.seedMembers(

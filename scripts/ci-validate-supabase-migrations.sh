@@ -54,4 +54,9 @@ if [[ -x "./scripts/ci-validate-avatar-rls.sh" ]]; then
   ./scripts/ci-validate-avatar-rls.sh
 fi
 
+if [[ -x "./scripts/ci-test-household-member-crud.sh" ]]; then
+  echo "==> Testing household member CRUD RPCs on local stack"
+  ./scripts/ci-test-household-member-crud.sh
+fi
+
 echo "All Supabase migration checks passed."

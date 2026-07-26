@@ -66,11 +66,6 @@ data class HouseholdInviteInsertRow(
 )
 
 @Serializable
-data class HouseholdInviteUpdateRow(
-    @SerialName("declined_at") val declinedAt: String,
-)
-
-@Serializable
 data class HouseholdInvitePendingUpdateRow(
     val role: String,
     @SerialName("invited_by") val invitedBy: String,

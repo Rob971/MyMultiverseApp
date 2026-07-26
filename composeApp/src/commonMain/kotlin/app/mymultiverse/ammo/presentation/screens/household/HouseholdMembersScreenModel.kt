@@ -419,6 +419,7 @@ class HouseholdMembersScreenModel(
 
     fun removeMember(member: HouseholdMember, householdId: String) {
         if (member.role == HouseholdMemberRole.Owner) return
+        if (member.kind == HouseholdMemberKind.Person && member.referenceId == activeCurrentUserId) return
         val actorRole = _uiState.value.currentUserRole ?: return
         if (!actorRole.canRemoveMember(member.role)) return
         scope.launch {

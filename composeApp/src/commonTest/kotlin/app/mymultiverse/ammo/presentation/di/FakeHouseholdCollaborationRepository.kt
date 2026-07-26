@@ -20,8 +20,11 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
     var inboundProfileEmail: String = "invitee@example.com"
     var addMemberFailure: Throwable? = null
     var addDependantFailure: Throwable? = null
+    var removeMemberFailure: Throwable? = null
     var emailsAlreadyInAnotherHousehold: Set<String> = emptySet()
     var refreshMembersCalls: Int = 0
+        private set
+    var removeMemberCalls: Int = 0
         private set
 
     private fun createInvite(householdId: String, email: String, role: HouseholdMemberRole): HouseholdInvite {
@@ -112,6 +115,8 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
     }
 
     override suspend fun removeMember(memberId: String): Result<Unit> {
+        removeMemberCalls++
+        removeMemberFailure?.let { return Result.failure(it) }
         membersByHousehold.values.forEach { flow ->
             flow.update { members -> members.filterNot { it.id == memberId } }
         }

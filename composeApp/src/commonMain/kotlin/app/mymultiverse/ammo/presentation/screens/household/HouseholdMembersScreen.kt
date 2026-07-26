@@ -933,6 +933,7 @@ private fun MemberRow(
         actorRole?.canChangeRoleOf(member.role) == true
     val canRemove = canManage &&
         member.role != HouseholdMemberRole.Owner &&
+        member.referenceId != currentUserId &&
         actorRole?.canRemoveMember(member.role) == true
     val showOverflow = canRemove
     val changeRoleLabel = stringResource(Res.string.sharing_members_change_role)

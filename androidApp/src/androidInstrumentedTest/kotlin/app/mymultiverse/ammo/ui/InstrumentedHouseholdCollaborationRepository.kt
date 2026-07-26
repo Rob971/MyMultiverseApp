@@ -58,7 +58,15 @@ class InstrumentedHouseholdCollaborationRepository : HouseholdCollaborationRepos
         role: HouseholdMemberRole,
     ): Result<AddMemberResult> = Result.success(AddMemberResult.InviteSent(inviteToken = "instrumented-invite-token"))
 
-    override suspend fun removeMember(memberId: String): Result<Unit> = Result.success(Unit)
+    var lastRemovedMemberId: String? = null
+
+    override suspend fun removeMember(memberId: String): Result<Unit> {
+        lastRemovedMemberId = memberId
+        membersByHousehold.forEach { (_, flow) ->
+            flow.value = flow.value.filterNot { member -> member.id == memberId }
+        }
+        return Result.success(Unit)
+    }
 
     var lastRoleUpdate: Pair<String, HouseholdMemberRole>? = null
 
@@ -82,7 +90,7 @@ class InstrumentedHouseholdCollaborationRepository : HouseholdCollaborationRepos
     override suspend fun addDependant(householdId: String, displayName: String): Result<Unit> =
         Result.success(Unit)
 
-    override suspend fun removeDependant(dependantId: String): Result<Unit> = Result.success(Unit)
+    override suspend fun removeDependant(dependantId: String): Result<Unit> = removeMember(dependantId)
 
     override suspend fun nudgePartnersToUpdateGroceryList(
         householdId: String,
