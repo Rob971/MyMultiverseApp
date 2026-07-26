@@ -3,23 +3,25 @@ package app.mymultiverse.ammo.data.tour
 import com.russhwolf.settings.Settings
 
 /**
- * Persists whether the user has completed or skipped the product tour for a given version key.
+ * Persists whether the user has completed or skipped the product tour for a given key.
  *
- * Version-keyed so the tour shows once per major feature release (e.g. "1.5.3").
+ * Prefer [app.mymultiverse.ammo.presentation.screens.tour.ProductTourCatalog.TOUR_ID]
+ * (`spotlight_v1`) so a new user sees the walkthrough once across alpha/beta/prod builds.
+ * Bump that ID only when intentionally re-introducing the tour.
  */
 class ProductTourStore(private val settings: Settings) {
 
-    fun hasSeenTour(versionKey: String): Boolean =
-        settings.getBoolean(seenKey(versionKey), defaultValue = false)
+    fun hasSeenTour(tourKey: String): Boolean =
+        settings.getBoolean(seenKey(tourKey), defaultValue = false)
 
-    fun markTourSeen(versionKey: String) {
-        settings.putBoolean(seenKey(versionKey), true)
+    fun markTourSeen(tourKey: String) {
+        settings.putBoolean(seenKey(tourKey), true)
     }
 
-    /** Exposed for testing — clears the seen flag for the given version. */
-    internal fun clearTourSeen(versionKey: String) {
-        settings.remove(seenKey(versionKey))
+    /** Exposed for testing — clears the seen flag for the given tour key. */
+    internal fun clearTourSeen(tourKey: String) {
+        settings.remove(seenKey(tourKey))
     }
 
-    private fun seenKey(versionKey: String): String = "product_tour_seen_$versionKey"
+    private fun seenKey(tourKey: String): String = "product_tour_seen_$tourKey"
 }
