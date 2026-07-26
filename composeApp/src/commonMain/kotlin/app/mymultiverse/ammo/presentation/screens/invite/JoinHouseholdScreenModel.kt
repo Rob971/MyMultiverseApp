@@ -323,8 +323,8 @@ class JoinHouseholdScreenModel(
             EmailOtpValidationError.InvalidCode -> JoinHouseholdError.OtpInvalid
         }
 
-    private companion object {
+    companion object {
         const val OTP_CODE_LENGTH = 6
-        const val RESEND_COOLDOWN_SECONDS = 60
+        private const val RESEND_COOLDOWN_SECONDS = 60
     }
 }

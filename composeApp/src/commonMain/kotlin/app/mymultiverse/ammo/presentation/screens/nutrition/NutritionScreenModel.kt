@@ -78,12 +78,14 @@ class NutritionScreenModel(
         const val MAX_WEEK_OFFSET = 1
         private const val SYNCED_PULSE_MS = 2_500L
         private const val COLLABORATION_DEBOUNCE_MS = 2_000L
+        private const val MEAL_PLAN_SAVE_DEBOUNCE_MS = 300L
     }
 
     // Serializes all grocery and meal-plan writes to prevent read-modify-write races
     // when multiple concurrent coroutines each read the current list then overwrite it.
     private val groceryMutex = Mutex()
     private val mealPlanMutex = Mutex()
+    private var mealPlanSaveJob: Job? = null
 
     private val repository: NutritionRepository
         get() = session.nutrition.value
@@ -503,7 +505,9 @@ class NutritionScreenModel(
     fun updateMeal(dayIndex: Int, lunch: String? = null, dinner: String? = null) {
         if (!canWriteHouseholdData.value) return
         if (dayIndex !in 0 until WeeklyMealPlan.DAYS_IN_WEEK) return
-        scope.launch {
+        mealPlanSaveJob?.cancel()
+        mealPlanSaveJob = scope.launch {
+            delay(MEAL_PLAN_SAVE_DEBOUNCE_MS)
             mealPlanMutex.withLock {
                 val current = mealPlan.value
                 val days = current.days.toMutableList()

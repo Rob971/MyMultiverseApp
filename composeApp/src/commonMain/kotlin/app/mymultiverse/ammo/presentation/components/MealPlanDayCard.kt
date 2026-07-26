@@ -25,12 +25,14 @@ import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.ammo.presentation.components.AiInlineTriggerButton
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -241,16 +243,30 @@ private fun MealPlanMealField(
     fieldTestTag: String,
     generateGroceryTestTag: String,
 ) {
+    var draft by rememberSaveable(dayIndex, slot.name) { mutableStateOf(value) }
+    var isFocused by rememberSaveable(dayIndex, slot.name) { mutableStateOf(false) }
+
+    LaunchedEffect(value) {
+        if (!isFocused && draft != value) {
+            draft = value
+        }
+    }
+
+    fun applyDraft(newValue: String) {
+        draft = newValue
+        onValueChange(newValue)
+    }
+
     val suggestions = if (readOnly) {
         emptyList()
     } else {
-        MealPlanPresentation.mealLabelSuggestions(weekDays, value)
+        MealPlanPresentation.mealLabelSuggestions(weekDays, draft)
     }
-    val dishEmoji = FoodEmojiCatalog.emojiForMealText(value)
+    val dishEmoji = FoodEmojiCatalog.emojiForMealText(draft)
     val scrollIntoViewModifier = rememberFieldScrollIntoViewModifier()
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        AnimatedVisibility(visible = value.isNotBlank() && dishEmoji != null) {
+        AnimatedVisibility(visible = draft.isNotBlank() && dishEmoji != null) {
             FoodItemThumbnail(
                 emoji = dishEmoji ?: "",
                 size = 36.dp,
@@ -258,11 +274,12 @@ private fun MealPlanMealField(
             )
         }
         JourneyTextField(
-            value = value,
-            onValueChange = onValueChange,
+            value = draft,
+            onValueChange = ::applyDraft,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag(fieldTestTag)
+                .onFocusChanged { focusState -> isFocused = focusState.isFocused }
                 .then(scrollIntoViewModifier),
             label = { Text(label) },
             placeholder = { Text(label) },
@@ -271,9 +288,9 @@ private fun MealPlanMealField(
             readOnly = readOnly,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { /* focus moves naturally */ }),
-            trailingIcon = if (value.isNotBlank() && !readOnly && onClear != null) {
+            trailingIcon = if (draft.isNotBlank() && !readOnly && onClear != null) {
                 {
-                    JourneyIconButton(onClick = onClear) {
+                    JourneyIconButton(onClick = { applyDraft("") }) {
                         JourneyIcon(
                             role = AppIconRole.ActionDelete,
                             contentDescription = clearFieldLabel,
@@ -286,7 +303,7 @@ private fun MealPlanMealField(
             },
             focusAccentColor = accentColor,
         )
-        if (value.isBlank() && !readOnly && suggestQuickMealLabel != null && onSuggestQuickMeal != null) {
+        if (draft.isBlank() && !readOnly && suggestQuickMealLabel != null && onSuggestQuickMeal != null) {
             AiInlineTriggerButton(
                 label = suggestQuickMealLabel,
                 onClick = { onSuggestQuickMeal(slot) },
@@ -300,7 +317,7 @@ private fun MealPlanMealField(
             ) {
                 items(suggestions.withIndex().toList(), key = { "${it.index}-${it.value}" }) { (index, suggestion) ->
                     SuggestionChip(
-                        onClick = { onValueChange(suggestion) },
+                        onClick = { applyDraft(suggestion) },
                         label = {
                             Text(
                                 text = suggestion,
@@ -318,7 +335,7 @@ private fun MealPlanMealField(
                 }
             }
         }
-        if (value.isNotBlank() && !readOnly) {
+        if (draft.isNotBlank() && !readOnly) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
