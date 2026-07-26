@@ -279,8 +279,8 @@ private fun AuthenticatedMainApp() {
         )
     }
 
-    // Wait for HomePhase.Welcome so the home hub spotlight rect is registered by
-    // HomeWelcomeContent before the tour advances to step 2 (home_hub target).
+    // Wait for HomePhase.Welcome so the daily meal plan hub spotlight rect is registered
+    // before the tour advances to step 2 (TARGET_HOME_HUB on HomeDailyMealPlanBlock).
     LaunchedEffect(homePhase) {
         if (homePhase is HomePhase.Welcome) {
             tourScreenModel.maybeShowTour(

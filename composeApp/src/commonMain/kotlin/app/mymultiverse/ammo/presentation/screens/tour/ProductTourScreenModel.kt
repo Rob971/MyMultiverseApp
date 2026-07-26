@@ -42,6 +42,8 @@ class ProductTourScreenModel(
      */
     fun maybeShowTour(versionKey: String, steps: List<ProductTourStep>) {
         if (steps.isEmpty()) return
+        // Do not reset an in-progress tour if HomePhase re-emits Welcome.
+        if (_uiState.value is ProductTourUiState.Active) return
         if (!store.hasSeenTour(versionKey)) {
             activeVersionKey = versionKey
             _uiState.value = ProductTourUiState.Active(steps = steps, currentIndex = 0)

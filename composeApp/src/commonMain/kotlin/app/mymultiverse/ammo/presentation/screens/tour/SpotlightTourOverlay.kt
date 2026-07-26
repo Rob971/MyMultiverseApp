@@ -14,6 +14,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,7 +46,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
@@ -65,7 +65,8 @@ import org.koin.compose.koinInject
 private val ScrimColor = Color.Black.copy(alpha = 0.72f)
 private val SpotlightPadding = 10.dp
 private val SpotlightCornerRadius = 14.dp
-private const val TooltipMinTopPx = 80f
+private val TooltipHeightEstimate = 260.dp
+private val TooltipCardGap = 16.dp
 
 /**
  * Full-screen product tour overlay with a spotlight cutout and animated tooltip card.
@@ -74,8 +75,9 @@ private const val TooltipMinTopPx = 80f
  * above all content. The overlay shows/hides itself based on [ProductTourUiState].
  *
  * The spotlight highlights the root-relative bounding rect registered via
- * [Modifier.productTourTarget] for the current step's [ProductTourStep.targetTag]. When a step
- * has no target tag, the overlay shows a centred modal card over a plain dim background.
+ * [modifier.productTourTarget] for the current step's [ProductTourStep.targetTag]. When a step
+ * has no target tag — or the registered target is oversized — the overlay shows a centred
+ * modal card over a plain dim background.
  */
 @Composable
 fun SpotlightTourOverlay(
@@ -92,11 +94,11 @@ fun SpotlightTourOverlay(
         modifier = modifier.fillMaxSize(),
     ) {
         val active = state as? ProductTourUiState.Active ?: return@AnimatedVisibility
-        val spotlightRect: Rect? = active.currentStep.targetTag?.let { tag -> rects[tag] }
+        val rawSpotlightRect: Rect? = active.currentStep.targetTag?.let { tag -> rects[tag] }
 
         SpotlightScrimLayer(
             state = active,
-            spotlightRect = spotlightRect,
+            rawSpotlightRect = rawSpotlightRect,
             onNext = screenModel::next,
             onPrevious = screenModel::previous,
             onSkip = screenModel::skip,
@@ -107,7 +109,7 @@ fun SpotlightTourOverlay(
 @Composable
 private fun SpotlightScrimLayer(
     state: ProductTourUiState.Active,
-    spotlightRect: Rect?,
+    rawSpotlightRect: Rect?,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
     onSkip: () -> Unit,
@@ -116,16 +118,23 @@ private fun SpotlightScrimLayer(
     val spotlightPaddingPx = with(density) { SpotlightPadding.toPx() }
     val cornerRadiusPx = with(density) { SpotlightCornerRadius.toPx() }
 
-    val paddedRect: Rect? = spotlightRect?.expand(spotlightPaddingPx)
-
     // Offscreen layer so BlendMode.Clear punches through the scrim without erasing
     // the main app content underneath — only the overlay buffer is affected.
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .testTag(ProductTourTestTags.OVERLAY)
             .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen },
     ) {
+        val screenWidthPx = with(density) { maxWidth.toPx() }
+        val screenHeightPx = with(density) { maxHeight.toPx() }
+        val usableRect = TourSpotlightPlacement.usableSpotlightRect(
+            rect = rawSpotlightRect,
+            screenWidthPx = screenWidthPx,
+            screenHeightPx = screenHeightPx,
+        )
+        val paddedRect: Rect? = usableRect?.expand(spotlightPaddingPx)
+
         Canvas(modifier = Modifier.fillMaxSize()) {
             // 1. Paint the dim scrim.
             drawRect(color = ScrimColor, blendMode = BlendMode.SrcOver)
@@ -158,6 +167,7 @@ private fun SpotlightScrimLayer(
             TourTooltipCard(
                 state = activeState,
                 spotlightRect = paddedRect,
+                screenHeightPx = screenHeightPx,
                 onNext = onNext,
                 onPrevious = onPrevious,
                 onSkip = onSkip,
@@ -170,14 +180,23 @@ private fun SpotlightScrimLayer(
 private fun TourTooltipCard(
     state: ProductTourUiState.Active,
     spotlightRect: Rect?,
+    screenHeightPx: Float,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
     onSkip: () -> Unit,
-    tooltipHeightEstimate: Dp = 260.dp,
+    tooltipHeightEstimate: Dp = TooltipHeightEstimate,
 ) {
     val density = LocalDensity.current
-    val cardAlignment = if (spotlightRect == null) Alignment.Center else Alignment.TopStart
-    val topOffsetDp = tooltipTopOffsetDp(spotlightRect, density, tooltipHeightEstimate)
+    val tooltipHeightPx = with(density) { tooltipHeightEstimate.toPx() }
+    val cardGapPx = with(density) { TooltipCardGap.toPx() }
+    val topOffsetPx = TourSpotlightPlacement.tooltipTopOffsetPx(
+        spotlightRect = spotlightRect,
+        tooltipHeightPx = tooltipHeightPx,
+        cardGapPx = cardGapPx,
+        screenHeightPx = screenHeightPx,
+    )
+    val cardAlignment = if (topOffsetPx == null) Alignment.Center else Alignment.TopStart
+    val topOffsetDp = topOffsetPx?.let { with(density) { it.toDp() } } ?: 0.dp
 
     Box(modifier = Modifier.fillMaxSize()) {
         Card(
@@ -188,7 +207,7 @@ private fun TourTooltipCard(
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             modifier = Modifier
                 .align(cardAlignment)
-                .let { m -> if (spotlightRect != null) m.padding(top = topOffsetDp) else m }
+                .let { m -> if (topOffsetPx != null) m.padding(top = topOffsetDp) else m }
                 .padding(horizontal = 20.dp)
                 .fillMaxWidth()
                 .testTag(ProductTourTestTags.TOOLTIP_CARD),
@@ -244,7 +263,7 @@ private fun TourTooltipCard(
                     modifier = Modifier.testTag(ProductTourTestTags.STEP_DESCRIPTION),
                 )
 
-                Spacer(Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -261,7 +280,7 @@ private fun TourTooltipCard(
                             Text(stringResource(Res.string.tour_action_previous))
                         }
                     } else {
-                        Spacer(Modifier.weight(1f))
+                        Spacer(modifier = Modifier.weight(1f))
                     }
 
                     JourneyPrimaryButton(
@@ -281,30 +300,6 @@ private fun TourTooltipCard(
                 }
             }
         }
-    }
-}
-
-/**
- * Returns the top padding so the card appears:
- * - **above** the spotlight when there is enough room (spotlight in the lower portion of screen)
- * - **below** the spotlight otherwise (spotlight near the top)
- *
- * Returns 0.dp when [spotlightRect] is null (tooltip is centred via [Alignment.Center]).
- */
-@Composable
-private fun tooltipTopOffsetDp(
-    spotlightRect: Rect?,
-    density: Density,
-    tooltipHeightEstimate: Dp,
-): Dp {
-    if (spotlightRect == null) return 0.dp
-    val tooltipHeightPx = with(density) { tooltipHeightEstimate.toPx() }
-    val cardGapPx = with(density) { 16.dp.toPx() }
-
-    return with(density) {
-        val aboveTop = spotlightRect.top - tooltipHeightPx - cardGapPx
-        val belowBottom = spotlightRect.bottom + cardGapPx
-        if (aboveTop > TooltipMinTopPx) aboveTop.toDp() else belowBottom.toDp()
     }
 }
 
