@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 99
+version: 100
 updated: 2026-07-26
 
 summary: |
@@ -311,6 +311,20 @@ testcases:
       - Admin can invite members and change any non-owner role except promoting to admin.
       - Admin cannot transfer ownership or dissolve.
       - Role updated snackbar appears after save; the member row badge updates immediately (no pull-to-refresh needed).
+
+  - id: household-remove-member
+    title: Owner and admin remove members and dependants (v100)
+    steps:
+      - Sign in as the household owner; open Household members.
+      - On a non-owner person row, open the overflow menu and tap Remove; confirm.
+      - Add a dependant (invite chooser → Add child / dependant), then remove that dependant.
+      - Sign in as a household admin (not the owner) on another account; open Household members.
+      - Remove a non-owner person member (editor or viewer) and a dependant as the admin.
+    expected:
+      - Owner removal deletes the person and dependant from the list; they do not reappear after pull-to-refresh.
+      - Admin removal also succeeds and persists after refresh (previously the row silently reappeared).
+      - Dependant removal succeeds for both owner and admin (no insufficient_role / server error).
+      - The owner row never shows a Remove action; owners cannot be removed.
 
   - id: nutrition-household-bootstrap
     title: Open nutrition after household is active

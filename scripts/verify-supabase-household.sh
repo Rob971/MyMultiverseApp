@@ -132,6 +132,50 @@ fi
 rm -f "${PREVIEW_BODY}"
 echo "OK: preview_household_invite RPC endpoint exists (status ${PREVIEW_STATUS} without auth)"
 
+echo "==> Checking remove_household_member RPC is deployed"
+REMOVE_MEMBER_STATUS="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${REST_URL}/rpc/remove_household_member" \
+  -H "apikey: ${ANON_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"p_member_id":"00000000-0000-0000-0000-000000000000"}')"
+
+if [[ "${REMOVE_MEMBER_STATUS}" == "404" ]]; then
+  echo "ERROR: remove_household_member RPC not found (404). Run: supabase db push" >&2
+  exit 1
+fi
+
+if [[ "${REMOVE_MEMBER_STATUS}" =~ ^5 ]]; then
+  echo "ERROR: remove_household_member probe failed (status ${REMOVE_MEMBER_STATUS})." >&2
+  exit 1
+fi
+
+if [[ "${REMOVE_MEMBER_STATUS}" != "400" && "${REMOVE_MEMBER_STATUS}" != "401" && "${REMOVE_MEMBER_STATUS}" != "403" ]]; then
+  echo "ERROR: unexpected remove_household_member response (status ${REMOVE_MEMBER_STATUS}). Expected 400/401/403 without auth." >&2
+  exit 1
+fi
+echo "OK: remove_household_member RPC endpoint exists (status ${REMOVE_MEMBER_STATUS} without auth)"
+
+echo "==> Checking remove_household_dependant RPC is deployed"
+REMOVE_DEPENDANT_STATUS="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${REST_URL}/rpc/remove_household_dependant" \
+  -H "apikey: ${ANON_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"p_dependant_id":"00000000-0000-0000-0000-000000000000"}')"
+
+if [[ "${REMOVE_DEPENDANT_STATUS}" == "404" ]]; then
+  echo "ERROR: remove_household_dependant RPC not found (404). Run: supabase db push" >&2
+  exit 1
+fi
+
+if [[ "${REMOVE_DEPENDANT_STATUS}" =~ ^5 ]]; then
+  echo "ERROR: remove_household_dependant probe failed (status ${REMOVE_DEPENDANT_STATUS})." >&2
+  exit 1
+fi
+
+if [[ "${REMOVE_DEPENDANT_STATUS}" != "400" && "${REMOVE_DEPENDANT_STATUS}" != "401" && "${REMOVE_DEPENDANT_STATUS}" != "403" ]]; then
+  echo "ERROR: unexpected remove_household_dependant response (status ${REMOVE_DEPENDANT_STATUS}). Expected 400/401/403 without auth." >&2
+  exit 1
+fi
+echo "OK: remove_household_dependant RPC endpoint exists (status ${REMOVE_DEPENDANT_STATUS} without auth)"
+
 if [[ -n "${SUPABASE_TEST_EMAIL:-}" && -n "${SUPABASE_TEST_PASSWORD:-}" ]]; then
   echo "==> Signing in test user ${SUPABASE_TEST_EMAIL}"
   TOKEN_RESPONSE="$(curl -fsS -X POST "${AUTH_URL}/token?grant_type=password" \

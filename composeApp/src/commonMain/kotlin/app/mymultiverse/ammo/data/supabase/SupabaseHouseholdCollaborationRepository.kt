@@ -260,10 +260,13 @@ class SupabaseHouseholdCollaborationRepository(
     override suspend fun removeMember(memberId: String): Result<Unit> = runCatching {
         require(!memberId.startsWith(OWNER_MEMBER_PREFIX)) { "cannot_remove_owner" }
 
-        client.postgrest["household_members"]
-            .delete {
-                filter { eq("id", memberId) }
-            }
+        // Routed through a SECURITY DEFINER RPC so household managers (owner + admin)
+        // can remove members. A direct DELETE is gated by the owner-only
+        // household_members_delete RLS policy and silently no-ops for admins.
+        client.postgrest.rpc(
+            "remove_household_member",
+            buildJsonObject { put("p_member_id", memberId) },
+        )
         membersByHousehold.values.forEach { flow ->
             flow.update { members -> members.filterNot { it.id == memberId } }
         }

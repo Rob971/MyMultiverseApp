@@ -418,6 +418,85 @@ class HouseholdMembersScreenModelTest {
     }
 
     @Test
+    fun admin_canRemovePersonMember() = runTest(testDispatcher) {
+        householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Admin)
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Partner",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "partner-id",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "admin-1")
+        advanceUntilIdle()
+
+        val member = model.uiState.value.members.single { it.id == "member-1" }
+        model.removeMember(member, "household-1")
+        advanceUntilIdle()
+
+        assertEquals(listOf("member-1"), repository.removedMemberIds)
+        assertTrue(repository.removedDependantIds.isEmpty())
+        assertFalse(model.uiState.value.members.any { it.id == "member-1" })
+        assertNull(model.uiState.value.error)
+    }
+
+    @Test
+    fun removeMember_routesDependantThroughRemoveDependant() = runTest(testDispatcher) {
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        model.openAddDependantDialog()
+        model.onDependantNameChange("Mia")
+        model.submitAddDependant("household-1")
+        advanceUntilIdle()
+
+        val dependant = model.uiState.value.members.single { it.kind == HouseholdMemberKind.Dependant }
+        model.removeMember(dependant, "household-1")
+        advanceUntilIdle()
+
+        assertEquals(listOf(dependant.id), repository.removedDependantIds)
+        assertTrue(repository.removedMemberIds.isEmpty())
+    }
+
+    @Test
+    fun removeMember_whenRepositoryFails_surfacesError() = runTest(testDispatcher) {
+        repository.removeMemberFailure = IllegalStateException(CollaborationErrorCodes.INSUFFICIENT_ROLE)
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Partner",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "partner-id",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        val member = model.uiState.value.members.single { it.id == "member-1" }
+        model.removeMember(member, "household-1")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersError.InsufficientRole, model.uiState.value.error)
+        assertFalse(model.uiState.value.isSaving)
+    }
+
+    @Test
     fun uploadHouseholdAvatar_setsLoadingThenShowsSuccessSnackbar() = runTest(testDispatcher) {
         model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
         advanceUntilIdle()
