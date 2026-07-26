@@ -98,6 +98,28 @@ if [[ "${TOKEN_STATUS}" != "400" && "${TOKEN_STATUS}" != "401" && "${TOKEN_STATU
 fi
 echo "OK: register_device_token RPC endpoint exists (status ${TOKEN_STATUS} without auth)"
 
+echo "==> Checking remove_household_member RPC is deployed"
+REMOVE_MEMBER_STATUS="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${REST_URL}/rpc/remove_household_member" \
+  -H "apikey: ${ANON_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"p_member_id":"00000000-0000-0000-0000-000000000000"}')"
+
+if [[ "${REMOVE_MEMBER_STATUS}" == "404" ]]; then
+  echo "ERROR: remove_household_member RPC not found (404). Run: supabase db push" >&2
+  exit 1
+fi
+
+if [[ "${REMOVE_MEMBER_STATUS}" =~ ^5 ]]; then
+  echo "ERROR: remove_household_member probe failed (status ${REMOVE_MEMBER_STATUS})." >&2
+  exit 1
+fi
+
+if [[ "${REMOVE_MEMBER_STATUS}" != "400" && "${REMOVE_MEMBER_STATUS}" != "401" && "${REMOVE_MEMBER_STATUS}" != "403" ]]; then
+  echo "ERROR: unexpected remove_household_member response (status ${REMOVE_MEMBER_STATUS}). Expected 400/401/403 without auth." >&2
+  exit 1
+fi
+echo "OK: remove_household_member RPC endpoint exists (status ${REMOVE_MEMBER_STATUS} without auth)"
+
 echo "==> Checking preview_household_invite RPC is deployed"
 PREVIEW_BODY="$(mktemp)"
 PREVIEW_STATUS="$(curl -s -o "${PREVIEW_BODY}" -w '%{http_code}' -X POST "${REST_URL}/rpc/preview_household_invite" \
