@@ -14,6 +14,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,7 +46,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
@@ -65,7 +65,6 @@ import org.koin.compose.koinInject
 private val ScrimColor = Color.Black.copy(alpha = 0.72f)
 private val SpotlightPadding = 10.dp
 private val SpotlightCornerRadius = 14.dp
-private const val TooltipMinTopPx = 80f
 
 /**
  * Full-screen product tour overlay with a spotlight cutout and animated tooltip card.
@@ -176,10 +175,31 @@ private fun TourTooltipCard(
     tooltipHeightEstimate: Dp = 260.dp,
 ) {
     val density = LocalDensity.current
-    val cardAlignment = if (spotlightRect == null) Alignment.Center else Alignment.TopStart
-    val topOffsetDp = tooltipTopOffsetDp(spotlightRect, density, tooltipHeightEstimate)
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val containerHeightPx = with(density) { maxHeight.toPx() }
+        val gapPx = with(density) { 16.dp.toPx() }
+        val estimatePx = with(density) { tooltipHeightEstimate.toPx() }
+        val placement = resolveTooltipPlacement(
+            spotlightRect = spotlightRect,
+            containerHeightPx = containerHeightPx,
+            gapPx = gapPx,
+            cardHeightEstimatePx = estimatePx,
+        )
+
+        val cardAlignment = when (placement) {
+            TooltipVerticalPlacement.Centered -> Alignment.Center
+            is TooltipVerticalPlacement.BelowSpotlight -> Alignment.TopStart
+            is TooltipVerticalPlacement.AboveSpotlight -> Alignment.BottomStart
+        }
+        val edgePaddingModifier = when (placement) {
+            TooltipVerticalPlacement.Centered -> Modifier
+            is TooltipVerticalPlacement.BelowSpotlight ->
+                Modifier.padding(top = with(density) { placement.topPaddingPx.toDp() })
+            is TooltipVerticalPlacement.AboveSpotlight ->
+                Modifier.padding(bottom = with(density) { placement.bottomPaddingPx.toDp() })
+        }
+
         Card(
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
@@ -188,7 +208,7 @@ private fun TourTooltipCard(
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             modifier = Modifier
                 .align(cardAlignment)
-                .let { m -> if (spotlightRect != null) m.padding(top = topOffsetDp) else m }
+                .then(edgePaddingModifier)
                 .padding(horizontal = 20.dp)
                 .fillMaxWidth()
                 .testTag(ProductTourTestTags.TOOLTIP_CARD),
@@ -285,26 +305,64 @@ private fun TourTooltipCard(
 }
 
 /**
- * Returns the top padding so the card appears:
- * - **above** the spotlight when there is enough room (spotlight in the lower portion of screen)
- * - **below** the spotlight otherwise (spotlight near the top)
+ * Vertical placement of the tooltip card relative to the spotlight cutout.
  *
- * Returns 0.dp when [spotlightRect] is null (tooltip is centred via [Alignment.Center]).
+ * All offsets are expressed in pixels and measured from the container edge that the card is
+ * anchored to (top edge for [BelowSpotlight], bottom edge for [AboveSpotlight]).
  */
-@Composable
-private fun tooltipTopOffsetDp(
-    spotlightRect: Rect?,
-    density: Density,
-    tooltipHeightEstimate: Dp,
-): Dp {
-    if (spotlightRect == null) return 0.dp
-    val tooltipHeightPx = with(density) { tooltipHeightEstimate.toPx() }
-    val cardGapPx = with(density) { 16.dp.toPx() }
+internal sealed interface TooltipVerticalPlacement {
+    /** Card is centred over the container — used when there is no target or neither side fits. */
+    data object Centered : TooltipVerticalPlacement
 
-    return with(density) {
-        val aboveTop = spotlightRect.top - tooltipHeightPx - cardGapPx
-        val belowBottom = spotlightRect.bottom + cardGapPx
-        if (aboveTop > TooltipMinTopPx) aboveTop.toDp() else belowBottom.toDp()
+    /** Card is anchored below the spotlight, [topPaddingPx] from the container top. */
+    data class BelowSpotlight(val topPaddingPx: Float) : TooltipVerticalPlacement
+
+    /** Card is anchored above the spotlight, [bottomPaddingPx] from the container bottom. */
+    data class AboveSpotlight(val bottomPaddingPx: Float) : TooltipVerticalPlacement
+}
+
+/**
+ * Resolves where the tooltip card should sit so it always stays fully on-screen.
+ *
+ * Placement preference:
+ * 1. **Below** the spotlight when the space beneath it can fit the card plus a gap.
+ * 2. **Above** the spotlight when the space above it can fit the card plus a gap.
+ * 3. **Centred** otherwise — including when [spotlightRect] is null (modal step) or the spotlight
+ *    is so large (e.g. a full-screen target) that neither side leaves room. This is the fix for
+ *    the tour appearing "broken": previously the card could be pushed entirely off-screen when the
+ *    highlighted element filled most of the viewport.
+ *
+ * @param spotlightRect Padded spotlight rect in root pixels, or null for a centred modal step.
+ * @param containerHeightPx Height of the overlay container in pixels.
+ * @param gapPx Gap between the card and the spotlight edge in pixels.
+ * @param cardHeightEstimatePx Conservative estimate of the card height used to reserve room.
+ */
+internal fun resolveTooltipPlacement(
+    spotlightRect: Rect?,
+    containerHeightPx: Float,
+    gapPx: Float,
+    cardHeightEstimatePx: Float,
+): TooltipVerticalPlacement {
+    if (spotlightRect == null) return TooltipVerticalPlacement.Centered
+
+    val requiredRoom = cardHeightEstimatePx + gapPx
+    val roomBelow = containerHeightPx - spotlightRect.bottom
+    val roomAbove = spotlightRect.top
+
+    return when {
+        roomBelow >= requiredRoom ->
+            TooltipVerticalPlacement.BelowSpotlight(
+                topPaddingPx = (spotlightRect.bottom + gapPx)
+                    .coerceIn(0f, (containerHeightPx - cardHeightEstimatePx).coerceAtLeast(0f)),
+            )
+
+        roomAbove >= requiredRoom ->
+            TooltipVerticalPlacement.AboveSpotlight(
+                bottomPaddingPx = (containerHeightPx - spotlightRect.top + gapPx)
+                    .coerceIn(0f, (containerHeightPx - cardHeightEstimatePx).coerceAtLeast(0f)),
+            )
+
+        else -> TooltipVerticalPlacement.Centered
     }
 }
 

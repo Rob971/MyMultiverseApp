@@ -327,7 +327,6 @@ fun HomeScreen(
                     embeddedInMainTabs = embeddedInMainTabs,
                     modifier = Modifier
                         .padding(padding)
-                        .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB)
                         .then(modifier),
                 )
             }
@@ -739,6 +738,9 @@ fun HomeWelcomeContent(
                             HomeDailyHubCircularActions(
                                 onOpenMealPlan = onOpenMealPlan,
                                 onOpenGrocery = onOpenGrocery,
+                                modifier = Modifier.productTourTarget(
+                                    ProductTourTestTags.TARGET_HOME_HUB,
+                                ),
                             )
                         }
                         Column(
@@ -762,6 +764,9 @@ fun HomeWelcomeContent(
                     HomeDailyHubCircularActions(
                         onOpenMealPlan = onOpenMealPlan,
                         onOpenGrocery = onOpenGrocery,
+                        modifier = Modifier.productTourTarget(
+                            ProductTourTestTags.TARGET_HOME_HUB,
+                        ),
                     )
                     HomeDailyMealPlanBlock(
                         nutritionSummary = nutritionSummary,

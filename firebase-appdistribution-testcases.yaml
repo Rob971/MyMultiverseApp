@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 94
-updated: 2026-07-25
+version: 95
+updated: 2026-07-26
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -1232,11 +1232,12 @@ testcases:
       - A dimmed full-screen overlay appears with a tooltip card showing "Welcome to Ammò" (step 1 of 4).
       - The overlay contains a step counter ("1 of 4"), a Skip tour link, and a Next button.
       - No spotlight cutout is shown for the welcome step — the entire screen is dimly covered.
-      - Tapping Next advances to step 2 ("Your planning hub"); a spotlight rectangle with rounded corners highlights the home content area with a visible cutout through the scrim.
+      - Tapping Next advances to step 2 ("Your planning hub"); a spotlight rectangle with rounded corners highlights the two circular hero actions (Plan lunch / Shopping list) with a visible cutout through the scrim, and the tooltip card stays fully on-screen (positioned below the highlighted actions).
       - Tapping Next again advances to step 3 ("Plan the week"); the spotlight moves to highlight the meal plan bottom nav tab.
       - Tapping Next advances to step 4 ("Grocery list"); the spotlight highlights the grocery bottom nav tab; the Next button label changes to "Done".
       - Tapping Done dismisses the overlay with a fade-out animation.
       - The Previous button appears on steps 2–4 and returns to the previous step.
+      - The tooltip card and its Next/Skip/Previous buttons remain fully visible and tappable on every step (never pushed off-screen), regardless of the highlighted element's size.
       - All transitions between steps are animated (smooth fade + slide).
 
   - id: product-tour-skip
