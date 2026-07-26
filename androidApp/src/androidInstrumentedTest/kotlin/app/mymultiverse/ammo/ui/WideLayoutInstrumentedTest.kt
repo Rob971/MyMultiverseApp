@@ -2,6 +2,7 @@ package app.mymultiverse.ammo.ui
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -17,6 +18,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
+import app.mymultiverse.ammo.data.tour.ProductTourStore
 import app.mymultiverse.ammo.domain.model.Greeting
 import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.model.auth.AuthState
@@ -36,8 +38,18 @@ import app.mymultiverse.ammo.presentation.screens.nutrition.WeeklyMealPlanScreen
 import app.mymultiverse.ammo.presentation.screens.onboarding.AuthScreen
 import app.mymultiverse.ammo.presentation.screens.onboarding.AuthTestTags
 import app.mymultiverse.ammo.presentation.screens.onboarding.OnboardingScreenModel
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourScreenModel
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourStep
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourTestTags
+import app.mymultiverse.ammo.presentation.screens.tour.SpotlightTourOverlay
+import app.mymultiverse.ammo.presentation.screens.tour.productTourTarget
 import app.mymultiverse.ammo.presentation.theme.AppTheme
 import app.mymultiverse.ammo.ui.InstrumentedComposeTest.waitForState
+import ammo.composeapp.generated.resources.Res
+import ammo.composeapp.generated.resources.tour_step_home_body
+import ammo.composeapp.generated.resources.tour_step_home_title
+import ammo.composeapp.generated.resources.tour_step_welcome_body
+import ammo.composeapp.generated.resources.tour_step_welcome_title
 import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +58,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.compose.KoinApplication
+import org.koin.dsl.module
 
 @RunWith(AndroidJUnit4::class)
 class WideLayoutInstrumentedTest {
@@ -179,6 +193,66 @@ class WideLayoutInstrumentedTest {
         }
 
         composeRule.onNodeWithTag(HomeTestTags.WIDE_LAYOUT).assertDoesNotExist()
+    }
+
+    @Test
+    fun productTour_nextStep_keepsHomeHubTooltipVisible() {
+        val tourScreenModel = ProductTourScreenModel(ProductTourStore(MapSettings()))
+        tourScreenModel.maybeShowTour(
+            versionKey = "instrumented-tour",
+            steps = listOf(
+                ProductTourStep(
+                    id = "welcome",
+                    title = Res.string.tour_step_welcome_title,
+                    description = Res.string.tour_step_welcome_body,
+                    targetTag = null,
+                ),
+                ProductTourStep(
+                    id = "home_hub",
+                    title = Res.string.tour_step_home_title,
+                    description = Res.string.tour_step_home_body,
+                    targetTag = ProductTourTestTags.TARGET_HOME_HUB,
+                ),
+            ),
+        )
+
+        composeRule.setContent {
+            AppTheme {
+                KoinApplication(
+                    application = {
+                        modules(module { single { tourScreenModel } })
+                    },
+                ) {
+                    PhoneLayoutHost {
+                        Box(Modifier.fillMaxSize()) {
+                            HomeWelcomeContent(
+                                greeting = Greeting("Good evening"),
+                                userDisplayName = "Roberto",
+                                nutritionSummary = null,
+                                isRefreshing = false,
+                                onRefresh = {},
+                                onOpenMealPlan = {},
+                                onOpenGrocery = {},
+                                onOpenHouseholdMembers = {},
+                                greetingHour = 20,
+                                homeHubTourTargetModifier = Modifier.productTourTarget(
+                                    ProductTourTestTags.TARGET_HOME_HUB,
+                                ),
+                            )
+                            SpotlightTourOverlay(screenModel = tourScreenModel)
+                        }
+                    }
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_NEXT)
+            .assertIsDisplayed()
+            .performClick()
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag(ProductTourTestTags.TOOLTIP_CARD).assertIsDisplayed()
+        composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_PREVIOUS).assertIsDisplayed()
     }
 
     /**
