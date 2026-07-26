@@ -20,6 +20,7 @@ import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
 import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.platform.PersonalDataExporter
+import app.mymultiverse.ammo.presentation.components.MemberAvatarFullscreenTestTags
 import app.mymultiverse.ammo.presentation.navigation.HouseholdContext
 import app.mymultiverse.ammo.presentation.screens.household.HouseholdMembersScreen
 import app.mymultiverse.ammo.presentation.screens.household.HouseholdMembersScreenModel
@@ -181,5 +182,81 @@ class HouseholdMembersAdminInstrumentedTest {
             composeRule.onAllNodesWithTag(HouseholdMembersTestTags.INVITE_BUTTON)
                 .fetchSemanticsNodes().isEmpty(),
         )
+    }
+
+    @Test
+    fun owner_canOpenOtherMemberPhotoFullscreenAndClose() {
+        val collaborationRepository = InstrumentedHouseholdCollaborationRepository()
+        collaborationRepository.seedMembers(
+            householdId = householdId,
+            ownerId = ownerId,
+            ownerDisplayName = "Owner",
+            members = listOf(
+                HouseholdMember(
+                    id = editorMemberId,
+                    householdId = householdId,
+                    kind = HouseholdMemberKind.Person,
+                    displayName = "Editor User",
+                    role = HouseholdMemberRole.Editor,
+                    referenceId = "editor-user",
+                    avatarUrl = "https://example.com/editor-avatar.jpg",
+                ),
+            ),
+        )
+        val screenModel = HouseholdMembersScreenModel(
+            collaborationRepository = collaborationRepository,
+            householdRepository = InstrumentedHouseholdRepository(role = HouseholdMemberRole.Owner),
+            sessionCoordinator = InstrumentedNutritionSessionCoordinator(
+                repository = InstrumentedNutritionRepository(weekKey = "2026-06-16"),
+            ),
+            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext()),
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+        )
+        val authRepository = InstrumentedFakeAuthRepository(
+            initialState = AuthState.Authenticated(
+                AuthUser(id = ownerId, email = "owner@example.com", displayName = "Owner"),
+            ),
+        )
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HouseholdMembersScreen(
+                        household = HouseholdContext(
+                            id = householdId,
+                            name = "Our Household",
+                            ownerId = ownerId,
+                            ownerDisplayName = "Owner",
+                            nutritionFeatures = setOf(NutritionSharingFeature.Grocery),
+                        ),
+                        onBack = {},
+                        screenModel = screenModel,
+                        authRepository = authRepository,
+                        personalDataExporter = noopPersonalDataExporter,
+                    )
+                }
+            }
+        }
+
+        composeRule.waitFor(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag("${HouseholdMembersTestTags.MEMBER_AVATAR}_$editorMemberId")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithTag("${HouseholdMembersTestTags.MEMBER_AVATAR}_$editorMemberId")
+            .performScrollTo()
+            .performClick()
+
+        composeRule.waitFor(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag(MemberAvatarFullscreenTestTags.DIALOG)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithTag(MemberAvatarFullscreenTestTags.CLOSE).performClick()
+
+        composeRule.waitFor(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag(MemberAvatarFullscreenTestTags.DIALOG)
+                .fetchSemanticsNodes().isEmpty()
+        }
     }
 }

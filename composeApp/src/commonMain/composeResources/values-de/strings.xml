@@ -929,6 +929,8 @@
     <string name="sharing_household_avatar_content_description">Familienfoto</string>
     <string name="sharing_household_avatar_change_label">Familienfoto ändern</string>
     <string name="sharing_members_avatar_change">Foto ändern</string>
+    <string name="sharing_members_avatar_view_fullscreen">Foto von %1$s ansehen</string>
+    <string name="sharing_members_avatar_fullscreen_close">Schließen</string>
     <string name="sharing_avatar_upload_success">Foto erfolgreich aktualisiert.</string>
     <string name="sharing_members_error_avatar_upload_failed">Wir konnten dein Foto nicht speichern. Bitte überprüfe deine Verbindung und versuche es erneut.</string>
     <string name="sharing_members_error_avatar_persist_failed">Dein Foto wurde hochgeladen, konnte aber nicht in deinem Profil gespeichert werden. Bitte versuche es erneut.</string>

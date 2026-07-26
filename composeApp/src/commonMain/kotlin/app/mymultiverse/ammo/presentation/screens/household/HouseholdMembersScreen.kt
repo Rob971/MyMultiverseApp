@@ -39,6 +39,7 @@ import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.ammo.domain.sharing.canAssignAdminRole
 import app.mymultiverse.ammo.domain.sharing.canEditMemberAvatar
+import app.mymultiverse.ammo.domain.sharing.canViewMemberAvatarFullscreen
 import app.mymultiverse.ammo.presentation.platform.rememberMemberPhotoPickerLauncher
 import app.mymultiverse.ammo.domain.sharing.canChangeRoleOf
 import app.mymultiverse.ammo.domain.sharing.canRemoveMember
@@ -46,6 +47,7 @@ import app.mymultiverse.ammo.domain.repository.AuthRepository
 import app.mymultiverse.ammo.data.invite.InviteRedirectUrls
 import app.mymultiverse.ammo.domain.platform.PersonalDataExporter
 import app.mymultiverse.ammo.presentation.components.MemberAvatar
+import app.mymultiverse.ammo.presentation.components.MemberAvatarFullscreenDialog
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsCardSurface
 import app.mymultiverse.ammo.presentation.components.HouseholdRoleBadge
 import app.mymultiverse.ammo.presentation.components.HouseholdRoleSelector
@@ -72,7 +74,10 @@ import ammo.composeapp.generated.resources.sharing_members_invite_add_dependent
 import ammo.composeapp.generated.resources.sharing_members_invite_by_email
 import ammo.composeapp.generated.resources.sharing_members_invite_by_email_hint
 import ammo.composeapp.generated.resources.sharing_members_invite_chooser_title
+import ammo.composeapp.generated.resources.sharing_members_avatar_change
 import ammo.composeapp.generated.resources.sharing_members_avatar_content_description
+import ammo.composeapp.generated.resources.sharing_members_avatar_fullscreen_close
+import ammo.composeapp.generated.resources.sharing_members_avatar_view_fullscreen
 import ammo.composeapp.generated.resources.sharing_household_avatar_content_description
 import ammo.composeapp.generated.resources.sharing_household_avatar_change_label
 import ammo.composeapp.generated.resources.sharing_members_add_dependent
@@ -222,6 +227,7 @@ fun HouseholdMembersScreen(
     val currentUserId = (authState as? AuthState.Authenticated)?.user?.id
     var pendingAvatarMember by remember { mutableStateOf<HouseholdMember?>(null) }
     var pendingHouseholdAvatarPick by remember { mutableStateOf(false) }
+    var fullscreenAvatarMember by remember { mutableStateOf<HouseholdMember?>(null) }
     val launchPhotoPicker = rememberMemberPhotoPickerLauncher { bytes, contentType ->
         val member = pendingAvatarMember
         when {
@@ -398,6 +404,7 @@ fun HouseholdMembersScreen(
                                 pendingAvatarMember = member
                                 launchPhotoPicker()
                             },
+                            onViewAvatar = { fullscreenAvatarMember = member },
                         )
                     }
                 }
@@ -480,6 +487,17 @@ fun HouseholdMembersScreen(
                 }
             }
         }
+    }
+
+    val fullscreenMember = fullscreenAvatarMember
+    val fullscreenAvatarUrl = fullscreenMember?.avatarUrl
+    if (fullscreenMember != null && !fullscreenAvatarUrl.isNullOrBlank()) {
+        MemberAvatarFullscreenDialog(
+            displayName = fullscreenMember.displayName,
+            avatarUrl = fullscreenAvatarUrl,
+            closeLabel = stringResource(Res.string.sharing_members_avatar_fullscreen_close),
+            onDismiss = { fullscreenAvatarMember = null },
+        )
     }
 
     if (uiState.showInviteChooserDialog) {
@@ -878,6 +896,7 @@ private fun MemberRow(
     onRemove: () -> Unit,
     onChangeRole: () -> Unit,
     onChangeAvatar: () -> Unit,
+    onViewAvatar: () -> Unit,
 ) {
     val canChangeRole = canManage &&
         member.kind == HouseholdMemberKind.Person &&
@@ -893,6 +912,12 @@ private fun MemberRow(
         member.displayName,
     )
     val canChangeAvatar = canEditMemberAvatar(member, currentUserId, canWriteHouseholdData)
+    val canViewAvatar = canViewMemberAvatarFullscreen(member, currentUserId, canWriteHouseholdData)
+    val changePhotoLabel = stringResource(Res.string.sharing_members_avatar_change)
+    val viewPhotoLabel = stringResource(
+        Res.string.sharing_members_avatar_view_fullscreen,
+        member.displayName,
+    )
     var menuExpanded by remember { mutableStateOf(false) }
 
     FamilyLogisticsCardSurface(
@@ -912,7 +937,16 @@ private fun MemberRow(
                 avatarUrl = member.avatarUrl,
                 contentDescription = avatarDescription,
                 isLoading = isUploadingAvatar,
-                onClick = if (canChangeAvatar) onChangeAvatar else null,
+                onClick = when {
+                    canChangeAvatar -> onChangeAvatar
+                    canViewAvatar -> onViewAvatar
+                    else -> null
+                },
+                clickLabel = when {
+                    canChangeAvatar -> changePhotoLabel
+                    canViewAvatar -> viewPhotoLabel
+                    else -> null
+                },
                 modifier = Modifier.testTag("${HouseholdMembersTestTags.MEMBER_AVATAR}_${member.id}"),
             )
             Column(

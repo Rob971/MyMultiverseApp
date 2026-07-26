@@ -112,9 +112,51 @@ class MemberAvatarPresentationTest {
         assertFalse(canEditMemberAvatar(otherAdult, currentUserId = "admin-1", canWriteHouseholdData = true))
     }
 
+    // ── Fullscreen view ───────────────────────────────────────────────────────
+
+    @Test
+    fun canViewMemberAvatarFullscreen_allowsOtherPersonWithPhoto() {
+        val member = personMember(referenceId = "user-2", avatarUrl = "https://example.com/a.jpg")
+        assertTrue(
+            canViewMemberAvatarFullscreen(member, currentUserId = "user-1", canWriteHouseholdData = true),
+        )
+    }
+
+    @Test
+    fun canViewMemberAvatarFullscreen_deniesSelfEvenWithPhoto() {
+        val member = personMember(referenceId = "user-1", avatarUrl = "https://example.com/a.jpg")
+        assertFalse(
+            canViewMemberAvatarFullscreen(member, currentUserId = "user-1", canWriteHouseholdData = true),
+        )
+    }
+
+    @Test
+    fun canViewMemberAvatarFullscreen_deniesWhenPhotoMissing() {
+        val member = personMember(referenceId = "user-2", avatarUrl = null)
+        assertFalse(
+            canViewMemberAvatarFullscreen(member, currentUserId = "user-1", canWriteHouseholdData = false),
+        )
+    }
+
+    @Test
+    fun canViewMemberAvatarFullscreen_allowsViewerToSeeDependantPhoto() {
+        val member = dependantMember(avatarUrl = "https://example.com/d.jpg")
+        assertTrue(
+            canViewMemberAvatarFullscreen(member, currentUserId = "viewer-1", canWriteHouseholdData = false),
+        )
+    }
+
+    @Test
+    fun canViewMemberAvatarFullscreen_deniesDependantManagementPath() {
+        val member = dependantMember(avatarUrl = "https://example.com/d.jpg")
+        assertFalse(
+            canViewMemberAvatarFullscreen(member, currentUserId = "editor-1", canWriteHouseholdData = true),
+        )
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private fun personMember(referenceId: String): HouseholdMember =
+    private fun personMember(referenceId: String, avatarUrl: String? = null): HouseholdMember =
         HouseholdMember(
             id = "member-$referenceId",
             householdId = "household-1",
@@ -122,9 +164,10 @@ class MemberAvatarPresentationTest {
             displayName = "Alex",
             role = HouseholdMemberRole.Editor,
             referenceId = referenceId,
+            avatarUrl = avatarUrl,
         )
 
-    private fun dependantMember(): HouseholdMember =
+    private fun dependantMember(avatarUrl: String? = null): HouseholdMember =
         HouseholdMember(
             id = "dependant-1",
             householdId = "household-1",
@@ -132,5 +175,6 @@ class MemberAvatarPresentationTest {
             displayName = "Mia",
             role = HouseholdMemberRole.Viewer,
             referenceId = "dependant-1",
+            avatarUrl = avatarUrl,
         )
 }
