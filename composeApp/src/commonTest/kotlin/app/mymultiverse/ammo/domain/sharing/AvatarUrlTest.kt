@@ -29,5 +29,9 @@ class AvatarUrlTest {
         assertEquals("jpg", avatarExtensionForContentType("image/jpeg"))
         assertEquals("jpg", avatarExtensionForContentType("image/jpg"))
         assertEquals("jpg", avatarExtensionForContentType("image/heic"))
+        assertEquals(
+            "jpg",
+            avatarExtensionForContentType(AvatarUploadPreparation.normalizeContentType("image/heic")),
+        )
     }
 }

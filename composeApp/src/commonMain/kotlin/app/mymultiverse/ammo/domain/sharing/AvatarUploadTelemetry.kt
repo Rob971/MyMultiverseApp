@@ -23,6 +23,10 @@ enum class AvatarUploadFailureReason(val telemetryValue: String) {
     /** PostgREST UPDATE returned 0 rows — usually missing SELECT/UPDATE RLS on the target table. */
     RlsZeroRows("rls_zero_rows"),
     InsufficientRole("insufficient_role"),
+    /** Storage rejected MIME (e.g. image/heic) against bucket allowlist. */
+    InvalidMime("invalid_mime"),
+    /** Storage rejected payload over bucket file_size_limit (5 MiB). */
+    PayloadTooLarge("payload_too_large"),
     StorageUpload("storage_upload"),
     Unknown("unknown"),
 }
@@ -57,15 +61,24 @@ object AvatarUploadTelemetry {
     const val KEY_CONTENT_TYPE = "avatar_content_type"
     const val KEY_IMAGE_BYTES = "avatar_image_bytes"
 
-    fun failureReasonFor(throwable: Throwable): AvatarUploadFailureReason =
-        when {
+    fun failureReasonFor(throwable: Throwable): AvatarUploadFailureReason {
+        val message = throwable.message.orEmpty()
+        return when {
             throwable is AvatarPersistException -> AvatarUploadFailureReason.RlsZeroRows
-            throwable.message?.contains(CollaborationErrorCodes.INSUFFICIENT_ROLE) == true ->
+            message.contains(CollaborationErrorCodes.INSUFFICIENT_ROLE) ->
                 AvatarUploadFailureReason.InsufficientRole
-            throwable.message?.contains(AvatarPersistException.ERROR_CODE) == true ->
+            message.contains(AvatarPersistException.ERROR_CODE) ->
                 AvatarUploadFailureReason.RlsZeroRows
+            message.contains("invalid_mime_type", ignoreCase = true) ||
+                (message.contains("mime", ignoreCase = true) && message.contains("415")) ->
+                AvatarUploadFailureReason.InvalidMime
+            message.contains("avatar_payload_too_large") ||
+                message.contains("Payload too large", ignoreCase = true) ||
+                message.contains("\"statusCode\":\"413\"") ->
+                AvatarUploadFailureReason.PayloadTooLarge
             else -> AvatarUploadFailureReason.Unknown
         }
+    }
 
     fun context(
         target: AvatarUploadTarget,

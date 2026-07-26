@@ -905,7 +905,9 @@ private fun MemberRow(
     val canRemove = canManage &&
         member.role != HouseholdMemberRole.Owner &&
         actorRole?.canRemoveMember(member.role) == true
-    val showOverflow = canRemove
+    // Keep change-role in the overflow menu — an inline tertiary label wraps
+    // letter-by-letter on narrow phones (especially long Napulitano copy).
+    val showOverflow = canRemove || canChangeRole
     val changeRoleLabel = stringResource(Res.string.sharing_members_change_role)
     val avatarDescription = stringResource(
         Res.string.sharing_members_avatar_content_description,
@@ -959,31 +961,17 @@ private fun MemberRow(
                     fontWeight = FontWeight.SemiBold,
                     color = JourneySemanticColors.inkDeep(),
                 )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    HouseholdRoleBadge(
-                        role = member.role,
-                        kind = member.kind,
-                        onClick = if (canChangeRole) onChangeRole else null,
-                        clickLabel = if (canChangeRole) changeRoleLabel else null,
-                        modifier = if (canChangeRole) {
-                            Modifier.testTag("${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BADGE}_${member.id}")
-                        } else {
-                            Modifier
-                        },
-                    )
-                    if (canChangeRole) {
-                        JourneyTertiaryButton(
-                            onClick = onChangeRole,
-                            label = changeRoleLabel,
-                            modifier = Modifier.testTag(
-                                "${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BUTTON}_${member.id}",
-                            ),
-                        )
-                    }
-                }
+                HouseholdRoleBadge(
+                    role = member.role,
+                    kind = member.kind,
+                    onClick = if (canChangeRole) onChangeRole else null,
+                    clickLabel = if (canChangeRole) changeRoleLabel else null,
+                    modifier = if (canChangeRole) {
+                        Modifier.testTag("${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BADGE}_${member.id}")
+                    } else {
+                        Modifier
+                    },
+                )
             }
             if (showOverflow) {
                 JourneyIconButton(
@@ -1000,6 +988,18 @@ private fun MemberRow(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
                 ) {
+                    if (canChangeRole) {
+                        DropdownMenuItem(
+                            text = { Text(changeRoleLabel) },
+                            onClick = {
+                                menuExpanded = false
+                                onChangeRole()
+                            },
+                            modifier = Modifier.testTag(
+                                "${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_MENU}_${member.id}",
+                            ),
+                        )
+                    }
                     if (canRemove) {
                         DropdownMenuItem(
                             text = {

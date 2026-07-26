@@ -6,6 +6,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import app.mymultiverse.ammo.data.platform.AvatarUploadPreparer
 
 @Composable
 actual fun rememberMemberPhotoPickerLauncher(
@@ -19,7 +20,8 @@ actual fun rememberMemberPhotoPickerLauncher(
         val resolver = context.contentResolver
         val bytes = resolver.openInputStream(uri)?.use { it.readBytes() } ?: return@rememberLauncherForActivityResult
         val contentType = resolver.getType(uri) ?: "image/jpeg"
-        onPhotoPicked(bytes, contentType)
+        val prepared = AvatarUploadPreparer.prepare(bytes, contentType)
+        onPhotoPicked(prepared.bytes, prepared.contentType)
     }
     return {
         launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))

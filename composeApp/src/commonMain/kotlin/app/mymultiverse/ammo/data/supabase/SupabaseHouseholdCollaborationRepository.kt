@@ -19,7 +19,9 @@ import app.mymultiverse.ammo.data.supabase.dto.HouseholdRow
 import app.mymultiverse.ammo.domain.model.sharing.AddMemberResult
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdInvite
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdInvitePreview
+import app.mymultiverse.ammo.data.platform.AvatarUploadPreparer
 import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadPreparation
 import app.mymultiverse.ammo.domain.sharing.AvatarUploadStep
 import app.mymultiverse.ammo.domain.sharing.AvatarUploadTarget
 import app.mymultiverse.ammo.domain.sharing.avatarExtensionForContentType
@@ -381,24 +383,32 @@ class SupabaseHouseholdCollaborationRepository(
             HouseholdMemberKind.Person -> AvatarUploadTarget.MemberProfile
             HouseholdMemberKind.Group -> error(CollaborationErrorCodes.INSUFFICIENT_ROLE)
         }
+        val prepared = AvatarUploadPreparer.prepare(imageBytes, contentType)
+        if (AvatarUploadPreparation.exceedsSizeLimit(prepared.bytes.size)) {
+            error("avatar_payload_too_large")
+        }
         logger.logAvatarUploadStep(
             target = uploadTarget,
             step = AvatarUploadStep.Start,
             householdId = householdId,
-            extra = "member=${member.id} bytes=${imageBytes.size}",
-            context = mapOf("content_type" to contentType),
+            extra = "member=${member.id} bytes=${prepared.bytes.size}",
+            context = mapOf(
+                "content_type" to prepared.contentType,
+                "source_content_type" to contentType,
+                "source_bytes" to imageBytes.size.toString(),
+            ),
         )
 
-        val extension = avatarExtensionForContentType(contentType)
+        val extension = avatarExtensionForContentType(prepared.contentType)
         val storagePath = when (member.kind) {
             HouseholdMemberKind.Dependant -> "dependants/${member.referenceId}/avatar.$extension"
             else -> "profiles/${member.referenceId}/avatar.$extension"
         }
 
         val bucket = client.storage.from(MEMBER_AVATARS_BUCKET)
-        bucket.upload(storagePath, imageBytes) {
+        bucket.upload(storagePath, prepared.bytes) {
             upsert = true
-            this.contentType = ContentType.parse(contentType)
+            this.contentType = ContentType.parse(prepared.contentType)
         }
         val publicUrl = versionedAvatarUrl(bucket.publicUrl(storagePath))
         logger.logAvatarUploadStep(
@@ -441,8 +451,8 @@ class SupabaseHouseholdCollaborationRepository(
                 householdId = householdId,
                 storagePath = storagePath,
                 memberId = member.id,
-                contentType = contentType,
-                imageBytes = imageBytes.size,
+                contentType = prepared.contentType,
+                imageBytes = prepared.bytes.size,
             )
             logger.recordAvatarUploadFailure(
                 target = uploadTarget,
@@ -452,8 +462,8 @@ class SupabaseHouseholdCollaborationRepository(
                 storagePath = storagePath,
                 memberId = member.id,
                 dbTable = table,
-                contentType = contentType,
-                imageBytes = imageBytes.size,
+                contentType = prepared.contentType,
+                imageBytes = prepared.bytes.size,
             )
             throw persistError
         }

@@ -112,7 +112,9 @@ class HouseholdMembersAdminInstrumentedTest {
 
         composeRule.onNodeWithTag("${HouseholdMembersTestTags.MEMBER_ROW}_$editorMemberId")
             .performScrollTo()
-        composeRule.onNodeWithTag("${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BUTTON}_$editorMemberId")
+        composeRule.onNodeWithTag("${HouseholdMembersTestTags.MEMBER_ROW_OVERFLOW}_$editorMemberId")
+            .performClick()
+        composeRule.onNodeWithTag("${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_MENU}_$editorMemberId")
             .performClick()
         composeRule.onNodeWithText("Family admin").performClick()
         composeRule.onNodeWithTag(HouseholdMembersTestTags.ROLE_CHANGE_CONFIRM_BUTTON).performClick()

@@ -79,4 +79,26 @@ class AvatarUploadTelemetryTest {
         assertTrue(message.contains("household=hh-2"))
         assertTrue(message.contains("member=dep-1"))
     }
+
+    @Test
+    fun failureReasonFor_mapsInvalidMimeAndPayloadTooLarge() {
+        assertEquals(
+            AvatarUploadFailureReason.InvalidMime,
+            AvatarUploadTelemetry.failureReasonFor(
+                IllegalStateException("mime type image/heic is not supported (invalid_mime_type)"),
+            ),
+        )
+        assertEquals(
+            AvatarUploadFailureReason.PayloadTooLarge,
+            AvatarUploadTelemetry.failureReasonFor(
+                IllegalStateException("avatar_payload_too_large"),
+            ),
+        )
+        assertEquals(
+            AvatarUploadFailureReason.PayloadTooLarge,
+            AvatarUploadTelemetry.failureReasonFor(
+                IllegalStateException("{\"statusCode\":\"413\",\"error\":\"Payload too large\"}"),
+            ),
+        )
+    }
 }

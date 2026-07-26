@@ -25,7 +25,8 @@ enabled = true
 [storage.buckets.member-avatars]
 public = true
 file_size_limit = "5MiB"
-allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
+# Prefer client-side JPEG conversion for HEIC/HEIF; aliases kept for older app builds.
+allowed_mime_types = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/heic", "image/heif"]
 
 [auth]
 enabled = true

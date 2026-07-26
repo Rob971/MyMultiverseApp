@@ -17,6 +17,8 @@ import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
 import app.mymultiverse.ammo.domain.sharing.AvatarUploadStep
 import app.mymultiverse.ammo.domain.sharing.AvatarUploadTarget
+import app.mymultiverse.ammo.data.platform.AvatarUploadPreparer
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadPreparation
 import app.mymultiverse.ammo.domain.sharing.avatarExtensionForContentType
 import app.mymultiverse.ammo.domain.sharing.versionedAvatarUrl
 import io.github.jan.supabase.SupabaseClient
@@ -290,20 +292,28 @@ class SupabaseHouseholdRepository(
         client.auth.awaitInitialization()
         requireUserId()
 
+        val prepared = AvatarUploadPreparer.prepare(imageBytes, contentType)
+        if (AvatarUploadPreparation.exceedsSizeLimit(prepared.bytes.size)) {
+            error("avatar_payload_too_large")
+        }
         logger.logAvatarUploadStep(
             target = AvatarUploadTarget.Household,
             step = AvatarUploadStep.Start,
             householdId = householdId,
-            extra = "bytes=${imageBytes.size}",
-            context = mapOf("content_type" to contentType),
+            extra = "bytes=${prepared.bytes.size}",
+            context = mapOf(
+                "content_type" to prepared.contentType,
+                "source_content_type" to contentType,
+                "source_bytes" to imageBytes.size.toString(),
+            ),
         )
 
-        val extension = avatarExtensionForContentType(contentType)
+        val extension = avatarExtensionForContentType(prepared.contentType)
         val storagePath = "households/$householdId/avatar.$extension"
         val bucket = client.storage.from("member-avatars")
-        bucket.upload(storagePath, imageBytes) {
+        bucket.upload(storagePath, prepared.bytes) {
             upsert = true
-            this.contentType = ContentType.parse(contentType)
+            this.contentType = ContentType.parse(prepared.contentType)
         }
         val publicUrl = versionedAvatarUrl(bucket.publicUrl(storagePath))
         logger.logAvatarUploadStep(
@@ -329,8 +339,8 @@ class SupabaseHouseholdRepository(
                 dbTable = "households",
                 householdId = householdId,
                 storagePath = storagePath,
-                contentType = contentType,
-                imageBytes = imageBytes.size,
+                contentType = prepared.contentType,
+                imageBytes = prepared.bytes.size,
             )
             logger.recordAvatarUploadFailure(
                 target = AvatarUploadTarget.Household,
@@ -339,8 +349,8 @@ class SupabaseHouseholdRepository(
                 throwable = persistError,
                 storagePath = storagePath,
                 dbTable = "households",
-                contentType = contentType,
-                imageBytes = imageBytes.size,
+                contentType = prepared.contentType,
+                imageBytes = prepared.bytes.size,
             )
             throw persistError
         }
