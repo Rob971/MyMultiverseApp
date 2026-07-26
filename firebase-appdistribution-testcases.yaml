@@ -1223,7 +1223,7 @@ testcases:
       - If the key is cleared in Account → Settings on Device B, the key form reappears on both devices after sign-in.
 
   - id: product-tour-first-launch
-    title: Product tour appears once on first launch per version (v93)
+    title: Product tour appears once on first launch per version (v95)
     steps:
       - Install a fresh build (or clear app data / storage so no previous tour state is stored).
       - Sign in with a valid account.
@@ -1232,7 +1232,7 @@ testcases:
       - A dimmed full-screen overlay appears with a tooltip card showing "Welcome to Ammò" (step 1 of 4).
       - The overlay contains a step counter ("1 of 4"), a Skip tour link, and a Next button.
       - No spotlight cutout is shown for the welcome step — the entire screen is dimly covered.
-      - Tapping Next advances to step 2 ("Your planning hub"); a spotlight rectangle with rounded corners highlights the home content area with a visible cutout through the scrim.
+      - Tapping Next advances to step 2 ("Your planning hub"); a spotlight highlights the two circular hero actions (Plan lunch / Shopping list), and the tooltip card with Previous/Next remains fully visible on screen (must not leave a blank scrim with no buttons).
       - Tapping Next again advances to step 3 ("Plan the week"); the spotlight moves to highlight the meal plan bottom nav tab.
       - Tapping Next advances to step 4 ("Grocery list"); the spotlight highlights the grocery bottom nav tab; the Next button label changes to "Done".
       - Tapping Done dismisses the overlay with a fade-out animation.
