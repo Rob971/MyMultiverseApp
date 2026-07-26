@@ -84,6 +84,8 @@ object SharingStringKeys {
         "sharing_members_kind_dependent",
         "sharing_members_avatar_content_description",
         "sharing_members_avatar_change",
+        "sharing_members_avatar_view_fullscreen",
+        "sharing_members_avatar_fullscreen_close",
         "sharing_household_avatar_content_description",
         "sharing_household_avatar_change_label",
         "sharing_avatar_upload_success",

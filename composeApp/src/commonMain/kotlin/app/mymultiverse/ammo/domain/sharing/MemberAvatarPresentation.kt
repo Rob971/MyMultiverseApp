@@ -67,3 +67,23 @@ fun canEditMemberAvatar(
         HouseholdMemberKind.Group -> false
     }
 }
+
+/**
+ * Returns true when the current user may open another member's uploaded photo full screen.
+ * Self-upload and dependant management keep the existing change-photo flow instead.
+ */
+fun canViewMemberAvatarFullscreen(
+    member: HouseholdMember,
+    currentUserId: String?,
+    canWriteHouseholdData: Boolean,
+): Boolean {
+    if (currentUserId == null) return false
+    if (member.avatarUrl.isNullOrBlank()) return false
+    if (canEditMemberAvatar(member, currentUserId, canWriteHouseholdData)) return false
+    return when (member.kind) {
+        HouseholdMemberKind.Person,
+        HouseholdMemberKind.Dependant,
+        -> true
+        HouseholdMemberKind.Group -> false
+    }
+}

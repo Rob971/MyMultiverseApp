@@ -929,6 +929,8 @@
     <string name="sharing_household_avatar_content_description">صورة العائلة</string>
     <string name="sharing_household_avatar_change_label">تغيير صورة العائلة</string>
     <string name="sharing_members_avatar_change">تغيير الصورة</string>
+    <string name="sharing_members_avatar_view_fullscreen">عرض صورة %1$s</string>
+    <string name="sharing_members_avatar_fullscreen_close">إغلاق</string>
     <string name="sharing_avatar_upload_success">تم تحديث الصورة بنجاح.</string>
     <string name="sharing_members_error_avatar_upload_failed">لم نتمكن من حفظ صورتك. يرجى التحقق من اتصالك والمحاولة مجدداً.</string>
     <string name="sharing_members_error_avatar_persist_failed">تم تحميل صورتك لكن تعذّر حفظها في ملفك الشخصي. يرجى المحاولة مجدداً.</string>

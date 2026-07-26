@@ -39,14 +39,16 @@ fun MemberAvatar(
     size: Dp = 48.dp,
     isLoading: Boolean = false,
     onClick: (() -> Unit)? = null,
+    clickLabel: String? = null,
 ) {
     val initials = remember(displayName) { memberAvatarInitials(displayName) }
+    val resolvedClickLabel = clickLabel ?: contentDescription
 
     val baseModifier = modifier.size(size)
     val interactiveModifier = if (onClick != null) {
         baseModifier
             .clip(CircleShape)
-            .clickable(role = Role.Button, onClickLabel = contentDescription, onClick = onClick)
+            .clickable(role = Role.Button, onClickLabel = resolvedClickLabel, onClick = onClick)
     } else {
         baseModifier
     }

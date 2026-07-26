@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 94
-updated: 2026-07-25
+version: 95
+updated: 2026-07-26
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -343,9 +343,11 @@ testcases:
       - Sign in as an editor on a second device; open Family members.
       - As the editor, tap your own avatar → pick a photo → confirm success snackbar.
       - Tap a dependant's avatar (editors can manage dependant photos) → pick a photo → confirm success snackbar.
-      - Verify the editor cannot tap another adult member's avatar (no action when tapping someone else's avatar).
+      - Tap another adult member's avatar when they have a profile photo uploaded.
+      - Close the full-screen photo viewer with the close button or by tapping outside the image.
     expected:
       - Each role can tap only the avatars they are permitted to change (self for persons; own + dependants for editors; own + dependants + family photo for owners/admins).
+      - Tapping another member's uploaded photo opens a full-screen viewer with their name and a close control; tapping outside or close dismisses it without opening the gallery.
       - Every successful upload shows the "Photo updated successfully" snackbar.
       - If the upload fails (airplane mode), a polite "We could not save your photo" inline error appears; no crash.
       - Family photo (large avatar at top) is tappable only for owner and admin; tapping shows a change label button.
