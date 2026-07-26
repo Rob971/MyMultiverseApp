@@ -7,6 +7,25 @@ import kotlin.test.assertEquals
 class SpotlightTourPlacementTest {
 
     @Test
+    fun defaultSteps_keepStableOrderAndSpotlightTargets() {
+        val steps = defaultProductTourSteps()
+
+        assertEquals(
+            expected = listOf("welcome", "home_hub", "meal_plan_tab", "grocery_tab"),
+            actual = steps.map(ProductTourStep::id),
+        )
+        assertEquals(
+            expected = listOf(
+                null,
+                ProductTourTestTags.TARGET_HOME_HUB,
+                ProductTourTestTags.TARGET_MEAL_PLAN_TAB,
+                ProductTourTestTags.TARGET_GROCERY_TAB,
+            ),
+            actual = steps.map(ProductTourStep::targetTag),
+        )
+    }
+
+    @Test
     fun tooltipPosition_placesCardAboveSpotlight_whenSpaceIsAvailable() {
         val top = calculateTooltipTopOffsetPx(
             spotlightRect = Rect(left = 0f, top = 700f, right = 400f, bottom = 780f),

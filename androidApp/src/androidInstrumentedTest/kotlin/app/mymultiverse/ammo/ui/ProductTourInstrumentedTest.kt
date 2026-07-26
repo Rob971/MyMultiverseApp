@@ -9,17 +9,12 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.ammo.data.tour.ProductTourStore
 import app.mymultiverse.ammo.presentation.screens.tour.ProductTourScreenModel
-import app.mymultiverse.ammo.presentation.screens.tour.ProductTourStep
 import app.mymultiverse.ammo.presentation.screens.tour.ProductTourTestTags
 import app.mymultiverse.ammo.presentation.screens.tour.ProductTourUiState
 import app.mymultiverse.ammo.presentation.screens.tour.SpotlightTourOverlay
+import app.mymultiverse.ammo.presentation.screens.tour.defaultProductTourSteps
 import app.mymultiverse.ammo.presentation.theme.AppTheme
 import app.mymultiverse.ammo.ui.InstrumentedComposeTest.waitForState
-import ammo.composeapp.generated.resources.Res
-import ammo.composeapp.generated.resources.tour_step_home_body
-import ammo.composeapp.generated.resources.tour_step_home_title
-import ammo.composeapp.generated.resources.tour_step_welcome_body
-import ammo.composeapp.generated.resources.tour_step_welcome_title
 import com.russhwolf.settings.MapSettings
 import org.junit.Rule
 import org.junit.Test
@@ -40,19 +35,7 @@ class ProductTourInstrumentedTest {
         )
         screenModel.maybeShowTour(
             versionKey = "instrumented-positioning",
-            steps = listOf(
-                ProductTourStep(
-                    id = "welcome",
-                    title = Res.string.tour_step_welcome_title,
-                    description = Res.string.tour_step_welcome_body,
-                ),
-                ProductTourStep(
-                    id = "home",
-                    title = Res.string.tour_step_home_title,
-                    description = Res.string.tour_step_home_body,
-                    targetTag = ProductTourTestTags.TARGET_HOME_HUB,
-                ),
-            ),
+            steps = defaultProductTourSteps().take(2),
         )
 
         composeRule.setContent {
