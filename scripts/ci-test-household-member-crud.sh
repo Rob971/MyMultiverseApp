@@ -94,6 +94,19 @@ select public.update_household_member_role(
     '30000000-0000-0000-0000-000000000003',
     'viewer'
 );
+do $$
+begin
+    if not exists (
+        select 1
+        from public.household_members
+        where id = '30000000-0000-0000-0000-000000000003'
+          and role = 'viewer'
+          and left_at is null
+    ) then
+        raise exception 'owner_member_update_did_not_persist';
+    end if;
+end;
+$$;
 select public.remove_household_member('30000000-0000-0000-0000-000000000004');
 reset role;
 
@@ -165,6 +178,19 @@ select public.update_household_member_role(
     '30000000-0000-0000-0000-000000000003',
     'editor'
 );
+do $$
+begin
+    if not exists (
+        select 1
+        from public.household_members
+        where id = '30000000-0000-0000-0000-000000000003'
+          and role = 'editor'
+          and left_at is null
+    ) then
+        raise exception 'admin_member_update_did_not_persist';
+    end if;
+end;
+$$;
 select public.add_household_dependant(
     '20000000-0000-0000-0000-000000000001',
     'CRUD Dependant'

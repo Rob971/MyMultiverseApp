@@ -42,13 +42,26 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class SupabaseHouseholdCollaborationRepository(
+class SupabaseHouseholdCollaborationRepository internal constructor(
     private val client: SupabaseClient,
     private val logger: AppLogger,
+    private val invokeMutationRpc: suspend (String, JsonObject) -> Unit,
 ) : HouseholdCollaborationRepository {
+
+    constructor(
+        client: SupabaseClient,
+        logger: AppLogger,
+    ) : this(
+        client = client,
+        logger = logger,
+        invokeMutationRpc = { name, parameters ->
+            client.postgrest.rpc(name, parameters)
+        },
+    )
 
     private val membersByHousehold = mutableMapOf<String, MutableStateFlow<List<HouseholdMember>>>()
     private val outboundInvitesByHousehold = mutableMapOf<String, MutableStateFlow<List<HouseholdInvite>>>()
@@ -258,7 +271,7 @@ class SupabaseHouseholdCollaborationRepository(
     override suspend fun removeMember(memberId: String): Result<Unit> = runCatching {
         require(!memberId.startsWith(OWNER_MEMBER_PREFIX)) { "cannot_remove_owner" }
 
-        client.postgrest.rpc(
+        invokeMutationRpc(
             "remove_household_member",
             buildJsonObject { put("p_member_id", memberId) },
         )
@@ -296,7 +309,7 @@ class SupabaseHouseholdCollaborationRepository(
     }
 
     override suspend fun declineInvite(inviteId: String): Result<Unit> = runCatching {
-        client.postgrest.rpc(
+        invokeMutationRpc(
             "decline_household_invite",
             buildJsonObject { put("p_invite_id", inviteId) },
         )
