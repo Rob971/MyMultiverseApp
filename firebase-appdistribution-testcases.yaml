@@ -378,7 +378,7 @@ testcases:
       - Tap the avatar or the "Change family photo" button below it.
       - Pick a photo from the gallery.
     expected:
-      - "Photo updated successfully" snackbar appears.
+      - '"Photo updated successfully" snackbar appears.'
       - The family photo is shown at the top of the Family members screen immediately.
       - After closing the screen and reopening (or restarting the app), the same family photo persists.
       - An editor or viewer does not see the "Change family photo" button and cannot tap the family photo.
@@ -929,7 +929,7 @@ testcases:
       - Open Account settings (profile avatar → globe/account button).
       - Scroll to the "AI Ingredients" section.
     expected:
-      - "AI Ingredients" section header is visible below Language.
+      - '"AI Ingredients" section header is visible below Language.'
       - Descriptive text explains that the key enables all AI features (dish ingredients, meal plan, advice, grocery list).
       - A tappable link "Get a free key at aistudio.google.com/app/apikey" is shown.
       - A password-masked text field with a show/hide toggle is available.
