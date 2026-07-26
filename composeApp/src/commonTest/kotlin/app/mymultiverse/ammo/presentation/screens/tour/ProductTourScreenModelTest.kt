@@ -81,6 +81,23 @@ class ProductTourScreenModelTest {
     }
 
     @Test
+    fun maybeShowTour_doesNotReset_whenTourAlreadyActive() = runTest(testDispatcher) {
+        val m = model()
+        m.maybeShowTour("1.5.3", stubSteps(3))
+        advanceUntilIdle()
+
+        m.next()
+        advanceUntilIdle()
+
+        m.maybeShowTour("1.5.3", stubSteps(3))
+        advanceUntilIdle()
+
+        val state = m.uiState.first()
+        assertIs<ProductTourUiState.Active>(state)
+        assertEquals(1, state.currentIndex)
+    }
+
+    @Test
     fun maybeShowTour_doesNotActivate_whenStepsListIsEmpty() = runTest(testDispatcher) {
         val m = model()
         m.maybeShowTour("1.5.3", emptyList())

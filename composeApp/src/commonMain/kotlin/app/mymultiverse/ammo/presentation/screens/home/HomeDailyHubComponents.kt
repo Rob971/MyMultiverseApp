@@ -43,6 +43,8 @@ import app.mymultiverse.ammo.presentation.components.MainTabIconDefaults
 import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
 import app.mymultiverse.ammo.presentation.components.toMainTabIconKind
 import app.mymultiverse.ammo.presentation.components.WeekContextBanner
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourTestTags
+import app.mymultiverse.ammo.presentation.screens.tour.productTourTarget
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.home_daily_meal_plan_title
@@ -154,6 +156,7 @@ fun HomeDailyMealPlanBlock(
     Surface(
         modifier = modifier
             .fillMaxWidth()
+            .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB)
             .testTag(HomeTestTags.DAILY_MEAL_PLAN_BLOCK),
         shape = FamilyLogisticsDesign.cardShape,
         color = colorScheme.surface,

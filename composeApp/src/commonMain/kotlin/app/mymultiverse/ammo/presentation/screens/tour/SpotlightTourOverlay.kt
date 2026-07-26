@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -300,11 +301,16 @@ private fun tooltipTopOffsetDp(
     if (spotlightRect == null) return 0.dp
     val tooltipHeightPx = with(density) { tooltipHeightEstimate.toPx() }
     val cardGapPx = with(density) { 16.dp.toPx() }
+    val screenHeightPx = with(density) {
+        LocalConfiguration.current.screenHeightDp.dp.toPx()
+    }
 
     return with(density) {
         val aboveTop = spotlightRect.top - tooltipHeightPx - cardGapPx
         val belowBottom = spotlightRect.bottom + cardGapPx
-        if (aboveTop > TooltipMinTopPx) aboveTop.toDp() else belowBottom.toDp()
+        val preferredTopPx = if (aboveTop > TooltipMinTopPx) aboveTop else belowBottom
+        val maxTopPx = screenHeightPx - tooltipHeightPx - cardGapPx
+        preferredTopPx.coerceIn(TooltipMinTopPx, maxTopPx.coerceAtLeast(TooltipMinTopPx)).toDp()
     }
 }
 
