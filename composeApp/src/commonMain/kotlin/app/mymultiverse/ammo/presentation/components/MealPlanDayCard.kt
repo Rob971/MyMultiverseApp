@@ -25,12 +25,15 @@ import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.ammo.presentation.components.AiInlineTriggerButton
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -241,16 +244,36 @@ private fun MealPlanMealField(
     fieldTestTag: String,
     generateGroceryTestTag: String,
 ) {
+    // Keep a local draft so the TextField always reflects what the user typed
+    // immediately, rather than waiting for the Flow-backed value to propagate
+    // through the async save path (mutex → network push). Without this, typing
+    // faster than the network round-trip causes the cursor to jump back when
+    // Compose recomposes with a stale value mid-keystroke.
+    var localDraft by remember { mutableStateOf(value) }
+    var isFocused by remember { mutableStateOf(false) }
+
+    // When the external value changes (AI-fill, clear, week switch, initial
+    // load, collaboration update) and the field is not focused, accept it.
+    LaunchedEffect(value) {
+        if (!isFocused) localDraft = value
+    }
+
     val suggestions = if (readOnly) {
         emptyList()
     } else {
-        MealPlanPresentation.mealLabelSuggestions(weekDays, value)
+        MealPlanPresentation.mealLabelSuggestions(weekDays, localDraft)
     }
-    val dishEmoji = FoodEmojiCatalog.emojiForMealText(value)
+    val dishEmoji = FoodEmojiCatalog.emojiForMealText(localDraft)
     val scrollIntoViewModifier = rememberFieldScrollIntoViewModifier()
 
+    // Combined handler: update draft immediately, then fire the async save.
+    fun applyValue(newValue: String) {
+        localDraft = newValue
+        onValueChange(newValue)
+    }
+
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        AnimatedVisibility(visible = value.isNotBlank() && dishEmoji != null) {
+        AnimatedVisibility(visible = localDraft.isNotBlank() && dishEmoji != null) {
             FoodItemThumbnail(
                 emoji = dishEmoji ?: "",
                 size = 36.dp,
@@ -258,12 +281,13 @@ private fun MealPlanMealField(
             )
         }
         JourneyTextField(
-            value = value,
-            onValueChange = onValueChange,
+            value = localDraft,
+            onValueChange = ::applyValue,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag(fieldTestTag)
-                .then(scrollIntoViewModifier),
+                .then(scrollIntoViewModifier)
+                .onFocusChanged { state -> isFocused = state.isFocused },
             label = { Text(label) },
             placeholder = { Text(label) },
             singleLine = false,
@@ -271,9 +295,14 @@ private fun MealPlanMealField(
             readOnly = readOnly,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { /* focus moves naturally */ }),
-            trailingIcon = if (value.isNotBlank() && !readOnly && onClear != null) {
+            trailingIcon = if (localDraft.isNotBlank() && !readOnly && onClear != null) {
                 {
-                    JourneyIconButton(onClick = onClear) {
+                    JourneyIconButton(onClick = {
+                        // Update draft immediately so the clear is reflected
+                        // before the Flow emits the empty value.
+                        localDraft = ""
+                        onClear()
+                    }) {
                         JourneyIcon(
                             role = AppIconRole.ActionDelete,
                             contentDescription = clearFieldLabel,
@@ -286,7 +315,7 @@ private fun MealPlanMealField(
             },
             focusAccentColor = accentColor,
         )
-        if (value.isBlank() && !readOnly && suggestQuickMealLabel != null && onSuggestQuickMeal != null) {
+        if (localDraft.isBlank() && !readOnly && suggestQuickMealLabel != null && onSuggestQuickMeal != null) {
             AiInlineTriggerButton(
                 label = suggestQuickMealLabel,
                 onClick = { onSuggestQuickMeal(slot) },
@@ -300,7 +329,7 @@ private fun MealPlanMealField(
             ) {
                 items(suggestions.withIndex().toList(), key = { "${it.index}-${it.value}" }) { (index, suggestion) ->
                     SuggestionChip(
-                        onClick = { onValueChange(suggestion) },
+                        onClick = { applyValue(suggestion) },
                         label = {
                             Text(
                                 text = suggestion,
@@ -318,7 +347,7 @@ private fun MealPlanMealField(
                 }
             }
         }
-        if (value.isNotBlank() && !readOnly) {
+        if (localDraft.isNotBlank() && !readOnly) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
