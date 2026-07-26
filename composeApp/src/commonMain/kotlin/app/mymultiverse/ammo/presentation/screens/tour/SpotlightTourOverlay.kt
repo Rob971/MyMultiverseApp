@@ -177,7 +177,11 @@ private fun TourTooltipCard(
 ) {
     val density = LocalDensity.current
     val cardAlignment = if (spotlightRect == null) Alignment.Center else Alignment.TopStart
-    val topOffsetDp = tooltipTopOffsetDp(spotlightRect, density, tooltipHeightEstimate)
+    val topOffsetDp = tooltipTopOffsetDp(
+        spotlightRect = spotlightRect,
+        density = density,
+        tooltipHeightEstimate = tooltipHeightEstimate,
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         Card(

@@ -327,7 +327,6 @@ fun HomeScreen(
                     embeddedInMainTabs = embeddedInMainTabs,
                     modifier = Modifier
                         .padding(padding)
-                        .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB)
                         .then(modifier),
                 )
             }
@@ -729,7 +728,9 @@ fun HomeWelcomeContent(
                 ) {
                     greetingBlock()
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB),
                         horizontalArrangement = Arrangement.spacedBy(ScreenLayout.horizontalPadding),
                     ) {
                         Column(
@@ -755,7 +756,9 @@ fun HomeWelcomeContent(
                 }
             } else {
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB),
                     verticalArrangement = Arrangement.spacedBy(24.dp),
                 ) {
                     greetingBlock()
