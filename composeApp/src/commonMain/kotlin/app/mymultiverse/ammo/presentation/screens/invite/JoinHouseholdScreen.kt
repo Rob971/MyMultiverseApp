@@ -23,17 +23,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.presentation.components.JourneySsoButtonLabel
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.AmmoRoundLogo
+import app.mymultiverse.ammo.presentation.components.filterToDigits
 import app.mymultiverse.ammo.presentation.components.keyboardAwareScroll
 import app.mymultiverse.ammo.presentation.components.rememberFieldScrollIntoViewModifier
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
@@ -353,9 +359,24 @@ private fun JoinHouseholdOtpStep(
     Spacer(modifier = Modifier.height(16.dp))
 
     val otpScrollIntoView = rememberFieldScrollIntoViewModifier()
+    var otpField by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(uiState.otpCode))
+    }
+    LaunchedEffect(uiState.otpCode) {
+        if (otpField.text != uiState.otpCode) {
+            otpField = TextFieldValue(
+                text = uiState.otpCode,
+                selection = TextRange(uiState.otpCode.length),
+            )
+        }
+    }
     JourneyTextField(
-        value = uiState.otpCode,
-        onValueChange = screenModel::onOtpCodeChange,
+        value = otpField,
+        onValueChange = { field ->
+            val filtered = filterToDigits(field, JoinHouseholdScreenModel.OTP_CODE_LENGTH)
+            otpField = filtered
+            screenModel.onOtpCodeChange(filtered.text)
+        },
         label = { Text(stringResource(Res.string.invite_join_otp_label)) },
         enabled = !uiState.isLoading && !showConfigMissing,
         isError = otpErrorText != null,
