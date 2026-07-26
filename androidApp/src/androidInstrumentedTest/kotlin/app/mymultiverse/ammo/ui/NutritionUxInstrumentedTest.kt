@@ -3,9 +3,11 @@ package app.mymultiverse.ammo.ui
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -26,6 +28,7 @@ import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
 import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.model.Greeting
+import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
@@ -36,6 +39,7 @@ import app.mymultiverse.ammo.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.ammo.presentation.components.GroceryItemRowTestTags
 import app.mymultiverse.ammo.presentation.components.JourneyEmptyStateTestTags
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiMode
+import app.mymultiverse.ammo.presentation.components.MealPlanDayCard
 import app.mymultiverse.ammo.presentation.components.MealPlanEmptyStateTestTags
 import app.mymultiverse.ammo.presentation.components.MealPlanTestTags
 import app.mymultiverse.ammo.presentation.screens.nutrition.GroceryListTestTags
@@ -116,6 +120,64 @@ class NutritionUxInstrumentedTest {
                 }
             },
         )
+    }
+
+    /**
+     * Regression for the "cursor jumps back 1-2 characters" bug: the meal field value
+     * is fed from a repository-backed StateFlow that echoes each keystroke asynchronously.
+     * While the field is focused, a stale external value must NOT rewind the caret/text;
+     * once unfocused, a genuine external change must sync into the field.
+     */
+    @Test
+    fun mealPlan_field_ignoresStaleExternalEchoWhileFocused() {
+        val lunch = mutableStateOf("")
+        val dinner = mutableStateOf("")
+
+        composeRule.setContent {
+            AppTheme {
+                Column {
+                    MealPlanDayCard(
+                        dayIndex = 0,
+                        dayLabel = "Monday",
+                        day = DayMeals(lunch = lunch.value, dinner = dinner.value),
+                        weekDays = List(7) { DayMeals() },
+                        isToday = true,
+                        todayLabel = "Today",
+                        lunchLabel = "Lunch",
+                        dinnerLabel = "Dinner",
+                        notPlannedLabel = "Not planned",
+                        unplannedSlotLabel = "Unplanned",
+                        expandDayLabel = "Expand",
+                        collapseDayLabel = "Collapse",
+                        generateGroceryLabel = "Grocery",
+                        copyToTomorrowLabel = "Copy",
+                        clearFieldLabel = "Clear",
+                        onLunchChange = { lunch.value = it },
+                        onDinnerChange = { dinner.value = it },
+                        onGenerateGroceryForMeal = {},
+                    )
+                }
+            }
+        }
+
+        val lunchField = composeRule.onNodeWithTag(MealPlanTestTags.lunchField(0))
+        lunchField.performClick()
+        lunchField.performTextInput("Pasta")
+        composeRule.waitFor { lunch.value == "Pasta" }
+        lunchField.assertTextContains("Pasta")
+
+        // Stale async echo of an earlier keystroke arrives while still typing/focused.
+        composeRule.runOnUiThread { lunch.value = "Pas" }
+        composeRule.waitForIdle()
+        // Field keeps the full text — the caret is not rewound.
+        lunchField.assertTextContains("Pasta")
+
+        // Moving focus away lets a genuine external change sync into the field.
+        val dinnerField = composeRule.onNodeWithTag(MealPlanTestTags.dinnerField(0))
+        dinnerField.performClick()
+        composeRule.runOnUiThread { lunch.value = "Risotto" }
+        composeRule.waitForIdle()
+        lunchField.assertTextContains("Risotto")
     }
 
     @Test

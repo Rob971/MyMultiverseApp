@@ -25,15 +25,20 @@ import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.ammo.presentation.components.AiInlineTriggerButton
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
 import app.mymultiverse.ammo.domain.nutrition.MealPlanPresentation
@@ -241,16 +246,40 @@ private fun MealPlanMealField(
     fieldTestTag: String,
     generateGroceryTestTag: String,
 ) {
+    // Local editing state owns the cursor/selection. The `value` param is fed from a
+    // repository-backed StateFlow that re-emits asynchronously after every keystroke;
+    // binding a plain String directly made the field rewind the caret 1-2 characters
+    // when the stale echo of the user's own typing arrived mid-word. We only reconcile
+    // the external value into local state while the field is NOT focused, so the async
+    // echo can never fight the caret while the user is actively typing.
+    var isFocused by remember { mutableStateOf(false) }
+    var fieldValue by remember {
+        mutableStateOf(TextFieldValue(value, TextRange(value.length)))
+    }
+    LaunchedEffect(value, isFocused) {
+        if (!isFocused && value != fieldValue.text) {
+            fieldValue = TextFieldValue(value, TextRange(value.length))
+        }
+    }
+    val text = fieldValue.text
+
+    // Applies an external, non-typed edit (suggestion chip, clear) to both the local
+    // caret state and the hoisted value so the field updates immediately even while focused.
+    fun commitText(newText: String) {
+        fieldValue = TextFieldValue(newText, TextRange(newText.length))
+        onValueChange(newText)
+    }
+
     val suggestions = if (readOnly) {
         emptyList()
     } else {
-        MealPlanPresentation.mealLabelSuggestions(weekDays, value)
+        MealPlanPresentation.mealLabelSuggestions(weekDays, text)
     }
-    val dishEmoji = FoodEmojiCatalog.emojiForMealText(value)
+    val dishEmoji = FoodEmojiCatalog.emojiForMealText(text)
     val scrollIntoViewModifier = rememberFieldScrollIntoViewModifier()
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        AnimatedVisibility(visible = value.isNotBlank() && dishEmoji != null) {
+        AnimatedVisibility(visible = text.isNotBlank() && dishEmoji != null) {
             FoodItemThumbnail(
                 emoji = dishEmoji ?: "",
                 size = 36.dp,
@@ -258,11 +287,15 @@ private fun MealPlanMealField(
             )
         }
         JourneyTextField(
-            value = value,
-            onValueChange = onValueChange,
+            value = fieldValue,
+            onValueChange = {
+                fieldValue = it
+                if (it.text != value) onValueChange(it.text)
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag(fieldTestTag)
+                .onFocusChanged { isFocused = it.isFocused }
                 .then(scrollIntoViewModifier),
             label = { Text(label) },
             placeholder = { Text(label) },
@@ -271,9 +304,12 @@ private fun MealPlanMealField(
             readOnly = readOnly,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { /* focus moves naturally */ }),
-            trailingIcon = if (value.isNotBlank() && !readOnly && onClear != null) {
+            trailingIcon = if (text.isNotBlank() && !readOnly && onClear != null) {
                 {
-                    JourneyIconButton(onClick = onClear) {
+                    JourneyIconButton(onClick = {
+                        fieldValue = TextFieldValue("")
+                        onClear()
+                    }) {
                         JourneyIcon(
                             role = AppIconRole.ActionDelete,
                             contentDescription = clearFieldLabel,
@@ -286,7 +322,7 @@ private fun MealPlanMealField(
             },
             focusAccentColor = accentColor,
         )
-        if (value.isBlank() && !readOnly && suggestQuickMealLabel != null && onSuggestQuickMeal != null) {
+        if (text.isBlank() && !readOnly && suggestQuickMealLabel != null && onSuggestQuickMeal != null) {
             AiInlineTriggerButton(
                 label = suggestQuickMealLabel,
                 onClick = { onSuggestQuickMeal(slot) },
@@ -300,7 +336,7 @@ private fun MealPlanMealField(
             ) {
                 items(suggestions.withIndex().toList(), key = { "${it.index}-${it.value}" }) { (index, suggestion) ->
                     SuggestionChip(
-                        onClick = { onValueChange(suggestion) },
+                        onClick = { commitText(suggestion) },
                         label = {
                             Text(
                                 text = suggestion,
@@ -318,7 +354,7 @@ private fun MealPlanMealField(
                 }
             }
         }
-        if (value.isNotBlank() && !readOnly) {
+        if (text.isNotBlank() && !readOnly) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),

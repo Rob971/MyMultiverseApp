@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 99
+version: 100
 updated: 2026-07-26
 
 summary: |
@@ -709,6 +709,18 @@ testcases:
     expected:
       - Meal plan screen shows the current week label and today highlighted.
       - Days can expand to edit lunch and dinner.
+
+  - id: meal-plan-typing-caret-stable
+    title: Meal plan lunch/dinner typing keeps the caret in place
+    steps:
+      - Open the Plan tab and expand a day (today is expanded by default).
+      - Tap the lunch (or dinner) field and type a longer dish name quickly (e.g. "Spaghetti alle vongole").
+      - Optionally repeat on a slow/synced connection or with a household partner editing the same week.
+    expected:
+      - Every character lands in the order typed; the caret never jumps back 1-2 characters mid-word.
+      - No characters are dropped, duplicated, or reordered while typing fast.
+      - Tapping the clear (x) icon empties the field; suggestion chips replace the text with the caret at the end.
+      - Leaving the field and returning shows the saved text; a partner's edit appears only once the field is unfocused.
 
   - id: hub-members-navigation
     title: Open household members from account sheet
