@@ -90,6 +90,25 @@ class ProductTourScreenModelTest {
     }
 
     @Test
+    fun maybeShowTour_doesNotResetIndex_whenAlreadyActive() = runTest(testDispatcher) {
+        val m = model()
+        m.maybeShowTour("1.5.3", stubSteps(3))
+        advanceUntilIdle()
+
+        m.next()
+        advanceUntilIdle()
+        assertEquals(1, (m.uiState.first() as ProductTourUiState.Active).currentIndex)
+
+        // HomePhase.Welcome can re-emit; must not bounce the user back to step 0.
+        m.maybeShowTour("1.5.3", stubSteps(3))
+        advanceUntilIdle()
+
+        val state = m.uiState.first()
+        assertIs<ProductTourUiState.Active>(state)
+        assertEquals(1, state.currentIndex)
+    }
+
+    @Test
     fun next_advancesToNextStep() = runTest(testDispatcher) {
         val m = model()
         m.maybeShowTour("1.5.3", stubSteps(3))

@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 96
+version: 97
 updated: 2026-07-26
 
 summary: |
@@ -40,7 +40,7 @@ summary: |
   Full Gemini AI integration (v89): All AI features (advice, grocery list, meal plan) now call Gemini 2.0 Flash Lite; key-missing state shows polite error in AI sheet; async cancellation prevents stuck spinners when a new request supersedes the previous one.
   AI key on-demand (v90): Removed proactive "add your key" banner from Plan tab; Gemini API key is only requested when the user actively triggers an AI feature and no key is configured; inline key-entry form shown directly in the AI sheet error state so the user can save the key and retry without leaving the sheet.
   Consistent key-request for Add to grocery list (v91): Tapping "Add to grocery list" on a meal slot with no key configured now opens the AI sheet showing the inline key-entry form instead of directing the user to Account settings via a snackbar; the flow is now consistent with the AI sheet Generate button.
-  Product tour (v93): first-time users see a 4-step spotlight walkthrough — welcome modal, home hub, meal plan tab, grocery tab; the tour shows once per app version and is permanently dismissed after completion or skip.
+  Product tour (v93/v95): first-time users see a 4-step spotlight walkthrough — welcome modal, daily meal plan hub card, meal plan tab, grocery tab; the tour shows once per app version and is permanently dismissed after completion or skip. v95: Next/Avanti from welcome keeps a visible scrim + tooltip (spotlight targets the daily hub card, not the whole Welcome screen).
   App Links hosting (v47): deploy via Rob971/mymultiverse-website; verify with scripts/verify-hosting.sh after DNS is live.
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
@@ -1242,7 +1242,7 @@ testcases:
       - If the key is cleared in Account → Settings on Device B, the key form reappears on both devices after sign-in.
 
   - id: product-tour-first-launch
-    title: Product tour appears once on first launch per version (v93)
+    title: Product tour appears once on first launch per version (v95)
     steps:
       - Install a fresh build (or clear app data / storage so no previous tour state is stored).
       - Sign in with a valid account.
@@ -1251,12 +1251,24 @@ testcases:
       - A dimmed full-screen overlay appears with a tooltip card showing "Welcome to Ammò" (step 1 of 4).
       - The overlay contains a step counter ("1 of 4"), a Skip tour link, and a Next button.
       - No spotlight cutout is shown for the welcome step — the entire screen is dimly covered.
-      - Tapping Next advances to step 2 ("Your planning hub"); a spotlight rectangle with rounded corners highlights the home content area with a visible cutout through the scrim.
+      - Tapping Next / Avanti advances to step 2 ("Your planning hub"); a spotlight rectangle with rounded corners highlights the Daily meal plan card (not the whole screen), the dim scrim remains visible around it, and the tooltip card stays on-screen.
       - Tapping Next again advances to step 3 ("Plan the week"); the spotlight moves to highlight the meal plan bottom nav tab.
       - Tapping Next advances to step 4 ("Grocery list"); the spotlight highlights the grocery bottom nav tab; the Next button label changes to "Done".
       - Tapping Done dismisses the overlay with a fade-out animation.
       - The Previous button appears on steps 2–4 and returns to the previous step.
       - All transitions between steps are animated (smooth fade + slide).
+
+  - id: product-tour-next-keeps-overlay
+    title: Product tour Next/Avanti keeps overlay visible on step 2 (v95)
+    steps:
+      - Clear app data so the tour has not been seen for this version.
+      - Sign in; wait for the welcome tour card ("1 of 4").
+      - Tap Next / Avanti.
+    expected:
+      - The tour does NOT disappear — a dim scrim remains over the home screen.
+      - Step counter shows "2 of 4" with title about the planning hub.
+      - A rounded spotlight cutout highlights the Daily meal plan block; the tooltip remains fully visible (not off-screen).
+      - Skip and Previous are available; Next advances to the meal plan tab step.
 
   - id: product-tour-skip
     title: Skipping the product tour permanently dismisses it (v93)
