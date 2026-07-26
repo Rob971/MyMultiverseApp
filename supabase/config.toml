@@ -23,6 +23,8 @@ enabled = false
 enabled = true
 
 [storage.buckets.member-avatars]
+# Public read; uploads scoped by RLS in migrations 20250703000000 + 20250714100000.
+# file_size_limit must stay aligned with AvatarUploadConstraints.HARD_LIMIT_BYTES (5 MiB) in the app.
 public = true
 file_size_limit = "5MiB"
 allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]

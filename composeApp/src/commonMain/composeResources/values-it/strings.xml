@@ -932,7 +932,10 @@
     <string name="sharing_members_avatar_view_fullscreen">Vedi la foto di %1$s</string>
     <string name="sharing_members_avatar_fullscreen_close">Chiudi</string>
     <string name="sharing_avatar_upload_success">Foto aggiornata con successo.</string>
+    <string name="sharing_avatar_upload_size_limit_hint">Le foto devono essere inferiori a %1$d MB (JPEG, PNG o WebP). Le immagini più grandi vengono ridimensionate automaticamente.</string>
     <string name="sharing_members_error_avatar_upload_failed">Non siamo riusciti a salvare la tua foto. Controlla la connessione e riprova.</string>
+    <string name="sharing_members_error_avatar_unsupported_format">Questo formato foto non è supportato. Scegli un'immagine JPEG, PNG o WebP.</string>
+    <string name="sharing_members_error_avatar_too_large">Questa foto è troppo grande. La dimensione massima è %1$d MB. Scegli un'immagine più piccola.</string>
     <string name="sharing_members_error_avatar_persist_failed">La foto è stata caricata ma non è stato possibile salvarla nel profilo. Riprova.</string>
     <string name="sharing_household_avatar_error_persist_failed">La foto di famiglia è stata caricata ma non è stato possibile salvarla. Riprova.</string>
         <string name="auth_household_joined_success">Ti sei unito a %1$s.</string>
