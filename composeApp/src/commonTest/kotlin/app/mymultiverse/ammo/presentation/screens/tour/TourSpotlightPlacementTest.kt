@@ -79,15 +79,41 @@ class TourSpotlightPlacementTest {
     }
 
     @Test
-    fun usableSpotlightRect_keepsCompactDailyHubCard() {
-        // Approximate Daily meal plan block on a phone.
-        val hubCard = Rect(left = 48f, top = 720f, right = 1032f, bottom = 1280f)
+    fun usableSpotlightRect_keepsCompactDailyHubHeader() {
+        // Title + Today/This week tabs only (~120dp tall), full width — post-hardening target.
+        val hubHeader = Rect(left = 48f, top = 720f, right = 1032f, bottom = 860f)
         val usable = TourSpotlightPlacement.usableSpotlightRect(
-            rect = hubCard,
+            rect = hubHeader,
             screenWidthPx = phoneWidth,
             screenHeightPx = phoneHeight,
         )
-        assertEquals(hubCard, usable)
+        assertEquals(hubHeader, usable)
+    }
+
+    @Test
+    fun usableSpotlightRect_keepsCompactHeader_onShortLandscapeHeight() {
+        val landscapeHeight = 720f
+        val hubHeader = Rect(left = 48f, top = 200f, right = 1032f, bottom = 340f)
+        val usable = TourSpotlightPlacement.usableSpotlightRect(
+            rect = hubHeader,
+            screenWidthPx = phoneWidth,
+            screenHeightPx = landscapeHeight,
+        )
+        assertEquals(hubHeader, usable)
+    }
+
+    @Test
+    fun usableSpotlightRect_rejectsTallCard_onShortLandscapeHeight() {
+        val landscapeHeight = 720f
+        // Former whole Daily meal plan card (~560px) exceeds 55% of 720.
+        val tallCard = Rect(left = 48f, top = 160f, right = 1032f, bottom = 720f)
+        assertNull(
+            TourSpotlightPlacement.usableSpotlightRect(
+                rect = tallCard,
+                screenWidthPx = phoneWidth,
+                screenHeightPx = landscapeHeight,
+            ),
+        )
     }
 
     @Test

@@ -156,9 +156,6 @@ fun HomeDailyMealPlanBlock(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            // Spotlight the daily hub card — not the whole Welcome screen — so step 2
-            // leaves a visible scrim and room for the tooltip after "Next" / "Avanti".
-            .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB)
             .testTag(HomeTestTags.DAILY_MEAL_PLAN_BLOCK),
         shape = FamilyLogisticsDesign.cardShape,
         color = colorScheme.surface,
@@ -168,18 +165,28 @@ fun HomeDailyMealPlanBlock(
             modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(
-                text = stringResource(Res.string.home_daily_meal_plan_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = JourneySemanticColors.inkDeep(),
-            )
+            // Compact header only — title + tabs — so step 2 spotlight stays under the
+            // height/area caps on short phones and large font scales (whole-card cutouts
+            // previously erased the scrim after Next/Avanti).
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Text(
+                    text = stringResource(Res.string.home_daily_meal_plan_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = JourneySemanticColors.inkDeep(),
+                )
 
-            HomeDailyFeedTabHeader(
-                selectedTab = selectedTab,
-                onSelectToday = { selectedTab = HomeDailyFeedTab.Today },
-                onSelectThisWeek = { selectedTab = HomeDailyFeedTab.ThisWeek },
-            )
+                HomeDailyFeedTabHeader(
+                    selectedTab = selectedTab,
+                    onSelectToday = { selectedTab = HomeDailyFeedTab.Today },
+                    onSelectThisWeek = { selectedTab = HomeDailyFeedTab.ThisWeek },
+                )
+            }
 
             when (selectedTab) {
                 HomeDailyFeedTab.Today -> HomeTodayTimelineFeed(
