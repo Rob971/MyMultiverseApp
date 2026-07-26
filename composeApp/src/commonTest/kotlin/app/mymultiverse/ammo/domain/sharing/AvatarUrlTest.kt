@@ -28,6 +28,17 @@ class AvatarUrlTest {
         assertEquals("webp", avatarExtensionForContentType("image/webp"))
         assertEquals("jpg", avatarExtensionForContentType("image/jpeg"))
         assertEquals("jpg", avatarExtensionForContentType("image/jpg"))
-        assertEquals("jpg", avatarExtensionForContentType("image/heic"))
+        assertEquals("heic", avatarExtensionForContentType("image/heic"))
+        assertEquals("heif", avatarExtensionForContentType("image/heif"))
+    }
+
+    @Test
+    fun normalizeAvatarContentType_mapsPickerEdgeCases() {
+        assertEquals("image/jpeg", normalizeAvatarContentType("image/*"))
+        assertEquals("image/jpeg", normalizeAvatarContentType("image/jpg"))
+        assertEquals("image/heic", normalizeAvatarContentType("image/heic"))
+        assertEquals("image/heif", normalizeAvatarContentType("image/heif"))
+        assertEquals("image/jpeg", normalizeAvatarContentType("application/octet-stream"))
+        assertEquals("image/jpeg", normalizeAvatarContentType("   "))
     }
 }

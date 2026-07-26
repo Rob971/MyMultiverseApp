@@ -18,6 +18,7 @@ import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
 import app.mymultiverse.ammo.domain.sharing.AvatarUploadStep
 import app.mymultiverse.ammo.domain.sharing.AvatarUploadTarget
 import app.mymultiverse.ammo.domain.sharing.avatarExtensionForContentType
+import app.mymultiverse.ammo.domain.sharing.normalizeAvatarContentType
 import app.mymultiverse.ammo.domain.sharing.versionedAvatarUrl
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
@@ -289,21 +290,22 @@ class SupabaseHouseholdRepository(
     ): Result<Unit> = runCatchingCancellable {
         client.auth.awaitInitialization()
         requireUserId()
+        val safeContentType = normalizeAvatarContentType(contentType)
 
         logger.logAvatarUploadStep(
             target = AvatarUploadTarget.Household,
             step = AvatarUploadStep.Start,
             householdId = householdId,
             extra = "bytes=${imageBytes.size}",
-            context = mapOf("content_type" to contentType),
+            context = mapOf("content_type" to safeContentType),
         )
 
-        val extension = avatarExtensionForContentType(contentType)
+        val extension = avatarExtensionForContentType(safeContentType)
         val storagePath = "households/$householdId/avatar.$extension"
         val bucket = client.storage.from("member-avatars")
         bucket.upload(storagePath, imageBytes) {
             upsert = true
-            this.contentType = ContentType.parse(contentType)
+            this.contentType = ContentType.parse(safeContentType)
         }
         val publicUrl = versionedAvatarUrl(bucket.publicUrl(storagePath))
         logger.logAvatarUploadStep(
@@ -329,7 +331,7 @@ class SupabaseHouseholdRepository(
                 dbTable = "households",
                 householdId = householdId,
                 storagePath = storagePath,
-                contentType = contentType,
+                contentType = safeContentType,
                 imageBytes = imageBytes.size,
             )
             logger.recordAvatarUploadFailure(
@@ -339,7 +341,7 @@ class SupabaseHouseholdRepository(
                 throwable = persistError,
                 storagePath = storagePath,
                 dbTable = "households",
-                contentType = contentType,
+                contentType = safeContentType,
                 imageBytes = imageBytes.size,
             )
             throw persistError
@@ -378,7 +380,7 @@ class SupabaseHouseholdRepository(
                 step = AvatarUploadStep.StorageUpload,
                 householdId = householdId,
                 throwable = throwable,
-                contentType = contentType,
+                contentType = normalizeAvatarContentType(contentType),
                 imageBytes = imageBytes.size,
             )
         }
