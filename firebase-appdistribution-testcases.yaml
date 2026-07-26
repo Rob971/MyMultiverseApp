@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 97
+version: 98
 updated: 2026-07-26
 
 summary: |
@@ -65,6 +65,7 @@ summary: |
   Family members role change (v71): Change role button and tappable badge on member rows; role updates show immediately after save.
   Family member photos (v76): each member row shows a circular avatar beside the name; tap your own avatar (or a dependant's if you manage members) to pick a photo from the gallery.
   Settings family photo (v96): when a family photo exists, the account sheet Family row shows the photo beside the name; tap the photo for a closeable fullscreen viewer; tap elsewhere on the row still opens Family members.
+  Avatar upload normalisation (v98): picked profile/family photos are downscaled and re-encoded to JPEG on device before upload, so HEIC/HEIF gallery photos and large (>5 MiB) images now save successfully instead of failing with "We could not save your photo".
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
   Contextual AI chips E4-11 (v52): Plan empty state and AI helper sheet prepend Use up {ingredient} chips from unchecked grocery + meal history (fallback to protein/budget/veggies when no signals).
   Grocery simplification (v54): Groceries tab focuses on Update list (week selector → list CRUD); removed build-from-meals chip, pantry check, and AI suggestion sections from grocery screen; drag handle reorders active items.
@@ -349,6 +350,7 @@ testcases:
       - Each role can tap only the avatars they are permitted to change (self for persons; own + dependants for editors; own + dependants + family photo for owners/admins).
       - Tapping another member's uploaded photo opens a full-screen viewer with their name and a close control; tapping outside or close dismisses it without opening the gallery.
       - Every successful upload shows the "Photo updated successfully" snackbar.
+      - Photos taken on the device camera (often HEIC/HEIF) and large images (>5 MiB) upload successfully — they are downscaled and re-encoded to JPEG before upload.
       - If the upload fails (airplane mode), a polite "We could not save your photo" inline error appears; no crash.
       - Family photo (large avatar at top) is tappable only for owner and admin; tapping shows a change label button.
       - All photos persist across app restarts (backed by DB, not in-memory only).
@@ -359,9 +361,9 @@ testcases:
       - Sign in as household owner or admin; open Family members.
       - Observe the large circular avatar at the top showing household name initials (or existing family photo).
       - Tap the avatar or the "Change family photo" button below it.
-      - Pick a photo from the gallery.
+      - Pick a photo from the gallery (try a HEIC/HEIF camera photo and a large image too).
     expected:
-      - "Photo updated successfully" snackbar appears.
+      - "Photo updated successfully" snackbar appears (including for HEIC/HEIF and large photos, which are normalised to JPEG before upload).
       - The family photo is shown at the top of the Family members screen immediately.
       - After closing the screen and reopening (or restarting the app), the same family photo persists.
       - An editor or viewer does not see the "Change family photo" button and cannot tap the family photo.
