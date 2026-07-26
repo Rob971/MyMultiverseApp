@@ -1,7 +1,6 @@
-• Profile and family photo uploads — HEIC and large images are resized automatically (5 MB max)
-• Quick tour — new users see all 4 onboarding steps once, then it stays dismissed
-• Gemini AI for meal planning, advice & grocery lists — add your free key in the AI sheet
-• Dish-specific ingredients via AI — Add to grocery list now uses Gemini for your dish
-• AI key setup appears only when you use an AI feature — no proactive prompts
-• 2-step registration — captures your name & household name upfront
-• Stability fixes: stuck loading spinners resolved
+• Profile and family photo uploads — HEIC/large images auto-resized (5 MB max)
+• Quick tour — all 4 onboarding steps once, then stays dismissed
+• Gemini AI for meal planning, advice and grocery lists
+• AI grocery suggestions for dishes with your Gemini key
+• 2-step registration with name and household name upfront
+• Stability fixes for loading spinners
