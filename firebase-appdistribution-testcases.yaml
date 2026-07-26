@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 99
+version: 100
 updated: 2026-07-26
 
 summary: |
@@ -413,8 +413,21 @@ testcases:
       - Open Household members → Add dependant → enter display name → confirm.
     expected:
       - Dependant appears on the members list with a dependant badge.
-      - Dependant has no email/login; owner/editor can remove them.
+      - Dependant has no email/login; owner/admin can remove them from the row overflow menu.
       - Dependant counts toward the 20-member household cap.
+
+  - id: household-remove-member-manager
+    title: Owner and admin remove members and dependants (v100)
+    steps:
+      - Household with owner, an admin, an editor, and a dependant (use two accounts).
+      - Sign in as the admin; open Family members.
+      - On the editor row, tap the ⋮ overflow → Remove → confirm.
+      - On the dependant row, tap the ⋮ overflow → Remove → confirm.
+      - Sign in as the owner; add a dependant, then remove it the same way.
+    expected:
+      - Admin can remove non-owner members; the row disappears immediately and stays gone after pull-to-refresh and app restart.
+      - Admin and owner can remove dependants; no error snackbar appears.
+      - No Remove action is shown on the owner row; removed members lose access to shared data.
 
   - id: household-invite-notification
     title: Invite email / push notification (manual)

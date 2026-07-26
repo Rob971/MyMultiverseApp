@@ -554,7 +554,7 @@ class HouseholdMembersScreenModel(
                         if (status is HouseholdMembershipStatus.Active) {
                             activeOwnerId = status.household.ownerId
                             activeOwnerDisplayName = status.household.ownerDisplayName.orEmpty()
-                            activeUserIsOwner = status.membership.role == HouseholdMemberRole.Owner
+                            applyMembershipRole(status.membership.role)
                             collaborationRepository.refreshMembers(
                                 householdId,
                                 status.household.ownerId,
@@ -568,7 +568,6 @@ class HouseholdMembersScreenModel(
                             selectedTransferMemberId = null,
                             successMessageKey = HouseholdMembersSuccess.OwnershipTransferred,
                             transferredToDisplayName = targetName,
-                            canManageMembers = false,
                         )
                     }
                 }
