@@ -196,6 +196,7 @@ dependencies {
     // ghost-pairing dismiss storage via the base multiplatform-settings `Settings` type.
     androidTestImplementation(compose.foundation)
     androidTestImplementation(compose.material3)
+    androidTestImplementation(compose.components.resources)
     androidTestImplementation(libs.multiplatform.settings)
     androidTestImplementation(libs.multiplatform.settings.test)
 }

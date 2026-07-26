@@ -325,9 +325,11 @@ fun HomeScreen(
                     isRefreshing = isRefreshing,
                     onRefresh = screenModel::refresh,
                     embeddedInMainTabs = embeddedInMainTabs,
+                    homeHubActionsModifier = Modifier.productTourTarget(
+                        ProductTourTestTags.TARGET_HOME_HUB,
+                    ),
                     modifier = Modifier
                         .padding(padding)
-                        .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB)
                         .then(modifier),
                 )
             }
@@ -664,6 +666,7 @@ fun HomeWelcomeContent(
     onDismissWeekPlanNudge: () -> Unit = {},
     embeddedInMainTabs: Boolean = false,
     greetingHour: Int? = null,
+    homeHubActionsModifier: Modifier = Modifier,
     modifier: Modifier = Modifier,
 ) {
     val greetingSelection = HomeGreetingSelection.select(
@@ -739,6 +742,7 @@ fun HomeWelcomeContent(
                             HomeDailyHubCircularActions(
                                 onOpenMealPlan = onOpenMealPlan,
                                 onOpenGrocery = onOpenGrocery,
+                                modifier = homeHubActionsModifier,
                             )
                         }
                         Column(
@@ -762,6 +766,7 @@ fun HomeWelcomeContent(
                     HomeDailyHubCircularActions(
                         onOpenMealPlan = onOpenMealPlan,
                         onOpenGrocery = onOpenGrocery,
+                        modifier = homeHubActionsModifier,
                     )
                     HomeDailyMealPlanBlock(
                         nutritionSummary = nutritionSummary,

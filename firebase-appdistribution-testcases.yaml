@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 94
-updated: 2026-07-25
+version: 95
+updated: 2026-07-26
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -41,6 +41,7 @@ summary: |
   AI key on-demand (v90): Removed proactive "add your key" banner from Plan tab; Gemini API key is only requested when the user actively triggers an AI feature and no key is configured; inline key-entry form shown directly in the AI sheet error state so the user can save the key and retry without leaving the sheet.
   Consistent key-request for Add to grocery list (v91): Tapping "Add to grocery list" on a meal slot with no key configured now opens the AI sheet showing the inline key-entry form instead of directing the user to Account settings via a snackbar; the flow is now consistent with the AI sheet Generate button.
   Product tour (v93): first-time users see a 4-step spotlight walkthrough — welcome modal, home hub, meal plan tab, grocery tab; the tour shows once per app version and is permanently dismissed after completion or skip.
+  Product tour visibility fix (v95): the home step spotlights the bounded planning-actions row, and tooltip placement stays clamped inside compact portrait viewports.
   App Links hosting (v47): deploy via Rob971/mymultiverse-website; verify with scripts/verify-hosting.sh after DNS is live.
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
@@ -1232,7 +1233,8 @@ testcases:
       - A dimmed full-screen overlay appears with a tooltip card showing "Welcome to Ammò" (step 1 of 4).
       - The overlay contains a step counter ("1 of 4"), a Skip tour link, and a Next button.
       - No spotlight cutout is shown for the welcome step — the entire screen is dimly covered.
-      - Tapping Next advances to step 2 ("Your planning hub"); a spotlight rectangle with rounded corners highlights the home content area with a visible cutout through the scrim.
+      - Tapping Next advances to step 2 ("Your planning hub"); a spotlight rectangle with rounded corners highlights the two home planning actions with a visible cutout through the scrim.
+      - The complete tooltip card and its Previous / Next actions remain visible on every step, including compact portrait screens.
       - Tapping Next again advances to step 3 ("Plan the week"); the spotlight moves to highlight the meal plan bottom nav tab.
       - Tapping Next advances to step 4 ("Grocery list"); the spotlight highlights the grocery bottom nav tab; the Next button label changes to "Done".
       - Tapping Done dismisses the overlay with a fade-out animation.
