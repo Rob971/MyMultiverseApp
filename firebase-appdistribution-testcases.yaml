@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 99
+version: 100
 updated: 2026-07-26
 
 summary: |
@@ -329,6 +329,24 @@ testcases:
     expected:
       - Members screen opens from the main button tap.
       - Rename dialog opens only from the edit icon when permitted.
+
+  - id: household-member-crud-owner-admin
+    title: Owner and admin can invite, change role, and remove members
+    steps:
+      - Sign in as household owner; open Family members.
+      - Invite a new person by email (Invite → Invite by email) as Editor.
+      - Confirm the pending invite appears and can be shared.
+      - On an existing Editor row, tap the role badge → change role → confirm.
+      - On that row, open the ⋮ overflow menu → Remove.
+      - Sign in as a household admin on a second device; open Family members.
+      - Confirm Invite is available; invite another person as Viewer (not Admin).
+      - Change an Editor/Viewer role via the role badge and confirm it persists after refresh.
+      - Remove a non-owner member via the ⋮ overflow menu.
+    expected:
+      - Owner and admin both see Invite and can complete invite / role-change / remove flows.
+      - Removing a member soft-deletes them; they disappear from the list and stay gone after pull-to-refresh or reopen.
+      - Admin cannot promote anyone to Admin and cannot remove the Owner.
+      - Editors/viewers see the read-only hint and have no Invite / remove / role-change controls.
 
   - id: household-member-avatar
     title: Family member profile photo (owner / admin / editor)

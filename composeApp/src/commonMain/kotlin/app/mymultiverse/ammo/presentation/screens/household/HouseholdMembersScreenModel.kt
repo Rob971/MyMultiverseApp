@@ -748,6 +748,8 @@ class HouseholdMembersScreenModel(
                 HouseholdMembersError.MemberAlreadyExists
             CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INSUFFICIENT_ROLE, message) ->
                 HouseholdMembersError.InsufficientRole
+            CollaborationErrorCodes.messageContains(CollaborationErrorCodes.MEMBER_NOT_FOUND, message) ->
+                HouseholdMembersError.Generic
             CollaborationErrorCodes.messageContains(
                 CollaborationErrorCodes.INVITEE_HOUSEHOLD_ALREADY_ACTIVE,
                 message,

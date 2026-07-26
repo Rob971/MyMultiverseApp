@@ -111,7 +111,10 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
         return Result.success(AddMemberResult.InviteSent(inviteToken = invite.inviteToken.orEmpty()))
     }
 
+    var removeMemberFailure: Throwable? = null
+
     override suspend fun removeMember(memberId: String): Result<Unit> {
+        removeMemberFailure?.let { return Result.failure(it) }
         membersByHousehold.values.forEach { flow ->
             flow.update { members -> members.filterNot { it.id == memberId } }
         }

@@ -130,6 +130,80 @@ class HouseholdMembersAdminInstrumentedTest {
     }
 
     @Test
+    fun admin_canRemoveEditorThroughOverflowMenu() {
+        val collaborationRepository = InstrumentedHouseholdCollaborationRepository()
+        collaborationRepository.seedMembers(
+            householdId = householdId,
+            ownerId = ownerId,
+            ownerDisplayName = "Owner",
+            members = listOf(
+                HouseholdMember(
+                    id = editorMemberId,
+                    householdId = householdId,
+                    kind = HouseholdMemberKind.Person,
+                    displayName = "Editor User",
+                    role = HouseholdMemberRole.Editor,
+                    referenceId = "editor-user",
+                ),
+            ),
+        )
+        val screenModel = HouseholdMembersScreenModel(
+            collaborationRepository = collaborationRepository,
+            householdRepository = InstrumentedHouseholdRepository(role = HouseholdMemberRole.Admin),
+            sessionCoordinator = InstrumentedNutritionSessionCoordinator(
+                repository = InstrumentedNutritionRepository(weekKey = "2026-06-16"),
+            ),
+            logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext()),
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+        )
+        val authRepository = InstrumentedFakeAuthRepository(
+            initialState = AuthState.Authenticated(
+                AuthUser(id = "admin-user", email = "admin@example.com", displayName = "Admin"),
+            ),
+        )
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HouseholdMembersScreen(
+                        household = HouseholdContext(
+                            id = householdId,
+                            name = "Our Household",
+                            ownerId = ownerId,
+                            ownerDisplayName = "Owner",
+                            nutritionFeatures = setOf(NutritionSharingFeature.Grocery),
+                        ),
+                        onBack = {},
+                        screenModel = screenModel,
+                        authRepository = authRepository,
+                        personalDataExporter = noopPersonalDataExporter,
+                    )
+                }
+            }
+        }
+
+        composeRule.waitFor(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag("${HouseholdMembersTestTags.MEMBER_ROW}_$editorMemberId")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithTag("${HouseholdMembersTestTags.MEMBER_ROW_OVERFLOW}_$editorMemberId")
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithTag(HouseholdMembersTestTags.MEMBER_REMOVE_MENU).performClick()
+
+        composeRule.waitFor(timeoutMillis = 5_000) {
+            collaborationRepository.lastRemovedMemberId == editorMemberId
+        }
+
+        assertEquals(editorMemberId, collaborationRepository.lastRemovedMemberId)
+        assertTrue(
+            composeRule.onAllNodesWithTag("${HouseholdMembersTestTags.MEMBER_ROW}_$editorMemberId")
+                .fetchSemanticsNodes().isEmpty(),
+        )
+    }
+
+    @Test
     fun viewer_seesReadOnlyMembersListWithoutAddPerson() {
         val collaborationRepository = InstrumentedHouseholdCollaborationRepository()
         collaborationRepository.seedMembers(
