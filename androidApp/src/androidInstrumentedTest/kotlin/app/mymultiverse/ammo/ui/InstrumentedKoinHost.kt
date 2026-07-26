@@ -3,9 +3,12 @@ package app.mymultiverse.ammo.ui
 import androidx.compose.runtime.Composable
 import app.mymultiverse.ammo.domain.manager.AppThemePreference
 import app.mymultiverse.ammo.domain.manager.AppThemePreferences
+import app.mymultiverse.ammo.data.tour.ProductTourStore
 import app.mymultiverse.ammo.domain.manager.LanguageManager
 import app.mymultiverse.ammo.domain.manager.SupportedAppLanguages
 import app.mymultiverse.ammo.domain.manager.ThemeManager
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourScreenModel
+import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,6 +40,8 @@ private class InstrumentedThemeManager(
 internal val instrumentedKoinModule = module {
     single<LanguageManager> { InstrumentedLanguageManager() }
     single<ThemeManager> { InstrumentedThemeManager() }
+    // HomeWelcomeContent registers its product tour spotlight target via koinInject.
+    single { ProductTourScreenModel(ProductTourStore(MapSettings())) }
 }
 
 /** Minimal Koin graph for composables that use `koinInject` (e.g. [LanguagePicker] on home). */

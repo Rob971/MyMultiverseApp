@@ -327,7 +327,6 @@ fun HomeScreen(
                     embeddedInMainTabs = embeddedInMainTabs,
                     modifier = Modifier
                         .padding(padding)
-                        .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB)
                         .then(modifier),
                 )
             }
@@ -749,6 +748,8 @@ fun HomeWelcomeContent(
                                 nutritionSummary = nutritionSummary,
                                 onOpenMealPlan = onOpenMealPlan,
                                 onOpenGrocery = onOpenGrocery,
+                                modifier = Modifier
+                                    .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB),
                             )
                         }
                     }
@@ -767,6 +768,8 @@ fun HomeWelcomeContent(
                         nutritionSummary = nutritionSummary,
                         onOpenMealPlan = onOpenMealPlan,
                         onOpenGrocery = onOpenGrocery,
+                        modifier = Modifier
+                            .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB),
                     )
                 }
             }
