@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 99
+version: 100
 updated: 2026-07-26
 
 summary: |
@@ -41,6 +41,7 @@ summary: |
   AI key on-demand (v90): Removed proactive "add your key" banner from Plan tab; Gemini API key is only requested when the user actively triggers an AI feature and no key is configured; inline key-entry form shown directly in the AI sheet error state so the user can save the key and retry without leaving the sheet.
   Consistent key-request for Add to grocery list (v91): Tapping "Add to grocery list" on a meal slot with no key configured now opens the AI sheet showing the inline key-entry form instead of directing the user to Account settings via a snackbar; the flow is now consistent with the AI sheet Generate button.
   Product tour (v93/v99): first-time users see a 4-step spotlight walkthrough — welcome modal, daily meal plan header (title + Today/This week tabs), meal plan tab, grocery tab. Persisted with stable tour id spotlight_v1 (not alpha/beta version stamps) so a new user completes all 4 steps successfully only once; dismissed after Done or Skip. v95/v98/v99: Next/Avanti keeps overlay; taps outside tooltip and bottom-tab switches are blocked while the tour is active.
+  Family member CRUD (v100): owners/admins can refresh pending invites and remove non-owner people or dependants; owner rows remain protected and invitees can decline only invitations matching their signed-in email.
   App Links hosting (v47): deploy via Rob971/mymultiverse-website; verify with scripts/verify-hosting.sh after DNS is live.
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
@@ -311,6 +312,22 @@ testcases:
       - Admin can invite members and change any non-owner role except promoting to admin.
       - Admin cannot transfer ownership or dissolve.
       - Role updated snackbar appears after save; the member row badge updates immediately (no pull-to-refresh needed).
+
+  - id: household-manager-member-crud
+    title: Owner and admin manage family members safely
+    steps:
+      - As the owner, invite an editor and confirm the pending invite remains visible after refreshing Family members.
+      - Accept the invite with the matching account, then promote that member to admin.
+      - Add a dependant, remove the dependant as owner, and confirm it stays removed after refresh.
+      - Sign in as admin, invite another editor, then remove that non-owner member.
+      - Attempt to manage the owner row as admin, and decline the pending invite from an account with a different email.
+      - Sign in with the invited email, decline the invite, and refresh both accounts.
+    expected:
+      - Owner and admin can see pending outbound invitations and remove non-owner people.
+      - Owner and admin can remove dependants; removed rows do not return after refresh.
+      - The owner cannot be removed or have their role changed by an admin.
+      - A mismatched account cannot see or decline another person's invitation.
+      - The matching invitee can decline; the invite disappears for both invitee and managers.
 
   - id: nutrition-household-bootstrap
     title: Open nutrition after household is active

@@ -88,27 +88,20 @@ set search_path = ''
 as $$
 declare
     v_user_id uuid := (select auth.uid());
-    v_profile_email text;
+    v_verified_email text := lower(trim(coalesce(auth.jwt() ->> 'email', '')));
 begin
     if v_user_id is null then
         raise exception 'auth_required';
     end if;
 
-    perform public.ensure_current_profile();
-
-    select lower(trim(coalesce(p.email, auth.jwt() ->> 'email', '')))
-    into v_profile_email
-    from public.profiles p
-    where p.id = v_user_id;
-
-    if v_profile_email is null or char_length(v_profile_email) = 0 then
+    if char_length(v_verified_email) = 0 then
         raise exception 'profile_email_required';
     end if;
 
     perform 1
     from public.household_invites i
     where i.id = p_invite_id
-      and lower(trim(i.email)) = v_profile_email
+      and lower(trim(i.email)) = v_verified_email
       and i.accepted_at is null
       and i.declined_at is null
     for update;
@@ -142,11 +135,6 @@ create policy household_invites_select
     using (
         public.is_household_manager(household_id)
         or lower(trim(email)) = lower(trim(coalesce(
-            (
-                select p.email
-                from public.profiles p
-                where p.id = (select auth.uid())
-            ),
             (select auth.jwt() ->> 'email'),
             ''
         )))

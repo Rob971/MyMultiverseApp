@@ -257,6 +257,12 @@ values
         '10000000-0000-0000-0000-000000000001'
     );
 
+-- Profile email is client-writable metadata. Invite authorization must use the
+-- verified JWT email claim rather than trusting this spoofable column.
+update public.profiles
+set email = 'other@example.test'
+where id = '10000000-0000-0000-0000-000000000005';
+
 select set_config(
     'request.jwt.claims',
     '{"sub":"10000000-0000-0000-0000-000000000001","email":"owner@example.test","role":"authenticated"}',
@@ -375,7 +381,10 @@ do $$
 declare
     v_mismatch_rejected boolean := false;
 begin
-    if (select count(*) from public.household_invites) <> 1 then
+    if (
+        select array_agg(id order by id)
+        from public.household_invites
+    ) <> array['50000000-0000-0000-0000-000000000001'::uuid] then
         raise exception 'invitee can read an invite for another email';
     end if;
 
