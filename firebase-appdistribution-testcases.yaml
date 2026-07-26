@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 94
-updated: 2026-07-25
+version: 95
+updated: 2026-07-26
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -40,7 +40,7 @@ summary: |
   Full Gemini AI integration (v89): All AI features (advice, grocery list, meal plan) now call Gemini 2.0 Flash Lite; key-missing state shows polite error in AI sheet; async cancellation prevents stuck spinners when a new request supersedes the previous one.
   AI key on-demand (v90): Removed proactive "add your key" banner from Plan tab; Gemini API key is only requested when the user actively triggers an AI feature and no key is configured; inline key-entry form shown directly in the AI sheet error state so the user can save the key and retry without leaving the sheet.
   Consistent key-request for Add to grocery list (v91): Tapping "Add to grocery list" on a meal slot with no key configured now opens the AI sheet showing the inline key-entry form instead of directing the user to Account settings via a snackbar; the flow is now consistent with the AI sheet Generate button.
-  Product tour (v93): first-time users see a 4-step spotlight walkthrough — welcome modal, home hub, meal plan tab, grocery tab; the tour shows once per app version and is permanently dismissed after completion or skip.
+  Product tour (v93/v95): first-time users see a 4-step spotlight walkthrough — welcome modal, home hub hero CTAs, meal plan tab, grocery tab; the tour shows once per app version and is permanently dismissed after completion or skip. v95 keeps the step-2 tooltip on-screen (spotlight targets the circular Plan/Grocery actions, not the full welcome scroll).
   App Links hosting (v47): deploy via Rob971/mymultiverse-website; verify with scripts/verify-hosting.sh after DNS is live.
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).

@@ -14,6 +14,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,7 +46,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
@@ -65,7 +65,7 @@ import org.koin.compose.koinInject
 private val ScrimColor = Color.Black.copy(alpha = 0.72f)
 private val SpotlightPadding = 10.dp
 private val SpotlightCornerRadius = 14.dp
-private const val TooltipMinTopPx = 80f
+private val TooltipCardGap = 16.dp
 
 /**
  * Full-screen product tour overlay with a spotlight cutout and animated tooltip card.
@@ -74,7 +74,7 @@ private const val TooltipMinTopPx = 80f
  * above all content. The overlay shows/hides itself based on [ProductTourUiState].
  *
  * The spotlight highlights the root-relative bounding rect registered via
- * [Modifier.productTourTarget] for the current step's [ProductTourStep.targetTag]. When a step
+ * [modifier.productTourTarget] for the current step's [ProductTourStep.targetTag]. When a step
  * has no target tag, the overlay shows a centred modal card over a plain dim background.
  */
 @Composable
@@ -176,10 +176,26 @@ private fun TourTooltipCard(
     tooltipHeightEstimate: Dp = 260.dp,
 ) {
     val density = LocalDensity.current
-    val cardAlignment = if (spotlightRect == null) Alignment.Center else Alignment.TopStart
-    val topOffsetDp = tooltipTopOffsetDp(spotlightRect, density, tooltipHeightEstimate)
+    // BoxWithConstraints supplies overlay height so placement can clamp the card on-screen
+    // when the spotlight target is large (previously pushed the tooltip below the viewport).
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val cardAlignment = if (spotlightRect == null) Alignment.Center else Alignment.TopStart
+        val topOffsetDp = if (spotlightRect == null) {
+            0.dp
+        } else {
+            val tooltipHeightPx = with(density) { tooltipHeightEstimate.toPx() }
+            val cardGapPx = with(density) { TooltipCardGap.toPx() }
+            val screenHeightPx = with(density) { maxHeight.toPx() }
+            with(density) {
+                TourTooltipPlacement.tooltipTopPx(
+                    spotlightRect = spotlightRect,
+                    tooltipHeightPx = tooltipHeightPx,
+                    cardGapPx = cardGapPx,
+                    screenHeightPx = screenHeightPx,
+                ).toDp()
+            }
+        }
 
-    Box(modifier = Modifier.fillMaxSize()) {
         Card(
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
@@ -244,7 +260,7 @@ private fun TourTooltipCard(
                     modifier = Modifier.testTag(ProductTourTestTags.STEP_DESCRIPTION),
                 )
 
-                Spacer(Modifier.height(4.dp))
+                Spacer(modifier.height(4.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -261,7 +277,7 @@ private fun TourTooltipCard(
                             Text(stringResource(Res.string.tour_action_previous))
                         }
                     } else {
-                        Spacer(Modifier.weight(1f))
+                        Spacer(modifier.weight(1f))
                     }
 
                     JourneyPrimaryButton(
@@ -284,30 +300,6 @@ private fun TourTooltipCard(
     }
 }
 
-/**
- * Returns the top padding so the card appears:
- * - **above** the spotlight when there is enough room (spotlight in the lower portion of screen)
- * - **below** the spotlight otherwise (spotlight near the top)
- *
- * Returns 0.dp when [spotlightRect] is null (tooltip is centred via [Alignment.Center]).
- */
-@Composable
-private fun tooltipTopOffsetDp(
-    spotlightRect: Rect?,
-    density: Density,
-    tooltipHeightEstimate: Dp,
-): Dp {
-    if (spotlightRect == null) return 0.dp
-    val tooltipHeightPx = with(density) { tooltipHeightEstimate.toPx() }
-    val cardGapPx = with(density) { 16.dp.toPx() }
-
-    return with(density) {
-        val aboveTop = spotlightRect.top - tooltipHeightPx - cardGapPx
-        val belowBottom = spotlightRect.bottom + cardGapPx
-        if (aboveTop > TooltipMinTopPx) aboveTop.toDp() else belowBottom.toDp()
-    }
-}
-
 // ─── Target registration ────────────────────────────────────────────────────
 
 /**
@@ -318,7 +310,7 @@ private fun tooltipTopOffsetDp(
  *
  * Example:
  * ```kotlin
- * HomeHubCard(
+ * HomeDailyHubCircularActions(
  *     modifier = Modifier.productTourTarget(ProductTourTestTags.TARGET_HOME_HUB)
  * )
  * ```

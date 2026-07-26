@@ -327,7 +327,6 @@ fun HomeScreen(
                     embeddedInMainTabs = embeddedInMainTabs,
                     modifier = Modifier
                         .padding(padding)
-                        .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB)
                         .then(modifier),
                 )
             }
@@ -736,9 +735,14 @@ fun HomeWelcomeContent(
                             modifier = Modifier.weight(1f),
                             verticalArrangement = Arrangement.spacedBy(24.dp),
                         ) {
+                            // Spotlight the hero CTAs (not the full-screen welcome scroll)
+                            // so the tour tooltip stays on-screen after step 1 → 2.
                             HomeDailyHubCircularActions(
                                 onOpenMealPlan = onOpenMealPlan,
                                 onOpenGrocery = onOpenGrocery,
+                                modifier = Modifier.productTourTarget(
+                                    ProductTourTestTags.TARGET_HOME_HUB,
+                                ),
                             )
                         }
                         Column(
@@ -759,9 +763,14 @@ fun HomeWelcomeContent(
                     verticalArrangement = Arrangement.spacedBy(24.dp),
                 ) {
                     greetingBlock()
+                    // Spotlight the hero CTAs (not the full-screen welcome scroll)
+                    // so the tour tooltip stays on-screen after step 1 → 2.
                     HomeDailyHubCircularActions(
                         onOpenMealPlan = onOpenMealPlan,
                         onOpenGrocery = onOpenGrocery,
+                        modifier = Modifier.productTourTarget(
+                            ProductTourTestTags.TARGET_HOME_HUB,
+                        ),
                     )
                     HomeDailyMealPlanBlock(
                         nutritionSummary = nutritionSummary,

@@ -279,8 +279,8 @@ private fun AuthenticatedMainApp() {
         )
     }
 
-    // Wait for HomePhase.Welcome so the home hub spotlight rect is registered by
-    // HomeWelcomeContent before the tour advances to step 2 (home_hub target).
+    // Wait for HomePhase.Welcome so the home-hub hero CTAs register their spotlight
+    // rect (TARGET_HOME_HUB on HomeDailyHubCircularActions) before step 2.
     LaunchedEffect(homePhase) {
         if (homePhase is HomePhase.Welcome) {
             tourScreenModel.maybeShowTour(
