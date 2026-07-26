@@ -189,6 +189,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.compose.ui.test.manifest)
+    androidTestImplementation(libs.javax.inject)
     androidTestImplementation(libs.koin.compose)
     // composeApp declares these as `implementation` in commonMain, so they are not exposed
     // transitively to androidApp's compile classpath — required by the androidInstrumentedTest
