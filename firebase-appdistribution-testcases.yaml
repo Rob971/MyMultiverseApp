@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 97
+version: 98
 updated: 2026-07-26
 
 summary: |
@@ -62,7 +62,7 @@ summary: |
   Item-added pushes (v80): partners receive a localized push (device app language) when a member adds a grocery item or fills a meal-plan slot; tap opens the matching tab.
   Food emoji thumbnails (v82): recognised grocery items show a food emoji tile between the checkbox and label; recognised meal-plan dishes show an emoji tile above the text field and in collapsed day-card summaries.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
-  Family members role change (v71): Change role button and tappable badge on member rows; role updates show immediately after save.
+  Family members role change (v71/v98): Tappable role badge on member rows (standalone text button removed); role updates show immediately after save.
   Family member photos (v76): each member row shows a circular avatar beside the name; tap your own avatar (or a dependant's if you manage members) to pick a photo from the gallery.
   Settings family photo (v96): when a family photo exists, the account sheet Family row shows the photo beside the name; tap the photo for a closeable fullscreen viewer; tap elsewhere on the row still opens Family members.
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
@@ -303,11 +303,11 @@ testcases:
     title: Owner promotes member to household admin
     steps:
       - Sign in as owner; open Household members.
-      - On an editor member row, tap Change role (or the role badge) → Family admin → confirm promotion.
+      - On an editor member row, tap the role badge → Family admin → confirm promotion.
       - Observe role badges on member rows (owner terracotta, admin teal, editor teal container, viewer muted).
-      - Sign in as the promoted admin on another device or account; demote another admin to viewer via Change role.
+      - Sign in as the promoted admin on another device or account; demote another admin to viewer by tapping their role badge.
     expected:
-      - Member rows show name and a role chip (Owner terracotta, others muted); Change role is visible on editable rows (not buried in overflow).
+      - Member rows show name and a tappable role chip (Owner terracotta, others muted); tapping the badge opens the role change dialog.
       - Admin can invite members and change any non-owner role except promoting to admin.
       - Admin cannot transfer ownership or dissolve.
       - Role updated snackbar appears after save; the member row badge updates immediately (no pull-to-refresh needed).
@@ -335,7 +335,7 @@ testcases:
     steps:
       - Sign in as the household owner and open Family members from Home (profile icon → family row).
       - Verify each member row shows a circular avatar left of the name (initials when no photo).
-      - Tap your own avatar and pick a photo from the gallery.
+      - Tap your own avatar and pick a photo from the gallery (including HEIC photos from modern camera apps).
       - Confirm a "Photo updated successfully" snackbar appears after upload.
       - Verify the photo appears on your row immediately; other family members see it after refresh.
       - Add a dependant (invite chooser → Add child / dependant), then tap the dependant's avatar and pick a photo.

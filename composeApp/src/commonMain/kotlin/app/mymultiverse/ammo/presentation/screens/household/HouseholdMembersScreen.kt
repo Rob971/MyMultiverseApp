@@ -172,7 +172,9 @@ object HouseholdMembersTestTags {
     const val PENDING_INVITE_SHARE = "household_members_pending_invite_share"
     const val MEMBER_ROW_OVERFLOW = "household_members_row_overflow"
     const val MEMBER_CHANGE_ROLE_MENU = "household_members_change_role_menu"
-    const val MEMBER_CHANGE_ROLE_BUTTON = "household_members_change_role_button"
+    /** @deprecated The standalone text button was removed; use [MEMBER_CHANGE_ROLE_BADGE] to tap the badge. */
+    @Deprecated("Use MEMBER_CHANGE_ROLE_BADGE", ReplaceWith("MEMBER_CHANGE_ROLE_BADGE"))
+    const val MEMBER_CHANGE_ROLE_BUTTON = "household_members_change_role_badge"
     const val MEMBER_CHANGE_ROLE_BADGE = "household_members_change_role_badge"
     const val MEMBER_REMOVE_MENU = "household_members_remove_menu"
     const val HOUSEHOLD_ACTIONS_OVERFLOW = "household_members_household_actions_overflow"
@@ -959,31 +961,17 @@ private fun MemberRow(
                     fontWeight = FontWeight.SemiBold,
                     color = JourneySemanticColors.inkDeep(),
                 )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    HouseholdRoleBadge(
-                        role = member.role,
-                        kind = member.kind,
-                        onClick = if (canChangeRole) onChangeRole else null,
-                        clickLabel = if (canChangeRole) changeRoleLabel else null,
-                        modifier = if (canChangeRole) {
-                            Modifier.testTag("${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BADGE}_${member.id}")
-                        } else {
-                            Modifier
-                        },
-                    )
-                    if (canChangeRole) {
-                        JourneyTertiaryButton(
-                            onClick = onChangeRole,
-                            label = changeRoleLabel,
-                            modifier = Modifier.testTag(
-                                "${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BUTTON}_${member.id}",
-                            ),
-                        )
-                    }
-                }
+                HouseholdRoleBadge(
+                    role = member.role,
+                    kind = member.kind,
+                    onClick = if (canChangeRole) onChangeRole else null,
+                    clickLabel = if (canChangeRole) changeRoleLabel else null,
+                    modifier = if (canChangeRole) {
+                        Modifier.testTag("${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BADGE}_${member.id}")
+                    } else {
+                        Modifier
+                    },
+                )
             }
             if (showOverflow) {
                 JourneyIconButton(
