@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.ammo.domain.model.Greeting
 import app.mymultiverse.ammo.presentation.components.HomeHouseholdButtonTestTags
+import app.mymultiverse.ammo.presentation.components.MemberAvatarFullscreenTestTags
 import app.mymultiverse.ammo.presentation.screens.home.HomeAccountSheet
 import app.mymultiverse.ammo.presentation.screens.home.HomeAccountSheetTestTags
 import app.mymultiverse.ammo.presentation.screens.home.HomeOnboardingContent
@@ -215,6 +216,66 @@ class HomeHouseholdUxInstrumentedTest {
         composeRule.onNodeWithTag(HomeAccountSheetTestTags.FAMILY_HUB).assertIsDisplayed()
         assertTrue(
             composeRule.onAllNodesWithTag(HomeHouseholdButtonTestTags.EDIT)
+                .fetchSemanticsNodes().isEmpty(),
+        )
+    }
+
+    @Test
+    fun accountSheet_withoutHouseholdAvatar_hidesAvatarThumbnail() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeAccountSheet(
+                        visible = true,
+                        householdName = "Our Household",
+                        householdAvatarUrl = null,
+                        canRenameHousehold = true,
+                        onDismiss = {},
+                        onOpenHouseholdMembers = {},
+                        onRenameHousehold = {},
+                        onSignOut = {},
+                        onExportPersonalData = {},
+                        onDeleteAccount = {},
+                        onCheckForUpdates = {},
+                    )
+                }
+            }
+        }
+
+        assertTrue(
+            composeRule.onAllNodesWithTag(HomeHouseholdButtonTestTags.AVATAR)
+                .fetchSemanticsNodes().isEmpty(),
+        )
+    }
+
+    @Test
+    fun accountSheet_withHouseholdAvatar_showsAvatarAndOpensFullscreen() {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    HomeAccountSheet(
+                        visible = true,
+                        householdName = "Our Household",
+                        householdAvatarUrl = "https://example.com/household.jpg",
+                        canRenameHousehold = true,
+                        onDismiss = {},
+                        onOpenHouseholdMembers = {},
+                        onRenameHousehold = {},
+                        onSignOut = {},
+                        onExportPersonalData = {},
+                        onDeleteAccount = {},
+                        onCheckForUpdates = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(HomeHouseholdButtonTestTags.AVATAR).assertIsDisplayed()
+        composeRule.onNodeWithTag(HomeHouseholdButtonTestTags.AVATAR).performClick()
+        composeRule.onNodeWithTag(MemberAvatarFullscreenTestTags.DIALOG).assertIsDisplayed()
+        composeRule.onNodeWithTag(MemberAvatarFullscreenTestTags.CLOSE).performClick()
+        assertTrue(
+            composeRule.onAllNodesWithTag(MemberAvatarFullscreenTestTags.DIALOG)
                 .fetchSemanticsNodes().isEmpty(),
         )
     }
