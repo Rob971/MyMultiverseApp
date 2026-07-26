@@ -38,8 +38,7 @@ begin
         raise exception 'cannot_remove_owner';
     end if;
 
-    update public.household_members
-    set left_at = now()
+    delete from public.household_members
     where id = p_member_id
       and left_at is null;
 end;

@@ -413,18 +413,15 @@ reset role;
 
 do $$
 begin
-    if not exists (
+    if exists (
         select 1
         from public.household_members
         where id in (
             '30000000-0000-0000-0000-000000000003',
             '30000000-0000-0000-0000-000000000004'
         )
-          and left_at is not null
-        group by household_id
-        having count(*) = 2
     ) then
-        raise exception 'manager member removal did not soft-delete both targets';
+        raise exception 'manager member removal did not delete both targets';
     end if;
 
     if not exists (
@@ -435,6 +432,23 @@ begin
           and role = 'owner'
     ) then
         raise exception 'owner member row changed';
+    end if;
+
+    insert into public.household_members (household_id, user_id, role)
+    values (
+        '20000000-0000-0000-0000-000000000001',
+        '10000000-0000-0000-0000-000000000003',
+        'editor'
+    );
+
+    if not exists (
+        select 1
+        from public.household_members
+        where household_id = '20000000-0000-0000-0000-000000000001'
+          and user_id = '10000000-0000-0000-0000-000000000003'
+          and left_at is null
+    ) then
+        raise exception 'removed member cannot rejoin the household';
     end if;
 
     if not exists (
