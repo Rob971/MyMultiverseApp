@@ -260,10 +260,10 @@ class SupabaseHouseholdCollaborationRepository(
     override suspend fun removeMember(memberId: String): Result<Unit> = runCatching {
         require(!memberId.startsWith(OWNER_MEMBER_PREFIX)) { "cannot_remove_owner" }
 
-        client.postgrest["household_members"]
-            .delete {
-                filter { eq("id", memberId) }
-            }
+        client.postgrest.rpc(
+            "remove_household_member",
+            buildJsonObject { put("p_member_id", memberId) },
+        )
         membersByHousehold.values.forEach { flow ->
             flow.update { members -> members.filterNot { it.id == memberId } }
         }
