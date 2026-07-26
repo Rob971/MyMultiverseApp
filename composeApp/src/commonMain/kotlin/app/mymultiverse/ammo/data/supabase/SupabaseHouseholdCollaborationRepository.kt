@@ -14,7 +14,6 @@ import app.mymultiverse.ammo.domain.auth.resolvedDisplayName
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdInviteInsertRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdInvitePendingUpdateRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdInviteRow
-import app.mymultiverse.ammo.data.supabase.dto.HouseholdInviteUpdateRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdMemberInsertRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdMemberRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdRow
@@ -43,7 +42,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.datetime.Clock
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -260,10 +258,10 @@ class SupabaseHouseholdCollaborationRepository(
     override suspend fun removeMember(memberId: String): Result<Unit> = runCatching {
         require(!memberId.startsWith(OWNER_MEMBER_PREFIX)) { "cannot_remove_owner" }
 
-        client.postgrest["household_members"]
-            .delete {
-                filter { eq("id", memberId) }
-            }
+        client.postgrest.rpc(
+            "remove_household_member",
+            buildJsonObject { put("p_member_id", memberId) },
+        )
         membersByHousehold.values.forEach { flow ->
             flow.update { members -> members.filterNot { it.id == memberId } }
         }
@@ -298,14 +296,10 @@ class SupabaseHouseholdCollaborationRepository(
     }
 
     override suspend fun declineInvite(inviteId: String): Result<Unit> = runCatching {
-        client.postgrest["household_invites"]
-            .update(
-                HouseholdInviteUpdateRow(
-                    declinedAt = Clock.System.now().toString(),
-                ),
-            ) {
-                filter { eq("id", inviteId) }
-            }
+        client.postgrest.rpc(
+            "decline_household_invite",
+            buildJsonObject { put("p_invite_id", inviteId) },
+        )
         refreshPendingInvites()
     }
 

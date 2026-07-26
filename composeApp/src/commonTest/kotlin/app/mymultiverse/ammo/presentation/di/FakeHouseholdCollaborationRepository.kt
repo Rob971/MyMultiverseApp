@@ -20,6 +20,8 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
     var inboundProfileEmail: String = "invitee@example.com"
     var addMemberFailure: Throwable? = null
     var addDependantFailure: Throwable? = null
+    var removeMemberFailure: Throwable? = null
+    var removeDependantFailure: Throwable? = null
     var emailsAlreadyInAnotherHousehold: Set<String> = emptySet()
     var refreshMembersCalls: Int = 0
         private set
@@ -112,6 +114,7 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
     }
 
     override suspend fun removeMember(memberId: String): Result<Unit> {
+        removeMemberFailure?.let { return Result.failure(it) }
         membersByHousehold.values.forEach { flow ->
             flow.update { members -> members.filterNot { it.id == memberId } }
         }
@@ -180,7 +183,10 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
         return Result.success(Unit)
     }
 
-    override suspend fun removeDependant(dependantId: String): Result<Unit> = removeMember(dependantId)
+    override suspend fun removeDependant(dependantId: String): Result<Unit> {
+        removeDependantFailure?.let { return Result.failure(it) }
+        return removeMember(dependantId)
+    }
 
     var nudgePartnersResult: Result<Unit> = Result.success(Unit)
     var nudgeMealPlanPartnersResult: Result<Unit> = Result.success(Unit)
