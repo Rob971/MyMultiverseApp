@@ -20,6 +20,7 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
     var inboundProfileEmail: String = "invitee@example.com"
     var addMemberFailure: Throwable? = null
     var addDependantFailure: Throwable? = null
+    var refreshMembersFailure: Throwable? = null
     var emailsAlreadyInAnotherHousehold: Set<String> = emptySet()
     var refreshMembersCalls: Int = 0
         private set
@@ -47,6 +48,7 @@ class FakeHouseholdCollaborationRepository : HouseholdCollaborationRepository {
 
     override suspend fun refreshMembers(householdId: String, ownerId: String, ownerDisplayName: String) {
         refreshMembersCalls++
+        refreshMembersFailure?.let { throw it }
         val current = membersFlow(householdId).value.filterNot { it.id.startsWith("owner-") }
         membersFlow(householdId).value = listOf(
             HouseholdMember(

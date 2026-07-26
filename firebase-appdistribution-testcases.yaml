@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 99
+version: 100
 updated: 2026-07-26
 
 summary: |
@@ -61,6 +61,7 @@ summary: |
   Partner nudges (v77): grocery and meal plan tabs show prominent reminder cards (teal on Groceries, terracotta on Plan) plus toolbar bell for multi-member households on the current week.
   Item-added pushes (v80): partners receive a localized push (device app language) when a member adds a grocery item or fills a meal-plan slot; tap opens the matching tab.
   Food emoji thumbnails (v82): recognised grocery items show a food emoji tile between the checkbox and label; recognised meal-plan dishes show an emoji tile above the text field and in collapsed day-card summaries.
+  Family member CRUD authorization (v100): owners/admins can add or remove dependants and remove non-owner people; editors/viewers cannot manage members.
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Family members role change (v71): Change role button and tappable badge on member rows; role updates show immediately after save.
   Family member photos (v76): each member row shows a circular avatar beside the name; tap your own avatar (or a dependant's if you manage members) to pick a photo from the gallery.
@@ -361,7 +362,7 @@ testcases:
       - Tap the avatar or the "Change family photo" button below it.
       - Pick a photo from the gallery.
     expected:
-      - "Photo updated successfully" snackbar appears.
+      - The "Photo updated successfully" snackbar appears.
       - The family photo is shown at the top of the Family members screen immediately.
       - After closing the screen and reopening (or restarting the app), the same family photo persists.
       - An editor or viewer does not see the "Change family photo" button and cannot tap the family photo.
@@ -407,14 +408,29 @@ testcases:
       - Household owner with other members sees an error to transfer ownership or dissolve first.
 
   - id: household-add-dependant
-    title: Add household dependant (no login)
+    title: Add and remove household dependant (no login)
     steps:
-      - Sign in as household owner or editor.
+      - Sign in as household owner or admin.
       - Open Household members → Add dependant → enter display name → confirm.
+      - Remove the new dependant, leave Household members, then reopen it.
+      - Repeat as the other manager role; then open the same screen as an editor or viewer.
     expected:
       - Dependant appears on the members list with a dependant badge.
-      - Dependant has no email/login; owner/editor can remove them.
+      - Owner and admin removals persist after reopening the screen.
+      - Editors and viewers cannot add or remove dependants.
       - Dependant counts toward the 20-member household cap.
+
+  - id: household-remove-person-authorization
+    title: Remove a person as owner or admin
+    steps:
+      - Use a household with owner, admin, editor, and viewer accounts.
+      - As owner, remove the viewer; leave Household members and reopen it.
+      - As admin, remove the editor; leave Household members and reopen it.
+      - As an editor, confirm no member removal action is available.
+    expected:
+      - Owner and admin removals persist after reopening the screen.
+      - The owner cannot be removed.
+      - Editors and viewers cannot remove people.
 
   - id: household-invite-notification
     title: Invite email / push notification (manual)
@@ -912,7 +928,7 @@ testcases:
       - Open Account settings (profile avatar → globe/account button).
       - Scroll to the "AI Ingredients" section.
     expected:
-      - "AI Ingredients" section header is visible below Language.
+      - The "AI Ingredients" section header is visible below Language.
       - Descriptive text explains that the key enables all AI features (dish ingredients, meal plan, advice, grocery list).
       - A tappable link "Get a free key at aistudio.google.com/app/apikey" is shown.
       - A password-masked text field with a show/hide toggle is available.

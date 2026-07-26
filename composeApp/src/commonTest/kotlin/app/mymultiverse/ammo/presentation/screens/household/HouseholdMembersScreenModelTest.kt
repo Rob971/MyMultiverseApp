@@ -418,6 +418,24 @@ class HouseholdMembersScreenModelTest {
     }
 
     @Test
+    fun removeMember_whenRefreshFails_clearsSavingAndReportsError() = runTest(testDispatcher) {
+        model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
+        model.openAddDependantDialog()
+        model.onDependantNameChange("Mia")
+        model.submitAddDependant("household-1")
+        advanceUntilIdle()
+
+        val dependant = model.uiState.value.members.single { it.kind == HouseholdMemberKind.Dependant }
+        repository.refreshMembersFailure = IllegalStateException("refresh_failed")
+        model.removeMember(dependant, "household-1")
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.isSaving)
+        assertEquals(HouseholdMembersError.Generic, model.uiState.value.error)
+        assertFalse(model.uiState.value.members.any { it.id == dependant.id })
+    }
+
+    @Test
     fun uploadHouseholdAvatar_setsLoadingThenShowsSuccessSnackbar() = runTest(testDispatcher) {
         model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
         advanceUntilIdle()

@@ -427,13 +427,22 @@ class HouseholdMembersScreenModel(
                 HouseholdMemberKind.Dependant -> collaborationRepository.removeDependant(member.id)
                 else -> collaborationRepository.removeMember(member.id)
             }
-            if (result.isSuccess) {
-                collaborationRepository.refreshMembers(householdId, activeOwnerId, activeOwnerDisplayName)
-            }
+            val completedResult = result.fold(
+                onSuccess = {
+                    runCatching {
+                        collaborationRepository.refreshMembers(
+                            householdId,
+                            activeOwnerId,
+                            activeOwnerDisplayName,
+                        )
+                    }
+                },
+                onFailure = { Result.failure(it) },
+            )
             _uiState.update { state ->
                 state.copy(
                     isSaving = false,
-                    error = result.exceptionOrNull()?.let { mapFailure(it) },
+                    error = completedResult.exceptionOrNull()?.let { mapFailure(it) },
                 )
             }
         }
