@@ -51,20 +51,10 @@ import app.mymultiverse.ammo.presentation.screens.invite.InviteEmailMismatchScre
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import app.mymultiverse.ammo.presentation.screens.nutrition.NutritionFlow
 import app.mymultiverse.ammo.presentation.screens.tour.ProductTourScreenModel
-import app.mymultiverse.ammo.presentation.screens.tour.ProductTourStep
-import app.mymultiverse.ammo.presentation.screens.tour.ProductTourTestTags
 import app.mymultiverse.ammo.presentation.screens.tour.SpotlightTourOverlay
+import app.mymultiverse.ammo.presentation.screens.tour.defaultProductTourSteps
 import app.mymultiverse.ammo.presentation.theme.AppTheme
 import app.mymultiverse.ammo.presentation.theme.ProvideAppDarkTheme
-import ammo.composeapp.generated.resources.Res
-import ammo.composeapp.generated.resources.tour_step_grocery_body
-import ammo.composeapp.generated.resources.tour_step_grocery_title
-import ammo.composeapp.generated.resources.tour_step_home_body
-import ammo.composeapp.generated.resources.tour_step_home_title
-import ammo.composeapp.generated.resources.tour_step_meal_plan_body
-import ammo.composeapp.generated.resources.tour_step_meal_plan_title
-import ammo.composeapp.generated.resources.tour_step_welcome_body
-import ammo.composeapp.generated.resources.tour_step_welcome_title
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -250,34 +240,7 @@ private fun AuthenticatedMainApp() {
     var nutritionHousehold by remember { mutableStateOf<HouseholdContext?>(null) }
 
     val tourScreenModel = koinInject<ProductTourScreenModel>()
-    val tourSteps = remember {
-        listOf(
-            ProductTourStep(
-                id = "welcome",
-                title = Res.string.tour_step_welcome_title,
-                description = Res.string.tour_step_welcome_body,
-                targetTag = null,
-            ),
-            ProductTourStep(
-                id = "home_hub",
-                title = Res.string.tour_step_home_title,
-                description = Res.string.tour_step_home_body,
-                targetTag = ProductTourTestTags.TARGET_HOME_HUB,
-            ),
-            ProductTourStep(
-                id = "meal_plan_tab",
-                title = Res.string.tour_step_meal_plan_title,
-                description = Res.string.tour_step_meal_plan_body,
-                targetTag = ProductTourTestTags.TARGET_MEAL_PLAN_TAB,
-            ),
-            ProductTourStep(
-                id = "grocery_tab",
-                title = Res.string.tour_step_grocery_title,
-                description = Res.string.tour_step_grocery_body,
-                targetTag = ProductTourTestTags.TARGET_GROCERY_TAB,
-            ),
-        )
-    }
+    val tourSteps = remember { defaultProductTourSteps() }
 
     // Wait for HomePhase.Welcome so the home hub spotlight rect is registered by
     // HomeWelcomeContent before the tour advances to step 2 (home_hub target).
