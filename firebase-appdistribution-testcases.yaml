@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 95
+version: 96
 updated: 2026-07-26
 
 summary: |
@@ -64,6 +64,7 @@ summary: |
   Family members invite (v53): single Invite button opens chooser (email invite vs dependant); Admin/Editor/Viewer role badges and descriptions are visually distinct.
   Family members role change (v71): Change role button and tappable badge on member rows; role updates show immediately after save.
   Family member photos (v76): each member row shows a circular avatar beside the name; tap your own avatar (or a dependant's if you manage members) to pick a photo from the gallery.
+  Settings family photo (v96): when a family photo exists, the account sheet Family row shows the photo beside the name; tap the photo for a closeable fullscreen viewer; tap elsewhere on the row still opens Family members.
   Pantry check E4-10 (v50): meal→grocery splits staples into terracotta Check if you have these section (tap to mark have at home); shopping items stay in Suggested items; adopt-all skips pantry by default.
   Contextual AI chips E4-11 (v52): Plan empty state and AI helper sheet prepend Use up {ingredient} chips from unchecked grocery + meal history (fallback to protein/budget/veggies when no signals).
   Grocery simplification (v54): Groceries tab focuses on Update list (week selector → list CRUD); removed build-from-meals chip, pantry check, and AI suggestion sections from grocery screen; drag handle reorders active items.
@@ -717,6 +718,21 @@ testcases:
     expected:
       - Members screen lists the owner, active members, and pending invites in card rows.
       - Owner role chip is terracotta; subtitles and emails remain readable in light and dark mode.
+
+  - id: settings-household-avatar-fullscreen
+    title: Settings Family row shows photo and fullscreen viewer
+    steps:
+      - Use a household that has a family photo uploaded (Family members screen).
+      - Open account settings from the Today profile avatar.
+      - Confirm the Family row shows the circular family photo beside the household name.
+      - Tap the family photo (not the row chevron).
+      - Tap the close control or backdrop to dismiss.
+      - Tap the Family row body to open Family members.
+    expected:
+      - Without a family photo, the Family row shows only the name (no avatar thumbnail).
+      - With a family photo, the thumbnail keeps aspect ratio in a circle beside the name.
+      - Tapping the photo opens a fullscreen viewer with the household name and a close button.
+      - Tapping the row (outside the photo) still navigates to Family members.
 
   - id: nutrition-section-back
     title: Back from nutrition section to hub

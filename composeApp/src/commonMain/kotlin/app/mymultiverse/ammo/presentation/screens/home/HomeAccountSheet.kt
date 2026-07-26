@@ -15,6 +15,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -24,6 +28,7 @@ import app.mymultiverse.ammo.domain.AppBuildInfo
 import app.mymultiverse.ammo.presentation.components.AiKeySettingsSection
 import app.mymultiverse.ammo.presentation.components.HomeHouseholdButton
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsSectionHeader
+import app.mymultiverse.ammo.presentation.components.MemberAvatarFullscreenDialog
 import app.mymultiverse.ammo.presentation.components.JourneyDestructiveTextButton
 import app.mymultiverse.ammo.presentation.components.LanguagePicker
 import app.mymultiverse.ammo.presentation.components.ThemePicker
@@ -42,6 +47,7 @@ import ammo.composeapp.generated.resources.home_delete_account
 import ammo.composeapp.generated.resources.home_export_personal_data
 import ammo.composeapp.generated.resources.home_section_household
 import ammo.composeapp.generated.resources.home_settings_title
+import ammo.composeapp.generated.resources.sharing_members_avatar_fullscreen_close
 import org.jetbrains.compose.resources.stringResource
 
 object HomeAccountSheetTestTags {
@@ -62,6 +68,7 @@ object HomeAccountSheetTestTags {
 fun HomeAccountSheet(
     visible: Boolean,
     householdName: String?,
+    householdAvatarUrl: String? = null,
     canRenameHousehold: Boolean,
     onDismiss: () -> Unit,
     onOpenHouseholdMembers: () -> Unit,
@@ -73,7 +80,9 @@ fun HomeAccountSheet(
 ) {
     if (!visible) return
 
+    var showHouseholdAvatarFullscreen by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val closeFullscreenLabel = stringResource(Res.string.sharing_members_avatar_fullscreen_close)
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -102,6 +111,7 @@ fun HomeAccountSheet(
                 )
                 HomeHouseholdButton(
                     householdName = householdName,
+                    householdAvatarUrl = householdAvatarUrl,
                     canManage = canRenameHousehold,
                     onOpenHousehold = {
                         onDismiss()
@@ -110,6 +120,11 @@ fun HomeAccountSheet(
                     onRenameHousehold = {
                         onDismiss()
                         onRenameHousehold()
+                    },
+                    onViewHouseholdAvatar = if (!householdAvatarUrl.isNullOrBlank()) {
+                        { showHouseholdAvatarFullscreen = true }
+                    } else {
+                        null
                     },
                     modifier = Modifier
                         .padding(bottom = 12.dp)
@@ -236,5 +251,14 @@ fun HomeAccountSheet(
                 textAlign = TextAlign.Center,
             )
         }
+    }
+
+    if (showHouseholdAvatarFullscreen && !householdAvatarUrl.isNullOrBlank() && !householdName.isNullOrBlank()) {
+        MemberAvatarFullscreenDialog(
+            displayName = householdName,
+            avatarUrl = householdAvatarUrl,
+            closeLabel = closeFullscreenLabel,
+            onDismiss = { showHouseholdAvatarFullscreen = false },
+        )
     }
 }

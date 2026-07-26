@@ -27,11 +27,14 @@ import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.home_household_name_edit
 import ammo.composeapp.generated.resources.home_household_open_manage
 import ammo.composeapp.generated.resources.home_household_open_view
+import ammo.composeapp.generated.resources.sharing_household_avatar_content_description
+import ammo.composeapp.generated.resources.sharing_members_avatar_view_fullscreen
 import org.jetbrains.compose.resources.stringResource
 
 object HomeHouseholdButtonTestTags {
     const val BUTTON = "home_household_button"
     const val EDIT = "home_household_name_edit"
+    const val AVATAR = "home_household_avatar"
 }
 
 @Composable
@@ -41,6 +44,8 @@ fun HomeHouseholdButton(
     onOpenHousehold: () -> Unit,
     onRenameHousehold: () -> Unit,
     modifier: Modifier = Modifier,
+    householdAvatarUrl: String? = null,
+    onViewHouseholdAvatar: (() -> Unit)? = null,
 ) {
     val brandTeal = JourneySemanticColors.brandTeal()
     val subtitle = if (canManage) {
@@ -49,6 +54,7 @@ fun HomeHouseholdButton(
         stringResource(Res.string.home_household_open_view)
     }
     val accessibilityLabel = "$householdName. $subtitle"
+    val hasHouseholdAvatar = !householdAvatarUrl.isNullOrBlank()
 
     Surface(
         modifier = modifier
@@ -68,6 +74,20 @@ fun HomeHouseholdButton(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (hasHouseholdAvatar) {
+                MemberAvatar(
+                    displayName = householdName,
+                    avatarUrl = householdAvatarUrl,
+                    contentDescription = stringResource(Res.string.sharing_household_avatar_content_description),
+                    size = 48.dp,
+                    onClick = onViewHouseholdAvatar,
+                    clickLabel = stringResource(
+                        Res.string.sharing_members_avatar_view_fullscreen,
+                        householdName,
+                    ),
+                    modifier = Modifier.testTag(HomeHouseholdButtonTestTags.AVATAR),
+                )
+            }
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp),

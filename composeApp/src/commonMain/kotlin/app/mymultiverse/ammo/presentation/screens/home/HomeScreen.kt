@@ -291,6 +291,7 @@ fun HomeScreen(
             HomeAccountSheet(
                 visible = showAccountSheet,
                 householdName = household?.name,
+                householdAvatarUrl = household?.avatarUrl,
                 canRenameHousehold = canRenameHousehold,
                 onDismiss = { showAccountSheet = false },
                 onOpenHouseholdMembers = onOpenHouseholdMembers,
