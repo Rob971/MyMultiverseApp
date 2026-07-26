@@ -12,6 +12,8 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -31,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -120,10 +123,18 @@ private fun SpotlightScrimLayer(
 
     // Offscreen layer so BlendMode.Clear punches through the scrim without erasing
     // the main app content underneath — only the overlay buffer is affected.
+    // Absorb taps outside the tooltip so the user cannot navigate away mid-tour
+    // (bottom tabs / hub CTAs) and miss completing all four steps once.
+    val scrimInteraction = remember { MutableInteractionSource() }
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .testTag(ProductTourTestTags.OVERLAY)
+            .clickable(
+                interactionSource = scrimInteraction,
+                indication = null,
+                onClick = {},
+            )
             .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen },
     ) {
         val screenWidthPx = with(density) { maxWidth.toPx() }

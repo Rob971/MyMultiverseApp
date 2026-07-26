@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 98
+version: 99
 updated: 2026-07-26
 
 summary: |
@@ -40,7 +40,7 @@ summary: |
   Full Gemini AI integration (v89): All AI features (advice, grocery list, meal plan) now call Gemini 2.0 Flash Lite; key-missing state shows polite error in AI sheet; async cancellation prevents stuck spinners when a new request supersedes the previous one.
   AI key on-demand (v90): Removed proactive "add your key" banner from Plan tab; Gemini API key is only requested when the user actively triggers an AI feature and no key is configured; inline key-entry form shown directly in the AI sheet error state so the user can save the key and retry without leaving the sheet.
   Consistent key-request for Add to grocery list (v91): Tapping "Add to grocery list" on a meal slot with no key configured now opens the AI sheet showing the inline key-entry form instead of directing the user to Account settings via a snackbar; the flow is now consistent with the AI sheet Generate button.
-  Product tour (v93/v98): first-time users see a 4-step spotlight walkthrough — welcome modal, daily meal plan header (title + Today/This week tabs), meal plan tab, grocery tab; the tour shows once per app version and is permanently dismissed after completion or skip. v95/v98: Next/Avanti from welcome keeps a visible scrim + tooltip; spotlight targets the compact hub header (not the whole Welcome screen or full daily card).
+  Product tour (v93/v99): first-time users see a 4-step spotlight walkthrough — welcome modal, daily meal plan header (title + Today/This week tabs), meal plan tab, grocery tab. Persisted with stable tour id spotlight_v1 (not alpha/beta version stamps) so a new user completes all 4 steps successfully only once; dismissed after Done or Skip. v95/v98/v99: Next/Avanti keeps overlay; taps outside tooltip and bottom-tab switches are blocked while the tour is active.
   App Links hosting (v47): deploy via Rob971/mymultiverse-website; verify with scripts/verify-hosting.sh after DNS is live.
   Ghost pairing (v48): adding tortillas/tacos on Groceries shows terracotta “Often bought together” banner; one tap adds salsa, cheese, sour cream; dismiss hides the pairing for your family.
   UX audit S13 (v49): Today hero CTAs replace This week card and first-win checklist; Family hub in account sheet (profile avatar); Napulitano language label with dialect subtitle in picker (not NAP code).
@@ -1241,7 +1241,7 @@ testcases:
       - If the key is cleared in Account → Settings on Device B, the key form reappears on both devices after sign-in.
 
   - id: product-tour-first-launch
-    title: Product tour appears once on first launch per version (v98)
+    title: New user completes all 4 tour steps successfully only once (v99)
     steps:
       - Install a fresh build (or clear app data / storage so no previous tour state is stored).
       - Sign in with a valid account.
@@ -1251,16 +1251,17 @@ testcases:
       - The overlay contains a step counter ("1 of 4"), a Skip tour link, and a Next button.
       - No spotlight cutout is shown for the welcome step — the entire screen is dimly covered.
       - Tapping Next / Avanti advances to step 2 ("Your planning hub"); a spotlight rectangle with rounded corners highlights the Daily meal plan header (title + Today/This week tabs — not the whole screen or full card), the dim scrim remains visible around it, and the tooltip card stays on-screen.
-      - Tapping Next again advances to step 3 ("Plan the week"); the spotlight moves to highlight the meal plan bottom nav tab.
+      - Tapping Next again advances to step 3 ("Plan the week"); the spotlight moves to highlight the meal plan bottom nav tab; tapping bottom tabs does nothing while the tour is active.
       - Tapping Next advances to step 4 ("Grocery list"); the spotlight highlights the grocery bottom nav tab; the Next button label changes to "Done".
       - Tapping Done dismisses the overlay with a fade-out animation.
       - The Previous button appears on steps 2–4 and returns to the previous step.
+      - Force-close, reopen, and sign in again — the tour does NOT appear (completed only once; not re-triggered by alpha/beta version stamps).
       - All transitions between steps are animated (smooth fade + slide).
 
   - id: product-tour-next-keeps-overlay
-    title: Product tour Next/Avanti keeps overlay visible on step 2 (v98)
+    title: Product tour Next/Avanti keeps overlay visible on step 2 (v99)
     steps:
-      - Clear app data so the tour has not been seen for this version.
+      - Clear app data so the tour has not been seen yet.
       - Sign in; wait for the welcome tour card ("1 of 4").
       - Tap Next / Avanti.
     expected:
@@ -1271,7 +1272,7 @@ testcases:
       - Skip and Previous are available; Next advances to the meal plan tab step.
 
   - id: product-tour-skip
-    title: Skipping the product tour permanently dismisses it (v93)
+    title: Skipping the product tour permanently dismisses it (v99)
     steps:
       - Ensure the tour has not been seen yet (fresh install or cleared data).
       - Sign in; wait for the tour overlay to appear.
@@ -1279,16 +1280,17 @@ testcases:
     expected:
       - The overlay fades out immediately.
       - Force-close and reopen the app, then sign in again.
-      - The tour overlay does NOT appear again on this version.
+      - The tour overlay does NOT appear again (same as after Done — only once).
 
   - id: product-tour-show-once
-    title: Tour does not repeat once completed (v93)
+    title: Tour does not repeat once all 4 steps are completed (v99)
     steps:
       - Complete the tour (step through all 4 steps and tap Done).
       - Force-close and reopen the app, then sign in.
+      - Optionally install a newer alpha/beta of the same tour id without clearing data.
     expected:
       - The tour overlay does NOT appear — the home shell loads directly without any overlay.
-      - This behaviour persists across multiple app restarts and background/foreground cycles.
+      - This behaviour persists across multiple app restarts, background/foreground cycles, and alpha/beta version stamps (persistence key is spotlight_v1, not VERSION_NAME).
 
   - id: product-tour-dark-theme
     title: Product tour renders correctly in dark theme (v93)

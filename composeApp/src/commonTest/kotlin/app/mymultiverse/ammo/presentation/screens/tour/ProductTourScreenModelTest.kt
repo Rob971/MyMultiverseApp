@@ -211,6 +211,47 @@ class ProductTourScreenModelTest {
         assertTrue(store(settings).hasSeenTour("1.5.3"))
     }
 
+    @Test
+    fun catalogTour_nextThroughAllFourSteps_completesSuccessfullyOnce() = runTest(testDispatcher) {
+        val settings = MapSettings()
+        val tourKey = ProductTourCatalog.TOUR_ID
+        val steps = stubSteps(ProductTourCatalog.STEP_COUNT)
+        val m = model(store(settings))
+
+        m.maybeShowTour(tourKey, steps)
+        advanceUntilIdle()
+
+        // New user: walk 0 → 1 → 2 → 3 (each Next succeeds).
+        repeat(ProductTourCatalog.STEP_COUNT) { expectedIndex ->
+            val state = m.uiState.first()
+            assertIs<ProductTourUiState.Active>(state)
+            assertEquals(expectedIndex, state.currentIndex)
+            assertEquals(ProductTourCatalog.STEP_COUNT, state.stepCount)
+            assertEquals(expectedIndex + 1, state.displayNumber)
+            m.next()
+            advanceUntilIdle()
+        }
+
+        assertIs<ProductTourUiState.Hidden>(m.uiState.first())
+        assertTrue(store(settings).hasSeenTour(tourKey))
+
+        // Only once: a fresh model with the same store must not show again.
+        val m2 = model(store(settings))
+        m2.maybeShowTour(tourKey, steps)
+        advanceUntilIdle()
+        assertIs<ProductTourUiState.Hidden>(m2.uiState.first())
+    }
+
+    @Test
+    fun catalogTour_alphaVersionNameMustNotBeUsedAsKey_tourIdIsStable() {
+        // Guardrail: App must persist with TOUR_ID, not VERSION_NAME with -alpha.N.
+        assertEquals("spotlight_v1", ProductTourCatalog.TOUR_ID)
+        assertFalse(ProductTourCatalog.TOUR_ID.contains("alpha"))
+        assertFalse(ProductTourCatalog.TOUR_ID.contains("beta"))
+        assertEquals(4, ProductTourCatalog.STEP_COUNT)
+        assertEquals(ProductTourCatalog.STEP_COUNT, ProductTourCatalog.defaultSteps().size)
+    }
+
     // ─── Computed state properties ────────────────────────────────────────────
 
     @Test

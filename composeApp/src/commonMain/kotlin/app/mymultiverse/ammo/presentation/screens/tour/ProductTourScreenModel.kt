@@ -17,7 +17,8 @@ import kotlinx.coroutines.flow.asStateFlow
  * - Exposes the step-by-step [uiState] to the overlay composable.
  * - Receives spotlight bounding-box registrations from composables annotated with
  *   [Modifier.productTourTarget] so the overlay can draw the correct cutout.
- * - Marks the tour as permanently seen (per version) when the user completes or skips it.
+ * - Marks the tour as permanently seen (per [ProductTourCatalog.TOUR_ID]) when the user
+ *   finishes the last step or skips — so a new user completes the walkthrough only once.
  */
 class ProductTourScreenModel(
     private val store: ProductTourStore,
@@ -32,20 +33,20 @@ class ProductTourScreenModel(
     private val _spotlightRects = MutableStateFlow<Map<String, Rect>>(emptyMap())
     val spotlightRects: StateFlow<Map<String, Rect>> = _spotlightRects.asStateFlow()
 
-    private var activeVersionKey: String? = null
+    private var activeTourKey: String? = null
 
     /**
      * Activates the tour for [versionKey] if the user has not yet seen it.
      *
-     * Should be called once after the authenticated shell is visible (e.g. in a
-     * [LaunchedEffect(Unit)] inside [AuthenticatedMainApp]).
+     * Pass [ProductTourCatalog.TOUR_ID] as [versionKey] so alpha/beta version-name stamps
+     * do not re-trigger the tour. Call after Welcome Home is visible.
      */
     fun maybeShowTour(versionKey: String, steps: List<ProductTourStep>) {
         if (steps.isEmpty()) return
         // Do not reset an in-progress tour if HomePhase re-emits Welcome.
         if (_uiState.value is ProductTourUiState.Active) return
         if (!store.hasSeenTour(versionKey)) {
-            activeVersionKey = versionKey
+            activeTourKey = versionKey
             _uiState.value = ProductTourUiState.Active(steps = steps, currentIndex = 0)
         }
     }
@@ -77,7 +78,7 @@ class ProductTourScreenModel(
     fun skip() = completeTour()
 
     private fun completeTour() {
-        activeVersionKey?.let { store.markTourSeen(it) }
+        activeTourKey?.let { store.markTourSeen(it) }
         _uiState.value = ProductTourUiState.Hidden
     }
 }

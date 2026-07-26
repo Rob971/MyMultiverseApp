@@ -15,8 +15,21 @@ import ammo.composeapp.generated.resources.tour_step_welcome_title
  *
  * Kept in one place so [App] and instrumented smoke tests share the same step tags
  * and copy resources (composeApp `Res` is not visible outside this module).
+ *
+ * Persistence uses [TOUR_ID] (not [AppBuildInfo.VERSION_NAME]) so a new user completes
+ * the walkthrough **once** across alpha/beta/prod builds of the same tour content.
+ * Bump [TOUR_ID] only when intentionally re-introducing the tour for all users.
  */
 object ProductTourCatalog {
+
+    /**
+     * Stable persistence key for [ProductTourStore].
+     * Independent of CI prerelease suffixes (`1.6.5-alpha.N`) which would otherwise
+     * re-show the tour on every alpha distribute.
+     */
+    const val TOUR_ID = "spotlight_v1"
+
+    const val STEP_COUNT = 4
 
     fun defaultSteps(): List<ProductTourStep> = listOf(
         ProductTourStep(

@@ -14,6 +14,7 @@ class ProductTourCatalogTest {
     @Test
     fun defaultSteps_areFourStepsWithExpectedTargets() {
         val steps = ProductTourCatalog.defaultSteps()
+        assertEquals(ProductTourCatalog.STEP_COUNT, steps.size)
         assertEquals(4, steps.size)
         assertEquals("welcome", steps[0].id)
         assertNull(steps[0].targetTag)
@@ -28,5 +29,11 @@ class ProductTourCatalogTest {
         val steps = ProductTourCatalog.defaultSteps()
         assertEquals(steps.size, steps.map { it.id }.toSet().size)
         assertTrue(steps.all { it.id.isNotBlank() })
+    }
+
+    @Test
+    fun tourId_isStableAcrossPrereleaseBuilds() {
+        assertEquals("spotlight_v1", ProductTourCatalog.TOUR_ID)
+        assertTrue(ProductTourCatalog.TOUR_ID.startsWith("spotlight_"))
     }
 }

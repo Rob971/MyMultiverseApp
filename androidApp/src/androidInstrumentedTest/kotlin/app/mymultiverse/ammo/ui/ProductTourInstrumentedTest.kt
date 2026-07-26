@@ -23,6 +23,7 @@ import app.mymultiverse.ammo.presentation.theme.AppTheme
 import app.mymultiverse.ammo.ui.InstrumentedComposeTest.waitFor
 import com.russhwolf.settings.MapSettings
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -31,11 +32,9 @@ import org.koin.compose.KoinApplication
 import org.koin.dsl.module
 
 /**
- * Smoke coverage for the product-tour regression where Next/Avanti on step 1 left the
- * overlay looking gone (oversized spotlight + off-screen tooltip).
- *
- * Drives [SpotlightTourOverlay] with a compact hub target — not the full app shell —
- * so the assertion is about tour state after Next, not auth/home bootstrap.
+ * Instrumented contract for the new-user product tour:
+ * - All four steps can be completed successfully via Next / Avanti / Done.
+ * - Completing marks the tour seen so it does not show again (only once).
  */
 @RunWith(AndroidJUnit4::class)
 class ProductTourInstrumentedTest {
@@ -47,34 +46,13 @@ class ProductTourInstrumentedTest {
     fun nextFromWelcome_keepsOverlayAndAdvancesToHubStep() {
         val store = ProductTourStore(MapSettings())
         val screenModel = ProductTourScreenModel(store = store)
-        val steps = ProductTourCatalog.defaultSteps()
-
-        composeRule.setContent {
-            AppTheme {
-                KoinApplication(
-                    application = {
-                        modules(
-                            instrumentedKoinModule,
-                            module { single { screenModel } },
-                        )
-                    },
-                ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        // Compact stand-in for the daily hub header spotlight target.
-                        Box(
-                            modifier = Modifier
-                                .size(width = 280.dp, height = 96.dp)
-                                .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB)
-                                .testTag(ProductTourTestTags.TARGET_HOME_HUB),
-                        )
-                        SpotlightTourOverlay(screenModel = screenModel)
-                    }
-                }
-            }
-        }
+        setTourContent(screenModel)
 
         composeRule.runOnIdle {
-            screenModel.maybeShowTour(versionKey = "instrumented-tour", steps = steps)
+            screenModel.maybeShowTour(
+                versionKey = ProductTourCatalog.TOUR_ID,
+                steps = ProductTourCatalog.defaultSteps(),
+            )
         }
 
         composeRule.waitFor {
@@ -92,7 +70,6 @@ class ProductTourInstrumentedTest {
             state is ProductTourUiState.Active && state.currentIndex == 1
         }
 
-        // Regression guard: Next must not hide the tour (the original "Avanti" failure).
         val afterNext = screenModel.uiState.value
         assertTrue(afterNext is ProductTourUiState.Active)
         assertEquals(1, (afterNext as ProductTourUiState.Active).currentIndex)
@@ -100,5 +77,88 @@ class ProductTourInstrumentedTest {
         composeRule.onNodeWithTag(ProductTourTestTags.TOOLTIP_CARD).assertIsDisplayed()
         composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_PREVIOUS).assertIsDisplayed()
         composeRule.onNodeWithTag(ProductTourTestTags.TARGET_HOME_HUB).assertIsDisplayed()
+    }
+
+    @Test
+    fun newUser_completesAllFourSteps_onceOnly() {
+        val settings = MapSettings()
+        val store = ProductTourStore(settings)
+        val screenModel = ProductTourScreenModel(store = store)
+        setTourContent(screenModel)
+
+        composeRule.runOnIdle {
+            screenModel.maybeShowTour(
+                versionKey = ProductTourCatalog.TOUR_ID,
+                steps = ProductTourCatalog.defaultSteps(),
+            )
+        }
+
+        // Steps 1–3: Next / Avanti; step 4: Done.
+        repeat(ProductTourCatalog.STEP_COUNT) { expectedIndex ->
+            composeRule.waitFor {
+                val state = screenModel.uiState.value
+                state is ProductTourUiState.Active && state.currentIndex == expectedIndex
+            }
+            composeRule.onNodeWithTag(ProductTourTestTags.OVERLAY).assertIsDisplayed()
+            composeRule.onNodeWithTag(ProductTourTestTags.TOOLTIP_CARD).assertIsDisplayed()
+            composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_NEXT).assertIsDisplayed()
+            composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_NEXT).performClick()
+        }
+
+        composeRule.waitFor {
+            screenModel.uiState.value is ProductTourUiState.Hidden
+        }
+        assertTrue(store.hasSeenTour(ProductTourCatalog.TOUR_ID))
+
+        // Only once — same store / tour ID must not activate again.
+        composeRule.runOnIdle {
+            screenModel.maybeShowTour(
+                versionKey = ProductTourCatalog.TOUR_ID,
+                steps = ProductTourCatalog.defaultSteps(),
+            )
+        }
+        composeRule.waitFor {
+            screenModel.uiState.value is ProductTourUiState.Hidden
+        }
+        assertFalse(
+            screenModel.uiState.value is ProductTourUiState.Active,
+        )
+    }
+
+    private fun setTourContent(screenModel: ProductTourScreenModel) {
+        composeRule.setContent {
+            AppTheme {
+                KoinApplication(
+                    application = {
+                        modules(
+                            instrumentedKoinModule,
+                            module { single { screenModel } },
+                        )
+                    },
+                ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Box(
+                            modifier = Modifier
+                                .size(width = 280.dp, height = 96.dp)
+                                .productTourTarget(ProductTourTestTags.TARGET_HOME_HUB)
+                                .testTag(ProductTourTestTags.TARGET_HOME_HUB),
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .productTourTarget(ProductTourTestTags.TARGET_MEAL_PLAN_TAB)
+                                .testTag(ProductTourTestTags.TARGET_MEAL_PLAN_TAB),
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .productTourTarget(ProductTourTestTags.TARGET_GROCERY_TAB)
+                                .testTag(ProductTourTestTags.TARGET_GROCERY_TAB),
+                        )
+                        SpotlightTourOverlay(screenModel = screenModel)
+                    }
+                }
+            }
+        }
     }
 }

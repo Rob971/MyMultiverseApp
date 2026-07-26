@@ -52,6 +52,7 @@ import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import app.mymultiverse.ammo.presentation.screens.nutrition.NutritionFlow
 import app.mymultiverse.ammo.presentation.screens.tour.ProductTourCatalog
 import app.mymultiverse.ammo.presentation.screens.tour.ProductTourScreenModel
+import app.mymultiverse.ammo.presentation.screens.tour.ProductTourUiState
 import app.mymultiverse.ammo.presentation.screens.tour.SpotlightTourOverlay
 import app.mymultiverse.ammo.presentation.theme.AppTheme
 import app.mymultiverse.ammo.presentation.theme.ProvideAppDarkTheme
@@ -241,15 +242,25 @@ private fun AuthenticatedMainApp() {
 
     val tourScreenModel = koinInject<ProductTourScreenModel>()
     val tourSteps = remember { ProductTourCatalog.defaultSteps() }
+    val tourState by tourScreenModel.uiState.collectAsState()
+    val isTourActive = tourState is ProductTourUiState.Active
 
-    // Wait for HomePhase.Welcome so the daily hub header spotlight rect is registered
-    // before the tour advances to step 2 (TARGET_HOME_HUB on the meal-plan title/tabs).
+    // Wait for HomePhase.Welcome so hub + bottom-nav spotlight targets are composed
+    // before the tour advances past the welcome step.
     LaunchedEffect(homePhase) {
         if (homePhase is HomePhase.Welcome) {
             tourScreenModel.maybeShowTour(
-                versionKey = app.mymultiverse.ammo.domain.AppBuildInfo.VERSION_NAME,
+                versionKey = ProductTourCatalog.TOUR_ID,
                 steps = tourSteps,
             )
+        }
+    }
+
+    // Keep the user on Today while the tour is active so all four step targets stay
+    // registered and the walkthrough can complete successfully.
+    LaunchedEffect(isTourActive) {
+        if (isTourActive && selectedTab != AppMainTab.Home) {
+            selectedTab = AppMainTab.Home
         }
     }
 
@@ -387,7 +398,13 @@ private fun AuthenticatedMainApp() {
     Box(modifier = Modifier.fillMaxSize()) {
         MainTabShell(
             selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it },
+            onTabSelected = { tab ->
+                // Absorb tab switches during the tour — Next/Done is the only exit path
+                // (plus Skip). Prevents leaving mid-walkthrough without completing once.
+                if (!isTourActive) {
+                    selectedTab = tab
+                }
+            },
             showBottomBar = showBottomBar,
             modifier = Modifier.fillMaxSize(),
         ) { contentModifier ->
