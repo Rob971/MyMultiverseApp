@@ -260,7 +260,7 @@ private fun TourTooltipCard(
                     modifier = Modifier.testTag(ProductTourTestTags.STEP_DESCRIPTION),
                 )
 
-                Spacer(modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -277,7 +277,7 @@ private fun TourTooltipCard(
                             Text(stringResource(Res.string.tour_action_previous))
                         }
                     } else {
-                        Spacer(modifier.weight(1f))
+                        Spacer(modifier = Modifier.weight(1f))
                     }
 
                     JourneyPrimaryButton(
