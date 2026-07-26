@@ -2,14 +2,16 @@
 -- migration dropped invite policies and left legacy dependant/member write paths.
 
 -- Managers can inspect pending outbound invites. Invitees may read only invites
--- addressed to their authenticated email. Invite mutations stay behind RPCs,
--- except manager updates retained for backwards compatibility.
+-- addressed to their authenticated email. Role and identity mutations stay
+-- behind RPCs; legacy clients retain column-scoped access to decline an invite.
 drop policy if exists space_invites_select on public.household_invites;
 drop policy if exists space_invites_insert on public.household_invites;
 drop policy if exists space_invites_update on public.household_invites;
 drop policy if exists household_invites_select on public.household_invites;
 drop policy if exists household_invites_insert on public.household_invites;
 drop policy if exists household_invites_update on public.household_invites;
+drop policy if exists household_invites_update_manager on public.household_invites;
+drop policy if exists household_invites_update_invitee_decline on public.household_invites;
 
 create policy household_invites_select
     on public.household_invites
@@ -28,14 +30,40 @@ create policy household_invites_select
         )))
     );
 
-create policy household_invites_update_manager
+create policy household_invites_update_invitee_decline
     on public.household_invites
     for update
     to authenticated
-    using (public.is_household_manager(household_id))
-    with check (public.is_household_manager(household_id));
+    using (
+        accepted_at is null
+        and lower(trim(email)) = lower(trim(coalesce(
+            (
+                select p.email
+                from public.profiles p
+                where p.id = (select auth.uid())
+            ),
+            auth.jwt() ->> 'email',
+            ''
+        )))
+    )
+    with check (
+        accepted_at is null
+        and lower(trim(email)) = lower(trim(coalesce(
+            (
+                select p.email
+                from public.profiles p
+                where p.id = (select auth.uid())
+            ),
+            auth.jwt() ->> 'email',
+            ''
+        )))
+    );
 
-grant select, update on public.household_invites to authenticated;
+-- A broad UPDATE grant would let an admin bypass invite_household_member() and
+-- assign an admin/owner role. Only the legacy decline column remains writable.
+revoke insert, update, delete on public.household_invites from authenticated;
+grant select on public.household_invites to authenticated;
+grant update (declined_at) on public.household_invites to authenticated;
 
 -- Member removal follows the same owner/admin authorization matrix as role
 -- changes. Soft removal preserves audit history and permits a later re-invite.

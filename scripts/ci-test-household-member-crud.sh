@@ -61,14 +61,6 @@ values
     ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000002', 'admin'),
     ('30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000003', 'editor');
 
-insert into public.household_dependants (id, household_id, display_name, created_by)
-values (
-    '40000000-0000-0000-0000-000000000001',
-    '20000000-0000-0000-0000-000000000001',
-    'CRUD Dependant',
-    '10000000-0000-0000-0000-000000000001'
-);
-
 -- CREATE + READ as owner.
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', true);
@@ -118,12 +110,54 @@ begin
     end if;
 end;
 $$;
+select public.invite_household_member(
+    '20000000-0000-0000-0000-000000000001',
+    'crud-admin-invitee@example.com',
+    'viewer'
+);
+do $$
+begin
+    if (
+        select count(*)
+        from public.household_invites
+        where household_id = '20000000-0000-0000-0000-000000000001'
+          and email = 'crud-admin-invitee@example.com'
+          and role = 'viewer'
+          and accepted_at is null
+          and declined_at is null
+    ) <> 1 then
+        raise exception 'admin_cannot_create_or_read_outbound_invite';
+    end if;
+
+    begin
+        update public.household_invites
+        set role = 'admin'
+        where household_id = '20000000-0000-0000-0000-000000000001'
+          and email = 'crud-admin-invitee@example.com';
+        raise exception 'direct_invite_update_was_allowed';
+    exception
+        when insufficient_privilege then null;
+    end;
+end;
+$$;
 select public.update_household_member_role(
     '30000000-0000-0000-0000-000000000003',
     'viewer'
 );
+select public.add_household_dependant(
+    '20000000-0000-0000-0000-000000000001',
+    'CRUD Dependant'
+);
 select public.remove_household_member('30000000-0000-0000-0000-000000000003');
-select public.remove_household_dependant('40000000-0000-0000-0000-000000000001');
+select public.remove_household_dependant(
+    (
+        select id
+        from public.household_dependants
+        where household_id = '20000000-0000-0000-0000-000000000001'
+          and display_name = 'CRUD Dependant'
+          and removed_at is null
+    )
+);
 do $$
 begin
     perform public.remove_household_member('30000000-0000-0000-0000-000000000001');
@@ -152,10 +186,11 @@ begin
     if not exists (
         select 1
         from public.household_dependants
-        where id = '40000000-0000-0000-0000-000000000001'
+        where household_id = '20000000-0000-0000-0000-000000000001'
+          and display_name = 'CRUD Dependant'
           and removed_at is not null
     ) then
-        raise exception 'admin_dependant_remove_did_not_persist';
+        raise exception 'admin_dependant_create_or_remove_did_not_persist';
     end if;
 end;
 $$;
@@ -238,6 +273,25 @@ begin
     end if;
 end;
 $$;
+savepoint legacy_invite_decline;
+update public.household_invites
+set declined_at = now()
+where email = 'crud-invitee@example.com'
+  and accepted_at is null
+  and declined_at is null;
+do $$
+begin
+    if not exists (
+        select 1
+        from public.household_invites
+        where email = 'crud-invitee@example.com'
+          and declined_at is not null
+    ) then
+        raise exception 'legacy_invite_decline_was_blocked';
+    end if;
+end;
+$$;
+rollback to savepoint legacy_invite_decline;
 select public.decline_household_invite(
     (
         select id
