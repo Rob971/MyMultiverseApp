@@ -5,15 +5,21 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-for dependency in supabase jq psql; do
+for dependency in jq psql; do
   if ! command -v "${dependency}" >/dev/null 2>&1; then
     echo "ERROR: ${dependency} is required" >&2
     exit 1
   fi
 done
 
-STATUS_JSON="$(supabase status -o json 2>/dev/null || true)"
-DB_URL="$(echo "${STATUS_JSON}" | jq -r '.DB_URL // empty')"
+if [[ -z "${DB_URL:-}" ]]; then
+    if ! command -v supabase >/dev/null 2>&1; then
+        echo "ERROR: supabase is required when DB_URL is not set" >&2
+        exit 1
+    fi
+    STATUS_JSON="$(supabase status -o json 2>/dev/null || true)"
+    DB_URL="$(echo "${STATUS_JSON}" | jq -r '.DB_URL // empty')"
+fi
 if [[ -z "${DB_URL}" ]]; then
   echo "ERROR: local Supabase DB_URL is unavailable" >&2
   exit 1
