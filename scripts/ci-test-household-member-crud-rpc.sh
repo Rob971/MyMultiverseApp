@@ -102,11 +102,27 @@ set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-0000-0000-000000000001","role":"authenticated"}', true);
+do $test$
+begin
+    if (
+        select count(*)
+        from public.household_members
+        where household_id = '20000000-0000-0000-0000-000000000001'
+          and left_at is null
+    ) <> 6 then
+        raise exception 'owner_member_read_incomplete';
+    end if;
+end;
+$test$;
 select public.add_household_dependant(
     '20000000-0000-0000-0000-000000000001',
     'Owner dependant'
 )::text as owner_dependant_id \gset
 select public.remove_household_dependant(:'owner_dependant_id'::uuid);
+select public.update_household_member_role(
+    '30000000-0000-0000-0000-000000000005',
+    'viewer'
+);
 select public.remove_household_member('30000000-0000-0000-0000-000000000004');
 reset role;
 
@@ -128,6 +144,15 @@ begin
     ) then
         raise exception 'owner_person_removal_not_persisted';
     end if;
+
+    if not exists (
+        select 1
+        from public.household_members
+        where id = '30000000-0000-0000-0000-000000000005'
+          and role = 'viewer'
+    ) then
+        raise exception 'owner_role_update_not_persisted';
+    end if;
 end;
 $test$;
 
@@ -135,11 +160,27 @@ set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000002', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-0000-0000-000000000002","role":"authenticated"}', true);
+do $test$
+begin
+    if (
+        select count(*)
+        from public.household_members
+        where household_id = '20000000-0000-0000-0000-000000000001'
+          and left_at is null
+    ) <> 5 then
+        raise exception 'admin_member_read_incomplete';
+    end if;
+end;
+$test$;
 select public.add_household_dependant(
     '20000000-0000-0000-0000-000000000001',
     'Admin dependant'
 )::text as admin_dependant_id \gset
 select public.remove_household_dependant(:'admin_dependant_id'::uuid);
+select public.update_household_member_role(
+    '30000000-0000-0000-0000-000000000006',
+    'editor'
+);
 select public.remove_household_member('30000000-0000-0000-0000-000000000005');
 
 do $test$
@@ -174,6 +215,15 @@ begin
         where id = '30000000-0000-0000-0000-000000000005'
     ) then
         raise exception 'admin_person_removal_not_persisted';
+    end if;
+
+    if not exists (
+        select 1
+        from public.household_members
+        where id = '30000000-0000-0000-0000-000000000006'
+          and role = 'editor'
+    ) then
+        raise exception 'admin_role_update_not_persisted';
     end if;
 end;
 $test$;

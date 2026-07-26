@@ -418,6 +418,41 @@ class HouseholdMembersScreenModelTest {
     }
 
     @Test
+    fun admin_canRemoveNonOwnerPerson() = runTest(testDispatcher) {
+        householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Admin)
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-viewer",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Viewer",
+                role = HouseholdMemberRole.Viewer,
+                referenceId = "viewer-id",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "admin-id")
+        advanceUntilIdle()
+
+        val viewer = model.uiState.value.members.single { it.id == "member-viewer" }
+        model.removeMember(viewer, "household-1")
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.isSaving)
+        assertNull(model.uiState.value.error)
+        assertFalse(model.uiState.value.members.any { it.id == viewer.id })
+    }
+
+    @Test
     fun removeMember_whenRefreshFails_clearsSavingAndReportsError() = runTest(testDispatcher) {
         model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "owner")
         model.openAddDependantDialog()
