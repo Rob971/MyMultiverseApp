@@ -959,9 +959,8 @@ private fun MemberRow(
                     fontWeight = FontWeight.SemiBold,
                     color = JourneySemanticColors.inkDeep(),
                 )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     HouseholdRoleBadge(
                         role = member.role,
