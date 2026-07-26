@@ -24,7 +24,9 @@ enabled = true
 
 [storage.buckets.member-avatars]
 public = true
-file_size_limit = "5MiB"
+# Client re-encodes gallery photos to JPEG under ~4.5 MiB; keep headroom for
+# older app builds that still upload camera originals.
+file_size_limit = "10MiB"
 allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
 
 [auth]

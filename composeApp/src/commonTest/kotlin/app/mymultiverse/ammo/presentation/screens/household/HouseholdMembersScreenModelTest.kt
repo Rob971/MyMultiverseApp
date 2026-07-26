@@ -607,4 +607,55 @@ class HouseholdMembersScreenModelTest {
 
         assertEquals(HouseholdMembersError.HouseholdAvatarPersistFailed, model.uiState.value.error)
     }
+
+    @Test
+    fun reportUnsupportedAvatarImage_setsAvatarUnsupportedImageError() = runTest(testDispatcher) {
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        model.reportUnsupportedAvatarImage()
+
+        assertEquals(HouseholdMembersError.AvatarUnsupportedImage, model.uiState.value.error)
+    }
+
+    @Test
+    fun uploadMemberAvatar_invalidMime_setsAvatarUnsupportedImage() = runTest(testDispatcher) {
+        repository.updateMemberAvatarResult = Result.failure(
+            IllegalStateException("mime type image/heic is not supported"),
+        )
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Carola",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "user-carola",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "user-carola")
+        advanceUntilIdle()
+
+        val member = model.uiState.value.members.single { it.displayName == "Carola" }
+        model.uploadMemberAvatar("household-1", member, ByteArray(1), "image/heic")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersError.AvatarUnsupportedImage, model.uiState.value.error)
+    }
+
+    @Test
+    fun uploadHouseholdAvatar_payloadTooLarge_setsAvatarUnsupportedImage() = runTest(testDispatcher) {
+        householdRepository.updateHouseholdAvatarResult =
+            Result.failure(IllegalStateException("The object exceeded the maximum allowed size"))
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        model.uploadHouseholdAvatar("household-1", ByteArray(1), "image/jpeg")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersError.AvatarUnsupportedImage, model.uiState.value.error)
+    }
 }

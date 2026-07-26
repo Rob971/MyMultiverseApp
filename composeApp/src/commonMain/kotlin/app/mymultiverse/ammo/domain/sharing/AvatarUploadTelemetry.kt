@@ -23,6 +23,10 @@ enum class AvatarUploadFailureReason(val telemetryValue: String) {
     /** PostgREST UPDATE returned 0 rows — usually missing SELECT/UPDATE RLS on the target table. */
     RlsZeroRows("rls_zero_rows"),
     InsufficientRole("insufficient_role"),
+    /** Storage rejected Content-Type (HEIC, image/jpg, octet-stream, etc.). */
+    InvalidMime("invalid_mime"),
+    /** Storage rejected object larger than the bucket file_size_limit. */
+    PayloadTooLarge("payload_too_large"),
     StorageUpload("storage_upload"),
     Unknown("unknown"),
 }
@@ -60,11 +64,13 @@ object AvatarUploadTelemetry {
     fun failureReasonFor(throwable: Throwable): AvatarUploadFailureReason =
         when {
             throwable is AvatarPersistException -> AvatarUploadFailureReason.RlsZeroRows
+            throwable is AvatarUnsupportedImageException -> AvatarUploadFailureReason.InvalidMime
             throwable.message?.contains(CollaborationErrorCodes.INSUFFICIENT_ROLE) == true ->
                 AvatarUploadFailureReason.InsufficientRole
             throwable.message?.contains(AvatarPersistException.ERROR_CODE) == true ->
                 AvatarUploadFailureReason.RlsZeroRows
-            else -> AvatarUploadFailureReason.Unknown
+            else -> AvatarUploadImage.storageFailureReason(throwable.message)
+                ?: AvatarUploadFailureReason.Unknown
         }
 
     fun context(

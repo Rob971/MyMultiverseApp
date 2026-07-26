@@ -14,7 +14,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadFailureReason
 import app.mymultiverse.ammo.domain.sharing.AvatarUploadTarget
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadTelemetry
 import app.mymultiverse.ammo.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.ammo.domain.sharing.canManageHouseholdMembers
 import app.mymultiverse.ammo.domain.sharing.canAssignAdminRole
@@ -43,6 +45,11 @@ sealed interface HouseholdMembersError {
     data object TransferTargetNotMember : HouseholdMembersError
     /** Storage upload step failed (network, bucket policy, size limit). */
     data object AvatarUploadFailed : HouseholdMembersError
+    /**
+     * Gallery bytes could not be converted to an allowed Storage mime/size
+     * (HEIC, oversized camera JPEG, unknown binary, etc.).
+     */
+    data object AvatarUnsupportedImage : HouseholdMembersError
     /**
      * Storage upload succeeded but the household family-photo row was not written (0 rows).
      * Most likely cause: missing RLS SELECT or UPDATE policy on `households`.
@@ -677,14 +684,20 @@ class HouseholdMembersScreenModel(
      */
     private fun mapAvatarFailure(throwable: Throwable): HouseholdMembersError {
         return when (val persist = throwable as? AvatarPersistException) {
-            null -> when {
-                CollaborationErrorCodes.messageContains(
-                    CollaborationErrorCodes.INSUFFICIENT_ROLE,
-                    throwable.message,
-                ) -> HouseholdMembersError.InsufficientRole
-                throwable.message?.contains(AvatarPersistException.ERROR_CODE) == true ->
-                    HouseholdMembersError.MemberAvatarPersistFailed
-                else -> HouseholdMembersError.AvatarUploadFailed
+            null -> {
+                val reason = AvatarUploadTelemetry.failureReasonFor(throwable)
+                when {
+                    CollaborationErrorCodes.messageContains(
+                        CollaborationErrorCodes.INSUFFICIENT_ROLE,
+                        throwable.message,
+                    ) -> HouseholdMembersError.InsufficientRole
+                    throwable.message?.contains(AvatarPersistException.ERROR_CODE) == true ->
+                        HouseholdMembersError.MemberAvatarPersistFailed
+                    reason == AvatarUploadFailureReason.InvalidMime ||
+                        reason == AvatarUploadFailureReason.PayloadTooLarge ->
+                        HouseholdMembersError.AvatarUnsupportedImage
+                    else -> HouseholdMembersError.AvatarUploadFailed
+                }
             }
             else -> when (persist.target) {
                 AvatarUploadTarget.Household -> HouseholdMembersError.HouseholdAvatarPersistFailed
@@ -693,6 +706,10 @@ class HouseholdMembersScreenModel(
                 -> HouseholdMembersError.MemberAvatarPersistFailed
             }
         }
+    }
+
+    fun reportUnsupportedAvatarImage() {
+        _uiState.update { it.copy(error = HouseholdMembersError.AvatarUnsupportedImage) }
     }
 
     fun confirmLeaveOrDissolve() {

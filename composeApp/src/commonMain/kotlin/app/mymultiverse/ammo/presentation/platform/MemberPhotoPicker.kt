@@ -5,4 +5,5 @@ import androidx.compose.runtime.Composable
 @Composable
 expect fun rememberMemberPhotoPickerLauncher(
     onPhotoPicked: (ByteArray, String) -> Unit,
+    onUnsupportedPhoto: () -> Unit = {},
 ): () -> Unit

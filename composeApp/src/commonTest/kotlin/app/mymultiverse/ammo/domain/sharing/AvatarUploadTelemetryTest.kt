@@ -47,6 +47,26 @@ class AvatarUploadTelemetryTest {
     }
 
     @Test
+    fun failureReasonFor_mapsUnsupportedImageAndStorageMimeErrors() {
+        assertEquals(
+            AvatarUploadFailureReason.InvalidMime,
+            AvatarUploadTelemetry.failureReasonFor(AvatarUnsupportedImageException()),
+        )
+        assertEquals(
+            AvatarUploadFailureReason.InvalidMime,
+            AvatarUploadTelemetry.failureReasonFor(
+                IllegalStateException("mime type image/jpg is not supported"),
+            ),
+        )
+        assertEquals(
+            AvatarUploadFailureReason.PayloadTooLarge,
+            AvatarUploadTelemetry.failureReasonFor(
+                IllegalStateException("Payload too large"),
+            ),
+        )
+    }
+
+    @Test
     fun context_includesStructuredCrashlyticsKeys() {
         val context = AvatarUploadTelemetry.context(
             target = AvatarUploadTarget.Household,

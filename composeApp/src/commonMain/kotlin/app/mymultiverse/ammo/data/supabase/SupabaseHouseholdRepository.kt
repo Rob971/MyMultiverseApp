@@ -15,6 +15,7 @@ import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.ammo.domain.coroutines.runCatchingCancellable
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
 import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
+import app.mymultiverse.ammo.domain.sharing.AvatarUploadImage
 import app.mymultiverse.ammo.domain.sharing.AvatarUploadStep
 import app.mymultiverse.ammo.domain.sharing.AvatarUploadTarget
 import app.mymultiverse.ammo.domain.sharing.avatarExtensionForContentType
@@ -298,12 +299,16 @@ class SupabaseHouseholdRepository(
             context = mapOf("content_type" to contentType),
         )
 
-        val extension = avatarExtensionForContentType(contentType)
+        val normalizedContentType = AvatarUploadImage.normalizeContentType(contentType)
+        require(AvatarUploadImage.isAllowedContentType(normalizedContentType)) {
+            AvatarUploadImage.UNSUPPORTED_ERROR_CODE
+        }
+        val extension = avatarExtensionForContentType(normalizedContentType)
         val storagePath = "households/$householdId/avatar.$extension"
         val bucket = client.storage.from("member-avatars")
         bucket.upload(storagePath, imageBytes) {
             upsert = true
-            this.contentType = ContentType.parse(contentType)
+            this.contentType = ContentType.parse(normalizedContentType)
         }
         val publicUrl = versionedAvatarUrl(bucket.publicUrl(storagePath))
         logger.logAvatarUploadStep(

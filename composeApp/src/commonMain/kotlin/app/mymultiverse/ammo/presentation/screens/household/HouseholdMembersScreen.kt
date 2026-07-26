@@ -145,6 +145,7 @@ import ammo.composeapp.generated.resources.sharing_members_subtitle
 import ammo.composeapp.generated.resources.sharing_members_title
 import ammo.composeapp.generated.resources.sharing_avatar_upload_success
 import ammo.composeapp.generated.resources.sharing_members_error_avatar_upload_failed
+import ammo.composeapp.generated.resources.sharing_members_error_avatar_unsupported_image
 import ammo.composeapp.generated.resources.sharing_household_avatar_error_persist_failed
 import ammo.composeapp.generated.resources.sharing_members_error_avatar_persist_failed
 import org.jetbrains.compose.resources.stringResource
@@ -228,28 +229,35 @@ fun HouseholdMembersScreen(
     var pendingAvatarMember by remember { mutableStateOf<HouseholdMember?>(null) }
     var pendingHouseholdAvatarPick by remember { mutableStateOf(false) }
     var fullscreenAvatarMember by remember { mutableStateOf<HouseholdMember?>(null) }
-    val launchPhotoPicker = rememberMemberPhotoPickerLauncher { bytes, contentType ->
-        val member = pendingAvatarMember
-        when {
-            member != null -> {
-                screenModel.uploadMemberAvatar(
-                    householdId = household.id,
-                    member = member,
-                    imageBytes = bytes,
-                    contentType = contentType,
-                )
-                pendingAvatarMember = null
+    val launchPhotoPicker = rememberMemberPhotoPickerLauncher(
+        onPhotoPicked = { bytes, contentType ->
+            val member = pendingAvatarMember
+            when {
+                member != null -> {
+                    screenModel.uploadMemberAvatar(
+                        householdId = household.id,
+                        member = member,
+                        imageBytes = bytes,
+                        contentType = contentType,
+                    )
+                    pendingAvatarMember = null
+                }
+                pendingHouseholdAvatarPick -> {
+                    screenModel.uploadHouseholdAvatar(
+                        householdId = household.id,
+                        imageBytes = bytes,
+                        contentType = contentType,
+                    )
+                    pendingHouseholdAvatarPick = false
+                }
             }
-            pendingHouseholdAvatarPick -> {
-                screenModel.uploadHouseholdAvatar(
-                    householdId = household.id,
-                    imageBytes = bytes,
-                    contentType = contentType,
-                )
-                pendingHouseholdAvatarPick = false
-            }
-        }
-    }
+        },
+        onUnsupportedPhoto = {
+            pendingAvatarMember = null
+            pendingHouseholdAvatarPick = false
+            screenModel.reportUnsupportedAvatarImage()
+        },
+    )
 
     val shareTitle = stringResource(Res.string.sharing_members_invite_share_title)
     val pendingSharePayload = uiState.pendingInviteShare
@@ -847,6 +855,8 @@ private fun mapErrorMessage(error: HouseholdMembersError): String =
             stringResource(Res.string.sharing_members_error_transfer_failed)
         HouseholdMembersError.AvatarUploadFailed ->
             stringResource(Res.string.sharing_members_error_avatar_upload_failed)
+        HouseholdMembersError.AvatarUnsupportedImage ->
+            stringResource(Res.string.sharing_members_error_avatar_unsupported_image)
         HouseholdMembersError.HouseholdAvatarPersistFailed ->
             stringResource(Res.string.sharing_household_avatar_error_persist_failed)
         HouseholdMembersError.MemberAvatarPersistFailed ->
@@ -959,31 +969,22 @@ private fun MemberRow(
                     fontWeight = FontWeight.SemiBold,
                     color = JourneySemanticColors.inkDeep(),
                 )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    HouseholdRoleBadge(
-                        role = member.role,
-                        kind = member.kind,
-                        onClick = if (canChangeRole) onChangeRole else null,
-                        clickLabel = if (canChangeRole) changeRoleLabel else null,
-                        modifier = if (canChangeRole) {
-                            Modifier.testTag("${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BADGE}_${member.id}")
-                        } else {
-                            Modifier
-                        },
-                    )
-                    if (canChangeRole) {
-                        JourneyTertiaryButton(
-                            onClick = onChangeRole,
-                            label = changeRoleLabel,
-                            modifier = Modifier.testTag(
-                                "${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BUTTON}_${member.id}",
-                            ),
+                // Role badge is the sole change-role control. A tertiary text button here
+                // competed for width with the badge and crushed long locale labels
+                // (e.g. Napulitano "Cagna 'o ruolo") into a one-letter-per-line column.
+                HouseholdRoleBadge(
+                    role = member.role,
+                    kind = member.kind,
+                    onClick = if (canChangeRole) onChangeRole else null,
+                    clickLabel = if (canChangeRole) changeRoleLabel else null,
+                    modifier = if (canChangeRole) {
+                        Modifier.testTag(
+                            "${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BUTTON}_${member.id}",
                         )
-                    }
-                }
+                    } else {
+                        Modifier
+                    },
+                )
             }
             if (showOverflow) {
                 JourneyIconButton(

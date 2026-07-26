@@ -933,6 +933,7 @@
     <string name="sharing_members_avatar_fullscreen_close">Schließen</string>
     <string name="sharing_avatar_upload_success">Foto erfolgreich aktualisiert.</string>
     <string name="sharing_members_error_avatar_upload_failed">Wir konnten dein Foto nicht speichern. Bitte überprüfe deine Verbindung und versuche es erneut.</string>
+    <string name="sharing_members_error_avatar_unsupported_image">Dieses Foto konnte nicht verwendet werden. Bitte wähle ein kleineres JPEG oder PNG aus deiner Galerie.</string>
     <string name="sharing_members_error_avatar_persist_failed">Dein Foto wurde hochgeladen, konnte aber nicht in deinem Profil gespeichert werden. Bitte versuche es erneut.</string>
     <string name="sharing_household_avatar_error_persist_failed">Dein Familienfoto wurde hochgeladen, konnte aber nicht gespeichert werden. Bitte versuche es erneut.</string>
         <string name="auth_household_joined_success">Du bist %1$s beigetreten.</string>

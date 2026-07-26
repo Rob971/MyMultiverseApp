@@ -933,6 +933,7 @@
     <string name="sharing_members_avatar_fullscreen_close">Chiure</string>
     <string name="sharing_avatar_upload_success">Foto aggiurnata cu successo.</string>
     <string name="sharing_members_error_avatar_upload_failed">Nun simmo riuscit a salva 'a foto toja. Controlla 'a connessione e riprova.</string>
+    <string name="sharing_members_error_avatar_unsupported_image">Nun simmo riuscit a ausà chesta foto. Prova nu JPEG o PNG cchiù piccolo d''a galleria.</string>
     <string name="sharing_members_error_avatar_persist_failed">'A foto è stata caricata ma nun se po salvà ntiéro profilo. Riprova.</string>
     <string name="sharing_household_avatar_error_persist_failed">'A foto 'e famiglia è stata caricata ma nun se po salvà. Riprova.</string>
         <string name="auth_household_joined_success">T'ê unito a %1$s.</string>
