@@ -434,8 +434,9 @@ begin
         raise exception 'owner member row changed';
     end if;
 
-    insert into public.household_members (household_id, user_id, role)
+    insert into public.household_members (id, household_id, user_id, role)
     values (
+        '30000000-0000-0000-0000-000000000005',
         '20000000-0000-0000-0000-000000000001',
         '10000000-0000-0000-0000-000000000003',
         'editor'
