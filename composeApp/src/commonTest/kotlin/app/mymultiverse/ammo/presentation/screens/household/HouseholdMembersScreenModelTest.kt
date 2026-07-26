@@ -292,6 +292,114 @@ class HouseholdMembersScreenModelTest {
     }
 
     @Test
+    fun admin_canRemoveEditorMember() = runTest(testDispatcher) {
+        householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Admin)
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-editor-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Editor User",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "editor-user",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold(
+            householdId = "household-1",
+            householdName = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            currentUserId = "admin-1",
+        )
+        advanceUntilIdle()
+
+        val editor = model.uiState.value.members.single { it.id == "member-editor-1" }
+        model.removeMember(editor, "household-1")
+        advanceUntilIdle()
+
+        assertEquals(1, repository.removeMemberCalls)
+        assertEquals("member-editor-1", repository.lastRemovedMemberId)
+        assertFalse(model.uiState.value.members.any { it.id == "member-editor-1" })
+        assertNull(model.uiState.value.error)
+    }
+
+    @Test
+    fun owner_canRemoveEditorMember() = runTest(testDispatcher) {
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-editor-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Editor User",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "editor-user",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold(
+            householdId = "household-1",
+            householdName = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            currentUserId = "owner",
+        )
+        advanceUntilIdle()
+
+        val editor = model.uiState.value.members.single { it.id == "member-editor-1" }
+        model.removeMember(editor, "household-1")
+        advanceUntilIdle()
+
+        assertEquals(1, repository.removeMemberCalls)
+        assertEquals("member-editor-1", repository.lastRemovedMemberId)
+        assertFalse(model.uiState.value.members.any { it.id == "member-editor-1" })
+        assertNull(model.uiState.value.error)
+    }
+
+    @Test
+    fun removeMember_whenRepositoryFails_setsInsufficientRoleError() = runTest(testDispatcher) {
+        repository.removeMemberFailure = IllegalStateException(CollaborationErrorCodes.INSUFFICIENT_ROLE)
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-editor-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Editor User",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "editor-user",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold(
+            householdId = "household-1",
+            householdName = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            currentUserId = "owner",
+        )
+        advanceUntilIdle()
+
+        val editor = model.uiState.value.members.single { it.id == "member-editor-1" }
+        model.removeMember(editor, "household-1")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersError.InsufficientRole, model.uiState.value.error)
+    }
+
+    @Test
     fun confirmLeave_callsHouseholdRepositoryAndDeactivatesSession() = runTest(testDispatcher) {
         model.bindHousehold(householdId = "household-1", householdName = "Test Household", ownerId = "owner", ownerDisplayName = "Owner", currentUserId = "editor-1")
         advanceUntilIdle()

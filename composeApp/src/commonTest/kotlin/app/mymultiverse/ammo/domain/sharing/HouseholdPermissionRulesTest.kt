@@ -33,4 +33,20 @@ class HouseholdPermissionRulesTest {
         assertFalse(HouseholdMemberRole.Admin.canAssignAdminRole())
         assertFalse(HouseholdMemberRole.Admin.canInviteWithRole(HouseholdMemberRole.Admin))
     }
+
+    @Test
+    fun ownerAndAdminCanRemoveNonOwnerMembers() {
+        assertTrue(HouseholdMemberRole.Owner.canRemoveMember(HouseholdMemberRole.Admin))
+        assertTrue(HouseholdMemberRole.Owner.canRemoveMember(HouseholdMemberRole.Editor))
+        assertTrue(HouseholdMemberRole.Owner.canRemoveMember(HouseholdMemberRole.Viewer))
+        assertFalse(HouseholdMemberRole.Owner.canRemoveMember(HouseholdMemberRole.Owner))
+
+        assertTrue(HouseholdMemberRole.Admin.canRemoveMember(HouseholdMemberRole.Admin))
+        assertTrue(HouseholdMemberRole.Admin.canRemoveMember(HouseholdMemberRole.Editor))
+        assertTrue(HouseholdMemberRole.Admin.canRemoveMember(HouseholdMemberRole.Viewer))
+        assertFalse(HouseholdMemberRole.Admin.canRemoveMember(HouseholdMemberRole.Owner))
+
+        assertFalse(HouseholdMemberRole.Editor.canRemoveMember(HouseholdMemberRole.Viewer))
+        assertFalse(HouseholdMemberRole.Viewer.canRemoveMember(HouseholdMemberRole.Editor))
+    }
 }
