@@ -19,15 +19,7 @@ create policy household_invites_select
     to authenticated
     using (
         public.is_household_manager(household_id)
-        or lower(trim(email)) = lower(trim(coalesce(
-            (
-                select p.email
-                from public.profiles p
-                where p.id = (select auth.uid())
-            ),
-            auth.jwt() ->> 'email',
-            ''
-        )))
+        or lower(trim(email)) = lower(trim(coalesce(auth.jwt() ->> 'email', '')))
     );
 
 create policy household_invites_update_invitee_decline
@@ -36,27 +28,15 @@ create policy household_invites_update_invitee_decline
     to authenticated
     using (
         accepted_at is null
-        and lower(trim(email)) = lower(trim(coalesce(
-            (
-                select p.email
-                from public.profiles p
-                where p.id = (select auth.uid())
-            ),
-            auth.jwt() ->> 'email',
-            ''
-        )))
+        and declined_at is null
+        and expires_at > now()
+        and lower(trim(email)) = lower(trim(coalesce(auth.jwt() ->> 'email', '')))
     )
     with check (
         accepted_at is null
-        and lower(trim(email)) = lower(trim(coalesce(
-            (
-                select p.email
-                from public.profiles p
-                where p.id = (select auth.uid())
-            ),
-            auth.jwt() ->> 'email',
-            ''
-        )))
+        and declined_at is not null
+        and expires_at > now()
+        and lower(trim(email)) = lower(trim(coalesce(auth.jwt() ->> 'email', '')))
     );
 
 -- A broad UPDATE grant would let an admin bypass invite_household_member() and
@@ -64,6 +44,56 @@ create policy household_invites_update_invitee_decline
 revoke insert, update, delete on public.household_invites from authenticated;
 grant select on public.household_invites to authenticated;
 grant update (declined_at) on public.household_invites to authenticated;
+
+-- Invite identity must come from the signed Auth token, never the editable
+-- public profile row.
+create or replace function public.list_my_pending_household_invites()
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+    v_user_id uuid := auth.uid();
+    v_auth_email text := lower(trim(coalesce(auth.jwt() ->> 'email', '')));
+    v_result json;
+begin
+    if v_user_id is null then
+        raise exception 'auth_required';
+    end if;
+
+    if char_length(v_auth_email) = 0 then
+        return '[]'::json;
+    end if;
+
+    select coalesce(
+        json_agg(
+            json_build_object(
+                'id', i.id,
+                'household_id', i.household_id,
+                'household_name', h.name,
+                'email', i.email,
+                'role', i.role::text,
+                'expires_at', i.expires_at
+            )
+            order by h.name
+        ),
+        '[]'::json
+    )
+    into v_result
+    from public.household_invites i
+    join public.households h on h.id = i.household_id
+    where lower(trim(i.email)) = v_auth_email
+      and i.accepted_at is null
+      and i.declined_at is null
+      and i.expires_at > now();
+
+    return v_result;
+end;
+$$;
+
+revoke all on function public.list_my_pending_household_invites() from public;
+grant execute on function public.list_my_pending_household_invites() to authenticated;
 
 -- Member removal follows the same owner/admin authorization matrix as role
 -- changes. Soft removal preserves audit history and permits a later re-invite.
@@ -166,19 +196,12 @@ set search_path = ''
 as $$
 declare
     v_user_id uuid := auth.uid();
-    v_profile_email text;
+    v_auth_email text := lower(trim(coalesce(auth.jwt() ->> 'email', '')));
     v_invite_email text;
 begin
     if v_user_id is null then
         raise exception 'auth_required';
     end if;
-
-    perform public.ensure_current_profile();
-
-    select lower(trim(coalesce(p.email, auth.jwt() ->> 'email', '')))
-    into v_profile_email
-    from public.profiles p
-    where p.id = v_user_id;
 
     select lower(trim(i.email))
     into v_invite_email
@@ -193,9 +216,8 @@ begin
         raise exception 'invite_not_found';
     end if;
 
-    if v_profile_email is null
-        or char_length(v_profile_email) = 0
-        or v_profile_email <> v_invite_email
+    if char_length(v_auth_email) = 0
+        or v_auth_email <> v_invite_email
     then
         raise exception 'invite_email_mismatch';
     end if;
@@ -221,7 +243,7 @@ as $$
 declare
     v_invite public.household_invites%rowtype;
     v_profile_id uuid := auth.uid();
-    v_profile_email text;
+    v_auth_email text := lower(trim(coalesce(auth.jwt() ->> 'email', '')));
     v_member_name text;
     v_household_name text;
 begin
@@ -235,12 +257,7 @@ begin
         raise exception 'household_already_active';
     end if;
 
-    select lower(trim(coalesce(p.email, auth.jwt() ->> 'email', '')))
-    into v_profile_email
-    from public.profiles p
-    where p.id = v_profile_id;
-
-    if v_profile_email is null or char_length(v_profile_email) = 0 then
+    if char_length(v_auth_email) = 0 then
         raise exception 'profile_email_required';
     end if;
 
@@ -257,7 +274,7 @@ begin
         raise exception 'invite_not_found';
     end if;
 
-    if lower(trim(v_invite.email)) <> v_profile_email then
+    if lower(trim(v_invite.email)) <> v_auth_email then
         raise exception 'invite_email_mismatch';
     end if;
 

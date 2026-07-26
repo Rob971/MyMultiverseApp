@@ -45,7 +45,8 @@ values
     ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'crud-owner@example.com', '', now(), '{"provider":"email","providers":["email"]}', '{"name":"CRUD Owner"}', now(), now()),
     ('10000000-0000-0000-0000-000000000002', 'authenticated', 'authenticated', 'crud-admin@example.com', '', now(), '{"provider":"email","providers":["email"]}', '{"name":"CRUD Admin"}', now(), now()),
     ('10000000-0000-0000-0000-000000000003', 'authenticated', 'authenticated', 'crud-editor@example.com', '', now(), '{"provider":"email","providers":["email"]}', '{"name":"CRUD Editor"}', now(), now()),
-    ('10000000-0000-0000-0000-000000000004', 'authenticated', 'authenticated', 'crud-invitee@example.com', '', now(), '{"provider":"email","providers":["email"]}', '{"name":"CRUD Invitee"}', now(), now());
+    ('10000000-0000-0000-0000-000000000004', 'authenticated', 'authenticated', 'crud-invitee@example.com', '', now(), '{"provider":"email","providers":["email"]}', '{"name":"CRUD Invitee"}', now(), now()),
+    ('10000000-0000-0000-0000-000000000005', 'authenticated', 'authenticated', 'crud-owner-remove@example.com', '', now(), '{"provider":"email","providers":["email"]}', '{"name":"CRUD Owner Remove"}', now(), now());
 
 insert into public.households (id, topic, name, owner_id)
 values (
@@ -59,7 +60,8 @@ insert into public.household_members (id, household_id, user_id, role)
 values
     ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'owner'),
     ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000002', 'admin'),
-    ('30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000003', 'editor');
+    ('30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000003', 'editor'),
+    ('30000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000005', 'viewer');
 
 -- CREATE + READ as owner.
 set local role authenticated;
@@ -88,6 +90,11 @@ begin
     end if;
 end;
 $$;
+select public.update_household_member_role(
+    '30000000-0000-0000-0000-000000000003',
+    'viewer'
+);
+select public.remove_household_member('30000000-0000-0000-0000-000000000004');
 reset role;
 
 -- READ + UPDATE + DELETE as admin.
@@ -108,6 +115,20 @@ begin
     ) <> 3 then
         raise exception 'admin_cannot_read_member_list';
     end if;
+end;
+$$;
+do $$
+begin
+    perform public.update_household_member_role(
+        '30000000-0000-0000-0000-000000000003',
+        'admin'
+    );
+    raise exception 'admin_promotion_was_allowed';
+exception
+    when raise_exception then
+        if sqlerrm <> 'insufficient_role' then
+            raise;
+        end if;
 end;
 $$;
 select public.invite_household_member(
@@ -142,7 +163,7 @@ end;
 $$;
 select public.update_household_member_role(
     '30000000-0000-0000-0000-000000000003',
-    'viewer'
+    'editor'
 );
 select public.add_household_dependant(
     '20000000-0000-0000-0000-000000000001',
@@ -177,10 +198,19 @@ begin
         select 1
         from public.household_members
         where id = '30000000-0000-0000-0000-000000000003'
-          and role = 'viewer'
+          and role = 'editor'
           and left_at is not null
     ) then
         raise exception 'admin_member_update_or_remove_did_not_persist';
+    end if;
+
+    if not exists (
+        select 1
+        from public.household_members
+        where id = '30000000-0000-0000-0000-000000000004'
+          and left_at is not null
+    ) then
+        raise exception 'owner_member_remove_did_not_persist';
     end if;
 
     if not exists (
@@ -253,6 +283,10 @@ $$;
 reset role;
 
 -- Invitees can read and decline only their own pending invitation.
+update public.profiles
+set email = 'crud-admin-invitee@example.com'
+where id = '10000000-0000-0000-0000-000000000004';
+
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000004', true);
 select set_config(
@@ -271,6 +305,23 @@ begin
     ) <> 1 then
         raise exception 'invitee_cannot_read_own_invite';
     end if;
+
+    if exists (
+        select 1
+        from public.household_invites
+        where email = 'crud-admin-invitee@example.com'
+          and accepted_at is null
+          and declined_at is null
+    ) then
+        raise exception 'editable_profile_email_exposed_another_invite';
+    end if;
+
+    if jsonb_array_length(public.list_my_pending_household_invites()::jsonb) <> 1
+        or public.list_my_pending_household_invites()::jsonb -> 0 ->> 'email'
+            <> 'crud-invitee@example.com'
+    then
+        raise exception 'pending_invite_rpc_trusted_editable_profile_email';
+    end if;
 end;
 $$;
 savepoint legacy_invite_decline;
@@ -288,6 +339,19 @@ begin
           and declined_at is not null
     ) then
         raise exception 'legacy_invite_decline_was_blocked';
+    end if;
+
+    update public.household_invites
+    set declined_at = null
+    where email = 'crud-invitee@example.com';
+
+    if not exists (
+        select 1
+        from public.household_invites
+        where email = 'crud-invitee@example.com'
+          and declined_at is not null
+    ) then
+        raise exception 'declined_invite_was_reactivated';
     end if;
 end;
 $$;
