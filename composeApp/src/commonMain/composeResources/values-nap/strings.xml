@@ -932,7 +932,10 @@
     <string name="sharing_members_avatar_view_fullscreen">Vide 'a foto 'e %1$s</string>
     <string name="sharing_members_avatar_fullscreen_close">Chiure</string>
     <string name="sharing_avatar_upload_success">Foto aggiurnata cu successo.</string>
+    <string name="sharing_avatar_upload_size_limit_hint">'E foto ponno essere massimo %1$d MB (JPEG, PNG o WebP). 'E foje cchiù gruosse se rimpicciulisco automaticamente.</string>
     <string name="sharing_members_error_avatar_upload_failed">Nun simmo riuscit a salva 'a foto toja. Controlla 'a connessione e riprova.</string>
+    <string name="sharing_members_error_avatar_unsupported_format">Stu formato 'e foto nun è supportato. Scegli na JPEG, PNG o WebP.</string>
+    <string name="sharing_members_error_avatar_too_large">Sta foto è troppo gruossa. 'A dimensione massima è %1$d MB. Scegli na immagine cchiù piccola.</string>
     <string name="sharing_members_error_avatar_persist_failed">'A foto è stata caricata ma nun se po salvà ntiéro profilo. Riprova.</string>
     <string name="sharing_household_avatar_error_persist_failed">'A foto 'e famiglia è stata caricata ma nun se po salvà. Riprova.</string>
         <string name="auth_household_joined_success">T'ê unito a %1$s.</string>

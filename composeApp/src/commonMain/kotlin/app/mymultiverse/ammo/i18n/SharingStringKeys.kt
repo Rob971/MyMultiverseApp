@@ -89,7 +89,10 @@ object SharingStringKeys {
         "sharing_household_avatar_content_description",
         "sharing_household_avatar_change_label",
         "sharing_avatar_upload_success",
+        "sharing_avatar_upload_size_limit_hint",
         "sharing_members_error_avatar_upload_failed",
+        "sharing_members_error_avatar_unsupported_format",
+        "sharing_members_error_avatar_too_large",
         "sharing_members_error_avatar_persist_failed",
         "sharing_household_avatar_error_persist_failed",
     )

@@ -59,6 +59,12 @@ object AvatarUploadTelemetry {
 
     fun failureReasonFor(throwable: Throwable): AvatarUploadFailureReason =
         when {
+            throwable is AvatarImagePrepareException -> when (throwable.reason) {
+                AvatarImagePrepareException.Reason.UnsupportedFormat,
+                AvatarImagePrepareException.Reason.DecodeFailed,
+                -> AvatarUploadFailureReason.StorageUpload
+                AvatarImagePrepareException.Reason.TooLarge -> AvatarUploadFailureReason.StorageUpload
+            }
             throwable is AvatarPersistException -> AvatarUploadFailureReason.RlsZeroRows
             throwable.message?.contains(CollaborationErrorCodes.INSUFFICIENT_ROLE) == true ->
                 AvatarUploadFailureReason.InsufficientRole

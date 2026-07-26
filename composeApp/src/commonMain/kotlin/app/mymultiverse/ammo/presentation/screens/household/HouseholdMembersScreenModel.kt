@@ -13,6 +13,7 @@ import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import app.mymultiverse.ammo.domain.sharing.AvatarImagePrepareException
 import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
 import app.mymultiverse.ammo.domain.sharing.AvatarUploadTarget
 import app.mymultiverse.ammo.domain.sharing.CollaborationErrorCodes
@@ -41,8 +42,12 @@ sealed interface HouseholdMembersError {
     data object OwnerMustTransferOrDissolve : HouseholdMembersError
     data object InvalidTransferTarget : HouseholdMembersError
     data object TransferTargetNotMember : HouseholdMembersError
-    /** Storage upload step failed (network, bucket policy, size limit). */
+    /** Storage upload step failed (network or bucket rejection after preparation). */
     data object AvatarUploadFailed : HouseholdMembersError
+    /** Picked image format cannot be converted for upload. */
+    data object AvatarImageUnsupported : HouseholdMembersError
+    /** Image remains too large after client-side compression. */
+    data object AvatarImageTooLarge : HouseholdMembersError
     /**
      * Storage upload succeeded but the household family-photo row was not written (0 rows).
      * Most likely cause: missing RLS SELECT or UPDATE policy on `households`.
@@ -676,21 +681,36 @@ class HouseholdMembersScreenModel(
      * - AvatarUploadFailed: all other failures (network, bucket policy, etc.)
      */
     private fun mapAvatarFailure(throwable: Throwable): HouseholdMembersError {
-        return when (val persist = throwable as? AvatarPersistException) {
-            null -> when {
-                CollaborationErrorCodes.messageContains(
-                    CollaborationErrorCodes.INSUFFICIENT_ROLE,
-                    throwable.message,
-                ) -> HouseholdMembersError.InsufficientRole
-                throwable.message?.contains(AvatarPersistException.ERROR_CODE) == true ->
-                    HouseholdMembersError.MemberAvatarPersistFailed
-                else -> HouseholdMembersError.AvatarUploadFailed
+        return when (val prepare = throwable as? AvatarImagePrepareException) {
+            is AvatarImagePrepareException -> when (prepare.reason) {
+                AvatarImagePrepareException.Reason.UnsupportedFormat ->
+                    HouseholdMembersError.AvatarImageUnsupported
+                AvatarImagePrepareException.Reason.TooLarge ->
+                    HouseholdMembersError.AvatarImageTooLarge
+                AvatarImagePrepareException.Reason.DecodeFailed ->
+                    HouseholdMembersError.AvatarImageUnsupported
             }
-            else -> when (persist.target) {
-                AvatarUploadTarget.Household -> HouseholdMembersError.HouseholdAvatarPersistFailed
-                AvatarUploadTarget.MemberProfile,
-                AvatarUploadTarget.Dependant,
-                -> HouseholdMembersError.MemberAvatarPersistFailed
+            null -> when (val persist = throwable as? AvatarPersistException) {
+                null -> when {
+                    CollaborationErrorCodes.messageContains(
+                        CollaborationErrorCodes.INSUFFICIENT_ROLE,
+                        throwable.message,
+                    ) -> HouseholdMembersError.InsufficientRole
+                    throwable.message?.contains(AvatarPersistException.ERROR_CODE) == true ->
+                        HouseholdMembersError.MemberAvatarPersistFailed
+                    throwable.message?.contains("invalid_mime_type", ignoreCase = true) == true ->
+                        HouseholdMembersError.AvatarImageUnsupported
+                    throwable.message?.contains("Payload too large", ignoreCase = true) == true ||
+                        throwable.message?.contains("maximum allowed size", ignoreCase = true) == true ->
+                        HouseholdMembersError.AvatarImageTooLarge
+                    else -> HouseholdMembersError.AvatarUploadFailed
+                }
+                else -> when (persist.target) {
+                    AvatarUploadTarget.Household -> HouseholdMembersError.HouseholdAvatarPersistFailed
+                    AvatarUploadTarget.MemberProfile,
+                    AvatarUploadTarget.Dependant,
+                    -> HouseholdMembersError.MemberAvatarPersistFailed
+                }
             }
         }
     }

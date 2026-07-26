@@ -1,6 +1,8 @@
 package app.mymultiverse.ammo.data.supabase
 
 import app.mymultiverse.ammo.data.observability.AppLogger
+import app.mymultiverse.ammo.data.platform.prepareAvatarImageForUpload
+import app.mymultiverse.ammo.domain.sharing.validatePreparedAvatarBytes
 import app.mymultiverse.ammo.data.supabase.dto.DependantIdRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdDependantAvatarUpdateRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdDependantRow
@@ -381,24 +383,30 @@ class SupabaseHouseholdCollaborationRepository(
             HouseholdMemberKind.Person -> AvatarUploadTarget.MemberProfile
             HouseholdMemberKind.Group -> error(CollaborationErrorCodes.INSUFFICIENT_ROLE)
         }
+        val prepared = prepareAvatarImageForUpload(imageBytes, contentType)
+        validatePreparedAvatarBytes(prepared.bytes)
+
         logger.logAvatarUploadStep(
             target = uploadTarget,
             step = AvatarUploadStep.Start,
             householdId = householdId,
-            extra = "member=${member.id} bytes=${imageBytes.size}",
-            context = mapOf("content_type" to contentType),
+            extra = "member=${member.id} raw_bytes=${imageBytes.size} prepared_bytes=${prepared.bytes.size}",
+            context = mapOf(
+                "content_type" to contentType,
+                "prepared_content_type" to prepared.contentType,
+            ),
         )
 
-        val extension = avatarExtensionForContentType(contentType)
+        val extension = avatarExtensionForContentType(prepared.contentType)
         val storagePath = when (member.kind) {
             HouseholdMemberKind.Dependant -> "dependants/${member.referenceId}/avatar.$extension"
             else -> "profiles/${member.referenceId}/avatar.$extension"
         }
 
         val bucket = client.storage.from(MEMBER_AVATARS_BUCKET)
-        bucket.upload(storagePath, imageBytes) {
+        bucket.upload(storagePath, prepared.bytes) {
             upsert = true
-            this.contentType = ContentType.parse(contentType)
+            this.contentType = ContentType.parse(prepared.contentType)
         }
         val publicUrl = versionedAvatarUrl(bucket.publicUrl(storagePath))
         logger.logAvatarUploadStep(

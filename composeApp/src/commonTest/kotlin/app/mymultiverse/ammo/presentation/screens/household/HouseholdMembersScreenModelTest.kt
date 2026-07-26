@@ -3,6 +3,7 @@ package app.mymultiverse.ammo.presentation.screens.household
 import app.mymultiverse.ammo.data.observability.TestObservability
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
+import app.mymultiverse.ammo.domain.sharing.AvatarImagePrepareException
 import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
 import app.mymultiverse.ammo.domain.sharing.AvatarUploadTarget
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
@@ -606,5 +607,59 @@ class HouseholdMembersScreenModelTest {
         advanceUntilIdle()
 
         assertEquals(HouseholdMembersError.HouseholdAvatarPersistFailed, model.uiState.value.error)
+    }
+
+    @Test
+    fun uploadMemberAvatar_prepareUnsupported_setsAvatarImageUnsupportedError() = runTest(testDispatcher) {
+        repository.updateMemberAvatarResult = Result.failure(
+            AvatarImagePrepareException(AvatarImagePrepareException.Reason.UnsupportedFormat),
+        )
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Alice",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "user-alice",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        val member = model.uiState.value.members.single { it.id == "member-1" }
+        model.uploadMemberAvatar("household-1", member, ByteArray(1), "image/gif")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersError.AvatarImageUnsupported, model.uiState.value.error)
+    }
+
+    @Test
+    fun uploadHouseholdAvatar_storageMimeRejected_setsAvatarImageUnsupportedError() = runTest(testDispatcher) {
+        householdRepository.updateHouseholdAvatarResult =
+            Result.failure(IllegalStateException("invalid_mime_type image/heic is not supported"))
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        model.uploadHouseholdAvatar("household-1", ByteArray(1), "image/heic")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersError.AvatarImageUnsupported, model.uiState.value.error)
+    }
+
+    @Test
+    fun uploadHouseholdAvatar_storageTooLarge_setsAvatarImageTooLargeError() = runTest(testDispatcher) {
+        householdRepository.updateHouseholdAvatarResult =
+            Result.failure(IllegalStateException("Payload too large"))
+        model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
+        advanceUntilIdle()
+
+        model.uploadHouseholdAvatar("household-1", ByteArray(1), "image/jpeg")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersError.AvatarImageTooLarge, model.uiState.value.error)
     }
 }

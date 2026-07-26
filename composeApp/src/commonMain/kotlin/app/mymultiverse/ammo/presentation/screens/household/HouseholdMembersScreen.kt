@@ -38,6 +38,7 @@ import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.ammo.domain.sharing.canAssignAdminRole
+import app.mymultiverse.ammo.domain.sharing.avatarMaxFileSizeMegabytes
 import app.mymultiverse.ammo.domain.sharing.canEditMemberAvatar
 import app.mymultiverse.ammo.domain.sharing.canViewMemberAvatarFullscreen
 import app.mymultiverse.ammo.presentation.platform.rememberMemberPhotoPickerLauncher
@@ -143,8 +144,11 @@ import ammo.composeapp.generated.resources.sharing_members_role_viewer
 import ammo.composeapp.generated.resources.sharing_members_select_role
 import ammo.composeapp.generated.resources.sharing_members_subtitle
 import ammo.composeapp.generated.resources.sharing_members_title
+import ammo.composeapp.generated.resources.sharing_avatar_upload_size_limit_hint
 import ammo.composeapp.generated.resources.sharing_avatar_upload_success
 import ammo.composeapp.generated.resources.sharing_members_error_avatar_upload_failed
+import ammo.composeapp.generated.resources.sharing_members_error_avatar_unsupported_format
+import ammo.composeapp.generated.resources.sharing_members_error_avatar_too_large
 import ammo.composeapp.generated.resources.sharing_household_avatar_error_persist_failed
 import ammo.composeapp.generated.resources.sharing_members_error_avatar_persist_failed
 import org.jetbrains.compose.resources.stringResource
@@ -181,6 +185,7 @@ object HouseholdMembersTestTags {
     const val HOUSEHOLD_DISSOLVE_MENU = "household_members_dissolve_menu"
     const val PENDING_INVITE_OVERFLOW = "household_members_pending_invite_overflow"
     const val HOUSEHOLD_AVATAR = "household_members_household_avatar"
+    const val AVATAR_UPLOAD_SIZE_HINT = "household_members_avatar_upload_size_hint"
 }
 
 @Composable
@@ -225,6 +230,11 @@ fun HouseholdMembersScreen(
         }
     }
     val currentUserId = (authState as? AuthState.Authenticated)?.user?.id
+    val avatarMaxSizeMb = avatarMaxFileSizeMegabytes()
+    val canUploadAnyAvatar = uiState.canManageMembers ||
+        uiState.members.any { member ->
+            canEditMemberAvatar(member, currentUserId, uiState.canWriteHouseholdData)
+        }
     var pendingAvatarMember by remember { mutableStateOf<HouseholdMember?>(null) }
     var pendingHouseholdAvatarPick by remember { mutableStateOf(false) }
     var fullscreenAvatarMember by remember { mutableStateOf<HouseholdMember?>(null) }
@@ -319,6 +329,19 @@ fun HouseholdMembersScreen(
                             launchPhotoPicker()
                         },
                     )
+                }
+                if (canUploadAnyAvatar) {
+                    item {
+                        Text(
+                            text = stringResource(
+                                Res.string.sharing_avatar_upload_size_limit_hint,
+                                avatarMaxSizeMb,
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = JourneySemanticColors.inkMuted(),
+                            modifier = Modifier.testTag(HouseholdMembersTestTags.AVATAR_UPLOAD_SIZE_HINT),
+                        )
+                    }
                 }
                 item {
                     Text(
@@ -827,8 +850,9 @@ fun HouseholdMembersScreen(
 }
 
 @Composable
-private fun mapErrorMessage(error: HouseholdMembersError): String =
-    when (error) {
+private fun mapErrorMessage(error: HouseholdMembersError): String {
+    val avatarMaxSizeMb = avatarMaxFileSizeMegabytes()
+    return when (error) {
         HouseholdMembersError.Generic -> stringResource(Res.string.sharing_members_error_generic)
         HouseholdMembersError.EmailRequired -> stringResource(Res.string.sharing_members_error_email_required)
         HouseholdMembersError.NotConfigured -> stringResource(Res.string.sharing_members_error_not_configured)
@@ -847,11 +871,16 @@ private fun mapErrorMessage(error: HouseholdMembersError): String =
             stringResource(Res.string.sharing_members_error_transfer_failed)
         HouseholdMembersError.AvatarUploadFailed ->
             stringResource(Res.string.sharing_members_error_avatar_upload_failed)
+        HouseholdMembersError.AvatarImageUnsupported ->
+            stringResource(Res.string.sharing_members_error_avatar_unsupported_format)
+        HouseholdMembersError.AvatarImageTooLarge ->
+            stringResource(Res.string.sharing_members_error_avatar_too_large, avatarMaxSizeMb)
         HouseholdMembersError.HouseholdAvatarPersistFailed ->
             stringResource(Res.string.sharing_household_avatar_error_persist_failed)
         HouseholdMembersError.MemberAvatarPersistFailed ->
             stringResource(Res.string.sharing_members_error_avatar_persist_failed)
     }
+}
 
 @Composable
 private fun HouseholdAvatarSection(
@@ -974,15 +1003,6 @@ private fun MemberRow(
                             Modifier
                         },
                     )
-                    if (canChangeRole) {
-                        JourneyTertiaryButton(
-                            onClick = onChangeRole,
-                            label = changeRoleLabel,
-                            modifier = Modifier.testTag(
-                                "${HouseholdMembersTestTags.MEMBER_CHANGE_ROLE_BUTTON}_${member.id}",
-                            ),
-                        )
-                    }
                 }
             }
             if (showOverflow) {

@@ -932,7 +932,10 @@
     <string name="sharing_members_avatar_view_fullscreen">عرض صورة %1$s</string>
     <string name="sharing_members_avatar_fullscreen_close">إغلاق</string>
     <string name="sharing_avatar_upload_success">تم تحديث الصورة بنجاح.</string>
+    <string name="sharing_avatar_upload_size_limit_hint">يجب أن تكون الصور أقل من %1$d ميغابايت (JPEG أو PNG أو WebP). تُصغَّر الصور الأكبر تلقائياً.</string>
     <string name="sharing_members_error_avatar_upload_failed">لم نتمكن من حفظ صورتك. يرجى التحقق من اتصالك والمحاولة مجدداً.</string>
+    <string name="sharing_members_error_avatar_unsupported_format">تنسيق الصورة غير مدعوم. يرجى اختيار صورة JPEG أو PNG أو WebP.</string>
+    <string name="sharing_members_error_avatar_too_large">هذه الصورة كبيرة جداً. الحد الأقصى للحجم هو %1$d ميغابايت. يرجى اختيار صورة أصغر.</string>
     <string name="sharing_members_error_avatar_persist_failed">تم تحميل صورتك لكن تعذّر حفظها في ملفك الشخصي. يرجى المحاولة مجدداً.</string>
     <string name="sharing_household_avatar_error_persist_failed">تم تحميل صورة العائلة لكن تعذّر حفظها. يرجى المحاولة مجدداً.</string>
         <string name="auth_household_joined_success">انضممت إلى %1$s.</string>
