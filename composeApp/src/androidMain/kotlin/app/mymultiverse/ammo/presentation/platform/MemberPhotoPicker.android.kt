@@ -19,7 +19,11 @@ actual fun rememberMemberPhotoPickerLauncher(
         val resolver = context.contentResolver
         val bytes = resolver.openInputStream(uri)?.use { it.readBytes() } ?: return@rememberLauncherForActivityResult
         val contentType = resolver.getType(uri) ?: "image/jpeg"
-        onPhotoPicked(bytes, contentType)
+        // Downscale/re-encode photos the member-avatars bucket would reject
+        // (>5MiB payloads or HEIC captures) so changing an avatar works with
+        // real gallery photos, not just small jpeg/png/webp files.
+        val prepared = prepareAvatarImageForUpload(bytes, contentType)
+        onPhotoPicked(prepared.bytes, prepared.contentType)
     }
     return {
         launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
