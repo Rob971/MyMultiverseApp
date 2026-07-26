@@ -14,6 +14,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,6 +31,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -42,10 +46,10 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
@@ -65,7 +69,8 @@ import org.koin.compose.koinInject
 private val ScrimColor = Color.Black.copy(alpha = 0.72f)
 private val SpotlightPadding = 10.dp
 private val SpotlightCornerRadius = 14.dp
-private const val TooltipMinTopPx = 80f
+private val TooltipEdgePadding = 20.dp
+private val TooltipTargetGap = 16.dp
 
 /**
  * Full-screen product tour overlay with a spotlight cutout and animated tooltip card.
@@ -177,9 +182,23 @@ private fun TourTooltipCard(
 ) {
     val density = LocalDensity.current
     val cardAlignment = if (spotlightRect == null) Alignment.Center else Alignment.TopStart
-    val topOffsetDp = tooltipTopOffsetDp(spotlightRect, density, tooltipHeightEstimate)
+    var tooltipHeightPx by remember(state.currentStep.id) {
+        mutableFloatStateOf(with(density) { tooltipHeightEstimate.toPx() })
+    }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val topOffsetDp = spotlightRect?.let { targetRect ->
+            with(density) {
+                calculateTooltipTopOffsetPx(
+                    spotlightRect = targetRect,
+                    viewportHeightPx = maxHeight.toPx(),
+                    tooltipHeightPx = tooltipHeightPx,
+                    edgePaddingPx = TooltipEdgePadding.toPx(),
+                    cardGapPx = TooltipTargetGap.toPx(),
+                ).toDp()
+            }
+        } ?: 0.dp
+
         Card(
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
@@ -191,6 +210,7 @@ private fun TourTooltipCard(
                 .let { m -> if (spotlightRect != null) m.padding(top = topOffsetDp) else m }
                 .padding(horizontal = 20.dp)
                 .fillMaxWidth()
+                .onSizeChanged { tooltipHeightPx = it.height.toFloat() }
                 .testTag(ProductTourTestTags.TOOLTIP_CARD),
         ) {
             Column(
@@ -285,27 +305,34 @@ private fun TourTooltipCard(
 }
 
 /**
- * Returns the top padding so the card appears:
- * - **above** the spotlight when there is enough room (spotlight in the lower portion of screen)
- * - **below** the spotlight otherwise (spotlight near the top)
+ * Chooses an above/below position for the tooltip and clamps it to the visible viewport.
  *
- * Returns 0.dp when [spotlightRect] is null (tooltip is centred via [Alignment.Center]).
+ * The clamp is essential for unusually tall spotlight targets: neither side may have enough
+ * room, but the tooltip must remain usable instead of being placed beyond the bottom edge.
  */
-@Composable
-private fun tooltipTopOffsetDp(
-    spotlightRect: Rect?,
-    density: Density,
-    tooltipHeightEstimate: Dp,
-): Dp {
-    if (spotlightRect == null) return 0.dp
-    val tooltipHeightPx = with(density) { tooltipHeightEstimate.toPx() }
-    val cardGapPx = with(density) { 16.dp.toPx() }
+internal fun calculateTooltipTopOffsetPx(
+    spotlightRect: Rect,
+    viewportHeightPx: Float,
+    tooltipHeightPx: Float,
+    edgePaddingPx: Float,
+    cardGapPx: Float,
+): Float {
+    val minimumTop = edgePaddingPx.coerceAtLeast(0f)
+    val maximumTop = (viewportHeightPx - tooltipHeightPx - minimumTop)
+        .coerceAtLeast(minimumTop)
+    val aboveTop = spotlightRect.top - tooltipHeightPx - cardGapPx
+    val belowTop = spotlightRect.bottom + cardGapPx
+    val aboveFits = aboveTop >= minimumTop
+    val belowFits = belowTop <= maximumTop
 
-    return with(density) {
-        val aboveTop = spotlightRect.top - tooltipHeightPx - cardGapPx
-        val belowBottom = spotlightRect.bottom + cardGapPx
-        if (aboveTop > TooltipMinTopPx) aboveTop.toDp() else belowBottom.toDp()
+    val preferredTop = when {
+        aboveFits -> aboveTop
+        belowFits -> belowTop
+        spotlightRect.top >= viewportHeightPx - spotlightRect.bottom -> aboveTop
+        else -> belowTop
     }
+
+    return preferredTop.coerceIn(minimumTop, maximumTop)
 }
 
 // ─── Target registration ────────────────────────────────────────────────────
