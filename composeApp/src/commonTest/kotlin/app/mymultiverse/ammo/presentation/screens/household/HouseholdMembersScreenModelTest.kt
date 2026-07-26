@@ -1,7 +1,10 @@
 package app.mymultiverse.ammo.presentation.screens.household
 
 import app.mymultiverse.ammo.data.observability.TestObservability
+import app.mymultiverse.ammo.domain.model.sharing.Household
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
+import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembership
+import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.ammo.domain.sharing.AvatarImagePrepareException
 import app.mymultiverse.ammo.domain.sharing.AvatarPersistException
@@ -398,6 +401,81 @@ class HouseholdMembersScreenModelTest {
 
         assertTrue(model.uiState.value.showAddDependantDialog)
         assertEquals(HouseholdMembersError.InsufficientRole, model.uiState.value.dialogError)
+    }
+
+    @Test
+    fun removeMember_removesPersonFromList() = runTest(testDispatcher) {
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Partner",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "partner-id",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold(
+            householdId = "household-1",
+            householdName = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            currentUserId = "owner",
+        )
+        advanceUntilIdle()
+
+        val member = model.uiState.value.members.single { it.id == "member-1" }
+        model.removeMember(member, "household-1")
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.members.any { it.id == "member-1" })
+        assertEquals(1, model.uiState.value.members.size)
+        assertEquals(HouseholdMemberRole.Owner, model.uiState.value.members.single().role)
+    }
+
+    @Test
+    fun membershipRoleObservation_updatesCanManageMembersWhenPromotedToAdmin() = runTest(testDispatcher) {
+        val household = Household(
+            id = "household-1",
+            name = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            nutritionFeatures = emptySet(),
+        )
+        householdRepository = FakeHouseholdRepository(
+            household = household,
+            role = HouseholdMemberRole.Editor,
+        )
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        model.bindHousehold(
+            householdId = household.id,
+            householdName = household.name,
+            ownerId = household.ownerId,
+            ownerDisplayName = household.ownerDisplayName.orEmpty(),
+            currentUserId = "editor-1",
+        )
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.canManageMembers)
+
+        householdRepository.setMembershipStatus(
+            HouseholdMembershipStatus.Active(
+                HouseholdMembership(household = household, role = HouseholdMemberRole.Admin),
+            ),
+        )
+        advanceUntilIdle()
+
+        assertTrue(model.uiState.value.canManageMembers)
+        assertEquals(HouseholdMemberRole.Admin, model.uiState.value.currentUserRole)
     }
 
     @Test

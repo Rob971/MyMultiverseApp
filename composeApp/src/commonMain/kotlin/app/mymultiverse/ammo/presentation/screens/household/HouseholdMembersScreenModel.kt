@@ -10,6 +10,7 @@ import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -139,11 +140,19 @@ class HouseholdMembersScreenModel(
     private var activeUserRole: HouseholdMemberRole? = null
     private var observeJob: Job? = null
     private var householdObserveJob: Job? = null
+    private var membershipObserveJob: Job? = null
 
     init {
         householdObserveJob = scope.launch {
             householdRepository.observeHousehold().collect { household ->
                 _uiState.update { it.copy(householdAvatarUrl = household?.avatarUrl) }
+            }
+        }
+        membershipObserveJob = scope.launch {
+            householdRepository.observeMembershipStatus().collect { status ->
+                if (status is HouseholdMembershipStatus.Active) {
+                    applyMembershipRole(status.role)
+                }
             }
         }
     }
