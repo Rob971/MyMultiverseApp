@@ -11,11 +11,7 @@ import app.mymultiverse.ammo.data.supabase.dto.ProfileAvatarUpdateRow
 import app.mymultiverse.ammo.data.supabase.dto.ProfileIdRow
 import app.mymultiverse.ammo.data.supabase.dto.ProfileRow
 import app.mymultiverse.ammo.domain.auth.resolvedDisplayName
-import app.mymultiverse.ammo.data.supabase.dto.HouseholdInviteInsertRow
-import app.mymultiverse.ammo.data.supabase.dto.HouseholdInvitePendingUpdateRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdInviteRow
-import app.mymultiverse.ammo.data.supabase.dto.HouseholdInviteUpdateRow
-import app.mymultiverse.ammo.data.supabase.dto.HouseholdMemberInsertRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdMemberRow
 import app.mymultiverse.ammo.data.supabase.dto.HouseholdRow
 import app.mymultiverse.ammo.domain.model.sharing.AddMemberResult
@@ -43,7 +39,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.datetime.Clock
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -260,10 +255,10 @@ class SupabaseHouseholdCollaborationRepository(
     override suspend fun removeMember(memberId: String): Result<Unit> = runCatching {
         require(!memberId.startsWith(OWNER_MEMBER_PREFIX)) { "cannot_remove_owner" }
 
-        client.postgrest["household_members"]
-            .delete {
-                filter { eq("id", memberId) }
-            }
+        client.postgrest.rpc(
+            "remove_household_member",
+            buildJsonObject { put("p_member_id", memberId) },
+        )
         membersByHousehold.values.forEach { flow ->
             flow.update { members -> members.filterNot { it.id == memberId } }
         }
@@ -298,14 +293,10 @@ class SupabaseHouseholdCollaborationRepository(
     }
 
     override suspend fun declineInvite(inviteId: String): Result<Unit> = runCatching {
-        client.postgrest["household_invites"]
-            .update(
-                HouseholdInviteUpdateRow(
-                    declinedAt = Clock.System.now().toString(),
-                ),
-            ) {
-                filter { eq("id", inviteId) }
-            }
+        client.postgrest.rpc(
+            "decline_household_invite",
+            buildJsonObject { put("p_invite_id", inviteId) },
+        )
         refreshPendingInvites()
     }
 
@@ -498,84 +489,6 @@ class SupabaseHouseholdCollaborationRepository(
             memberId = member.id,
             contentType = contentType,
             imageBytes = imageBytes.size,
-        )
-    }
-
-    private suspend fun sendOrRefreshInvite(
-        householdId: String,
-        email: String,
-        role: HouseholdMemberRole,
-        invitedBy: String,
-    ) {
-        val insertResult = runCatching {
-            client.postgrest["household_invites"]
-                .insert(
-                    HouseholdInviteInsertRow(
-                        householdId = householdId,
-                        email = email,
-                        role = role.wireName(),
-                        invitedBy = invitedBy,
-                    ),
-                )
-        }
-        if (insertResult.isSuccess) return
-
-        val message = insertResult.exceptionOrNull()?.message.orEmpty().lowercase()
-        if (!message.contains("duplicate") && !message.contains("23505") && !message.contains("unique")) {
-            throw insertResult.exceptionOrNull() ?: IllegalStateException("invite_insert_failed")
-        }
-
-        client.postgrest["household_invites"]
-            .update(
-                HouseholdInvitePendingUpdateRow(
-                    role = role.wireName(),
-                    invitedBy = invitedBy,
-                ),
-            ) {
-                filter {
-                    eq("household_id", householdId)
-                    eq("email", email)
-                }
-            }
-    }
-
-    private suspend fun findProfileIdByEmail(email: String): String? {
-        val parameters = buildJsonObject { put("p_email", email) }
-        return client.postgrest
-            .rpc("find_profile_id_by_email", parameters)
-            .decodeSingleOrNull()
-    }
-
-    private suspend fun resolveProfileEmail(): String? {
-        client.auth.awaitInitialization()
-        val userId = requireUserId()
-        client.ensureCurrentProfile(userId)
-        val profileEmail = currentProfile()?.email?.trim().orEmpty()
-        if (profileEmail.isNotEmpty()) return profileEmail
-
-        return client.auth.currentUserOrNull()?.email?.trim()
-            ?: client.auth.currentSessionOrNull()?.user?.email?.trim()
-    }
-
-    private suspend fun currentProfile(): ProfileRow? {
-        val userId = client.auth.currentUserOrNull()?.id
-            ?: client.auth.currentSessionOrNull()?.user?.id
-            ?: return null
-        return client.postgrest["profiles"]
-            .select(Columns.ALL) {
-                filter { eq("id", userId) }
-            }
-            .decodeSingleOrNull<ProfileRow>()
-    }
-
-    private suspend fun currentProfileDisplayName(userId: String): String {
-        val profile = currentProfile()
-        val authDisplayName = client.auth.currentUserOrNull()?.toAuthUser()?.resolvedDisplayName()
-        return resolvedProfileLabel(
-            displayName = profile?.displayName,
-            email = profile?.email,
-            userId = userId,
-            authDisplayName = authDisplayName,
         )
     }
 

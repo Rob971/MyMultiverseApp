@@ -54,4 +54,9 @@ if [[ -x "./scripts/ci-validate-avatar-rls.sh" ]]; then
   ./scripts/ci-validate-avatar-rls.sh
 fi
 
+if [[ -x "./scripts/ci-validate-household-collaboration-security.sh" ]]; then
+  echo "==> Validating household collaboration authorization"
+  ./scripts/ci-validate-household-collaboration-security.sh
+fi
+
 echo "All Supabase migration checks passed."

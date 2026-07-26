@@ -58,25 +58,6 @@ data class HouseholdInviteRow(
 )
 
 @Serializable
-data class HouseholdInviteInsertRow(
-    @SerialName("household_id") val householdId: String,
-    val email: String,
-    val role: String,
-    @SerialName("invited_by") val invitedBy: String,
-)
-
-@Serializable
-data class HouseholdInviteUpdateRow(
-    @SerialName("declined_at") val declinedAt: String,
-)
-
-@Serializable
-data class HouseholdInvitePendingUpdateRow(
-    val role: String,
-    @SerialName("invited_by") val invitedBy: String,
-)
-
-@Serializable
 data class FindProfileByEmailParams(
     @SerialName("p_email") val email: String,
 )
