@@ -418,6 +418,149 @@ class HouseholdMembersScreenModelTest {
     }
 
     @Test
+    fun admin_canRemovePersonMember() = runTest(testDispatcher) {
+        householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Admin)
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-editor",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Editor",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "editor-ref",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold(
+            householdId = "household-1",
+            householdName = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            currentUserId = "admin-1",
+        )
+        advanceUntilIdle()
+
+        val member = model.uiState.value.members.single { it.id == "member-editor" }
+        model.removeMember(member, "household-1")
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.members.any { it.id == "member-editor" })
+        assertNull(model.uiState.value.error)
+    }
+
+    @Test
+    fun admin_canRemoveDependant() = runTest(testDispatcher) {
+        householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Admin)
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        model.bindHousehold(
+            householdId = "household-1",
+            householdName = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            currentUserId = "admin-1",
+        )
+        model.openAddDependantDialog()
+        model.onDependantNameChange("Mia")
+        model.submitAddDependant("household-1")
+        advanceUntilIdle()
+
+        val dependant = model.uiState.value.members.single { it.kind == HouseholdMemberKind.Dependant }
+        model.removeMember(dependant, "household-1")
+        advanceUntilIdle()
+
+        assertFalse(model.uiState.value.members.any { it.kind == HouseholdMemberKind.Dependant })
+        assertNull(model.uiState.value.error)
+    }
+
+    @Test
+    fun editor_cannotRemovePersonMember() = runTest(testDispatcher) {
+        householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Editor)
+        model = HouseholdMembersScreenModel(
+            collaborationRepository = repository,
+            householdRepository = householdRepository,
+            sessionCoordinator = sessionCoordinator,
+            logger = TestObservability.logger,
+            scope = kotlinx.coroutines.CoroutineScope(testDispatcher + kotlinx.coroutines.SupervisorJob()),
+        )
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-viewer",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Viewer",
+                role = HouseholdMemberRole.Viewer,
+                referenceId = "viewer-ref",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold(
+            householdId = "household-1",
+            householdName = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            currentUserId = "editor-1",
+        )
+        advanceUntilIdle()
+
+        val membersBefore = model.uiState.value.members.size
+        val member = model.uiState.value.members.single { it.id == "member-viewer" }
+        model.removeMember(member, "household-1")
+        advanceUntilIdle()
+
+        // Editor is blocked by canRemoveMember in screen model — list must not change
+        assertEquals(membersBefore, model.uiState.value.members.size)
+    }
+
+    @Test
+    fun removeMember_onRepositoryFailure_showsErrorInUiState() = runTest(testDispatcher) {
+        repository.removeMemberFailure = IllegalStateException(CollaborationErrorCodes.INSUFFICIENT_ROLE)
+        repository.seedMember(
+            householdId = "household-1",
+            member = HouseholdMember(
+                id = "member-1",
+                householdId = "household-1",
+                kind = HouseholdMemberKind.Person,
+                displayName = "Partner",
+                role = HouseholdMemberRole.Editor,
+                referenceId = "partner-ref",
+            ),
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+        )
+        model.bindHousehold(
+            householdId = "household-1",
+            householdName = "Test Household",
+            ownerId = "owner",
+            ownerDisplayName = "Owner",
+            currentUserId = "owner",
+        )
+        advanceUntilIdle()
+
+        val member = model.uiState.value.members.single { it.id == "member-1" }
+        model.removeMember(member, "household-1")
+        advanceUntilIdle()
+
+        assertEquals(HouseholdMembersError.InsufficientRole, model.uiState.value.error)
+    }
+
+    @Test
     fun uploadHouseholdAvatar_setsLoadingThenShowsSuccessSnackbar() = runTest(testDispatcher) {
         model.bindHousehold("household-1", "Test Household", "owner", "Owner", "owner")
         advanceUntilIdle()
