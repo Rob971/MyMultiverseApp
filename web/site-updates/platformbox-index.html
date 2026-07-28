@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PlatformBox | 14-Day Enterprise Internal Developer Platform</title>
+  <meta
+    name="description"
+    content="PlatformBox delivers a production-ready Internal Developer Platform in 14 days: IaC, CI/CD, ephemeral environments, and Kubernetes foundation."
+  />
+  <link rel="stylesheet" href="/styles/site.css" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://platformbox.io/" />
+  <meta property="og:title" content="PlatformBox | 14-Day Enterprise Internal Developer Platform" />
+  <meta
+    property="og:description"
+    content="Install the Golden Path in 14 days and unlock engineering velocity without building a full platform team first."
+  />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header site-header--platformbox">
+    <div class="site-header__inner">
+      <a class="site-logo" href="/">
+        <span class="site-logo__name">PlatformBox</span>
+        <span class="site-logo__tagline">Enterprise Internal Developer Platform</span>
+      </a>
+      <nav aria-label="Primary">
+        <ul class="site-nav">
+          <li><a href="#services">Services</a></li>
+          <li><a href="#economics">Economics</a></li>
+          <li><a href="#investment">Investment</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="platformbox-hero">
+      <div class="container container--wide">
+        <p class="hero__eyebrow">Platform Delivery / 14 Days</p>
+        <h1>The 14-Day Enterprise Internal Developer Platform.</h1>
+        <p class="hero__sub">
+          We deploy an opinionated, production-ready IDP directly into your existing AWS or GCP environment.
+          Your engineers get a self-serve Golden Path to ship code safely and faster.
+        </p>
+        <div class="btn-row platformbox-hero__actions">
+          <a class="btn btn--primary" href="https://calendly.com/robertocornano">Book a 15-minute architecture audit</a>
+          <a class="btn btn--secondary" href="#services">Explore the delivery system</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="container container--wide">
+      <section class="section" id="bottleneck">
+        <p class="section__label">01 / The Bottleneck</p>
+        <h2>Scaling post-Series A often breaks delivery.</h2>
+        <p>
+          Senior developers end up spending up to 30% of their time managing cloud and CI/CD workflows
+          instead of shipping product. New engineers can take weeks to reach safe deployment confidence.
+        </p>
+      </section>
+
+      <section class="section" id="services">
+        <p class="section__label">02 / The Delivery System</p>
+        <h2>The operational baseline your team inherits.</h2>
+        <div class="card-grid card-grid--2">
+          <article class="card platformbox-service-card">
+            <p class="card__badge">01</p>
+            <h3>Infrastructure as Code</h3>
+            <p>
+              Fully modular Terraform foundations that make provisioning self-serve, repeatable, and reviewable.
+            </p>
+          </article>
+          <article class="card platformbox-service-card">
+            <p class="card__badge">02</p>
+            <h3>DevSecOps CI/CD Pipelines</h3>
+            <p>
+              Standardized GitLab or Jenkins pipelines with automation gates and testing built into every path to production.
+            </p>
+          </article>
+          <article class="card platformbox-service-card">
+            <p class="card__badge">03</p>
+            <h3>Ephemeral Environments</h3>
+            <p>
+              Auto-generated preview environments for each pull request so teams validate every change before merge.
+            </p>
+          </article>
+          <article class="card platformbox-service-card">
+            <p class="card__badge">04</p>
+            <h3>Production Kubernetes Foundation</h3>
+            <p>
+              Highly available Kubernetes baseline with secure access boundaries, observability, and rollout safety.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="economics">
+        <p class="section__label">03 / The Economics</p>
+        <h2>Buy back your senior team's focus.</h2>
+        <ul class="bullet-list platformbox-economic-list">
+          <li>
+            <strong>Avoided headcount:</strong> avoid the €120k+ salary and hiring cycle of a dedicated Platform Engineer,
+            while receiving enterprise-grade foundations in 14 days.
+          </li>
+          <li>
+            <strong>Reclaimed payroll:</strong> if a 10-person dev team loses 20% of its week on delivery friction,
+            that can represent roughly $200k/year in lost engineering value.
+          </li>
+          <li>
+            <strong>FinOps savings:</strong> ephemeral environments spin up only when needed and shut down at merge,
+            cutting idle cloud spend.
+          </li>
+        </ul>
+      </section>
+
+      <section class="section" id="investment">
+        <p class="section__label">Fixed Engagement</p>
+        <div class="platformbox-investment">
+          <div>
+            <h2>Investment: $20,000 USD</h2>
+            <p>Fixed project fee · 14 days from kickoff to engineering handoff.</p>
+          </div>
+          <a class="btn btn--primary" href="https://calendly.com/robertocornano">Schedule your architecture audit</a>
+        </div>
+      </section>
+
+      <section class="section" id="contact">
+        <div class="contact-card platformbox-contact">
+          <p class="section__label">Contact</p>
+          <h2>Let's install your Golden Path.</h2>
+          <p class="contact-email"><a href="mailto:roberto@platformbox.io">roberto@platformbox.io</a></p>
+          <p><a href="https://www.linkedin.com/in/robertocornano/">LinkedIn</a></p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <p class="site-footer__copy">&copy; <span id="year"></span> PlatformBox. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
