@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0b0f" />
+  <title>PlatformBox — The 14-Day Enterprise Internal Developer Platform</title>
+  <meta name="description" content="PlatformBox deploys a production-ready Internal Developer Platform into your AWS or GCP environment in 14 days. A self-serve Golden Path so your engineers deploy instantly — without hiring a full-time platform team." />
+
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="canonical" href="https://platformbox.io/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="PlatformBox — The 14-Day Enterprise Internal Developer Platform" />
+  <meta property="og:description" content="A production-ready Internal Developer Platform delivered into your cloud in 14 days. Buy back your senior team's focus." />
+  <meta property="og:url" content="https://platformbox.io/" />
+  <meta property="og:image" content="assets/og-image.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="glow glow--one" aria-hidden="true"></div>
+  <div class="glow glow--two" aria-hidden="true"></div>
+
+  <!-- ===== NAV ===== -->
+  <header class="nav" id="nav">
+    <a class="nav__brand" href="#top" aria-label="PlatformBox home">
+      <span class="nav__mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="26" height="26" fill="none">
+          <rect x="2.5" y="2.5" width="27" height="27" rx="7" stroke="currentColor" stroke-width="2"/>
+          <path d="M16 8.5 22.5 12v8L16 23.5 9.5 20v-8L16 8.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M16 8.5V16m0 0 6.5-4M16 16l-6.5-4M16 16v7.5" stroke="currentColor" stroke-width="1.4" opacity="0.55"/>
+        </svg>
+      </span>
+      <span class="nav__name">PlatformBox</span>
+    </a>
+
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#bottleneck">The Bottleneck</a>
+      <a href="#system">Delivery System</a>
+      <a href="#economics">Economics</a>
+      <a href="#process">Process</a>
+    </nav>
+
+    <a class="btn btn--sm" href="https://calendly.com/robertocornano" target="_blank" rel="noopener">
+      Book Audit
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true"><path d="M4 12 12 4M12 4H5.5M12 4v6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </header>
+
+  <main id="top">
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+      <div class="wrap">
+        <p class="eyebrow reveal">Platform Delivery <span class="eyebrow__dot"></span> 14 Days</p>
+        <h1 class="hero__title reveal">
+          The 14-Day Enterprise <span class="grad">Internal Developer Platform</span>.
+        </h1>
+        <p class="hero__lede reveal">
+          We deploy an opinionated, production-ready IDP into your existing AWS or GCP environment —
+          giving your engineers a self-serve <em>“Golden Path”</em> to ship code instantly,
+          without hiring a full-time platform team.
+        </p>
+        <div class="hero__actions reveal">
+          <a class="btn btn--lg" href="https://calendly.com/robertocornano" target="_blank" rel="noopener">
+            Book a 15-Minute Architecture Audit
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="btn btn--ghost btn--lg" href="#system">See the deliverables</a>
+        </div>
+
+        <dl class="hero__stats reveal">
+          <div><dt>14</dt><dd>Days to handoff</dd></div>
+          <div><dt>€20k</dt><dd>Fixed engagement</dd></div>
+          <div><dt>0</dt><dd>Platform hires needed</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ===== BOTTLENECK ===== -->
+    <section class="section" id="bottleneck">
+      <div class="wrap grid-2">
+        <div class="section__head reveal">
+          <span class="index">01 / The Bottleneck</span>
+          <h2>Post-Series&nbsp;A scaling quietly breaks deployments.</h2>
+        </div>
+        <div class="section__body reveal">
+          <p class="lede">
+            Senior developers spend <strong>30% of their time</strong> babysitting AWS and CI/CD
+            pipelines instead of shipping features — and new hires take <strong>weeks</strong>
+            to safely deploy their first line of code.
+          </p>
+          <ul class="painlist">
+            <li>Fragile, hand-rolled pipelines that only one person understands.</li>
+            <li>Staging bottlenecks where every change waits its turn.</li>
+            <li>Idle cloud spend from environments nobody remembers to tear down.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== DELIVERY SYSTEM ===== -->
+    <section class="section section--alt" id="system">
+      <div class="wrap">
+        <div class="section__head section__head--center reveal">
+          <span class="index">02 / The Delivery System</span>
+          <h2>The operational baseline your team inherits.</h2>
+          <p class="lede lede--center">Four modular, production-grade layers — delivered as reviewable products, not one-off scripts.</p>
+        </div>
+
+        <div class="cards">
+          <article class="card reveal">
+            <span class="card__num">01</span>
+            <div class="card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 7 12 3l8 4-8 4-8-4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </div>
+            <h3>Infrastructure as Code</h3>
+            <p>Fully modular Terraform templates for self-serve provisioning — a versioned cloud foundation that turns repeatable infrastructure into a reviewable product.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="card__num">02</span>
+            <div class="card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="6" cy="6" r="2.4" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="18" r="2.4" stroke="currentColor" stroke-width="1.5"/><path d="M6 8.4V13a4 4 0 0 0 4 4h5.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <h3>DevSecOps CI/CD</h3>
+            <p>Standardized GitLab/Jenkins pipelines with automated testing baked in — a paved path that moves code from pull request to production with reliable controls.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="card__num">03</span>
+            <div class="card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v4M12 17v4M3 12h4M17 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.2 2.6"/></svg>
+            </div>
+            <h3>Ephemeral Environments</h3>
+            <p>Auto-generated preview environments for every pull request — short-lived and isolated, so every change is testable before merge and destroys itself after.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="card__num">04</span>
+            <div class="card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5 20 7v10l-8 4.5L4 17V7l8-4.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <h3>Production Kubernetes</h3>
+            <p>A highly available cluster baseline — managed for you — with observability, access boundaries, and safe, repeatable deployment paths.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ECONOMICS ===== -->
+    <section class="section" id="economics">
+      <div class="wrap">
+        <div class="section__head section__head--center reveal">
+          <span class="index">03 / The Economics</span>
+          <h2>Buy back your senior team’s focus.</h2>
+          <p class="lede lede--center">The investment is deliberately simple: preserve engineering capacity today instead of hiring a permanent platform function before you need one.</p>
+        </div>
+
+        <div class="roi">
+          <article class="roi__item reveal">
+            <h3>Avoided Headcount</h3>
+            <p>Bypass the <strong>€120k+ salary</strong> and 3-month hiring cycle of a dedicated Platform Engineer. Get the enterprise infrastructure they would build — delivered in 14 days.</p>
+          </article>
+          <article class="roi__item reveal">
+            <h3>Reclaimed Payroll</h3>
+            <p>A 10-person team wasting just 20% of the week on manual deploys is losing <strong>$200k/year</strong> in engineering value. We eliminate that friction and boost feature velocity.</p>
+          </article>
+          <article class="roi__item reveal">
+            <h3>FinOps &amp; Cloud Savings</h3>
+            <p>Ephemeral environments spin up for testing and destroy themselves on merge — <strong>eliminating idle AWS/GCP waste</strong> that silently inflates your bill.</p>
+          </article>
+        </div>
+
+        <div class="pricecard reveal">
+          <div class="pricecard__meta">
+            <span class="pricecard__label">The Investment</span>
+            <p class="pricecard__note">Fixed project fee. No retainer, no surprises.</p>
+          </div>
+          <div class="pricecard__price">
+            <span class="pricecard__amount">€20,000</span>
+            <span class="pricecard__unit">EUR · fixed engagement</span>
+          </div>
+          <div class="pricecard__timeline">
+            <span class="pricecard__amount">14 Days</span>
+            <span class="pricecard__unit">kickoff → engineering handoff</span>
+          </div>
+          <a class="btn btn--lg" href="https://calendly.com/robertocornano" target="_blank" rel="noopener">
+            Book a 15-Minute Architecture Audit
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PROCESS ===== -->
+    <section class="section section--alt" id="process">
+      <div class="wrap">
+        <div class="section__head section__head--center reveal">
+          <span class="index">04 / The Process</span>
+          <h2>From kickoff to handoff in three moves.</h2>
+        </div>
+        <ol class="steps">
+          <li class="step reveal">
+            <span class="step__num">01</span>
+            <h3>Architecture Audit</h3>
+            <p>A focused 15-minute call to map your stack, constraints, and the “Golden Path” your engineers actually need.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step__num">02</span>
+            <h3>14-Day Delivery</h3>
+            <p>We deploy the IDP directly into your AWS or GCP account — IaC, pipelines, ephemeral envs, and a production K8s baseline.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step__num">03</span>
+            <h3>Engineering Handoff</h3>
+            <p>Your team inherits a documented, reviewable platform they own end-to-end — self-serve from day one.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===== CTA / CONTACT ===== -->
+    <section class="cta" id="contact">
+      <div class="wrap cta__inner reveal">
+        <h2>Ship faster in 14 days — not two quarters.</h2>
+        <p>Let’s see if the Golden Path fits your team. Book the audit or reach out directly.</p>
+        <div class="cta__actions">
+          <a class="btn btn--lg" href="https://calendly.com/robertocornano" target="_blank" rel="noopener">Book a 15-Minute Architecture Audit</a>
+          <a class="btn btn--ghost btn--lg" href="mailto:roberto@platformbox.io">roberto@platformbox.io</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="wrap footer__inner">
+      <div class="footer__brand">
+        <span class="nav__mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="22" height="22" fill="none">
+            <rect x="2.5" y="2.5" width="27" height="27" rx="7" stroke="currentColor" stroke-width="2"/>
+            <path d="M16 8.5 22.5 12v8L16 23.5 9.5 20v-8L16 8.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>PlatformBox</span>
+      </div>
+      <div class="footer__contact">
+        <a href="mailto:roberto@platformbox.io">roberto@platformbox.io</a>
+        <a href="tel:+34624411164">+34 624 41 11 64</a>
+        <a href="https://www.linkedin.com/in/robertocornano/" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+      <p class="footer__copy">© <span id="year"></span> PlatformBox. Enterprise IDP delivery.</p>
+    </div>
+  </footer>
+
+  <script src="main.js" defer></script>
+</body>
+</html>
