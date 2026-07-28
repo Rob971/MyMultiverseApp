@@ -6,7 +6,7 @@
   --bg-elevated: #241915;
   --bg-soft: #1d1613;
   --ink: #f4ede4;
-  --ink-muted: #b9a99a;
+  --ink-muted: #cbbbaa;
   --accent: #c4834b;
   --accent-soft: rgba(196, 131, 75, 0.18);
   --line: rgba(185, 169, 154, 0.18);
@@ -276,9 +276,9 @@ p {
 }
 
 .btn--compact {
-  min-height: 40px;
-  padding-inline: 14px;
-  font-size: 0.9rem;
+  min-height: 48px;
+  padding-inline: 16px;
+  font-size: 0.95rem;
 }
 
 .btn--text {
@@ -782,7 +782,8 @@ p {
     align-items: stretch;
   }
 
-  .btn {
+  .hero__actions .btn,
+  .engagement__copy .btn {
     width: 100%;
   }
 
