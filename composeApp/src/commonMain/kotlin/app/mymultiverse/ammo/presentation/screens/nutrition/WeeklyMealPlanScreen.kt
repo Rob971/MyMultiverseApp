@@ -174,6 +174,7 @@ private fun WeeklyMealPlanScreenContent(
     )
     val previousWeekLabel = stringResource(Res.string.nutrition_week_previous)
     val nextWeekLabel = stringResource(Res.string.nutrition_week_next)
+    val todayLabel = stringResource(Res.string.nutrition_today)
     val progressLabel = stringResource(
         Res.string.nutrition_meal_plan_progress,
         mealProgress.plannedSlots,
@@ -452,6 +453,8 @@ private fun WeeklyMealPlanScreenContent(
                             nextWeekLabel = nextWeekLabel,
                             onPreviousWeek = { screenModel.selectWeekOffset(weekOffset - 1) },
                             onNextWeek = { screenModel.selectWeekOffset(weekOffset + 1) },
+                            todayLabel = if (weekOffset > 0) todayLabel else null,
+                            onToday = if (weekOffset > 0) { { screenModel.selectWeekOffset(0) } } else null,
                         )
                     }
 

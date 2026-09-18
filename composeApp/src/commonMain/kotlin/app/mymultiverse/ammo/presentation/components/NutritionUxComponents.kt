@@ -1,6 +1,7 @@
 package app.mymultiverse.ammo.presentation.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
@@ -26,6 +28,7 @@ import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 object WeekSelectorTestTags {
     const val PREVIOUS = "nutrition_week_previous"
     const val NEXT = "nutrition_week_next"
+    const val TODAY = "nutrition_week_today"
 }
 
 @Composable
@@ -38,6 +41,8 @@ fun WeekSelectorBanner(
     onPreviousWeek: () -> Unit,
     onNextWeek: () -> Unit,
     modifier: Modifier = Modifier,
+    todayLabel: String? = null,
+    onToday: (() -> Unit)? = null,
 ) {
     val brandTeal = JourneySemanticColors.brandTeal()
     Surface(
@@ -53,6 +58,24 @@ fun WeekSelectorBanner(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
+            if (onToday != null && todayLabel != null) {
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = brandTeal,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .clickable(onClick = onToday)
+                        .testTag(WeekSelectorTestTags.TODAY),
+                ) {
+                    Text(
+                        text = todayLabel,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
             JourneyIconButton(
                 onClick = onPreviousWeek,
                 enabled = canGoToPreviousWeek,
