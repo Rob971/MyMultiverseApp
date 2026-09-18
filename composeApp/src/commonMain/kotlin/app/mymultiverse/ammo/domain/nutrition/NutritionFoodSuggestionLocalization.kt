@@ -267,7 +267,7 @@ object NutritionFoodSuggestionLocalization {
         buildMap {
             for ((english, translations) in mealDishes) {
                 for ((_, localized) in translations) {
-                    putIfAbsent(localized.lowercase(), english)
+                    getOrPut(localized.lowercase()) { english }
                 }
             }
         }
