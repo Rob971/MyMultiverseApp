@@ -970,7 +970,7 @@ private fun AiKeyInlineForm(
             trailingIcon = {
                 JourneyIconButton(onClick = { showKey = !showKey }) {
                     JourneyIcon(
-                        imageVector = if (showKey) AppIcons.Visibility else AppIcons.VisibilityOff,
+                        imageVector = if (showKey) AppIcons.VisibilityOff else AppIcons.Visibility,
                         role = AppIconRole.Muted,
                         contentDescription = null,
                     )

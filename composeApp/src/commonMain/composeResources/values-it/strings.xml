@@ -42,6 +42,8 @@
     <string name="nutrition_meal_plan_not_planned">Nessun pasto pianificato</string>
     <string name="nutrition_meal_plan_expand_day">Mostra pasti</string>
     <string name="nutrition_meal_plan_collapse_day">Nascondi pasti</string>
+    <string name="nutrition_meal_plan_expanded">Espanso</string>
+    <string name="nutrition_meal_plan_collapsed">Compresso</string>
     <string name="nutrition_grocery_title">Spesa settimanale</string>
     <string name="nutrition_household_viewer_readonly_note">Puoi vedere liste e piani condivisi, ma non modificarli.</string>
     <string name="nutrition_grocery_description">Crea e spunta la lista della spesa di questa settimana.</string>

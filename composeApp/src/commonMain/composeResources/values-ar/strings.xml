@@ -42,6 +42,8 @@
     <string name="nutrition_meal_plan_not_planned">لا توجد وجبات مخططة بعد</string>
     <string name="nutrition_meal_plan_expand_day">إظهار الوجبات</string>
     <string name="nutrition_meal_plan_collapse_day">إخفاء الوجبات</string>
+    <string name="nutrition_meal_plan_expanded">موسّع</string>
+    <string name="nutrition_meal_plan_collapsed">مطوي</string>
     <string name="nutrition_grocery_title">تسوق الأسبوع</string>
     <string name="nutrition_household_viewer_readonly_note">يمكنك رؤية القوائم والخطط المشتركة لكن لا يمكنك تعديلها.</string>
     <string name="nutrition_grocery_description">أنشئ قائمة التسوق لهذا الأسبوع وحدّد ما اكتمل.</string>

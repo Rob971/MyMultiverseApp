@@ -42,6 +42,8 @@
     <string name="nutrition_meal_plan_not_planned">Sin comidas planificadas</string>
     <string name="nutrition_meal_plan_expand_day">Ver comidas</string>
     <string name="nutrition_meal_plan_collapse_day">Ocultar comidas</string>
+    <string name="nutrition_meal_plan_expanded">Expandido</string>
+    <string name="nutrition_meal_plan_collapsed">Contraído</string>
     <string name="nutrition_grocery_title">Compra semanal</string>
     <string name="nutrition_household_viewer_readonly_note">Puedes ver listas y planes compartidos, pero no editarlos.</string>
     <string name="nutrition_grocery_description">Crea y marca la lista de la compra de esta semana.</string>

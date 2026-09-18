@@ -34,7 +34,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -144,15 +146,17 @@ fun LoginScreen(
                 .padding(padding)
                 .padding(horizontal = ScreenLayout.horizontalPadding),
         ) {
+            val layoutDirection = LocalLayoutDirection.current
             AnimatedContent(
                 targetState = uiState.isOnStep2,
                 transitionSpec = {
+                    val forward = if (layoutDirection == LayoutDirection.Rtl) -1 else 1
                     if (targetState) {
-                        (slideInHorizontally { it } + fadeIn()) togetherWith
-                            (slideOutHorizontally { -it } + fadeOut())
+                        (slideInHorizontally { it * forward } + fadeIn()) togetherWith
+                            (slideOutHorizontally { -it * forward } + fadeOut())
                     } else {
-                        (slideInHorizontally { -it } + fadeIn()) togetherWith
-                            (slideOutHorizontally { it } + fadeOut())
+                        (slideInHorizontally { -it * forward } + fadeIn()) togetherWith
+                            (slideOutHorizontally { it * forward } + fadeOut())
                     }
                 },
                 label = "registration_step",
