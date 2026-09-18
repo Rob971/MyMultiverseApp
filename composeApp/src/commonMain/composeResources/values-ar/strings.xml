@@ -44,6 +44,9 @@
     <string name="nutrition_meal_plan_collapse_day">إخفاء الوجبات</string>
     <string name="nutrition_meal_plan_expanded">موسّع</string>
     <string name="nutrition_meal_plan_collapsed">مطوي</string>
+    <string name="nutrition_meal_accept">قبول</string>
+    <string name="nutrition_meal_replace">استبدال</string>
+    <string name="nutrition_meal_accept_done">أُضيف إلى خطتك</string>
     <string name="nutrition_grocery_title">تسوق الأسبوع</string>
     <string name="nutrition_household_viewer_readonly_note">يمكنك رؤية القوائم والخطط المشتركة لكن لا يمكنك تعديلها.</string>
     <string name="nutrition_grocery_description">أنشئ قائمة التسوق لهذا الأسبوع وحدّد ما اكتمل.</string>
@@ -200,6 +203,7 @@
     <string name="nutrition_ai_meal_plan_result_title">معاينة</string>
     <string name="nutrition_meal_plan_preview_line">%1$s: %2$s</string>
     <string name="nutrition_ai_apply_meal_plan">تطبيق على الخطة</string>
+    <string name="nutrition_ai_replace_week">استبدال الأسبوع بأكمله</string>
     <string name="nutrition_ai_ingredients_step_title">إضافة المكونات؟</string>
     <string name="nutrition_ai_ingredients_step_body">اقترح الذكاء الاصطناعي مشتريات لهذه الوجبة. أضفها إلى قائمتك أو تخطَّها الآن.</string>
     <string name="nutrition_ai_ingredients_step_loading">جارٍ اقتراح المكونات…</string>

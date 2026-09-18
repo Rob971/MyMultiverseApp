@@ -33,6 +33,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flatMapLatest
@@ -63,6 +64,13 @@ sealed class NutritionAiState {
     ) : NutritionAiState()
     data class Error(val message: String, val isKeyMissing: Boolean = false) : NutritionAiState()
 }
+
+/** Captures the pre-accept value of one meal slot so an accept can be undone. */
+data class MealPlanAcceptUndo(
+    val dayIndex: Int,
+    val slot: MealSlot,
+    val previousLabel: String,
+)
 
 class NutritionScreenModel(
     private val session: NutritionSessionCoordinator,
@@ -333,6 +341,9 @@ class NutritionScreenModel(
     private val _mealGroceryResult = MutableStateFlow<MealGroceryResult?>(null)
     val mealGroceryResult: StateFlow<MealGroceryResult?> = _mealGroceryResult.asStateFlow()
 
+    private val _mealPlanAcceptUndo = MutableStateFlow<MealPlanAcceptUndo?>(null)
+    val mealPlanAcceptUndo: StateFlow<MealPlanAcceptUndo?> = _mealPlanAcceptUndo.asStateFlow()
+
     data class BulkMealGroceryResult(
         val addedCount: Int,
         val mealsProcessed: Int,
@@ -509,7 +520,7 @@ class NutritionScreenModel(
         mealPlanSaveJob = scope.launch {
             delay(MEAL_PLAN_SAVE_DEBOUNCE_MS)
             mealPlanMutex.withLock {
-                val current = mealPlan.value
+                val current = repository.observeMealPlan().first()
                 val days = current.days.toMutableList()
                 val existing = days[dayIndex]
                 days[dayIndex] = existing.copy(
@@ -543,7 +554,7 @@ class NutritionScreenModel(
         scope.launch {
             mealPlanMutex.withLock {
                 repository.saveMealPlan(
-                    mealPlan.value.copy(days = List(WeeklyMealPlan.DAYS_IN_WEEK) { DayMeals() }),
+                    repository.observeMealPlan().first().copy(days = List(WeeklyMealPlan.DAYS_IN_WEEK) { DayMeals() }),
                 )
             }
         }
@@ -624,6 +635,65 @@ class NutritionScreenModel(
         val preview = _aiState.value as? NutritionAiState.MealPlanPreview ?: return
         repository.saveMealPlan(preview.plan)
         _aiState.value = NutritionAiState.Idle
+    }
+
+    /**
+     * Accepts one meal-slot suggestion from the current preview into the live plan,
+     * capturing the prior value so [undoMealPlanAccept] can restore it.
+     * Returns false when there is no preview, the slot is empty, or writes are blocked.
+     */
+    fun acceptPreviewedMeal(dayIndex: Int, slot: MealSlot): Boolean {
+        if (!canWriteHouseholdData.value) return false
+        val preview = _aiState.value as? NutritionAiState.MealPlanPreview ?: return false
+        val previewDay = preview.plan.days.getOrNull(dayIndex) ?: return false
+        val suggested = when (slot) {
+            MealSlot.Lunch -> previewDay.lunch
+            MealSlot.Dinner -> previewDay.dinner
+        }.trim()
+        if (suggested.isEmpty()) return false
+
+        scope.launch {
+            mealPlanMutex.withLock {
+                val current = repository.observeMealPlan().first()
+                val existing = current.days.getOrNull(dayIndex) ?: return@withLock
+                val previous = when (slot) {
+                    MealSlot.Lunch -> existing.lunch
+                    MealSlot.Dinner -> existing.dinner
+                }
+                val days = current.days.toMutableList()
+                days[dayIndex] = existing.copy(
+                    lunch = if (slot == MealSlot.Lunch) suggested else existing.lunch,
+                    dinner = if (slot == MealSlot.Dinner) suggested else existing.dinner,
+                )
+                logger.breadcrumb("meal_accept day=$dayIndex slot=${slot.name.lowercase()}")
+                repository.saveMealPlan(current.copy(days = days))
+                _mealPlanAcceptUndo.value = MealPlanAcceptUndo(dayIndex, slot, previous)
+            }
+        }
+        return true
+    }
+
+    /** Restores the value that was in place before the most recent accepted suggestion. */
+    fun undoMealPlanAccept() {
+        val undo = _mealPlanAcceptUndo.value ?: return
+        _mealPlanAcceptUndo.value = null
+        scope.launch {
+            mealPlanMutex.withLock {
+                val current = repository.observeMealPlan().first()
+                val existing = current.days.getOrNull(undo.dayIndex) ?: return@withLock
+                val days = current.days.toMutableList()
+                days[undo.dayIndex] = existing.copy(
+                    lunch = if (undo.slot == MealSlot.Lunch) undo.previousLabel else existing.lunch,
+                    dinner = if (undo.slot == MealSlot.Dinner) undo.previousLabel else existing.dinner,
+                )
+                repository.saveMealPlan(current.copy(days = days))
+            }
+        }
+    }
+
+    /** Drops the pending accept-undo without restoring anything. */
+    fun clearMealPlanAcceptUndo() {
+        _mealPlanAcceptUndo.value = null
     }
 
     /**
@@ -822,6 +892,7 @@ class NutritionScreenModel(
 
     fun resetAiState() {
         _aiState.value = NutritionAiState.Idle
+        _mealPlanAcceptUndo.value = null
     }
 
     /**

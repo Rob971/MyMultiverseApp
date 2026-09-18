@@ -44,6 +44,9 @@
     <string name="nutrition_meal_plan_collapse_day">Nascondi pasti</string>
     <string name="nutrition_meal_plan_expanded">Espanso</string>
     <string name="nutrition_meal_plan_collapsed">Compresso</string>
+    <string name="nutrition_meal_accept">Accetta</string>
+    <string name="nutrition_meal_replace">Sostituisci</string>
+    <string name="nutrition_meal_accept_done">Aggiunto al tuo piano</string>
     <string name="nutrition_grocery_title">Spesa settimanale</string>
     <string name="nutrition_household_viewer_readonly_note">Puoi vedere liste e piani condivisi, ma non modificarli.</string>
     <string name="nutrition_grocery_description">Crea e spunta la lista della spesa di questa settimana.</string>
@@ -200,6 +203,7 @@
     <string name="nutrition_ai_meal_plan_result_title">Anteprima</string>
     <string name="nutrition_meal_plan_preview_line">%1$s: %2$s</string>
     <string name="nutrition_ai_apply_meal_plan">Applica al piano</string>
+    <string name="nutrition_ai_replace_week">Sostituisci tutta la settimana</string>
     <string name="nutrition_ai_ingredients_step_title">Aggiungere ingredienti?</string>
     <string name="nutrition_ai_ingredients_step_body">L'IA ha suggerito la spesa per questo pasto. Aggiungili alla lista o salta per ora.</string>
     <string name="nutrition_ai_ingredients_step_loading">Suggerimento ingredienti…</string>

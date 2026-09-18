@@ -74,6 +74,7 @@ import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import app.mymultiverse.ammo.presentation.theme.SharedJourneyColors
 import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.nutrition_ai_apply_meal_plan
+import ammo.composeapp.generated.resources.nutrition_ai_replace_week
 import ammo.composeapp.generated.resources.nutrition_ai_clear_grocery
 import ammo.composeapp.generated.resources.nutrition_ai_criteria_hint
 import ammo.composeapp.generated.resources.nutrition_ai_description
@@ -123,9 +124,12 @@ import ammo.composeapp.generated.resources.nutrition_ai_suggestions_title
 import ammo.composeapp.generated.resources.nutrition_ai_title
 import ammo.composeapp.generated.resources.nutrition_ai_try_again
 import ammo.composeapp.generated.resources.nutrition_grocery_undo_action
+import ammo.composeapp.generated.resources.nutrition_meal_accept
+import ammo.composeapp.generated.resources.nutrition_meal_accept_done
 import ammo.composeapp.generated.resources.nutrition_meal_dinner
 import ammo.composeapp.generated.resources.nutrition_meal_lunch
 import ammo.composeapp.generated.resources.nutrition_meal_plan_preview_line
+import ammo.composeapp.generated.resources.nutrition_meal_replace
 import ammo.composeapp.generated.resources.nutrition_week_label
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -159,6 +163,7 @@ fun NutritionAiAssistantContent(
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val mealGroceryLoading by screenModel.mealGroceryLoading.collectAsState()
     val adoptAllResult by screenModel.adoptAllGroceryResult.collectAsState()
+    val mealPlanAcceptUndo by screenModel.mealPlanAcceptUndo.collectAsState()
     val resolvedMode = launchContext?.mode ?: initialMode ?: NutritionAiMode.Advice
     var criteria by remember(launchContext?.initialCriteria) {
         mutableStateOf(launchContext?.initialCriteria.orEmpty())
@@ -327,6 +332,21 @@ fun NutritionAiAssistantContent(
         snackbar.showSnackbar(message)
         screenModel.consumeAdoptAllGroceryResult()
         finishIngredientsStep()
+    }
+
+    val mealAcceptUndoMessage = stringResource(Res.string.nutrition_meal_accept_done)
+    val mealAcceptUndoAction = stringResource(Res.string.nutrition_grocery_undo_action)
+    LaunchedEffect(mealPlanAcceptUndo, mealAcceptUndoMessage, mealAcceptUndoAction) {
+        val undo = mealPlanAcceptUndo ?: return@LaunchedEffect
+        val result = snackbar.showSnackbar(
+            message = mealAcceptUndoMessage,
+            actionLabel = mealAcceptUndoAction,
+            withDismissAction = true,
+        )
+        when (result) {
+            SnackbarResult.ActionPerformed -> screenModel.undoMealPlanAccept()
+            SnackbarResult.Dismissed -> screenModel.clearMealPlanAcceptUndo()
+        }
     }
 
     LazyColumn(
@@ -681,11 +701,16 @@ fun NutritionAiAssistantContent(
                 val singleMealSlot = (state.scope as? MealPlanGenerationScope.SingleMeal)?.slot
                 items(daysToShow, key = { it }) { dayIndex ->
                     val day = state.plan.days[dayIndex]
+                    val liveDay = mealPlan.days.getOrNull(dayIndex)
                     MealPlanPreviewCard(
                         dayIndex = dayIndex,
                         lunch = day.lunch,
                         dinner = day.dinner,
                         visibleSlot = singleMealSlot,
+                        liveLunch = liveDay?.lunch ?: "",
+                        liveDinner = liveDay?.dinner ?: "",
+                        canAccept = canWrite,
+                        onAccept = { slot -> screenModel.acceptPreviewedMeal(dayIndex, slot) },
                         modifier = Modifier.testTag(
                             "${NutritionAiTestTags.MEAL_PLAN_PREVIEW_ROW_PREFIX}$dayIndex",
                         ),
@@ -717,7 +742,17 @@ fun NutritionAiAssistantContent(
                             .testTag(NutritionAiTestTags.APPLY_MEAL_PLAN_BUTTON),
                         enabled = canWrite,
                     ) {
-                        Text(stringResource(Res.string.nutrition_ai_apply_meal_plan))
+                        Text(
+                            text = stringResource(
+                                if (state.scope is MealPlanGenerationScope.FullWeek &&
+                                    mealPlan.days.any { it.lunch.isNotBlank() || it.dinner.isNotBlank() }
+                                ) {
+                                    Res.string.nutrition_ai_replace_week
+                                } else {
+                                    Res.string.nutrition_ai_apply_meal_plan
+                                },
+                            ),
+                        )
                     }
                 }
                 item { ResetButton { screenModel.resetAiState(); criteria = "" } }
@@ -815,6 +850,10 @@ private fun MealPlanPreviewCard(
     modifier: Modifier = Modifier,
     /** When non-null, only the specified slot is shown (single-meal generation flow). */
     visibleSlot: MealSlot? = null,
+    liveLunch: String = "",
+    liveDinner: String = "",
+    canAccept: Boolean = true,
+    onAccept: (MealSlot) -> Unit = {},
 ) {
     val dayLabel = nutritionDayLabel(dayIndex)
     FamilyLogisticsCardSurface {
@@ -822,7 +861,7 @@ private fun MealPlanPreviewCard(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
                 text = dayLabel,
@@ -831,27 +870,67 @@ private fun MealPlanPreviewCard(
                 color = JourneySemanticColors.inkDeep(),
             )
             if (visibleSlot == null || visibleSlot == MealSlot.Lunch) {
-                Text(
-                    text = stringResource(
-                        Res.string.nutrition_meal_plan_preview_line,
-                        stringResource(Res.string.nutrition_meal_lunch),
-                        lunch,
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = JourneySemanticColors.inkDeep(),
+                MealPlanPreviewSlot(
+                    slotLabel = stringResource(Res.string.nutrition_meal_lunch),
+                    text = lunch,
+                    accepted = lunch.isNotBlank() && lunch.trim() == liveLunch.trim(),
+                    replace = liveLunch.isNotBlank() && lunch.trim() != liveLunch.trim(),
+                    canAccept = canAccept,
+                    testTag = "${NutritionAiTestTags.MEAL_PLAN_ACCEPT_LUNCH_PREFIX}$dayIndex",
+                    onAccept = { onAccept(MealSlot.Lunch) },
                 )
             }
             if (visibleSlot == null || visibleSlot == MealSlot.Dinner) {
-                Text(
-                    text = stringResource(
-                        Res.string.nutrition_meal_plan_preview_line,
-                        stringResource(Res.string.nutrition_meal_dinner),
-                        dinner,
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = JourneySemanticColors.inkDeep(),
+                MealPlanPreviewSlot(
+                    slotLabel = stringResource(Res.string.nutrition_meal_dinner),
+                    text = dinner,
+                    accepted = dinner.isNotBlank() && dinner.trim() == liveDinner.trim(),
+                    replace = liveDinner.isNotBlank() && dinner.trim() != liveDinner.trim(),
+                    canAccept = canAccept,
+                    testTag = "${NutritionAiTestTags.MEAL_PLAN_ACCEPT_DINNER_PREFIX}$dayIndex",
+                    onAccept = { onAccept(MealSlot.Dinner) },
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun MealPlanPreviewSlot(
+    slotLabel: String,
+    text: String,
+    accepted: Boolean,
+    replace: Boolean,
+    canAccept: Boolean,
+    testTag: String,
+    onAccept: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = stringResource(Res.string.nutrition_meal_plan_preview_line, slotLabel, text),
+            style = MaterialTheme.typography.bodyMedium,
+            color = JourneySemanticColors.inkDeep(),
+        )
+        if (accepted) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                JourneyIcon(
+                    role = AppIconRole.ActionConfirm,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
+        } else {
+            JourneyTertiaryButton(
+                onClick = onAccept,
+                modifier = Modifier.testTag(testTag),
+                enabled = canAccept,
+                label = stringResource(
+                    if (replace) Res.string.nutrition_meal_replace else Res.string.nutrition_meal_accept,
+                ),
+            )
         }
     }
 }

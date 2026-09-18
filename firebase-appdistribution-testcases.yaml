@@ -960,11 +960,25 @@ testcases:
     steps:
       - Ensure a valid Gemini API key is saved.
       - Open Weekly meal plan → Plan with AI; enter criteria such as "Vegetarian Italian week".
-      - Tap Generate, then Apply to meal plan.
+      - Tap Generate, then tap Apply to meal plan (reads Replace whole week when the week already has meals).
     expected:
       - Preview shows 7 days of lunch/dinner dish names relevant to the criteria (not generic placeholder names).
       - Dish names are in the app language (e.g. Italian dishes in Italian when app language is Italian).
       - Apply fills the plan; dishes match what was shown in the preview.
+
+  - id: ai-meal-plan-accept-slot
+    title: Accept AI meal suggestions one slot at a time (with undo)
+    steps:
+      - Ensure a valid Gemini API key is saved.
+      - Open Weekly meal plan → Plan with AI; enter criteria such as "Vegetarian Italian week"; tap Generate.
+      - On the preview, tap Accept under one lunch slot (testTag nutrition_ai_accept_lunch_{n}); leave the other slots untouched.
+      - Pre-fill a meal slot (e.g. pair lunch on a day), reopen Plan with AI, and confirm that slot's button reads Replace; tap it.
+      - Immediately after accepting, tap Undo in the snackbar.
+    expected:
+      - Each visible preview slot has its own Accept or Replace button; the whole-plan button (Apply, or Replace whole week when the week already has meals) still works for applying everything at once.
+      - Accept fills only that single slot in the week plan; all other slots keep their previous values.
+      - A slot that already had a meal shows Replace and overwrites only that slot.
+      - After accepting, a snackbar offers Undo; tapping Undo restores the slot's previous value (or leaves it empty if it was empty before).
 
   - id: ai-dish-ingredients-gemini
     title: Dish-specific ingredient list via Gemini (key configured)
