@@ -89,8 +89,9 @@ class NutritionUxInstrumentedTest {
         adviceAnswer: String = "Eat more vegetables.",
         initialAiGrocery: List<GroceryItem> = emptyList(),
         plannedLunch: Pair<Int, String>? = null,
+        householdId: String? = null,
     ): NutritionScreenModel {
-        val repository = InstrumentedNutritionRepository(weekKey)
+        val repository = InstrumentedNutritionRepository(weekKey, householdId = householdId)
         repository.aiGrocery.value = initialAiGrocery
         plannedLunch?.let { (dayIndex, lunch) ->
             repository.mealPlan.value = repository.mealPlan.value.copy(
@@ -142,7 +143,7 @@ class NutritionUxInstrumentedTest {
 
     @Test
     fun grocery_ghostPairingBanner_addsSuggestedItems() {
-        val screenModel = nutritionScreenModel()
+        val screenModel = nutritionScreenModel(householdId = "instrumented-household")
 
         composeRule.setContent {
             AppTheme {
@@ -161,8 +162,8 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(GroceryGhostPairingTestTags.ACTION).performClick()
         composeRule.waitForState(screenModel.groceryItems) { it.size >= 4 }
 
-        composeRule.onNodeWithText("Salsa").assertIsDisplayed()
-        composeRule.onNodeWithText("Cheese").assertIsDisplayed()
+        composeRule.onNodeWithText("salsa").assertIsDisplayed()
+        composeRule.onNodeWithText("cheese").assertIsDisplayed()
     }
 
     @Test
