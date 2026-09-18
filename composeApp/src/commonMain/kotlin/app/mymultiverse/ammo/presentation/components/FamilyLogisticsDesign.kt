@@ -28,6 +28,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -99,7 +101,7 @@ fun FamilyLogisticsSectionHeader(
     ) {
         Text(
             text = title,
-            modifier = clickableTitleModifier,
+            modifier = clickableTitleModifier.semantics { heading() },
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Black,
             color = JourneySemanticColors.inkDeep(),

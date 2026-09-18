@@ -703,6 +703,7 @@ private fun LazyListScope.groceryShoppingListItems(
         items(
             items = displayItems,
             key = { "item-${it.id}" },
+            contentType = { "grocery" },
         ) { item ->
             val index = items.indexOfFirst { it.id == item.id }
             GroceryListItem(

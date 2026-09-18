@@ -261,7 +261,7 @@ Apply via Management API (uses `supabase login` token or `SUPABASE_ACCESS_TOKEN`
 ./scripts/configure-supabase-auth-redirects.sh
 ```
 
-Enable Google/Apple providers for OAuth. Add provider redirect URI `https://ammo.mymultiverse.app/auth/v1/callback` (Google Cloud + Apple Sign in with Apple). Ensure **Realtime** is enabled (Database → Replication).
+Enable Google/Apple providers for OAuth. In the provider's developer console (Google Cloud / Apple Developer), add the **Supabase Auth callback URI(s)** to the authorized redirect URIs. Supabase advertises the callback as `https://<project-ref>.supabase.co/auth/v1/callback` — currently `https://ivjdzreazvkrrirecznk.supabase.co/auth/v1/callback` — and the custom-domain form `https://ammo.mymultiverse.app/auth/v1/callback`. Add **both**. (A missing entry surfaces as Google's `redirect_uri_mismatch` error; `./scripts/verify-ammo-release-readiness.sh` now detects it and prints the exact URI to add.) Ensure **Realtime** is enabled (Database → Replication).
 
 ### App Links / Universal Links (`mymultiverse.app`)
 

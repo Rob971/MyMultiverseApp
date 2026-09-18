@@ -53,7 +53,7 @@ fun JourneyTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     focusAccentColor: Color = SharedJourneyColors.MediterraneanTeal,
 ) {
-    val fontScale = maxOf(1f, LocalDensity.current.fontScale)
+    val fontScale = minOf(maxOf(1f, LocalDensity.current.fontScale), 1.3f)
     val scaledMinHeight: Dp? = if (singleLine && minLines <= 1) {
         (JourneyTextFieldDefaults.minHeight.value * fontScale).dp
     } else {
@@ -106,7 +106,7 @@ fun JourneyTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     focusAccentColor: Color = SharedJourneyColors.MediterraneanTeal,
 ) {
-    val fontScale = maxOf(1f, LocalDensity.current.fontScale)
+    val fontScale = minOf(maxOf(1f, LocalDensity.current.fontScale), 1.3f)
     val scaledMinHeight: Dp? = if (singleLine && minLines <= 1) {
         (JourneyTextFieldDefaults.minHeight.value * fontScale).dp
     } else {

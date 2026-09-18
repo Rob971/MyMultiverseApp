@@ -292,7 +292,7 @@ private fun GroceryFlatRowContent(
     var editText by remember(item.id, isEditing) { mutableStateOf(item.label) }
     var showDeleteConfirm by remember(item.id) { mutableStateOf(false) }
     val performHaptic = rememberJourneyHapticFeedback()
-    val fontScale = maxOf(1f, LocalDensity.current.fontScale)
+    val fontScale = minOf(maxOf(1f, LocalDensity.current.fontScale), 1.3f)
     val rowMinHeight = (56 * fontScale).dp
     val density = LocalDensity.current
     val reorderThresholdPx = remember(density) { with(density) { 48.dp.toPx() } }
