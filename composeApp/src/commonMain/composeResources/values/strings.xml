@@ -42,6 +42,8 @@
     <string name="nutrition_meal_plan_not_planned">No meals planned yet</string>
     <string name="nutrition_meal_plan_expand_day">Show meals</string>
     <string name="nutrition_meal_plan_collapse_day">Hide meals</string>
+    <string name="nutrition_meal_plan_expanded">Expanded</string>
+    <string name="nutrition_meal_plan_collapsed">Collapsed</string>
     <string name="nutrition_grocery_title">Grocery shopping</string>
     <string name="nutrition_household_viewer_readonly_note">You can see shared lists and plans but can't edit them.</string>
     <string name="nutrition_grocery_description">Build and check off this week's shopping list.</string>

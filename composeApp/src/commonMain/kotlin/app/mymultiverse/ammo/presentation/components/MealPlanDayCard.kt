@@ -43,6 +43,10 @@ import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.presentation.theme.AppIconRole
 import app.mymultiverse.ammo.presentation.theme.AppIcons
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
+import ammo.composeapp.generated.resources.Res
+import ammo.composeapp.generated.resources.nutrition_meal_plan_expanded
+import ammo.composeapp.generated.resources.nutrition_meal_plan_collapsed
+import org.jetbrains.compose.resources.stringResource
 
 object MealPlanTestTags {
     const val SCROLL_LIST = "meal_plan_scroll_list"
@@ -94,6 +98,8 @@ fun MealPlanDayCard(
     var expanded by rememberSaveable(dayIndex) { mutableStateOf(initiallyExpanded) }
     val isPlanned = MealPlanPresentation.isPlanned(day)
     val accentColor = JourneySemanticColors.brandTerracotta()
+    val expandedStateLabel = stringResource(Res.string.nutrition_meal_plan_expanded)
+    val collapsedStateLabel = stringResource(Res.string.nutrition_meal_plan_collapsed)
 
     FamilyLogisticsCardSurface(
         modifier = modifier,
@@ -132,6 +138,7 @@ fun MealPlanDayCard(
                     CollapsibleSectionChevron(
                         expanded = expanded,
                         contentDescription = if (expanded) collapseDayLabel else expandDayLabel,
+                        stateDescription = if (expanded) expandedStateLabel else collapsedStateLabel,
                     )
                 }
             }

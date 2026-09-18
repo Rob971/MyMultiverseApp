@@ -14,7 +14,7 @@ object JourneySnackbarDefaults {
     val stickyInputBarHeight = 80.dp
 
     /** Auto-dismiss action snackbars (e.g. undo delete) unless the user taps the action. */
-    val actionSnackbarDuration = SnackbarDuration.Short
+    val actionSnackbarDuration = SnackbarDuration.Long
 }
 
 suspend fun SnackbarHostState.showJourneyActionSnackbar(

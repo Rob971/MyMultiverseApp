@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -254,6 +255,7 @@ fun CollapsibleSectionChevron(
     expanded: Boolean,
     contentDescription: String?,
     modifier: Modifier = Modifier,
+    stateDescription: String? = null,
 ) {
     val rotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
@@ -264,6 +266,7 @@ fun CollapsibleSectionChevron(
         contentDescription = contentDescription,
         modifier = modifier
             .size(24.dp)
-            .rotate(rotation),
+            .rotate(rotation)
+            .semantics { stateDescription?.let { this.stateDescription = it } },
     )
 }

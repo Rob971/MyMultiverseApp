@@ -42,6 +42,8 @@
     <string name="nutrition_meal_plan_not_planned">Nisciuno pasto pianificato</string>
     <string name="nutrition_meal_plan_expand_day">Fa' vedé 'e pasti</string>
     <string name="nutrition_meal_plan_collapse_day">Annascunne 'e pasti</string>
+    <string name="nutrition_meal_plan_expanded">Spaso</string>
+    <string name="nutrition_meal_plan_collapsed">Nchiuso</string>
     <string name="nutrition_grocery_title">Spesa 'e semmana</string>
     <string name="nutrition_household_viewer_readonly_note">Può vedè 'e liste e 'e piani condivisi ma nun può cagnà.</string>
     <string name="nutrition_grocery_description">Fà e spunta 'a lista d' 'a spesa 'e sta settimana.</string>
