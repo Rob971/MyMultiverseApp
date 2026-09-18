@@ -1,5 +1,7 @@
 # Product UX backlog — nutrition logistics & silent-butler AI
 
+> ⚠️ **Historical record** — frozen at release **1.1.6** (2026-07-03). The README and `.cursor/rules/` are the current source of truth; do not treat "Current sprint" below as current. Kept for backlog archaeology.
+
 **Status:** S13 + member avatars + hero raster icons shipped · **Updated:** 2026-07-03  
 **App:** MyMultiverse (KMP) · **QA YAML baseline:** v76 · **Release:** 1.1.6 (Firebase distributed)  
 **Current sprint:** Maintenance — tester sign-off on 1.1.6 (member photos, hero icons)

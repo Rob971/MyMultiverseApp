@@ -1,5 +1,7 @@
 # Household collaboration P2 — implementation spec
 
+> ✅ **Shipped** — P2 tracks A–D merged on `main` (PR #8) and closed out (PR #9). Historical spec; the README is the current source of truth.
+
 **Merged:** PR #8 (`feature/household-collaboration-p2`) · **Closeout:** PR #9 (`feature/p2-closeout`)  
 **Depends on:** v1 shipped on `main` (PR #7)
 

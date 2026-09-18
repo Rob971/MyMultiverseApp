@@ -1,5 +1,7 @@
 # Home onboarding QA sign-off (Firebase v14)
 
+> ✅ **Completed** — Home onboarding v14 sign-off is done. Historical record; the current manual QA checklist is [`firebase-appdistribution-testcases.yaml`](../firebase-appdistribution-testcases.yaml).
+
 Run on **staging / production Supabase** with the latest **Firebase App Distribution** tester build from `main`.
 
 **Checklist source:** [`firebase-appdistribution-testcases.yaml`](../firebase-appdistribution-testcases.yaml) (version 14).
