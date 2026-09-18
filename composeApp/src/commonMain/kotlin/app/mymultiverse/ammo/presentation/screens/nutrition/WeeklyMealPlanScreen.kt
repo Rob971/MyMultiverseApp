@@ -566,7 +566,7 @@ private fun WeeklyMealPlanScreenContent(
                             item(key = "upcoming-header") {
                                 FamilyLogisticsSectionHeader(title = daysSectionTitle)
                             }
-                            items(upcomingEntries, key = { it.index }) { entry ->
+                            items(upcomingEntries, key = { it.index }, contentType = { "day" }) { entry ->
                                 dayCard(entry, isToday = false, initiallyExpanded = false)
                             }
                         }

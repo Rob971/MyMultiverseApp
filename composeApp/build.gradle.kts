@@ -10,6 +10,13 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+// Treat all-val domain data classes as stable so Compose skips needless
+// recomposition without coupling the domain layer to the Compose runtime
+// (see architecture-clean.mdc: domain must not depend on Compose).
+composeCompiler {
+    stabilityConfigurationFiles.add(layout.projectDirectory.file("stability-config.conf"))
+}
+
 val googleServicesFile = rootProject.layout.projectDirectory.file("androidApp/google-services.json").asFile
 val firebaseCrashlyticsEnabled = googleServicesFile.exists()
 
