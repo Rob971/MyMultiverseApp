@@ -1,5 +1,7 @@
 # P2 closeout — remaining work breakdown
 
+> ✅ **Completed** — P2 closeout shipped on `main`. Historical record; the README is the current source of truth.
+
 **Branch:** `feature/p2-closeout`  
 **Baseline:** P2 tracks A–D merged on `main` (PR #8 + terminology migration).  
 **Goal:** Make P2 production-complete (ops, platform gaps, QA, docs) via small, reviewable PRs.

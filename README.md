@@ -100,7 +100,7 @@ Full spec: [`docs/household-collaboration.md`](docs/household-collaboration.md).
 | **AI adviser** | On-device assistant: advice text, full-week or today grocery, meal-plan preview + apply |
 | **AI vs editable** | AI grocery/meal suggestions appear in a **read-only** section; never mixed into editable CRUD |
 | **Sync status** | Hub banner: idle, syncing, pending outbox, offline |
-| **Personal mode** | Without Supabase config, nutrition works **local-only** (no household) |
+| **Without Supabase config** | App launches to the auth-config-missing login; nutrition/household screens are **not reachable** (no local-only UI path) |
 
 When a household is active, opening Nutrition activates sync for that `household_id` via `NutritionSessionCoordinator` (flush outbox → pull week → subscribe to Realtime).
 
@@ -146,7 +146,7 @@ The mobile app talks to **Supabase Auth** (sessions, OAuth) and **PostgREST** (t
 
 | Concern | Implementation |
 |---------|----------------|
-| **Auth** | Email/password, Google, Apple; redirect `app.mymultiverse.ammo://auth/callback` |
+| **Auth** | Email/password, Google, Apple; OAuth redirect `app.mymultiverse.ammo://auth` |
 | **Profiles** | `profiles` row per `auth.users`; bootstrap via `ensure_current_profile()` |
 | **Household lifecycle** | RPCs: `create_household`, `rename_household`, `check_household_name_available`, `leave_household`, `dissolve_household`, `transfer_household_ownership` |
 | **Invites** | `invite_household_member`, `accept_household_invite`, `list_my_pending_household_invites` |
@@ -491,9 +491,9 @@ Canonical version: [`gradle/app-version.properties`](gradle/app-version.properti
 
 | Field | Purpose |
 |-------|---------|
-| `version.name` | SemVer user-facing version (e.g. `1.4.0`) — `MAJOR.MINOR.PATCH` |
+| `version.name` | SemVer user-facing version (e.g. `1.6.9`) — `MAJOR.MINOR.PATCH` |
 | `version.code` | Monotonic build number (Android `versionCode`, iOS `CFBundleVersion`) |
-| `version.prerelease` | Optional suffix (e.g. `beta.1` → `1.4.0-beta.1`; CI-stamped on beta track, not committed) |
+| `version.prerelease` | Optional suffix (e.g. `beta.1` → `1.6.9-beta.1`; CI-stamped on beta track, not committed) |
 
 **SemVer bumps (named release only):**
 
@@ -531,19 +531,54 @@ firebase-appdistribution-testcases.yaml  Manual QA checklist
 
 ---
 
-## Roadmap (post-P2)
+## What's shipped & what's next
 
-**Shipped on `main` (P2, PR #8 + [`feature/p2-closeout`](docs/household-collaboration-p2-closeout.md) / PR #9):** push/email invite notifications, household dependants (display-only), GDPR account deletion + export share, outbox automation, edge function deploy pipeline.
+**Shipped (on `main`, released through v1.6.x):**
 
-**Shipped on `main` (PR #12):** unified Home onboarding (gate merged into Home), globally unique household names, rename from Welcome, household admin role, login subtitle polish.
+- **Household collaboration** — push/email invite notifications, household dependants (display-only), GDPR export + account deletion, outbox automation, edge-function deploy pipeline.
+- **Home onboarding** — unified into Home (no separate gate), globally unique household names, rename from Welcome, household admin role, login subtitle polish.
+- **Family profiles** — member profile photos (`member-avatars` bucket + `MemberAvatar`), self and dependant upload.
+- **Nutrition & AI** — grocery and meal-plan partner nudges, read-only AI grocery/meal suggestions, AI nutrition assistant (on-device + Gemini-backed remote), weekly planning.
+- **Design system** — Journey components, dark theme, wide (≥600dp) layouts, hero/bottom-nav raster icons, quick-tour spotlight.
 
-**Still open:**
+**Deferred / still open:**
 
 | Track | Items |
 |-------|--------|
-| **Ops / QA** | Optional `SUPABASE_TEST_EMAIL` / `SUPABASE_TEST_PASSWORD` for CI auth round-trip; staging sign-off ([`docs/p2-staging-qa-checklist.md`](docs/p2-staging-qa-checklist.md), [`docs/qa-signoff-v14-home-onboarding.md`](docs/qa-signoff-v14-home-onboarding.md)) |
 | **Product** | Shared-email child login accounts (explicitly deferred); post-traction modules beyond nutrition (deferred) |
-| **Legal** | External privacy policy wording review |
+| **Legal** | External privacy-policy wording review (drafts in `web/site-updates/`, see `docs/legal/website-legal-deploy.md`) |
+| **Ops / QA** | Optional `SUPABASE_TEST_EMAIL` / `SUPABASE_TEST_PASSWORD` for an authenticated CI smoke round-trip |
+
+---
+
+## Documentation index
+
+This README is the entry point. Authoritative docs by concern:
+
+### Living (source of truth)
+
+| Doc | What it covers |
+|-----|----------------|
+| [`AGENTS.md`](AGENTS.md) | Engineering conventions, stack versions, toolchain, agent workflow |
+| [`.cursor/rules/`](.cursor/rules/) | Binding rules: architecture, i18n (8 locales), UI/UX design system, testing, release, CI |
+| [`docs/household-collaboration.md`](docs/household-collaboration.md) | Household product spec — roles, invites, members, invariants |
+| [`docs/IP.md`](docs/IP.md) | Intellectual property, ownership, registration checklist |
+| [`docs/BRAND.md`](docs/BRAND.md) | Brand names, logo asset paths, usage rules |
+| [`docs/app-links-custom-dns.md`](docs/app-links-custom-dns.md) | App Links / custom DNS setup for `mymultiverse.app` |
+| [`docs/PLAY-STORE-LISTING.md`](docs/PLAY-STORE-LISTING.md) | Store listing copy reference |
+| [`docs/legal/`](docs/legal/) | Contributor sign-off, IP assignment, privacy/terms deploy |
+| [`web/README.md`](web/README.md) | Website repo pointer + brand asset sync |
+| [`firebase-appdistribution-testcases.yaml`](firebase-appdistribution-testcases.yaml) | Manual QA checklist (versioned, included in Firebase release notes) |
+
+### Historical records (not current — reference only)
+
+| Doc | Frozen at | Note |
+|-----|-----------|------|
+| [`docs/product-backlog.md`](docs/product-backlog.md) | v1.1.6 (2026-07) | Backlog as-of S13; superseded by shipped features |
+| [`docs/household-collaboration-p2.md`](docs/household-collaboration-p2.md) | P2 (PR #8) | P2 implementation spec — shipped |
+| [`docs/household-collaboration-p2-closeout.md`](docs/household-collaboration-p2-closeout.md) | P2 (PR #9) | P2 closeout breakdown — completed |
+| [`docs/p2-staging-qa-checklist.md`](docs/p2-staging-qa-checklist.md) | P2 | Staging sign-off — completed |
+| [`docs/qa-signoff-v14-home-onboarding.md`](docs/qa-signoff-v14-home-onboarding.md) | v14 | Home onboarding sign-off — completed |
 
 ---
 

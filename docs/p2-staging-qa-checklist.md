@@ -1,5 +1,7 @@
 # P2 staging QA checklist
 
+> ✅ **Completed** — P2 staging sign-off is done. Historical record; the current manual QA checklist is [`firebase-appdistribution-testcases.yaml`](../firebase-appdistribution-testcases.yaml).
+
 Run on **staging** (Supabase + Firebase tester APK) with **two phones / two accounts** before wide P2 distribution.
 
 **Automated CI:** `scripts/verify-supabase-household.sh` with `SUPABASE_TEST_EMAIL` / `SUPABASE_TEST_PASSWORD` covers household bootstrap, nutrition persistence, GDPR export RPC, and device token registration.
