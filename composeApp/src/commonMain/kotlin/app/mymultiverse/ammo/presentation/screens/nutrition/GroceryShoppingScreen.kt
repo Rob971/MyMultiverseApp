@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import ammo.composeapp.generated.resources.Res
+import ammo.composeapp.generated.resources.nutrition_today
 import ammo.composeapp.generated.resources.nutrition_week_next
 import ammo.composeapp.generated.resources.nutrition_week_previous
 import ammo.composeapp.generated.resources.nutrition_delete_item
@@ -163,6 +164,7 @@ fun GroceryShoppingScreen(
     )
     val previousWeekLabel = stringResource(Res.string.nutrition_week_previous)
     val nextWeekLabel = stringResource(Res.string.nutrition_week_next)
+    val todayLabel = stringResource(Res.string.nutrition_today)
     val sections = remember(items) { GroceryListPresentation.partition(items) }
     // Items render in their original list order (in-place); hideCheckedItems filters inline.
     val displayItems = remember(items, hideCheckedItems) {
@@ -393,6 +395,7 @@ fun GroceryShoppingScreen(
                     weekLabel = weekLabel,
                     previousWeekLabel = previousWeekLabel,
                     nextWeekLabel = nextWeekLabel,
+                    todayLabel = todayLabel,
                     weekOffset = weekOffset,
                     screenModel = screenModel,
                     canWrite = canWrite,
@@ -528,6 +531,7 @@ private fun LazyListScope.groceryShoppingListItems(
     weekLabel: String,
     previousWeekLabel: String,
     nextWeekLabel: String,
+    todayLabel: String,
     weekOffset: Int,
     screenModel: NutritionScreenModel,
     canWrite: Boolean,
@@ -582,6 +586,8 @@ private fun LazyListScope.groceryShoppingListItems(
             nextWeekLabel = nextWeekLabel,
             onPreviousWeek = { screenModel.selectWeekOffset(weekOffset - 1) },
             onNextWeek = { screenModel.selectWeekOffset(weekOffset + 1) },
+            todayLabel = if (weekOffset > 0) todayLabel else null,
+            onToday = if (weekOffset > 0) { { screenModel.selectWeekOffset(0) } } else null,
         )
     }
 
