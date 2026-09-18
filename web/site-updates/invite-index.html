@@ -39,9 +39,9 @@
         invalid.style.display = "block";
         return;
       }
-      var deepLink = "app.mymultiverse.kmp://invite?token=" + encodeURIComponent(token);
-      var withoutScheme = deepLink.replace("app.mymultiverse.kmp://", "");
-      var androidIntent = "intent://" + withoutScheme + "#Intent;scheme=app.mymultiverse.kmp;package=app.mymultiverse.kmp;end";
+      var deepLink = "app.mymultiverse.ammo://invite?token=" + encodeURIComponent(token);
+      var withoutScheme = deepLink.replace("app.mymultiverse.ammo://", "");
+      var androidIntent = "intent://" + withoutScheme + "#Intent;scheme=app.mymultiverse.ammo;package=app.mymultiverse.ammo;end";
       openLink.href = deepLink;
       try { window.location.replace(deepLink); } catch (_) {}
       var androidHint = document.createElement("p");

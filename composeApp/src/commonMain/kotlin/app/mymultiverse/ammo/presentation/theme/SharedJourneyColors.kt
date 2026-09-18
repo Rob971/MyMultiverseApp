@@ -40,22 +40,11 @@ object SharedJourneyColors {
     /** Muted gold container / ring fill behind secondary accents. */
     val AccentWarmGoldContainer = Color(0xFF3D3528)
 
-    @Deprecated("Use DarkBackground", ReplaceWith("DarkBackground"))
-    val ParchmentWarmDark = DarkBackground
-    @Deprecated("Use DarkSurfaceElevated", ReplaceWith("DarkSurfaceElevated"))
-    val SunDrenchedWhiteDark = DarkSurfaceElevated
-
     // Accents & Ink (light theme)
     val InkDeep = Color(0xFF1C1C1C)
     val InkSecondary = Color(0xFF4F4F4F)
     val InkMuted = Color(0xFF5C5C5C)
 
-    @Deprecated("Use DarkTextPrimary", ReplaceWith("DarkTextPrimary"))
-    val InkOnDark = DarkTextPrimary
-    @Deprecated("Use DarkTextMuted", ReplaceWith("DarkTextMuted"))
-    val InkMutedOnDark = DarkTextMuted
-    @Deprecated("Use DarkTextSecondary", ReplaceWith("DarkTextSecondary"))
-    val InkSecondaryOnDark = DarkTextSecondary
     val SageSoft = Color(0xFF8DAA91)
     /** Light hero / tab containers — mint and gold tints (not Material default purple). */
     val LightMintContainer = Color(0xFFD8EDE3)
@@ -63,10 +52,6 @@ object SharedJourneyColors {
 
     /** Brighter teal for outlines, nav, and links on dark surfaces. */
     val MediterraneanTealOnDark = AccentMintTeal
-    @Deprecated("Use DarkSurfaceCard", ReplaceWith("DarkSurfaceCard"))
-    val CardElevatedDark = DarkSurfaceCard
-    @Deprecated("Use DarkSurfaceElevated", ReplaceWith("DarkSurfaceElevated"))
-    val NavBarDark = DarkSurfaceElevated
 
     // Glassmorphism Bases
     val GlassWhite = Color(0xCCFFFFFF)

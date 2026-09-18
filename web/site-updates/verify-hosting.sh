@@ -22,7 +22,7 @@ ASSET_BODY="$(mktemp)"
 ASSET_STATUS="$(curl_well_known "/.well-known/assetlinks.json" "${ASSET_BODY}")"
 [[ "${ASSET_STATUS}" == "200" ]] || fail "assetlinks.json returned ${ASSET_STATUS}"
 grep -q 'delegate_permission/common.handle_all_urls' "${ASSET_BODY}" || fail "assetlinks.json missing relation"
-grep -q 'app.mymultiverse.kmp' "${ASSET_BODY}" || fail "assetlinks.json missing package_name"
+grep -q 'app.mymultiverse.ammo' "${ASSET_BODY}" || fail "assetlinks.json missing package_name"
 if grep -q 'REPLACE_WITH_RELEASE_SHA256_FINGERPRINT' "${ASSET_BODY}"; then
   fail "assetlinks.json still contains placeholder fingerprint"
 fi
