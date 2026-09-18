@@ -918,7 +918,7 @@ private fun MealPlanPreviewSlot(
             ) {
                 JourneyIcon(
                     role = AppIconRole.ActionConfirm,
-                    contentDescription = null,
+                    contentDescription = stringResource(Res.string.nutrition_meal_accept_done),
                     modifier = Modifier.size(16.dp),
                 )
             }

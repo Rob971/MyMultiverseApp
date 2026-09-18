@@ -9,12 +9,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiMode
+import app.mymultiverse.ammo.presentation.components.JourneySnackbarHost
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import org.koin.compose.koinInject
 
@@ -34,6 +38,9 @@ fun AiHelperSheet(
     if (!visible) return
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    // The sheet draws above the screen's Scaffold, so its snackbars (e.g. Undo after
+    // accepting a meal) need a host inside the sheet to be visible.
+    val snackbarHostState = remember { SnackbarHostState() }
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -56,6 +63,11 @@ fun AiHelperSheet(
                 compact = true,
                 screenModel = screenModel,
                 onMealPlanApplied = onApplied,
+                snackbarHostState = snackbarHostState,
+            )
+            JourneySnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter),
             )
         }
     }
