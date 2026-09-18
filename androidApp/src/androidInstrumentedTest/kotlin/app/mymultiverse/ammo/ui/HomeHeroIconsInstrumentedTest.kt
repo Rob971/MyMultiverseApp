@@ -70,8 +70,8 @@ class HomeHeroIconsInstrumentedTest {
 
         composeRule.onNodeWithTag(NavigationTestTags.TAB_MEAL_PLAN).assertIsDisplayed()
         composeRule.onNodeWithTag(NavigationTestTags.TAB_GROCERY).assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Plan").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Groceries").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Plan", useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Groceries", useUnmergedTree = true).assertIsDisplayed()
     }
 
     @Test
@@ -141,8 +141,8 @@ class HomeHeroIconsInstrumentedTest {
 
         composeRule.onNodeWithTag(NavigationTestTags.TAB_MEAL_PLAN).assertIsDisplayed()
         composeRule.onNodeWithTag(NavigationTestTags.TAB_GROCERY).assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Plan").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Groceries").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Plan", useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Groceries", useUnmergedTree = true).assertIsDisplayed()
     }
 
     @Test
@@ -218,8 +218,8 @@ class HomeHeroIconsInstrumentedTest {
 
         composeRule.onNodeWithTag(NavigationTestTags.TAB_MEAL_PLAN).assertIsDisplayed()
         composeRule.onNodeWithTag(NavigationTestTags.TAB_GROCERY).assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Plan").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Groceries").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Plan", useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Groceries", useUnmergedTree = true).assertIsDisplayed()
     }
 
     @Test

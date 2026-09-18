@@ -60,10 +60,10 @@ class ProductTourInstrumentedTest {
                 (screenModel.uiState.value as ProductTourUiState.Active).currentIndex == 0
         }
         composeRule.onNodeWithTag(ProductTourTestTags.OVERLAY).assertIsDisplayed()
-        composeRule.onNodeWithTag(ProductTourTestTags.TOOLTIP_CARD).assertIsDisplayed()
-        composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_NEXT).assertIsDisplayed()
+        composeRule.onNodeWithTag(ProductTourTestTags.TOOLTIP_CARD, useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_NEXT, useUnmergedTree = true).assertIsDisplayed()
 
-        composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_NEXT).performClick()
+        composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_NEXT, useUnmergedTree = true).performClick()
 
         composeRule.waitFor {
             val state = screenModel.uiState.value
@@ -74,8 +74,8 @@ class ProductTourInstrumentedTest {
         assertTrue(afterNext is ProductTourUiState.Active)
         assertEquals(1, (afterNext as ProductTourUiState.Active).currentIndex)
         composeRule.onNodeWithTag(ProductTourTestTags.OVERLAY).assertIsDisplayed()
-        composeRule.onNodeWithTag(ProductTourTestTags.TOOLTIP_CARD).assertIsDisplayed()
-        composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_PREVIOUS).assertIsDisplayed()
+        composeRule.onNodeWithTag(ProductTourTestTags.TOOLTIP_CARD, useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_PREVIOUS, useUnmergedTree = true).assertIsDisplayed()
         composeRule.onNodeWithTag(ProductTourTestTags.TARGET_HOME_HUB).assertIsDisplayed()
     }
 
@@ -100,9 +100,9 @@ class ProductTourInstrumentedTest {
                 state is ProductTourUiState.Active && state.currentIndex == expectedIndex
             }
             composeRule.onNodeWithTag(ProductTourTestTags.OVERLAY).assertIsDisplayed()
-            composeRule.onNodeWithTag(ProductTourTestTags.TOOLTIP_CARD).assertIsDisplayed()
-            composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_NEXT).assertIsDisplayed()
-            composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_NEXT).performClick()
+            composeRule.onNodeWithTag(ProductTourTestTags.TOOLTIP_CARD, useUnmergedTree = true).assertIsDisplayed()
+            composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_NEXT, useUnmergedTree = true).assertIsDisplayed()
+            composeRule.onNodeWithTag(ProductTourTestTags.BUTTON_NEXT, useUnmergedTree = true).performClick()
         }
 
         composeRule.waitFor {
