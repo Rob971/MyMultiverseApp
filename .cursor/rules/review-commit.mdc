@@ -20,7 +20,7 @@ Apply on every implementation task, code review, and when the user asks for a co
 7. **Tests — existing coverage updated** — Every modified function whose behavior changed has its test updated to match. No stale `assertEquals`/`assert` that passes for the wrong reason. Fakes implement the full current interface with no `TODO()` stubs.
 8. **QA YAML** — Update `firebase-appdistribution-testcases.yaml` (bump `version`) when user-facing flows change.
 9. **Secrets** — No credentials, `local.properties` values, or `google-services.json` in commits.
-10. **Gradle** — Run `:composeApp:testDebugUnitTest` (must be `BUILD SUCCESSFUL`) and `:composeApp:compileDebugAndroidTestKotlinAndroid` (must compile clean) before done.
+10. **Gradle** — Run `:composeApp:testDebugUnitTest` (must be `BUILD SUCCESSFUL`) and `:androidApp:assembleDebugAndroidTest` (must compile clean) before done.
 
 ## PR checklist
 

@@ -92,7 +92,7 @@ Run **both** commands and confirm green before declaring done:
 
 ```bash
 ./gradlew :composeApp:testDebugUnitTest
-./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid
+./gradlew :androidApp:assembleDebugAndroidTest
 ```
 
 - **Unit tests must pass** — `BUILD SUCCESSFUL` with zero failures.
