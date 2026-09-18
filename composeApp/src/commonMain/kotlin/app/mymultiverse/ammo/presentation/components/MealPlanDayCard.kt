@@ -448,6 +448,7 @@ private fun FavoriteToggle(
         JourneyIcon(
             role = if (isFavorite) AppIconRole.FavoriteOn else AppIconRole.FavoriteOff,
             contentDescription = null,
+            tint = if (enabled) null else JourneySemanticColors.inkSecondary(),
         )
     }
 }
