@@ -39,7 +39,7 @@ class HomeHeroIconsInstrumentedTest {
 
     @Test
     fun homeDailyHubCircularActions_lightTheme_displayHeroCtasWithIcons() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme(darkTheme = false) {
                 HomeDailyHubCircularActions(
                     onOpenMealPlan = {},
@@ -56,7 +56,7 @@ class HomeHeroIconsInstrumentedTest {
 
     @Test
     fun mainTabShell_lightTheme_navTabs_displayHeroIcons() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme(darkTheme = false) {
                 MainTabShell(
                     selectedTab = AppMainTab.Home,
@@ -76,7 +76,7 @@ class HomeHeroIconsInstrumentedTest {
 
     @Test
     fun homeDailyHubCircularActions_displayHeroCtasWithIcons() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 HomeDailyHubCircularActions(
                     onOpenMealPlan = {},
@@ -95,7 +95,7 @@ class HomeHeroIconsInstrumentedTest {
     fun homeDailyHubCircularActions_planCta_invokesCallback() {
         var planClicked = false
 
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 HomeDailyHubCircularActions(
                     onOpenMealPlan = { planClicked = true },
@@ -112,7 +112,7 @@ class HomeHeroIconsInstrumentedTest {
     fun homeDailyHubCircularActions_groceryCta_invokesCallback() {
         var groceryClicked = false
 
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 HomeDailyHubCircularActions(
                     onOpenMealPlan = {},
@@ -127,7 +127,7 @@ class HomeHeroIconsInstrumentedTest {
 
     @Test
     fun mainTabShell_darkTheme_navTabs_displayHeroIcons() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme(darkTheme = true) {
                 MainTabShell(
                     selectedTab = AppMainTab.Home,
@@ -151,7 +151,7 @@ class HomeHeroIconsInstrumentedTest {
         var planClicks = 0
         var groceryClicks = 0
 
-        composeRule.setContent {
+        composeRule.setKoinContent {
             var darkTheme by remember { mutableStateOf(false) }
             AppTheme(darkTheme = darkTheme) {
                 Column {
@@ -204,7 +204,7 @@ class HomeHeroIconsInstrumentedTest {
 
     @Test
     fun mainTabShell_navTabs_displayHeroIcons() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 MainTabShell(
                     selectedTab = AppMainTab.Home,
@@ -226,7 +226,7 @@ class HomeHeroIconsInstrumentedTest {
     fun mainTabShell_mealPlanTab_invokesSelection() {
         var selectedTab: AppMainTab? = null
 
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 MainTabShell(
                     selectedTab = AppMainTab.Home,

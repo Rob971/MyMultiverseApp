@@ -27,4 +27,8 @@ adb uninstall "$APP_PACKAGE" >/dev/null 2>&1 || true
 adb uninstall "$TEST_PACKAGE_ID" >/dev/null 2>&1 || true
 adb install -r "$APP_APK"
 adb install -r "$TEST_APK"
-adb shell am instrument -w -r "${TEST_PACKAGE}/${TEST_RUNNER}"
+
+# adb exits 0 even when tests fail or the test process crashes; judge the run by its output.
+RESULT_LOG="$(mktemp)"
+adb shell am instrument -w -r "${TEST_PACKAGE}/${TEST_RUNNER}" | tee "$RESULT_LOG"
+bash "$(dirname "$0")/check-instrumentation-result.sh" "$RESULT_LOG"
