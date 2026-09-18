@@ -7,6 +7,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.RadioButton
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -103,6 +109,15 @@ import ammo.composeapp.generated.resources.nutrition_meal_suggest_quick_ai
 import ammo.composeapp.generated.resources.nutrition_ai_criteria_quick_meal
 import ammo.composeapp.generated.resources.nutrition_today
 import ammo.composeapp.generated.resources.nutrition_week_label
+import ammo.composeapp.generated.resources.nutrition_favorite_cancel
+import ammo.composeapp.generated.resources.nutrition_favorite_cap_body
+import ammo.composeapp.generated.resources.nutrition_favorite_cap_title
+import ammo.composeapp.generated.resources.nutrition_favorite_error
+import ammo.composeapp.generated.resources.nutrition_favorite_offline
+import ammo.composeapp.generated.resources.nutrition_favorite_removed
+import ammo.composeapp.generated.resources.nutrition_favorite_replace
+import ammo.composeapp.generated.resources.nutrition_favorite_replaced
+import ammo.composeapp.generated.resources.nutrition_favorite_saved
 import ammo.composeapp.generated.resources.nutrition_week_next
 import ammo.composeapp.generated.resources.nutrition_week_previous
 import kotlinx.coroutines.launch
@@ -156,12 +171,16 @@ private fun WeeklyMealPlanScreenContent(
     val mealGroceryLoading by screenModel.mealGroceryLoading.collectAsState()
     val mealGroceryResult by screenModel.mealGroceryResult.collectAsState()
     val weekOffset by screenModel.weekOffset.collectAsState()
+    val favoriteDishes by screenModel.favoriteDishes.collectAsState()
+    val favoritesRemoteAvailable by screenModel.favoritesRemoteAvailable.collectAsState()
+    val favoriteFeedback by screenModel.favoriteFeedback.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val pullRefreshState = rememberPullToRefreshState()
     var showClearWeekDialog by remember { mutableStateOf(false) }
     var showOverflowMenu by remember { mutableStateOf(false) }
+    var capDialogLabel by remember { mutableStateOf<String?>(null) }
 
     val todayIndex = remember(screenModel.weekKey) { WeekCalendar.todayIndexInWeek(screenModel.weekKey) }
     val orderedDays = remember(mealPlan, todayIndex) {
@@ -203,6 +222,32 @@ private fun WeeklyMealPlanScreenContent(
         NutritionScreenModel.MealPlanPartnerNudgeResult.Cooldown -> partnerNudgeCooldown
         NutritionScreenModel.MealPlanPartnerNudgeResult.Error -> partnerNudgeError
         null -> null
+    }
+
+    val favoriteKeys = remember(favoriteDishes) { favoriteDishes.map { it.normalisedLabel }.toSet() }
+    val favoriteSavedMessage = stringResource(Res.string.nutrition_favorite_saved)
+    val favoriteRemovedMessage = stringResource(Res.string.nutrition_favorite_removed)
+    val favoriteReplacedMessage = stringResource(Res.string.nutrition_favorite_replaced)
+    val favoriteOfflineMessage = stringResource(Res.string.nutrition_favorite_offline)
+    val favoriteErrorMessage = stringResource(Res.string.nutrition_favorite_error)
+
+    LaunchedEffect(favoriteFeedback) {
+        when (val feedback = favoriteFeedback) {
+            is FavoriteFeedback.Saved ->
+                snackbarHostState.showSnackbar(favoriteSavedMessage)
+            is FavoriteFeedback.Removed ->
+                snackbarHostState.showSnackbar(favoriteRemovedMessage)
+            is FavoriteFeedback.Replaced ->
+                snackbarHostState.showSnackbar(favoriteReplacedMessage)
+            is FavoriteFeedback.OfflineError ->
+                snackbarHostState.showSnackbar(favoriteOfflineMessage)
+            is FavoriteFeedback.Error ->
+                snackbarHostState.showSnackbar(favoriteErrorMessage)
+            is FavoriteFeedback.CapReached ->
+                capDialogLabel = feedback.requestedLabel
+            null -> Unit
+        }
+        screenModel.consumeFavoriteFeedback()
     }
 
     val mealGrocerySnackbarMessage = mealGroceryResult?.let { result ->
@@ -353,6 +398,9 @@ private fun WeeklyMealPlanScreenContent(
             } else {
                 null
             },
+            favoriteKeys = favoriteKeys,
+            onToggleFavorite = { label -> screenModel.toggleFavorite(label) },
+            favoriteEnabled = favoritesRemoteAvailable,
         )
     }
 
@@ -374,6 +422,63 @@ private fun WeeklyMealPlanScreenContent(
             dismissButton = {
                 TextButton(onClick = { showClearWeekDialog = false }) {
                     Text(stringResource(Res.string.nutrition_grocery_cancel_edit))
+                }
+            },
+        )
+    }
+
+    if (capDialogLabel != null) {
+        var selectedNormalised by remember { mutableStateOf<String?>(null) }
+        AlertDialog(
+            onDismissRequest = { capDialogLabel = null },
+            title = { Text(stringResource(Res.string.nutrition_favorite_cap_title)) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    Text(stringResource(Res.string.nutrition_favorite_cap_body))
+                    favoriteDishes.forEach { fav ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .selectable(
+                                    selected = selectedNormalised == fav.normalisedLabel,
+                                    role = Role.RadioButton,
+                                    onClick = { selectedNormalised = fav.normalisedLabel },
+                                )
+                                .padding(vertical = 8.dp),
+                        ) {
+                            RadioButton(
+                                selected = selectedNormalised == fav.normalisedLabel,
+                                onClick = null,
+                            )
+                            Text(
+                                text = fav.label,
+                                modifier = Modifier
+                                    .padding(start = 12.dp)
+                                    .weight(1f),
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val remove = selectedNormalised
+                        val newLabel = capDialogLabel
+                        capDialogLabel = null
+                        if (remove != null && newLabel != null) {
+                            screenModel.replaceFavorite(remove, newLabel)
+                        }
+                    },
+                    enabled = selectedNormalised != null,
+                ) {
+                    Text(stringResource(Res.string.nutrition_favorite_replace))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { capDialogLabel = null }) {
+                    Text(stringResource(Res.string.nutrition_favorite_cancel))
                 }
             },
         )

@@ -47,6 +47,17 @@
     <string name="nutrition_meal_accept">Aceptar</string>
     <string name="nutrition_meal_replace">Reemplazar</string>
     <string name="nutrition_meal_accept_done">Añadido a tu plan</string>
+    <string name="nutrition_favorite_add_cd">Añadir %1$s a favoritos</string>
+    <string name="nutrition_favorite_remove_cd">Quitar %1$s de favoritos</string>
+    <string name="nutrition_favorite_saved">Guardado en favoritos</string>
+    <string name="nutrition_favorite_removed">Quitado de favoritos</string>
+    <string name="nutrition_favorite_replaced">Favorito reemplazado</string>
+    <string name="nutrition_favorite_offline">Comprueba tu conexión para guardar favoritos</string>
+    <string name="nutrition_favorite_error">No se pudo guardar el favorito. Inténtalo de nuevo.</string>
+    <string name="nutrition_favorite_cap_title">Favoritos llenos</string>
+    <string name="nutrition_favorite_cap_body">Tienes 10 favoritos. Reemplaza uno para añadir otro.</string>
+    <string name="nutrition_favorite_replace">Reemplazar</string>
+    <string name="nutrition_favorite_cancel">Cancelar</string>
     <string name="nutrition_grocery_title">Compra semanal</string>
     <string name="nutrition_household_viewer_readonly_note">Puedes ver listas y planes compartidos, pero no editarlos.</string>
     <string name="nutrition_grocery_description">Crea y marca la lista de la compra de esta semana.</string>

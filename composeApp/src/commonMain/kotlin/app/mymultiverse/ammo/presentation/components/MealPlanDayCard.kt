@@ -47,6 +47,13 @@ import ammo.composeapp.generated.resources.Res
 import ammo.composeapp.generated.resources.nutrition_meal_plan_expanded
 import ammo.composeapp.generated.resources.nutrition_meal_plan_collapsed
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import ammo.composeapp.generated.resources.nutrition_favorite_add_cd
+import ammo.composeapp.generated.resources.nutrition_favorite_remove_cd
 
 object MealPlanTestTags {
     const val SCROLL_LIST = "meal_plan_scroll_list"
@@ -63,6 +70,8 @@ object MealPlanTestTags {
         "meal_plan_${slot.name.lowercase()}_grocery_$dayIndex"
     fun mealSuggestion(dayIndex: Int, slot: MealSlot, suggestionIndex: Int) =
         "meal_plan_${slot.name.lowercase()}_suggestion_${dayIndex}_$suggestionIndex"
+    fun favoriteButton(dayIndex: Int, slot: MealSlot) =
+        "meal_plan_favorite_${slot.name.lowercase()}_$dayIndex"
 }
 
 @Composable
@@ -92,6 +101,9 @@ fun MealPlanDayCard(
     onSuggestQuickMeal: ((MealSlot) -> Unit)? = null,
     loadingMeal: MealSlot? = null,
     readOnly: Boolean = false,
+    favoriteKeys: Set<String> = emptySet(),
+    onToggleFavorite: ((String) -> Unit)? = null,
+    favoriteEnabled: Boolean = true,
     modifier: Modifier = Modifier,
     initiallyExpanded: Boolean = isToday,
 ) {
@@ -195,6 +207,12 @@ fun MealPlanDayCard(
                         onClear = onClearLunch,
                         suggestQuickMealLabel = suggestQuickMealLabel,
                         onSuggestQuickMeal = onSuggestQuickMeal,
+                        isFavorite = favoriteKeys.contains(day.lunch.trim().lowercase()),
+                        onToggleFavorite = if (onToggleFavorite != null && day.lunch.isNotBlank()) {
+                            { onToggleFavorite(day.lunch) }
+                        } else null,
+                        favoriteEnabled = favoriteEnabled,
+                        favoriteTestTag = MealPlanTestTags.favoriteButton(dayIndex, MealSlot.Lunch),
                         modifier = Modifier.fillMaxWidth(),
                         fieldTestTag = MealPlanTestTags.lunchField(dayIndex),
                         generateGroceryTestTag = MealPlanTestTags.groceryButton(dayIndex, MealSlot.Lunch),
@@ -217,6 +235,12 @@ fun MealPlanDayCard(
                         onCopyToTomorrow = onCopyToTomorrowLunch,
                         suggestQuickMealLabel = suggestQuickMealLabel,
                         onSuggestQuickMeal = onSuggestQuickMeal,
+                        isFavorite = favoriteKeys.contains(day.dinner.trim().lowercase()),
+                        onToggleFavorite = if (onToggleFavorite != null && day.dinner.isNotBlank()) {
+                            { onToggleFavorite(day.dinner) }
+                        } else null,
+                        favoriteEnabled = favoriteEnabled,
+                        favoriteTestTag = MealPlanTestTags.favoriteButton(dayIndex, MealSlot.Dinner),
                         modifier = Modifier.fillMaxWidth(),
                         fieldTestTag = MealPlanTestTags.dinnerField(dayIndex),
                         generateGroceryTestTag = MealPlanTestTags.groceryButton(dayIndex, MealSlot.Dinner),
@@ -246,6 +270,10 @@ private fun MealPlanMealField(
     onSuggestQuickMeal: ((MealSlot) -> Unit)? = null,
     copyToTomorrowLabel: String? = null,
     onCopyToTomorrow: (() -> Unit)? = null,
+    isFavorite: Boolean = false,
+    onToggleFavorite: (() -> Unit)? = null,
+    favoriteEnabled: Boolean = true,
+    favoriteTestTag: String? = null,
     modifier: Modifier = Modifier,
     fieldTestTag: String,
     generateGroceryTestTag: String,
@@ -295,14 +323,27 @@ private fun MealPlanMealField(
             readOnly = readOnly,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { /* focus moves naturally */ }),
-            trailingIcon = if (draft.isNotBlank() && !readOnly && onClear != null) {
+            trailingIcon = if (draft.isNotBlank()) {
                 {
-                    JourneyIconButton(onClick = { applyDraft("") }) {
-                        JourneyIcon(
-                            role = AppIconRole.ActionDelete,
-                            contentDescription = clearFieldLabel,
-                            useContentColor = true,
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (onToggleFavorite != null) {
+                            FavoriteToggle(
+                                mealLabel = draft,
+                                isFavorite = isFavorite,
+                                enabled = favoriteEnabled,
+                                onClick = onToggleFavorite,
+                                modifier = if (favoriteTestTag != null) Modifier.testTag(favoriteTestTag) else Modifier,
+                            )
+                        }
+                        if (!readOnly && onClear != null) {
+                            JourneyIconButton(onClick = { applyDraft("") }) {
+                                JourneyIcon(
+                                    role = AppIconRole.ActionDelete,
+                                    contentDescription = clearFieldLabel,
+                                    useContentColor = true,
+                                )
+                            }
+                        }
                     }
                 }
             } else {
@@ -374,5 +415,39 @@ private fun MealPlanMealField(
                 }
             }
         }
+    }
+}
+/**
+ * A 48dp toggleable star. Exposes `Checkbox` semantics (checked = favorited) plus a
+ * state-dependent content description that names the action and the meal, so TalkBack
+ * announces "Add X to favorites, not checked" / "Remove X from favorites, checked"
+ * without a sighted assistant. Hollow vs filled is conveyed by shape, not color alone.
+ */
+@Composable
+private fun FavoriteToggle(
+    mealLabel: String,
+    isFavorite: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val addCd = stringResource(Res.string.nutrition_favorite_add_cd, mealLabel)
+    val removeCd = stringResource(Res.string.nutrition_favorite_remove_cd, mealLabel)
+    Box(
+        modifier = modifier
+            .size(48.dp)
+            .toggleable(
+                value = isFavorite,
+                enabled = enabled,
+                role = Role.Checkbox,
+                onValueChange = { onClick() },
+            )
+            .semantics { contentDescription = if (isFavorite) removeCd else addCd },
+        contentAlignment = Alignment.Center,
+    ) {
+        JourneyIcon(
+            role = if (isFavorite) AppIconRole.FavoriteOn else AppIconRole.FavoriteOff,
+            contentDescription = null,
+        )
     }
 }

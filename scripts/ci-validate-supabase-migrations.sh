@@ -54,4 +54,9 @@ if [[ -x "./scripts/ci-validate-avatar-rls.sh" ]]; then
   ./scripts/ci-validate-avatar-rls.sh
 fi
 
+if [[ -x "./scripts/ci-validate-favorite-cap.sh" ]]; then
+  echo "==> Validating favorite-dish cap/RLS/replace/GDPR invariants on local stack"
+  ./scripts/ci-validate-favorite-cap.sh
+fi
+
 echo "All Supabase migration checks passed."

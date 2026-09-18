@@ -64,6 +64,7 @@ class WideLayoutInstrumentedTest {
             householdRepository = InstrumentedHouseholdRepository(),
             collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(),
+            favoriteDishesRepository = InstrumentedFavoriteDishesRepository(),
             ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
             logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "instrumented")),
             scope = scope,

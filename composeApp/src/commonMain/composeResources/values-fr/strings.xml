@@ -47,6 +47,17 @@
     <string name="nutrition_meal_accept">Accepter</string>
     <string name="nutrition_meal_replace">Remplacer</string>
     <string name="nutrition_meal_accept_done">Ajouté à votre planning</string>
+    <string name="nutrition_favorite_add_cd">Ajouter %1$s aux favoris</string>
+    <string name="nutrition_favorite_remove_cd">Retirer %1$s des favoris</string>
+    <string name="nutrition_favorite_saved">Ajouté aux favoris</string>
+    <string name="nutrition_favorite_removed">Retiré des favoris</string>
+    <string name="nutrition_favorite_replaced">Favori remplacé</string>
+    <string name="nutrition_favorite_offline">Vérifiez votre connexion pour enregistrer les favoris</string>
+    <string name="nutrition_favorite_error">Impossible d'enregistrer le favori. Réessayez.</string>
+    <string name="nutrition_favorite_cap_title">Favoris complets</string>
+    <string name="nutrition_favorite_cap_body">Vous avez enregistré 10 favoris. Remplacez-en un pour en ajouter un autre.</string>
+    <string name="nutrition_favorite_replace">Remplacer</string>
+    <string name="nutrition_favorite_cancel">Annuler</string>
     <string name="nutrition_grocery_title">Courses de la semaine</string>
     <string name="nutrition_household_viewer_readonly_note">Vous pouvez voir les listes et plans partagés, mais pas les modifier.</string>
     <string name="nutrition_grocery_description">Créez et cochez la liste de courses de la semaine.</string>

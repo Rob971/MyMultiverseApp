@@ -1,9 +1,11 @@
 package app.mymultiverse.ammo.ui
 
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
+import app.mymultiverse.ammo.domain.model.nutrition.FavoriteDish
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
+import app.mymultiverse.ammo.domain.repository.FavoriteDishesRepository
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.NutritionHouseholdSelectionStore
@@ -11,6 +13,7 @@ import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOf
 
@@ -133,4 +136,17 @@ class InstrumentedNutritionAdviceService(
             )
         }
     }
+}
+
+class InstrumentedFavoriteDishesRepository : FavoriteDishesRepository {
+    private val _favorites = MutableStateFlow<List<FavoriteDish>>(emptyList())
+    override val favorites: StateFlow<List<FavoriteDish>> = _favorites.asStateFlow()
+    private val _remoteAvailable = MutableStateFlow(true)
+    override val remoteAvailable: StateFlow<Boolean> = _remoteAvailable.asStateFlow()
+
+    override suspend fun refresh(): Result<Unit> = Result.success(Unit)
+    override suspend fun addFavorite(label: String): Result<Unit> = Result.success(Unit)
+    override suspend fun removeFavorite(normalisedLabel: String): Result<Unit> = Result.success(Unit)
+    override suspend fun replaceFavorite(removeNormalisedLabel: String, newLabel: String): Result<Unit> =
+        Result.success(Unit)
 }

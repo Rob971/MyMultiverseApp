@@ -6,8 +6,12 @@ import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.ammo.data.service.LocalNutritionAiAssistantService
 import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
+import app.mymultiverse.ammo.domain.model.nutrition.FavoriteDish
+import app.mymultiverse.ammo.domain.model.nutrition.favoriteKeyFor
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
+import app.mymultiverse.ammo.domain.repository.FavoriteDishesRepository
+import app.mymultiverse.ammo.domain.repository.FavoriteMutationException
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMember
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
@@ -30,6 +34,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -536,6 +541,73 @@ class NutritionScreenModelTest {
     }
 
     @Test
+    fun toggleFavorite_addsThenRemovesFavorite() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val favorites = FakeFavoriteDishesRepository()
+        val model = nutritionScreenModel(repository, favoriteRepository = favorites, scope = modelScope)
+        advanceUntilIdle()
+
+        model.toggleFavorite("Lentil Soup")
+        advanceUntilIdle()
+        assertEquals(1, favorites.mutableFavorites.value.size)
+        assertEquals("Lentil Soup", favorites.mutableFavorites.value[0].label)
+        assertEquals(FavoriteFeedback.Saved("Lentil Soup"), model.favoriteFeedback.value)
+
+        model.consumeFavoriteFeedback()
+        model.toggleFavorite("Lentil Soup")
+        advanceUntilIdle()
+        assertTrue(favorites.mutableFavorites.value.isEmpty())
+        assertEquals(FavoriteFeedback.Removed("Lentil Soup"), model.favoriteFeedback.value)
+    }
+
+    @Test
+    fun toggleFavorite_atCap_emitsCapReachedWithoutOptimisticWrite() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ten = (1..10).map { FavoriteDish(label = "Dish $it", normalisedLabel = "dish $it") }
+        val favorites = FakeFavoriteDishesRepository(initial = ten)
+        val model = nutritionScreenModel(repository, favoriteRepository = favorites, scope = modelScope)
+        advanceUntilIdle()
+
+        model.toggleFavorite("New Dish")
+        advanceUntilIdle()
+
+        assertEquals(FavoriteFeedback.CapReached("New Dish"), model.favoriteFeedback.value)
+        assertEquals(10, favorites.mutableFavorites.value.size)
+    }
+
+    @Test
+    fun replaceFavorite_replacesSelectedOnly() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ten = (1..10).map { FavoriteDish(label = "Dish $it", normalisedLabel = "dish $it") }
+        val favorites = FakeFavoriteDishesRepository(initial = ten)
+        val model = nutritionScreenModel(repository, favoriteRepository = favorites, scope = modelScope)
+        advanceUntilIdle()
+
+        model.replaceFavorite("dish 1", "New Dish")
+        advanceUntilIdle()
+
+        assertEquals(FavoriteFeedback.Replaced("New Dish"), model.favoriteFeedback.value)
+        assertTrue(favorites.mutableFavorites.value.any { it.normalisedLabel == "new dish" })
+        assertFalse(favorites.mutableFavorites.value.any { it.normalisedLabel == "dish 1" })
+    }
+
+    @Test
+    fun toggleFavorite_offline_emitsOfflineErrorAndKeepsState() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val favorites = FakeFavoriteDishesRepository(
+            failKind = FavoriteMutationException.Kind.OFFLINE,
+        )
+        val model = nutritionScreenModel(repository, favoriteRepository = favorites, scope = modelScope)
+        advanceUntilIdle()
+
+        model.toggleFavorite("Lentil Soup")
+        advanceUntilIdle()
+
+        assertEquals(FavoriteFeedback.OfflineError, model.favoriteFeedback.value)
+        assertTrue(favorites.mutableFavorites.value.isEmpty())
+    }
+
+    @Test
     fun viewerRole_blocksGroceryWrites() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Viewer)
@@ -562,6 +634,7 @@ class NutritionScreenModelTest {
             householdRepository = FakeHouseholdRepository(),
             collaborationRepository = collaborationRepository,
             aiAssistant = FakeNutritionAdviceService(),
+            favoriteDishesRepository = FakeFavoriteDishesRepository(),
             ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
             logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "test")),
             scope = modelScope,
@@ -1088,6 +1161,45 @@ private class FakeNutritionRepository(
     }
 }
 
+private class FakeFavoriteDishesRepository(
+    initial: List<FavoriteDish> = emptyList(),
+    private var failKind: FavoriteMutationException.Kind? = null,
+) : FavoriteDishesRepository {
+    val mutableFavorites = MutableStateFlow(initial)
+    override val favorites: StateFlow<List<FavoriteDish>> = mutableFavorites.asStateFlow()
+    private val _remoteAvailable =
+        MutableStateFlow(failKind != FavoriteMutationException.Kind.OFFLINE)
+    override val remoteAvailable: StateFlow<Boolean> = _remoteAvailable.asStateFlow()
+
+    override suspend fun refresh(): Result<Unit> = Result.success(Unit)
+
+    override suspend fun addFavorite(label: String): Result<Unit> {
+        failKind?.let { return Result.failure(FavoriteMutationException(it)) }
+        val key = favoriteKeyFor(label)
+        if (mutableFavorites.value.size >= 10) {
+            return Result.failure(FavoriteMutationException(FavoriteMutationException.Kind.CAP_EXCEEDED))
+        }
+        mutableFavorites.value = mutableFavorites.value.filterNot { it.normalisedLabel == key } +
+            FavoriteDish(label = label.trim(), normalisedLabel = key)
+        return Result.success(Unit)
+    }
+
+    override suspend fun removeFavorite(normalisedLabel: String): Result<Unit> {
+        failKind?.let { return Result.failure(FavoriteMutationException(it)) }
+        mutableFavorites.value = mutableFavorites.value.filterNot { it.normalisedLabel == normalisedLabel }
+        return Result.success(Unit)
+    }
+
+    override suspend fun replaceFavorite(removeNormalisedLabel: String, newLabel: String): Result<Unit> {
+        failKind?.let { return Result.failure(FavoriteMutationException(it)) }
+        val key = favoriteKeyFor(newLabel)
+        mutableFavorites.value = mutableFavorites.value
+            .filterNot { it.normalisedLabel == removeNormalisedLabel } +
+            FavoriteDish(label = newLabel.trim(), normalisedLabel = key)
+        return Result.success(Unit)
+    }
+}
+
 private fun nutritionSession(
     repository: FakeNutritionRepository,
 ): FakeNutritionSessionCoordinator =
@@ -1098,6 +1210,7 @@ private fun nutritionScreenModel(
     advice: NutritionAiAssistantService = FakeNutritionAdviceService(),
     householdRepository: FakeHouseholdRepository = FakeHouseholdRepository(),
     collaborationRepository: FakeHouseholdCollaborationRepository = FakeHouseholdCollaborationRepository(),
+    favoriteRepository: FavoriteDishesRepository = FakeFavoriteDishesRepository(),
     ghostPairingDismissStore: GroceryGhostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
     scope: CoroutineScope,
     newItemId: () -> String = { "item-1" },
@@ -1107,6 +1220,7 @@ private fun nutritionScreenModel(
         householdRepository = householdRepository,
         collaborationRepository = collaborationRepository,
         aiAssistant = advice,
+        favoriteDishesRepository = favoriteRepository,
         ghostPairingDismissStore = ghostPairingDismissStore,
         logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "test")),
         scope = scope,
