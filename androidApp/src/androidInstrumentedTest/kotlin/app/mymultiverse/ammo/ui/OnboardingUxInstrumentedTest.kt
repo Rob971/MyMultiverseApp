@@ -174,8 +174,8 @@ class OnboardingUxInstrumentedTest {
             AuthState.Authenticated(
                 AuthUser(
                     id = "user-1",
-                    email = "tester@example.com",
-                    displayName = "Alex",
+                    email = null,
+                    displayName = null,
                 ),
             ),
         )
