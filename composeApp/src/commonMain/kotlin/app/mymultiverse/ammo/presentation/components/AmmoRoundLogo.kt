@@ -24,7 +24,3 @@ fun AmmoRoundLogo(modifier: Modifier = Modifier.size(64.dp)) {
         contentScale = ContentScale.Fit,
     )
 }
-
-/** @deprecated Use [AmmoRoundLogo] — kept for incremental migration. */
-@Composable
-fun VesuvianHeartLogo(modifier: Modifier = Modifier) = AmmoRoundLogo(modifier = modifier)
