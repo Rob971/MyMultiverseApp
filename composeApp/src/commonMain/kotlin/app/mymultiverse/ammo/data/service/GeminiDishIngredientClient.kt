@@ -3,6 +3,7 @@ package app.mymultiverse.ammo.data.service
 import co.touchlab.kermit.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
@@ -51,10 +52,13 @@ internal class GeminiDishIngredientClient(
             val requestBody = buildRequestBody(dish, languageCode)
 
             val response = httpClient.post {
-                url("${GeminiModelConfig.GENERATE_CONTENT_URL}?key=$apiKey")
+                url(GeminiModelConfig.GENERATE_CONTENT_URL)
+                // Key travels as a header, never in the URL — a timeout exception embeds
+                // the full URL, so a query-string key would leak into the log.
+                header("x-goog-api-key", apiKey)
                 // TextContent sets both the body bytes and the Content-Type atomically.
-                // A separate header() call is not needed and must not be used here —
-                // it would be silently overridden by Ktor's DefaultTransformers.
+                // A separate Content-Type header() call is not needed and must not be
+                // used here — it would be silently overridden by Ktor's DefaultTransformers.
                 setBody(TextContent(requestBody, ContentType.Application.Json))
             }
 

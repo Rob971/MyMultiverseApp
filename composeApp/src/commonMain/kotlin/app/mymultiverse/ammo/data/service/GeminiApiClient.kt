@@ -4,6 +4,7 @@ import app.mymultiverse.ammo.domain.service.GeminiApiException
 import co.touchlab.kermit.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
@@ -46,7 +47,8 @@ internal class GeminiApiClient(
 
         val body = buildRequestJson(prompt, maxOutputTokens, temperature)
         val response = httpClient.post {
-            url("${GeminiModelConfig.GENERATE_CONTENT_URL}?key=$apiKey")
+            url(GeminiModelConfig.GENERATE_CONTENT_URL)
+            header("x-goog-api-key", apiKey)
             setBody(TextContent(body, ContentType.Application.Json))
         }
 
