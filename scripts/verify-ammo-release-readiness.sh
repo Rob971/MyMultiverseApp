@@ -48,6 +48,26 @@ else
   fi
 fi
 
+echo "==> Google OAuth redirect (callback URI)"
+auth_loc="$(curl -sS -D - -o /dev/null --max-time 30 \
+  'https://ammo.mymultiverse.app/auth/v1/authorize?provider=google&redirect_to=app.mymultiverse.ammo%3A%2F%2Fauth' \
+  | tr -d '\r' | awk 'tolower($1)=="location:" { sub(/^[^:]*:[[:space:]]*/, ""); print; exit }')"
+if [[ -z "$auth_loc" ]]; then
+  bad "Google authorize returned no Location header"
+elif [[ "$auth_loc" != *"accounts.google.com/o/oauth2/v2/auth"* ]]; then
+  bad "Google authorize redirected to unexpected target: ${auth_loc}"
+else
+  redirect_uri="$(python3 -c "import sys,urllib.parse; print(urllib.parse.parse_qs(urllib.parse.urlsplit(sys.argv[1]).query).get('redirect_uri',[''])[0])" "$auth_loc")"
+  ok "Supabase builds the Google authorize URL"
+  echo "     callback redirect_uri = ${redirect_uri}"
+  final_url="$(curl -sS -L --max-time 40 -o /dev/null -w '%{url_effective}' "$auth_loc" 2>/dev/null || true)"
+  if [[ "$final_url" == *"/signin/oauth/error"* ]]; then
+    bad "Google rejects the redirect (redirect_uri_mismatch). Add this exact URI to Google Cloud Console → OAuth 2.0 client → Authorized redirect URIs: ${redirect_uri}"
+  else
+    ok "Google accepted the OAuth redirect (final=${final_url})"
+  fi
+fi
+
 echo "==> Supabase Auth redirect allow-list"
 if [[ -f "${HOME}/.supabase/access-token" ]] || [[ -n "${SUPABASE_ACCESS_TOKEN:-}" ]]; then
   token="${SUPABASE_ACCESS_TOKEN:-$(<"${HOME}/.supabase/access-token")}"
