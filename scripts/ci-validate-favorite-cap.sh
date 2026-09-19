@@ -25,25 +25,40 @@ USER_A="11111111-1111-1111-1111-111111111111"
 USER_B="22222222-2222-2222-2222-222222222222"
 
 # Run SQL as a given authenticated user by setting request.jwt.claim.sub (what auth.uid() reads).
+# The claim is session-level (is_local = false): each -c runs in its own transaction, so a
+# transaction-local claim would be gone before the SQL below runs and auth.uid() would be null.
 as_user() {
   local uid="$1"; shift
   psql "$DB_URL" -v ON_ERROR_STOP=1 -qAt \
     -c "set role authenticated;" \
-    -c "select set_config('request.jwt.claim.sub', '$uid', true);" \
+    -c "select set_config('request.jwt.claim.sub', '$uid', false);" \
     -c "$1"
 }
 
 echo "==> 1. owner-only RLS: A inserts, B cannot see it"
-as_user "$USER_A" "insert into public.user_favorite_dishes (user_id, label, normalised_label) values ('$USER_A','Pasta','pasta');"
+as_user "$USER_A" "insert into public.user_favorite_dishes (user_id, label) values ('$USER_A','Pasta');"
 B_VISIBLE="$(as_user "$USER_B" "select count(*) from public.user_favorite_dishes;")"
 [[ "$B_VISIBLE" == "0" ]] || { echo "ERROR: B saw A's favorite ($B_VISIBLE)" >&2; exit 1; }
 echo "OK: cross-user select denied"
 
+echo "==> 1b. normalised_label is computed by the database"
+if as_user "$USER_A" "insert into public.user_favorite_dishes (user_id, label, normalised_label) values ('$USER_A','Pesto','forged');" 2>/dev/null; then
+  echo "ERROR: a client-chosen normalised_label was accepted" >&2
+  exit 1
+fi
+if as_user "$USER_A" "insert into public.user_favorite_dishes (user_id, label) values ('$USER_A','  PASTA ');" 2>/dev/null; then
+  echo "ERROR: a look-alike of 'Pasta' was saved as a new favorite" >&2
+  exit 1
+fi
+[[ "$(as_user "$USER_A" "select normalised_label from public.user_favorite_dishes where label = 'Pasta';")" == "pasta" ]] \
+  || { echo "ERROR: normalised_label was not computed as lower(trim(label))" >&2; exit 1; }
+echo "OK: normalised_label is database-computed; forged keys and look-alikes are rejected"
+
 echo "==> 2. cap of 10: 11th insert is rejected"
 for i in $(seq 2 10); do
-  as_user "$USER_A" "insert into public.user_favorite_dishes (user_id, label, normalised_label) values ('$USER_A','Dish $i','dish $i');"
+  as_user "$USER_A" "insert into public.user_favorite_dishes (user_id, label) values ('$USER_A','Dish $i');"
 done
-if as_user "$USER_A" "insert into public.user_favorite_dishes (user_id, label, normalised_label) values ('$USER_A','Eleventh','eleventh');" 2>/dev/null; then
+if as_user "$USER_A" "insert into public.user_favorite_dishes (user_id, label) values ('$USER_A','Eleventh');" 2>/dev/null; then
   echo "ERROR: 11th favorite was accepted" >&2
   exit 1
 fi
@@ -52,7 +67,7 @@ echo "OK: 11th insert rejected by trigger"
 echo "==> 3. concurrency: A holds uncommitted, B blocks then fails; still exactly 10 rows"
 as_user "$USER_A" "delete from public.user_favorite_dishes where normalised_label='dish 10';"  # back to 9
 # Session A: insert the 10th and hold the transaction open.
-( as_user "$USER_A" "begin; insert into public.user_favorite_dishes (user_id,label,normalised_label) values ('$USER_A','Dish 10','dish 10'); select pg_sleep(3); commit;" ) &
+( as_user "$USER_A" "begin; insert into public.user_favorite_dishes (user_id, label) values ('$USER_A','Dish 10'); select pg_sleep(3); commit;" ) &
 A_PID=$!
 sleep 1
 if as_user "$USER_A" "select public.add_favorite('Concurrent');" 2>/dev/null; then

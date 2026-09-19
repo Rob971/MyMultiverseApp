@@ -1,6 +1,8 @@
 -- F2: personal favorite dishes, capped at 10.
 -- Favorites are private to the requesting user; they are never shared with a household.
 -- Uniqueness is on (user_id, normalised_label) where normalised_label = lower(trim(label)).
+-- normalised_label is computed by the database, so a direct insert cannot forge it to
+-- sneak a look-alike duplicate past the unique constraint.
 -- The cap is enforced by a BEFORE INSERT trigger that takes a per-user transaction
 -- advisory lock, so two concurrent inserts cannot both slip past the cap (READ COMMITTED
 -- cannot see the other's uncommitted insert, but the advisory lock serialises them).
@@ -8,7 +10,7 @@
 create table public.user_favorite_dishes (
     user_id          uuid not null references auth.users (id) on delete cascade,
     label            text not null,
-    normalised_label text not null,
+    normalised_label text generated always as (lower(trim(label))) stored,
     created_at       timestamptz not null default now(),
     unique (user_id, normalised_label)
 );
@@ -68,8 +70,8 @@ begin
     if v_label is null or v_label = '' then
         return;
     end if;
-    insert into public.user_favorite_dishes (user_id, label, normalised_label)
-    values (v_uid, v_label, lower(v_label));
+    insert into public.user_favorite_dishes (user_id, label)
+    values (v_uid, v_label);
 end;
 $$;
 
@@ -113,8 +115,8 @@ begin
      where user_id = v_uid
        and normalised_label = p_remove_normalised;
     if v_label is not null and v_label <> '' then
-        insert into public.user_favorite_dishes (user_id, label, normalised_label)
-        values (v_uid, v_label, lower(v_label));
+        insert into public.user_favorite_dishes (user_id, label)
+        values (v_uid, v_label);
     end if;
 end;
 $$;
