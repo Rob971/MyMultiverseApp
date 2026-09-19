@@ -207,10 +207,8 @@ fun MealPlanDayCard(
                         onClear = onClearLunch,
                         suggestQuickMealLabel = suggestQuickMealLabel,
                         onSuggestQuickMeal = onSuggestQuickMeal,
-                        isFavorite = favoriteKeys.contains(day.lunch.trim().lowercase()),
-                        onToggleFavorite = if (onToggleFavorite != null && day.lunch.isNotBlank()) {
-                            { onToggleFavorite(day.lunch) }
-                        } else null,
+                        favoriteKeys = favoriteKeys,
+                        onToggleFavorite = onToggleFavorite,
                         favoriteEnabled = favoriteEnabled,
                         favoriteTestTag = MealPlanTestTags.favoriteButton(dayIndex, MealSlot.Lunch),
                         modifier = Modifier.fillMaxWidth(),
@@ -235,10 +233,8 @@ fun MealPlanDayCard(
                         onCopyToTomorrow = onCopyToTomorrowLunch,
                         suggestQuickMealLabel = suggestQuickMealLabel,
                         onSuggestQuickMeal = onSuggestQuickMeal,
-                        isFavorite = favoriteKeys.contains(day.dinner.trim().lowercase()),
-                        onToggleFavorite = if (onToggleFavorite != null && day.dinner.isNotBlank()) {
-                            { onToggleFavorite(day.dinner) }
-                        } else null,
+                        favoriteKeys = favoriteKeys,
+                        onToggleFavorite = onToggleFavorite,
                         favoriteEnabled = favoriteEnabled,
                         favoriteTestTag = MealPlanTestTags.favoriteButton(dayIndex, MealSlot.Dinner),
                         modifier = Modifier.fillMaxWidth(),
@@ -270,8 +266,8 @@ private fun MealPlanMealField(
     onSuggestQuickMeal: ((MealSlot) -> Unit)? = null,
     copyToTomorrowLabel: String? = null,
     onCopyToTomorrow: (() -> Unit)? = null,
-    isFavorite: Boolean = false,
-    onToggleFavorite: (() -> Unit)? = null,
+    favoriteKeys: Set<String> = emptySet(),
+    onToggleFavorite: ((String) -> Unit)? = null,
     favoriteEnabled: Boolean = true,
     favoriteTestTag: String? = null,
     modifier: Modifier = Modifier,
@@ -298,6 +294,7 @@ private fun MealPlanMealField(
         MealPlanPresentation.mealLabelSuggestions(weekDays, draft)
     }
     val dishEmoji = FoodEmojiCatalog.emojiForMealText(draft)
+    val isFavorite = favoriteKeys.contains(draft.trim().lowercase())
     val scrollIntoViewModifier = rememberFieldScrollIntoViewModifier()
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -331,7 +328,7 @@ private fun MealPlanMealField(
                                 mealLabel = draft,
                                 isFavorite = isFavorite,
                                 enabled = favoriteEnabled,
-                                onClick = onToggleFavorite,
+                                onClick = { onToggleFavorite(draft) },
                                 modifier = if (favoriteTestTag != null) Modifier.testTag(favoriteTestTag) else Modifier,
                             )
                         }
