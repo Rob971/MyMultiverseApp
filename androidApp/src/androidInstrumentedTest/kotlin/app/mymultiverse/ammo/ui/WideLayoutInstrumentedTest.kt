@@ -138,7 +138,7 @@ class WideLayoutInstrumentedTest {
 
     @Test
     fun home_wideLayout_showsTwoColumnWelcome() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 WideLayoutHost {
                     HomeWelcomeContent(
@@ -161,7 +161,7 @@ class WideLayoutInstrumentedTest {
 
     @Test
     fun home_phoneLayout_hidesWideLayoutTag() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 PhoneLayoutHost {
                     HomeWelcomeContent(
@@ -195,7 +195,7 @@ class WideLayoutInstrumentedTest {
 
     @Test
     fun auth_wideLayout_capsFormWidthAtFormMaxWidth() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 WideLayoutHost {
                     AuthScreen(
@@ -221,7 +221,7 @@ class WideLayoutInstrumentedTest {
 
     @Test
     fun auth_phoneLayout_fillsAvailableWidth() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 PhoneLayoutHost {
                     AuthScreen(
@@ -243,7 +243,7 @@ class WideLayoutInstrumentedTest {
 
     @Test
     fun login_wideLayout_capsFormWidthAtFormMaxWidth() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 WideLayoutHost {
                     LoginScreen(
@@ -263,7 +263,7 @@ class WideLayoutInstrumentedTest {
 
     @Test
     fun login_phoneLayout_fillsAvailableWidth() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 PhoneLayoutHost {
                     LoginScreen(

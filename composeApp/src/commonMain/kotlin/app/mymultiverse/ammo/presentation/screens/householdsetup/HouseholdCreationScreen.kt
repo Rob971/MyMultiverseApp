@@ -21,12 +21,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -72,6 +75,7 @@ fun HouseholdCreationScreen(
     val uiState by screenModel.uiState.collectAsState()
     val createdHouseholdId by screenModel.createdHouseholdId.collectAsState()
     val focusRequester = remember { FocusRequester() }
+    var nameFieldAttached by remember { mutableStateOf(false) }
 
     val defaultHouseholdName = screenModel.suggestedNamePart?.let { namePart ->
         stringResource(Res.string.household_setup_default_name, namePart)
@@ -81,8 +85,10 @@ fun HouseholdCreationScreen(
         defaultHouseholdName?.let(screenModel::applyDefaultHouseholdNameIfEmpty)
     }
 
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
+    LaunchedEffect(nameFieldAttached) {
+        if (nameFieldAttached) {
+            focusRequester.requestFocus()
+        }
     }
 
     LaunchedEffect(createdHouseholdId) {
@@ -166,6 +172,7 @@ fun HouseholdCreationScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
+                    .onGloballyPositioned { nameFieldAttached = true }
                     .then(nameScrollIntoView)
                     .testTag(HouseholdCreationTestTags.NAME_FIELD),
             )

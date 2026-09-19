@@ -44,6 +44,9 @@
     <string name="nutrition_meal_plan_collapse_day">Mahlzeiten ausblenden</string>
     <string name="nutrition_meal_plan_expanded">Erweitert</string>
     <string name="nutrition_meal_plan_collapsed">Reduziert</string>
+    <string name="nutrition_meal_accept">Akzeptieren</string>
+    <string name="nutrition_meal_replace">Ersetzen</string>
+    <string name="nutrition_meal_accept_done">Zum Plan hinzugefügt</string>
     <string name="nutrition_grocery_title">Wocheneinkauf</string>
     <string name="nutrition_household_viewer_readonly_note">Du kannst geteilte Listen und Pläne sehen, aber nicht bearbeiten.</string>
     <string name="nutrition_grocery_description">Erstellen und abhaken Sie die Einkaufsliste dieser Woche.</string>
@@ -200,6 +203,7 @@
     <string name="nutrition_ai_meal_plan_result_title">Vorschau</string>
     <string name="nutrition_meal_plan_preview_line">%1$s: %2$s</string>
     <string name="nutrition_ai_apply_meal_plan">In Plan übernehmen</string>
+    <string name="nutrition_ai_replace_week">Ganze Woche ersetzen</string>
     <string name="nutrition_ai_ingredients_step_title">Zutaten hinzufügen?</string>
     <string name="nutrition_ai_ingredients_step_body">Die KI hat Lebensmittel für diese Mahlzeit vorgeschlagen. Zur Einkaufsliste hinzufügen oder vorerst überspringen.</string>
     <string name="nutrition_ai_ingredients_step_loading">Zutaten werden vorgeschlagen…</string>

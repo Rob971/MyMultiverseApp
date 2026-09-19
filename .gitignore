@@ -58,3 +58,6 @@ gradle/gradle-daemon-jvm.properties
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Cline agent artifacts (local session output)
+.cline/

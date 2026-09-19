@@ -46,7 +46,7 @@ class OnboardingUxInstrumentedTest {
 
     @Test
     fun authScreen_showsSsoAndEmailFallback() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 AuthScreen(
                     pendingInviteToken = null,
@@ -66,7 +66,7 @@ class OnboardingUxInstrumentedTest {
     fun authScreen_emailFallback_opensLoginForm() {
         var showEmailAuth by mutableStateOf(false)
 
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 if (showEmailAuth) {
                     LoginScreen(
@@ -118,7 +118,7 @@ class OnboardingUxInstrumentedTest {
             )
         }
 
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 AuthScreen(
                     pendingInviteToken = "preview-token",
@@ -142,7 +142,7 @@ class OnboardingUxInstrumentedTest {
     fun householdCreation_createDisabledUntilNameAvailable() {
         val screenModel = householdSetupScreenModel()
 
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 HouseholdCreationScreen(
                     onHouseholdCreated = {},
@@ -174,8 +174,8 @@ class OnboardingUxInstrumentedTest {
             AuthState.Authenticated(
                 AuthUser(
                     id = "user-1",
-                    email = "tester@example.com",
-                    displayName = "Alex",
+                    email = null,
+                    displayName = null,
                 ),
             ),
         )

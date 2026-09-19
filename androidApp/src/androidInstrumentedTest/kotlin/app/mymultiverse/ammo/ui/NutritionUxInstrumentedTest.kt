@@ -10,6 +10,8 @@ import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -87,8 +89,9 @@ class NutritionUxInstrumentedTest {
         adviceAnswer: String = "Eat more vegetables.",
         initialAiGrocery: List<GroceryItem> = emptyList(),
         plannedLunch: Pair<Int, String>? = null,
+        householdId: String? = null,
     ): NutritionScreenModel {
-        val repository = InstrumentedNutritionRepository(weekKey)
+        val repository = InstrumentedNutritionRepository(weekKey, householdId = householdId)
         repository.aiGrocery.value = initialAiGrocery
         plannedLunch?.let { (dayIndex, lunch) ->
             repository.mealPlan.value = repository.mealPlan.value.copy(
@@ -140,7 +143,7 @@ class NutritionUxInstrumentedTest {
 
     @Test
     fun grocery_ghostPairingBanner_addsSuggestedItems() {
-        val screenModel = nutritionScreenModel()
+        val screenModel = nutritionScreenModel(householdId = "instrumented-household")
 
         composeRule.setContent {
             AppTheme {
@@ -159,8 +162,8 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(GroceryGhostPairingTestTags.ACTION).performClick()
         composeRule.waitForState(screenModel.groceryItems) { it.size >= 4 }
 
-        composeRule.onNodeWithText("Salsa").assertIsDisplayed()
-        composeRule.onNodeWithText("Cheese").assertIsDisplayed()
+        composeRule.onNodeWithText("salsa").assertIsDisplayed()
+        composeRule.onNodeWithText("cheese").assertIsDisplayed()
     }
 
     @Test
@@ -813,6 +816,48 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(AiHelperSheetTestTags.SHEET).assertIsDisplayed()
         composeRule.onNodeWithTag(NutritionAiTestTags.MODE_MEAL_PLAN).assertDoesNotExist()
         composeRule.onNodeWithTag(NutritionAiTestTags.MORE_OPTIONS_TOGGLE).assertIsDisplayed()
+    }
+
+    @Test
+    fun aiHelperSheet_acceptMeal_showsUndoSnackbarAndAcceptedStatus() {
+        val screenModel = nutritionScreenModel()
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    AiHelperSheet(
+                        visible = true,
+                        launchContext = AiHelperLaunchContext(mode = NutritionAiMode.MealPlan),
+                        onDismiss = {},
+                        onApplied = {},
+                        screenModel = screenModel,
+                    )
+                }
+            }
+        }
+
+        composeRule.runOnIdle {
+            screenModel.runAiAssistant(
+                NutritionAiMode.MealPlan,
+                "vegetarian",
+                MealPlanGenerationScope.FullWeek,
+            )
+        }
+        composeRule.waitFor { screenModel.aiState.value is NutritionAiState.MealPlanPreview }
+
+        val acceptLunchTag = "${NutritionAiTestTags.MEAL_PLAN_ACCEPT_LUNCH_PREFIX}0"
+        composeRule.onNodeWithTag(NutritionAiTestTags.SCROLL_LIST)
+            .performScrollToNode(hasTestTag(acceptLunchTag))
+        composeRule.onNodeWithTag(acceptLunchTag).performClick()
+
+        // The sheet draws above the screen's Scaffold, so the Undo snackbar needs the
+        // sheet's own host to be visible at all.
+        composeRule.waitFor {
+            composeRule.onAllNodesWithText("Added to your plan").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Added to your plan").assertIsDisplayed()
+        // The check mark that replaces the Accept button is announced to screen readers.
+        composeRule.onNodeWithContentDescription("Added to your plan").assertExists()
     }
 
     @Test

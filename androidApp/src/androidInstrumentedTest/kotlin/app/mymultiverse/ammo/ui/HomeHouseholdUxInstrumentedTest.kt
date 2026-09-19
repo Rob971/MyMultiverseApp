@@ -32,7 +32,7 @@ class HomeHouseholdUxInstrumentedTest {
 
     @Test
     fun onboarding_withoutPendingInvites_showsWaitForInviteSection() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 HomeOnboardingContent(
                     onboardingUiState = HomeOnboardingUiState(),
@@ -55,7 +55,7 @@ class HomeHouseholdUxInstrumentedTest {
 
     @Test
     fun onboarding_createButtonDisabledUntilNameAvailable() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 HomeOnboardingContent(
                     onboardingUiState = HomeOnboardingUiState(
@@ -84,7 +84,7 @@ class HomeHouseholdUxInstrumentedTest {
     fun onboarding_createButtonEnabledWhenNameAvailable() {
         var createClicked = false
 
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 HomeOnboardingContent(
                     onboardingUiState = HomeOnboardingUiState(
@@ -113,7 +113,7 @@ class HomeHouseholdUxInstrumentedTest {
 
     @Test
     fun onboarding_createButtonDisabledWhenNameBlank() {
-        composeRule.setContent {
+        composeRule.setKoinContent {
             AppTheme {
                 HomeOnboardingContent(
                     onboardingUiState = HomeOnboardingUiState(

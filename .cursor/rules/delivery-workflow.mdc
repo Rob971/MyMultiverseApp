@@ -45,7 +45,7 @@ Testing is **not optional**. Every implementation step must be paired with test 
 
 ```bash
 ./gradlew :composeApp:testDebugUnitTest                       # must be BUILD SUCCESSFUL
-./gradlew :composeApp:compileDebugAndroidTestKotlinAndroid    # must compile clean
+./gradlew :androidApp:assembleDebugAndroidTest    # must compile clean
 ```
 
 ## 4. Review

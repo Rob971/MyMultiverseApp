@@ -76,7 +76,7 @@ Scoped rules are **not optional** when paths match — they are additional manda
 - [ ] **Existing tests updated** — every test that exercises changed code compiles, passes, and reflects the new behavior; no stale assertions left behind
 - [ ] **Fakes kept in sync** — all `Fake*` and `Instrumented*Fakes` implement the full current interface; no `TODO()` stubs introduced
 - [ ] `:composeApp:testDebugUnitTest` runs green (`BUILD SUCCESSFUL`, zero failures) — when Kotlin changed
-- [ ] `:composeApp:compileDebugAndroidTestKotlinAndroid` compiles clean — when UI or fakes changed
+- [ ] `:androidApp:assembleDebugAndroidTest` compiles clean — when UI or fakes changed
 - [ ] `firebase-appdistribution-testcases.yaml` updated if user-facing flows changed
 - [ ] No secrets committed; commit only if user explicitly asked
 

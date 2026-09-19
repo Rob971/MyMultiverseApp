@@ -332,6 +332,7 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
+          profile: pixel_tablet
           cores: 4
           force-avd-creation: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
@@ -352,6 +353,7 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
+          profile: pixel_tablet
           cores: 4
           force-avd-creation: false
           emulator-boot-timeout: 600

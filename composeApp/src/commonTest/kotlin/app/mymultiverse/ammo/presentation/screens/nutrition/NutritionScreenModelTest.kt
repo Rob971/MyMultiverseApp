@@ -442,6 +442,100 @@ class NutritionScreenModelTest {
     }
 
     @Test
+    fun acceptPreviewedMeal_thenUndo_restoresPreviousValue() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService()
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+        // Pre-fill day 0 lunch so accepting onto it is a "replace", not an "add".
+        repository.mealPlan.value = repository.mealPlan.value.copy(
+            days = repository.mealPlan.value.days.toMutableList().also {
+                it[0] = it[0].copy(lunch = "Old Lunch")
+            },
+        )
+        advanceUntilIdle()
+
+        model.runAiAssistant(
+            NutritionAiMode.MealPlan,
+            "vegetarian",
+            MealPlanGenerationScope.FullWeek,
+        )
+        advanceUntilIdle()
+
+        val preview = model.aiState.value as? NutritionAiState.MealPlanPreview
+        assertNotNull(preview)
+        val suggested = preview.plan.days[0].lunch.trim()
+        assertTrue(suggested.isNotBlank())
+
+        assertTrue(model.acceptPreviewedMeal(0, MealSlot.Lunch))
+        advanceUntilIdle()
+        assertEquals(suggested, repository.mealPlan.value.days[0].lunch)
+
+        model.undoMealPlanAccept()
+        advanceUntilIdle()
+        assertEquals("Old Lunch", repository.mealPlan.value.days[0].lunch)
+    }
+
+    @Test
+    fun acceptPreviewedMeal_withoutPreview_returnsFalse() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val model = nutritionScreenModel(repository, scope = modelScope)
+        advanceUntilIdle()
+
+        assertFalse(model.acceptPreviewedMeal(0, MealSlot.Lunch))
+        assertNull(model.mealPlanAcceptUndo.value)
+    }
+
+    @Test
+    fun acceptPreviewedMeal_twoQuickAccepts_applyBothSlots() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService()
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+        model.runAiAssistant(
+            NutritionAiMode.MealPlan,
+            "vegetarian",
+            MealPlanGenerationScope.FullWeek,
+        )
+        advanceUntilIdle()
+
+        val preview = model.aiState.value as? NutritionAiState.MealPlanPreview
+        assertNotNull(preview)
+        val lunchSuggestion = preview.plan.days[0].lunch.trim()
+        val dinnerSuggestion = preview.plan.days[0].dinner.trim()
+        assertTrue(lunchSuggestion.isNotBlank())
+        assertTrue(dinnerSuggestion.isNotBlank())
+
+        // Two accepts in quick succession must not cancel each other's pending save.
+        assertTrue(model.acceptPreviewedMeal(0, MealSlot.Lunch))
+        assertTrue(model.acceptPreviewedMeal(0, MealSlot.Dinner))
+        advanceUntilIdle()
+
+        assertEquals(lunchSuggestion, repository.mealPlan.value.days[0].lunch)
+        assertEquals(dinnerSuggestion, repository.mealPlan.value.days[0].dinner)
+    }
+
+    @Test
+    fun resetAiState_clearsPendingAcceptUndo() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService()
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+        model.runAiAssistant(
+            NutritionAiMode.MealPlan,
+            "vegetarian",
+            MealPlanGenerationScope.FullWeek,
+        )
+        advanceUntilIdle()
+
+        assertTrue(model.acceptPreviewedMeal(0, MealSlot.Lunch))
+        advanceUntilIdle()
+        assertNotNull(model.mealPlanAcceptUndo.value)
+
+        // Closing the sheet calls resetAiState(); it must drop the pending undo so a
+        // later reopen cannot offer an Undo that overwrites newer edits.
+        model.resetAiState()
+        assertNull(model.mealPlanAcceptUndo.value)
+    }
+
+    @Test
     fun viewerRole_blocksGroceryWrites() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val householdRepository = FakeHouseholdRepository(role = HouseholdMemberRole.Viewer)
