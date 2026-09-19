@@ -12,6 +12,7 @@ import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.NutritionHouseholdSelectionStore
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,10 @@ class InstrumentedNutritionRepository(
     val grocery = MutableStateFlow<List<GroceryItem>>(emptyList())
     val aiGrocery = MutableStateFlow<List<GroceryItem>>(emptyList())
     val mealPlan = MutableStateFlow(WeeklyMealPlan(weekKey = weekKey))
+
+    /** When set, meal-plan saves wait for it, so a test can hold the saved plan while the UI shows an edited draft. */
+    @Volatile
+    var saveGate: CompletableDeferred<Unit>? = null
 
     override fun observeGroceryItems(): Flow<List<GroceryItem>> = grocery
 
@@ -43,6 +48,7 @@ class InstrumentedNutritionRepository(
     }
 
     override suspend fun saveMealPlan(plan: WeeklyMealPlan) {
+        saveGate?.await()
         mealPlan.value = plan
     }
 }

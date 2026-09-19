@@ -1,6 +1,10 @@
 package app.mymultiverse.ammo.ui
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +69,7 @@ import app.mymultiverse.ammo.presentation.theme.AppTheme
 import app.mymultiverse.ammo.ui.InstrumentedComposeTest.waitFor
 import app.mymultiverse.ammo.ui.InstrumentedComposeTest.waitForState
 import com.russhwolf.settings.MapSettings
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -95,8 +100,8 @@ class NutritionUxInstrumentedTest {
         plannedLunch: Pair<Int, String>? = null,
         householdId: String? = null,
         favorites: InstrumentedFavoriteDishesRepository = InstrumentedFavoriteDishesRepository(),
+        repository: InstrumentedNutritionRepository = InstrumentedNutritionRepository(weekKey, householdId = householdId),
     ): NutritionScreenModel {
-        val repository = InstrumentedNutritionRepository(weekKey, householdId = householdId)
         repository.aiGrocery.value = initialAiGrocery
         plannedLunch?.let { (dayIndex, lunch) ->
             repository.mealPlan.value = repository.mealPlan.value.copy(
@@ -936,33 +941,58 @@ class NutritionUxInstrumentedTest {
     fun mealPlan_favoriteStar_savesTheEditedDraftNotTheDebouncedSavedText() {
         val weekKey = WeekCalendar.currentWeekKey()
         val dayIndex = WeekCalendar.todayIndexInWeek(weekKey) ?: 0
-        val favorites = InstrumentedFavoriteDishesRepository(
-            initial = listOf(FavoriteDish(label = "Pasta al pomodoro", normalisedLabel = "pasta al pomodoro")),
-        )
+        val original = FavoriteDish(label = "Pasta al pomodoro", normalisedLabel = "pasta al pomodoro")
+        val favorites = InstrumentedFavoriteDishesRepository(initial = listOf(original))
+        val repository = InstrumentedNutritionRepository(weekKey)
         val screenModel = nutritionScreenModel(
             weekKey = weekKey,
             plannedLunch = dayIndex to "Pasta al pomodoro",
             favorites = favorites,
+            repository = repository,
         )
         val star = showFavoriteStar(screenModel, weekKey, dayIndex)
+        val lunchField = MealPlanTestTags.lunchField(dayIndex)
 
-        // The saved meal is favorited, so the star starts checked.
+        // The saved meal is a favorite, so the star starts checked.
         composeRule.onNodeWithTag(star).assertIsOn()
 
-        // Edit the box to a different dish. The star must follow the edited draft, not the
-        // still-debounced saved text.
-        composeRule.onNodeWithTag(MealPlanTestTags.lunchField(dayIndex))
-            .performTextReplacement("Pasta al pesto")
+        // Hold the debounced save: the saved meal stays "Pasta al pomodoro" while the box shows
+        // the draft "Pasta al pesto". Unheld, the save lands on its own clock and the two converge,
+        // so a star that follows the saved meal would pass unnoticed.
+        val saveGate = CompletableDeferred<Unit>()
+        repository.saveGate = saveGate
+        composeRule.onNodeWithTag(lunchField).performTextReplacement("Pasta al pesto")
 
-        // Draft "pasta al pesto" is not yet a favorite, so the star must be off.
+        fun assertSavedAndDraftDiffer() {
+            assertEquals("saved meal", "Pasta al pomodoro", screenModel.mealPlan.value.days[dayIndex].lunch)
+            // Text only: a focused field's text can carry IME styling (a composing underline),
+            // which an AnnotatedString equality would also compare.
+            composeRule.onNodeWithTag(lunchField).assert(
+                SemanticsMatcher("draft text is 'Pasta al pesto'") {
+                    it.config.getOrNull(SemanticsProperties.EditableText)?.text == "Pasta al pesto"
+                },
+            )
+        }
+
+        // The draft is not a favorite, so the star must be off even though the saved meal is one.
+        assertSavedAndDraftDiffer()
         composeRule.onNodeWithTag(star).assertIsOff()
+        assertSavedAndDraftDiffer()
 
         composeRule.onNodeWithTag(star).performClick()
-        composeRule.waitForState(favorites.favorites) { list ->
-            list.any { it.normalisedLabel == "pasta al pesto" } &&
-                list.any { it.normalisedLabel == "pasta al pomodoro" }
-        }
+        composeRule.waitForState(favorites.favorites) { it != listOf(original) }
+        val afterClick = favorites.favorites.value
+        assertTrue(
+            "the click must save the draft 'Pasta al pesto'; favorites were $afterClick",
+            afterClick.any { it.label == "Pasta al pesto" && it.normalisedLabel == "pasta al pesto" },
+        )
+        assertTrue("the original favorite must be unchanged; favorites were $afterClick", original in afterClick)
+        assertSavedAndDraftDiffer()
         composeRule.onNodeWithTag(star).assertIsOn()
+
+        // Released, the save stores the draft as the meal.
+        saveGate.complete(Unit)
+        composeRule.waitForState(screenModel.mealPlan) { it.days[dayIndex].lunch == "Pasta al pesto" }
     }
 
     @Test
