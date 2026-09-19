@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -28,6 +30,7 @@ import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
 import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.model.Greeting
+import app.mymultiverse.ammo.domain.model.nutrition.FavoriteDish
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
@@ -90,6 +93,7 @@ class NutritionUxInstrumentedTest {
         initialAiGrocery: List<GroceryItem> = emptyList(),
         plannedLunch: Pair<Int, String>? = null,
         householdId: String? = null,
+        favorites: InstrumentedFavoriteDishesRepository = InstrumentedFavoriteDishesRepository(),
     ): NutritionScreenModel {
         val repository = InstrumentedNutritionRepository(weekKey, householdId = householdId)
         repository.aiGrocery.value = initialAiGrocery
@@ -107,7 +111,7 @@ class NutritionUxInstrumentedTest {
             householdRepository = InstrumentedHouseholdRepository(),
             collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
             aiAssistant = InstrumentedNutritionAdviceService(adviceAnswer),
-            favoriteDishesRepository = InstrumentedFavoriteDishesRepository(),
+            favoriteDishesRepository = favorites,
             ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
             logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "instrumented")),
             scope = scope,
@@ -904,6 +908,81 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(MealPlanTestTags.suggestAiButton(dayIndex, MealSlot.Lunch))
             .performClick()
         composeRule.onNodeWithTag(AiHelperSheetTestTags.SHEET).assertIsDisplayed()
+    }
+
+    @Test
+    fun mealPlan_favoriteStar_savesMealAndConfirms() {
+        val weekKey = WeekCalendar.currentWeekKey()
+        val dayIndex = WeekCalendar.todayIndexInWeek(weekKey) ?: 0
+        val favorites = InstrumentedFavoriteDishesRepository()
+        val screenModel = nutritionScreenModel(
+            weekKey = weekKey,
+            plannedLunch = dayIndex to "Pasta al pomodoro",
+            favorites = favorites,
+        )
+        val star = showFavoriteStar(screenModel, weekKey, dayIndex)
+
+        composeRule.onNodeWithTag(star).assertIsOff().performClick()
+
+        composeRule.waitForState(favorites.favorites) { list ->
+            list.any { it.normalisedLabel == "pasta al pomodoro" }
+        }
+        composeRule.onNodeWithTag(star).assertIsOn()
+        composeRule.onNodeWithText("Saved to favorites").assertIsDisplayed()
+    }
+
+    @Test
+    fun mealPlan_favoriteStar_whenTenSaved_replacesOneThroughDialog() {
+        val weekKey = WeekCalendar.currentWeekKey()
+        val dayIndex = WeekCalendar.todayIndexInWeek(weekKey) ?: 0
+        val favorites = InstrumentedFavoriteDishesRepository(
+            initial = (1..10).map { FavoriteDish(label = "Dish $it", normalisedLabel = "dish $it") },
+        )
+        val screenModel = nutritionScreenModel(
+            weekKey = weekKey,
+            plannedLunch = dayIndex to "Pasta al pomodoro",
+            favorites = favorites,
+        )
+        val star = showFavoriteStar(screenModel, weekKey, dayIndex)
+
+        composeRule.onNodeWithTag(star).performClick()
+
+        composeRule.waitFor {
+            composeRule.onAllNodesWithText("Favorites are full").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Favorites are full").assertIsDisplayed()
+        composeRule.onNodeWithText("Dish 1").performClick()
+        composeRule.onNodeWithText("Replace").performClick()
+
+        composeRule.waitForState(favorites.favorites) { list ->
+            list.any { it.normalisedLabel == "pasta al pomodoro" } &&
+                list.none { it.normalisedLabel == "dish 1" }
+        }
+        composeRule.onNodeWithTag(star).assertIsOn()
+    }
+
+    /** Renders the week plan, opens the day if needed, and scrolls the lunch star into view. */
+    private fun showFavoriteStar(screenModel: NutritionScreenModel, weekKey: String, dayIndex: Int): String {
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    WeeklyMealPlanScreen(
+                        onBack = {},
+                        onOpenSection = { _, _ -> },
+                        onOpenAiSheet = {},
+                        screenModel = screenModel,
+                    )
+                }
+            }
+        }
+        if (WeekCalendar.todayIndexInWeek(weekKey) == null) {
+            composeRule.onNodeWithTag(MealPlanTestTags.dayHeader(dayIndex))
+                .performScrollTo()
+                .performClick()
+        }
+        val star = MealPlanTestTags.favoriteButton(dayIndex, MealSlot.Lunch)
+        composeRule.onNodeWithTag(MealPlanTestTags.SCROLL_LIST).performScrollToNode(hasTestTag(star))
+        return star
     }
 
     @Test
