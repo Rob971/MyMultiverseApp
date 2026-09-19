@@ -17,6 +17,7 @@ import app.mymultiverse.ammo.data.repository.SettingsNutritionHouseholdSelection
 import app.mymultiverse.ammo.data.ai.AiSecrets
 import app.mymultiverse.ammo.data.manager.SettingsAiAssistantSettings
 import app.mymultiverse.ammo.data.manager.SyncedAiAssistantSettings
+import app.mymultiverse.ammo.data.supabase.FavoritesDeviceCache
 import app.mymultiverse.ammo.data.supabase.SupabaseAiSettingsRepository
 import app.mymultiverse.ammo.data.supabase.UnconfiguredAiSettingsRepository
 import app.mymultiverse.ammo.data.supabase.SupabaseFavoriteDishesRepository
@@ -135,7 +136,12 @@ private val dataModule = module {
     single<FavoriteDishesRepository> {
         val client = get<SupabaseClientHolder>().client
         if (client != null) {
-            SupabaseFavoriteDishesRepository(client, get(), authRepository = get(), scope = get())
+            SupabaseFavoriteDishesRepository(
+                client = client,
+                cache = FavoritesDeviceCache(settings = get()),
+                authRepository = get(),
+                scope = get(),
+            )
         } else {
             UnconfiguredFavoriteDishesRepository()
         }
