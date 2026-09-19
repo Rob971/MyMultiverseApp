@@ -118,6 +118,7 @@ import ammo.composeapp.generated.resources.nutrition_ai_suggestion_budget_grocer
 import ammo.composeapp.generated.resources.nutrition_ai_suggestion_budget_plan
 import ammo.composeapp.generated.resources.nutrition_ai_suggestion_protein
 import ammo.composeapp.generated.resources.nutrition_ai_suggestion_protein_plan
+import ammo.composeapp.generated.resources.nutrition_ai_suggestion_seasonal_week
 import ammo.composeapp.generated.resources.nutrition_ai_suggestion_veggie_grocery
 import ammo.composeapp.generated.resources.nutrition_ai_suggestion_veggies
 import ammo.composeapp.generated.resources.nutrition_ai_suggestions_title
@@ -139,6 +140,8 @@ private data class AiQuickPick(
     val label: String,
     val criteria: String,
     val testTag: String? = null,
+    /** Runs instead of filling [criteria], for picks that need no criteria. */
+    val onPick: (() -> Unit)? = null,
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -276,6 +279,12 @@ fun NutritionAiAssistantContent(
             ),
         )
         NutritionAiMode.MealPlan -> listOf(
+            AiQuickPick(
+                label = stringResource(Res.string.nutrition_ai_suggestion_seasonal_week),
+                criteria = "",
+                testTag = NutritionAiTestTags.SEASONAL_WEEK_CHIP,
+                onPick = { screenModel.suggestSeasonalWeek() },
+            ),
             AiQuickPick(
                 stringResource(Res.string.nutrition_ai_suggestion_protein_plan),
                 stringResource(Res.string.nutrition_ai_suggestion_protein_plan),
@@ -470,9 +479,14 @@ fun NutritionAiAssistantContent(
                         enabled = inputsEnabled,
                         modifier = pick.testTag?.let { Modifier.testTag(it) } ?: Modifier,
                         onClick = {
-                            criteria = pick.criteria
-                            if (chipFirstSheet) {
-                                generate()
+                            val action = pick.onPick
+                            if (action != null) {
+                                action()
+                            } else {
+                                criteria = pick.criteria
+                                if (chipFirstSheet) {
+                                    generate()
+                                }
                             }
                         },
                     )

@@ -193,6 +193,7 @@
     <string name="nutrition_ai_suggestion_protein">Déjeuners protéinés pour la famille</string>
     <string name="nutrition_ai_suggestion_veggies">Plus de légumes au dîner</string>
     <string name="nutrition_ai_suggestion_allergy">Collations sans allergènes pour les enfants</string>
+    <string name="nutrition_ai_suggestion_seasonal_week">Semaine de saison</string>
     <string name="nutrition_ai_mode_advice">Conseils</string>
     <string name="nutrition_ai_mode_grocery">Courses</string>
     <string name="nutrition_ai_mode_meal_plan">Plan repas</string>

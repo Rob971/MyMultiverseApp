@@ -18,6 +18,7 @@ object NutritionAiTestTags {
     const val SCROLL_LIST = "nutrition_ai_scroll"
     const val CRITERIA_FIELD = "nutrition_ai_criteria"
     const val GENERATE_BUTTON = "nutrition_ai_generate"
+    const val SEASONAL_WEEK_CHIP = "nutrition_ai_seasonal_week"
     const val ANSWER_CARD = "nutrition_ai_answer"
     const val APPLY_MEAL_PLAN_BUTTON = "nutrition_ai_apply_meal_plan"
     const val CLEAR_AI_GROCERY_BUTTON = "nutrition_ai_clear_grocery"

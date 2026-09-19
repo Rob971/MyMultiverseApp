@@ -193,6 +193,7 @@
     <string name="nutrition_ai_suggestion_protein">Proteinreiche Familien-Mittagessen</string>
     <string name="nutrition_ai_suggestion_veggies">Mehr Gemüse beim Abendessen</string>
     <string name="nutrition_ai_suggestion_allergy">Allergikerfreundliche Snacks für Kinder</string>
+    <string name="nutrition_ai_suggestion_seasonal_week">Saisonale Woche</string>
     <string name="nutrition_ai_mode_advice">Tipps</string>
     <string name="nutrition_ai_mode_grocery">Einkauf</string>
     <string name="nutrition_ai_mode_meal_plan">Speiseplan</string>

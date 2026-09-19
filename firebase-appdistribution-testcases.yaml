@@ -997,6 +997,20 @@ testcases:
       - The 11th star opens "Favorites are full" listing the 10 saved favorites; Replace swaps the chosen one for the new meal and its star turns on.
       - The second account sees none of the first account's favorites.
 
+  - id: meal-plan-seasonal-week
+    title: Seasonal week suggestions (7 lunches and 7 dinners)
+    steps:
+      - Open Weekly meal plan, then Plan with AI, and tap "Seasonal week".
+      - Look through the suggested meals, then tap Accept under one lunch.
+      - Save 3 or more favorite dishes and ask for a seasonal week again.
+      - Change the phone's region or app language (or wait for a new month) and ask again.
+    expected:
+      - No Gemini key is asked for at any point.
+      - The preview shows 7 lunches and 7 dinners built from foods in season for your country and month, with no repeated dish.
+      - Accept adds only that meal to the plan; every other slot keeps its value.
+      - At most 2 of the 14 suggestions are favorites. (If the model breaks a rule twice, the app still shows its best complete week.)
+      - After a region, language or month change, the suggestions follow the new country, language and month.
+
   - id: ai-dish-ingredients-gemini
     title: Dish-specific ingredient list via Gemini (key configured)
     steps:

@@ -193,6 +193,7 @@
     <string name="nutrition_ai_suggestion_protein">High-protein family lunches</string>
     <string name="nutrition_ai_suggestion_veggies">More vegetables at dinner</string>
     <string name="nutrition_ai_suggestion_allergy">Allergy-friendly snacks for kids</string>
+    <string name="nutrition_ai_suggestion_seasonal_week">Seasonal week</string>
     <string name="nutrition_ai_mode_advice">Tips</string>
     <string name="nutrition_ai_mode_grocery">Grocery</string>
     <string name="nutrition_ai_mode_meal_plan">Meal plan</string>

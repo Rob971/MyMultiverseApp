@@ -106,8 +106,8 @@ Deno.serve(async (req) => {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
       body: JSON.stringify(forward),
-      // Below the app's 15 s request timeout, so the app gets this error rather than its own timeout.
-      signal: AbortSignal.timeout(envInt("AI_UPSTREAM_TIMEOUT_MS", 13_000)),
+      // Under the 30 s the app waits for a seasonal week; shorter calls time out in the app first (10-15 s).
+      signal: AbortSignal.timeout(envInt("AI_UPSTREAM_TIMEOUT_MS", 25_000)),
     });
   } catch (e) {
     const timedOut = e instanceof DOMException && (e.name === "TimeoutError" || e.name === "AbortError");
