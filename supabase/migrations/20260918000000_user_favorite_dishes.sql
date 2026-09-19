@@ -121,6 +121,10 @@ begin
 end;
 $$;
 
+-- Explicit, like every other user-facing table here: RLS limits rows to the owner, but without
+-- this grant `authenticated` cannot touch the table at all where default privileges are absent.
+grant select, insert, delete on public.user_favorite_dishes to authenticated;
+
 revoke all on function public.add_favorite(text) from public;
 revoke all on function public.remove_favorite(text) from public;
 revoke all on function public.replace_favorite(text, text) from public;

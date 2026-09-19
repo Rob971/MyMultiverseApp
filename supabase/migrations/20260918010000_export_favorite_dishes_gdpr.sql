@@ -31,8 +31,8 @@ begin
     where p.id = v_user_id;
 
     select json_build_object(
-        'household_id', row.space_id,
-        'household_name', row.space_name,
+        'household_id', row.household_id,
+        'household_name', row.household_name,
         'owner_id', row.owner_id,
         'role', row.member_role
     )
