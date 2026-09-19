@@ -17,8 +17,11 @@ import app.mymultiverse.ammo.data.repository.SettingsNutritionHouseholdSelection
 import app.mymultiverse.ammo.data.ai.AiSecrets
 import app.mymultiverse.ammo.data.manager.SettingsAiAssistantSettings
 import app.mymultiverse.ammo.data.manager.SyncedAiAssistantSettings
+import app.mymultiverse.ammo.data.supabase.FavoritesDeviceCache
 import app.mymultiverse.ammo.data.supabase.SupabaseAiSettingsRepository
 import app.mymultiverse.ammo.data.supabase.UnconfiguredAiSettingsRepository
+import app.mymultiverse.ammo.data.supabase.SupabaseFavoriteDishesRepository
+import app.mymultiverse.ammo.data.supabase.UnconfiguredFavoriteDishesRepository
 import app.mymultiverse.ammo.domain.repository.AiSettingsRemoteRepository
 import app.mymultiverse.ammo.data.service.GeminiApiClient
 import app.mymultiverse.ammo.data.service.GeminiDishIngredientClient
@@ -39,6 +42,7 @@ import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.repository.AuthRepository
 import app.mymultiverse.ammo.domain.repository.GreetingRepository
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
+import app.mymultiverse.ammo.domain.repository.FavoriteDishesRepository
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.NutritionHouseholdSelectionStore
@@ -129,6 +133,19 @@ private val dataModule = module {
         if (client != null) SupabaseAiSettingsRepository(client)
         else UnconfiguredAiSettingsRepository()
     }
+    single<FavoriteDishesRepository> {
+        val client = get<SupabaseClientHolder>().client
+        if (client != null) {
+            SupabaseFavoriteDishesRepository(
+                client = client,
+                cache = FavoritesDeviceCache(settings = get()),
+                authRepository = get(),
+                scope = get(),
+            )
+        } else {
+            UnconfiguredFavoriteDishesRepository()
+        }
+    }
     single<AiAssistantSettings>(createdAtStart = true) {
         SyncedAiAssistantSettings(
             local = SettingsAiAssistantSettings(
@@ -178,6 +195,7 @@ private val presentationModule = module {
             householdRepository = get(),
             collaborationRepository = get(),
             aiAssistant = get(),
+            favoriteDishesRepository = get(),
             ghostPairingDismissStore = get(),
             logger = get(),
         )

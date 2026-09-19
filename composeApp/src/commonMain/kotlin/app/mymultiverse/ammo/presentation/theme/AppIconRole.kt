@@ -26,6 +26,8 @@ enum class AppIconRole {
     ActionConfirm,
     GroceryChecked,
     GroceryUnchecked,
+    FavoriteOff,
+    FavoriteOn,
     AiAccent,
     SyncIdle,
     SyncPending,
@@ -66,6 +68,8 @@ fun AppIconRole.imageVector(): ImageVector = when (this) {
     AppIconRole.ActionConfirm -> AppIcons.Check
     AppIconRole.GroceryChecked -> AppIcons.CheckCircle
     AppIconRole.GroceryUnchecked -> AppIcons.RadioButtonUnchecked
+    AppIconRole.FavoriteOff -> AppIcons.StarOutline
+    AppIconRole.FavoriteOn -> AppIcons.StarFilled
     AppIconRole.AiAccent -> AppIcons.Sparkles
     AppIconRole.SyncIdle -> AppIcons.SyncPending
     AppIconRole.SyncPending -> AppIcons.SyncPending
@@ -139,6 +143,9 @@ fun AppIconRole.resolveTint(accentColor: Color? = null): Color = when (this) {
     -> JourneySemanticColors.successAccent()
 
     AppIconRole.AiAccent -> JourneySemanticColors.brandTerracotta()
+
+    AppIconRole.FavoriteOn -> JourneySemanticColors.brandTerracotta()
+    AppIconRole.FavoriteOff -> JourneySemanticColors.inkMuted()
 
     AppIconRole.SsoGoogle,
     AppIconRole.SsoApple,

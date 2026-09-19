@@ -47,6 +47,17 @@
     <string name="nutrition_meal_accept">قبول</string>
     <string name="nutrition_meal_replace">استبدال</string>
     <string name="nutrition_meal_accept_done">أُضيف إلى خطتك</string>
+    <string name="nutrition_favorite_add_cd">إضافة %1$s إلى المفضلة</string>
+    <string name="nutrition_favorite_remove_cd">إزالة %1$s من المفضلة</string>
+    <string name="nutrition_favorite_saved">أُضيف إلى المفضلة</string>
+    <string name="nutrition_favorite_removed">حُذف من المفضلة</string>
+    <string name="nutrition_favorite_replaced">تم استبدال المفضلة</string>
+    <string name="nutrition_favorite_offline">تحقق من اتصالك لحفظ المفضلة</string>
+    <string name="nutrition_favorite_error">تعذّر حفظ المفضلة. حاول مجددًا.</string>
+    <string name="nutrition_favorite_cap_title">المفضلة ممتلئة</string>
+    <string name="nutrition_favorite_cap_body">لقد حفظت 10 مفضلات. استبدل واحدة لإضافة أخرى.</string>
+    <string name="nutrition_favorite_replace">استبدال</string>
+    <string name="nutrition_favorite_cancel">إلغاء</string>
     <string name="nutrition_grocery_title">تسوق الأسبوع</string>
     <string name="nutrition_household_viewer_readonly_note">يمكنك رؤية القوائم والخطط المشتركة لكن لا يمكنك تعديلها.</string>
     <string name="nutrition_grocery_description">أنشئ قائمة التسوق لهذا الأسبوع وحدّد ما اكتمل.</string>

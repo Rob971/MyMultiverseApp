@@ -1,16 +1,21 @@
 package app.mymultiverse.ammo.ui
 
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
+import app.mymultiverse.ammo.domain.model.nutrition.FavoriteDish
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
+import app.mymultiverse.ammo.domain.repository.FavoriteDishesRepository
+import app.mymultiverse.ammo.domain.repository.FavoriteMutationException
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.NutritionHouseholdSelectionStore
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOf
 
@@ -21,6 +26,10 @@ class InstrumentedNutritionRepository(
     val grocery = MutableStateFlow<List<GroceryItem>>(emptyList())
     val aiGrocery = MutableStateFlow<List<GroceryItem>>(emptyList())
     val mealPlan = MutableStateFlow(WeeklyMealPlan(weekKey = weekKey))
+
+    /** When set, meal-plan saves wait for it, so a test can hold the saved plan while the UI shows an edited draft. */
+    @Volatile
+    var saveGate: CompletableDeferred<Unit>? = null
 
     override fun observeGroceryItems(): Flow<List<GroceryItem>> = grocery
 
@@ -39,6 +48,7 @@ class InstrumentedNutritionRepository(
     }
 
     override suspend fun saveMealPlan(plan: WeeklyMealPlan) {
+        saveGate?.await()
         mealPlan.value = plan
     }
 }
@@ -132,5 +142,45 @@ class InstrumentedNutritionAdviceService(
                 NutritionAiPlanner.generateMealPlan(criteria, scope, currentPlan),
             )
         }
+    }
+}
+
+/** Behaves like the server: keyed by lower(trim(label)), capped at 10, atomic replace. */
+class InstrumentedFavoriteDishesRepository(
+    initial: List<FavoriteDish> = emptyList(),
+) : FavoriteDishesRepository {
+    private val _favorites = MutableStateFlow(initial)
+    override val favorites: StateFlow<List<FavoriteDish>> = _favorites.asStateFlow()
+    private val _remoteAvailable = MutableStateFlow(true)
+    override val remoteAvailable: StateFlow<Boolean> = _remoteAvailable.asStateFlow()
+
+    override suspend fun refresh(): Result<Unit> = Result.success(Unit)
+
+    override suspend fun addFavorite(label: String): Result<Unit> {
+        val dish = favoriteOf(label)
+        if (_favorites.value.any { it.normalisedLabel == dish.normalisedLabel }) return Result.success(Unit)
+        if (_favorites.value.size >= CAP) {
+            return Result.failure(FavoriteMutationException(FavoriteMutationException.Kind.CAP_EXCEEDED))
+        }
+        _favorites.value = _favorites.value + dish
+        return Result.success(Unit)
+    }
+
+    override suspend fun removeFavorite(normalisedLabel: String): Result<Unit> {
+        _favorites.value = _favorites.value.filterNot { it.normalisedLabel == normalisedLabel }
+        return Result.success(Unit)
+    }
+
+    override suspend fun replaceFavorite(removeNormalisedLabel: String, newLabel: String): Result<Unit> {
+        _favorites.value = _favorites.value.filterNot { it.normalisedLabel == removeNormalisedLabel } +
+            favoriteOf(newLabel)
+        return Result.success(Unit)
+    }
+
+    private fun favoriteOf(label: String) =
+        FavoriteDish(label = label.trim(), normalisedLabel = label.trim().lowercase())
+
+    private companion object {
+        const val CAP = 10
     }
 }
