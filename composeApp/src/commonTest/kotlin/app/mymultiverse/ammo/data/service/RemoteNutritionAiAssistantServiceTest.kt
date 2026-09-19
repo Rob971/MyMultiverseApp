@@ -3,7 +3,6 @@ package app.mymultiverse.ammo.data.service
 import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
 import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
-import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
 import app.mymultiverse.ammo.domain.service.GeminiApiException
 import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -241,50 +240,49 @@ class RemoteNutritionAiAssistantServiceTest {
         assertTrue(error.isAuthError)
     }
 
+    // Through the ai-generate proxy the user needs no Gemini key: a blank user key must not
+    // block any AI feature.
     @Test
-    fun generateGroceryForMeal_declines_whenApiKeyBlank() = runTest {
+    fun generateGroceryForMeal_usesGemini_withoutUserKey() = runTest {
         val fakeClient = FakeDishIngredientClient(Result.success(listOf("Remote ingredient")))
-        val fakeSettings = FakeAiAssistantSettings(key = "")
         val local = LocalNutritionAiAssistantService(responseDelayMs = 0, currentLanguageCode = { "it" })
         val service = RemoteNutritionAiAssistantService(
             local = local,
             geminiClient = fakeClient,
             geminiApi = FakeGeminiTextClient(Result.failure(UnsupportedOperationException())),
             currentLanguageCode = { "it" },
-            aiSettings = fakeSettings,
+            aiSettings = FakeAiAssistantSettings(key = ""),
             appLogger = noOpLogger,
         )
 
         val result = service.generateGroceryForMeal("Pollo alla cacciatora")
 
-        assertFalse(result.isSuccess, "Should decline when API key is blank")
-        assertIs<AiKeyNotConfiguredException>(result.exceptionOrNull())
-        assertEquals(0, fakeClient.callCount, "Gemini must not be called when key is blank")
+        assertTrue(result.getOrNull().orEmpty().contains("Remote ingredient"), "result was $result")
+        assertEquals(1, fakeClient.callCount)
     }
 
     @Test
-    fun askAdvice_declines_whenApiKeyBlank() = runTest {
-        val service = makeService(apiKey = "")
+    fun askAdvice_usesGemini_withoutUserKey() = runTest {
+        val service = makeService(apiKey = "", geminiApi = FakeGeminiTextClient(Result.success("Advice without a key.")))
 
         val result = service.askAdvice("High protein lunches")
 
-        assertFalse(result.isSuccess)
-        assertIs<AiKeyNotConfiguredException>(result.exceptionOrNull())
+        assertEquals("Advice without a key.", result.getOrNull())
     }
 
     @Test
-    fun generateGroceryList_declines_whenApiKeyBlank() = runTest {
-        val service = makeService(apiKey = "")
+    fun generateGroceryList_usesGemini_withoutUserKey() = runTest {
+        val service = makeService(apiKey = "", geminiApi = FakeGeminiTextClient(Result.success("[\"Chicken\"]")))
 
         val result = service.generateGroceryList("vegetarian")
 
-        assertFalse(result.isSuccess)
-        assertIs<AiKeyNotConfiguredException>(result.exceptionOrNull())
+        assertEquals(listOf("Chicken"), result.getOrNull())
     }
 
     @Test
-    fun generateMealPlan_declines_whenApiKeyBlank() = runTest {
-        val service = makeService(apiKey = "")
+    fun generateMealPlan_usesGemini_withoutUserKey() = runTest {
+        val days = (1..7).joinToString(",") { """{"lunch":"Lunch $it","dinner":"Dinner $it"}""" }
+        val service = makeService(apiKey = "", geminiApi = FakeGeminiTextClient(Result.success("""{"days":[$days],"summary":"ok"}""")))
         val emptyPlan = app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan(weekKey = "2026-07-15")
 
         val result = service.generateMealPlan(
@@ -293,8 +291,7 @@ class RemoteNutritionAiAssistantServiceTest {
             emptyPlan,
         )
 
-        assertFalse(result.isSuccess)
-        assertIs<AiKeyNotConfiguredException>(result.exceptionOrNull())
+        assertEquals(7, result.getOrNull()?.days?.size, "result was $result")
     }
 
     @Test

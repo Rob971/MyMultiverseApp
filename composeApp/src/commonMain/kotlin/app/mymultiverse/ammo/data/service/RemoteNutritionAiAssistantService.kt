@@ -7,7 +7,6 @@ import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
-import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
 import app.mymultiverse.ammo.domain.service.GeminiApiException
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
@@ -16,10 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * Gemini-powered implementation of [NutritionAiAssistantService].
  *
- * **When key is not configured:** every method returns [AiKeyNotConfiguredException]
- * so the UI can show a polite setup prompt.
- *
- * **When key is configured:** all four methods call [GeminiModelConfig.MODEL_ID] with
+ * Requests go through the `ai-generate` Edge Function (see [AiProxyGeminiRoute]); the user
+ * needs no Gemini key. All four methods call [GeminiModelConfig.MODEL_ID] with
  * language-aware prompts. [generateMealPlan] surfaces Gemini failures to the UI
  * (no silent local fallback) so previews always reflect a real model response.
  * Other methods still fall back to [LocalNutritionAiAssistantService] when Gemini
@@ -48,7 +45,6 @@ internal class RemoteNutritionAiAssistantService(
 
     override suspend fun askAdvice(question: String): Result<String> {
         if (question.isBlank()) return Result.failure(IllegalArgumentException("empty_question"))
-        if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
 
         val languageCode = currentLanguageCode()
         val lang = GeminiResponseParser.languageNameFor(languageCode)
@@ -74,7 +70,6 @@ internal class RemoteNutritionAiAssistantService(
 
     override suspend fun generateGroceryList(criteria: String): Result<List<String>> {
         if (criteria.isBlank()) return Result.failure(IllegalArgumentException("empty_criteria"))
-        if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
 
         val languageCode = currentLanguageCode()
         val lang = GeminiResponseParser.languageNameFor(languageCode)
@@ -112,7 +107,6 @@ internal class RemoteNutritionAiAssistantService(
         if (mealDescription.isBlank()) {
             return Result.failure(IllegalArgumentException("empty_meal"))
         }
-        if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
 
         val trimmed = mealDescription.trim()
         val lang = currentLanguageCode()
@@ -146,7 +140,6 @@ internal class RemoteNutritionAiAssistantService(
         currentPlan: WeeklyMealPlan,
     ): Result<NutritionAiPlanner.MealPlanGeneration> {
         if (criteria.isBlank()) return Result.failure(IllegalArgumentException("empty_criteria"))
-        if (keyMissing()) return Result.failure(AiKeyNotConfiguredException())
 
         val languageCode = currentLanguageCode()
         val lang = GeminiResponseParser.languageNameFor(languageCode)
@@ -219,7 +212,6 @@ internal class RemoteNutritionAiAssistantService(
         return Result.failure(geminiError)
     }
 
-    private fun keyMissing(): Boolean = aiSettings.geminiApiKey.value.isBlank()
 
     private fun buildMealPlanPrompt(
         criteria: String,
