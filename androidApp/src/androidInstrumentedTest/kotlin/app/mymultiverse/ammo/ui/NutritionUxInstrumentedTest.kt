@@ -20,6 +20,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.doubleClick
 
@@ -929,6 +930,39 @@ class NutritionUxInstrumentedTest {
         }
         composeRule.onNodeWithTag(star).assertIsOn()
         composeRule.onNodeWithText("Saved to favorites").assertIsDisplayed()
+    }
+
+    @Test
+    fun mealPlan_favoriteStar_savesTheEditedDraftNotTheDebouncedSavedText() {
+        val weekKey = WeekCalendar.currentWeekKey()
+        val dayIndex = WeekCalendar.todayIndexInWeek(weekKey) ?: 0
+        val favorites = InstrumentedFavoriteDishesRepository(
+            initial = listOf(FavoriteDish(label = "Pasta al pomodoro", normalisedLabel = "pasta al pomodoro")),
+        )
+        val screenModel = nutritionScreenModel(
+            weekKey = weekKey,
+            plannedLunch = dayIndex to "Pasta al pomodoro",
+            favorites = favorites,
+        )
+        val star = showFavoriteStar(screenModel, weekKey, dayIndex)
+
+        // The saved meal is favorited, so the star starts checked.
+        composeRule.onNodeWithTag(star).assertIsOn()
+
+        // Edit the box to a different dish. The star must follow the edited draft, not the
+        // still-debounced saved text.
+        composeRule.onNodeWithTag(MealPlanTestTags.lunchField(dayIndex))
+            .performTextReplacement("Pasta al pesto")
+
+        // Draft "pasta al pesto" is not yet a favorite, so the star must be off.
+        composeRule.onNodeWithTag(star).assertIsOff()
+
+        composeRule.onNodeWithTag(star).performClick()
+        composeRule.waitForState(favorites.favorites) { list ->
+            list.any { it.normalisedLabel == "pasta al pesto" } &&
+                list.any { it.normalisedLabel == "pasta al pomodoro" }
+        }
+        composeRule.onNodeWithTag(star).assertIsOn()
     }
 
     @Test
