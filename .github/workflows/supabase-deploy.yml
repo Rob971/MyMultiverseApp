@@ -32,12 +32,16 @@ jobs:
     steps:
       - name: Evaluate skip rules
         id: evaluate
+        # The message goes through env, never into the script text: a quote or $(...) in a
+        # commit message must not end the string or run as shell (it broke #161's deploy).
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           if [[ "${{ github.event_name }}" != "push" ]]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          msg="${{ github.event.head_commit.message }}"
+          msg="$COMMIT_MSG"
           if [[ "$msg" == *"[skip ci]"* ]] || [[ "$msg" == *"[ci skip]"* ]] || [[ "$msg" == chore\(version\):* ]]; then
             echo "run=false" >> "$GITHUB_OUTPUT"
             echo "Skipping Supabase deploy for automated/version-only push."
