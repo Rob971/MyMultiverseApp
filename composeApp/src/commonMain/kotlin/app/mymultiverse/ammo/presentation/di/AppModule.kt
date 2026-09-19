@@ -135,7 +135,7 @@ private val dataModule = module {
     single<FavoriteDishesRepository> {
         val client = get<SupabaseClientHolder>().client
         if (client != null) {
-            SupabaseFavoriteDishesRepository(client, get())
+            SupabaseFavoriteDishesRepository(client, get(), authRepository = get(), scope = get())
         } else {
             UnconfiguredFavoriteDishesRepository()
         }
