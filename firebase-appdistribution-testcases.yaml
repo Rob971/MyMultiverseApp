@@ -980,6 +980,23 @@ testcases:
       - A slot that already had a meal shows Replace and overwrites only that slot.
       - After accepting, a snackbar offers Undo; tapping Undo restores the slot's previous value (or leaves it empty if it was empty before).
 
+  - id: meal-plan-favorite-dishes
+    title: Star favorite dishes (max 10, personal to each account)
+    steps:
+      - Open Weekly meal plan and type a meal into a lunch or dinner box.
+      - Tap the star beside the meal, then tap it again.
+      - Change the box to a different dish without leaving it, and tap the star.
+      - Turn on airplane mode and tap the star on another meal; then turn airplane mode off.
+      - Star meals until 10 are saved, then tap the star on an 11th meal.
+      - In the dialog, pick one favorite and tap Replace.
+      - Sign out, sign in with a different account on the same device, and open the meal plan.
+    expected:
+      - The first tap turns the star on and shows "Saved to favorites"; the second tap turns it off.
+      - The star saves the text currently in the box, not the text from before the edit.
+      - Offline, the app shows "Check your connection to save favorites", the star greys out, and nothing is saved.
+      - The 11th star opens "Favorites are full" listing the 10 saved favorites; Replace swaps the chosen one for the new meal and its star turns on.
+      - The second account sees none of the first account's favorites.
+
   - id: ai-dish-ingredients-gemini
     title: Dish-specific ingredient list via Gemini (key configured)
     steps:
