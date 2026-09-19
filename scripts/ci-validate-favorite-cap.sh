@@ -94,10 +94,22 @@ as_user "$USER_A" "select public.replace_favorite('pasta','Replaced Dish');"
 [[ "$(as_user "$USER_A" "select count(*) from public.user_favorite_dishes where normalised_label='replaced dish';")" == "1" ]] || { echo "ERROR: replace didn't add new row" >&2; exit 1; }
 echo "OK: replace atomic"
 
-echo "==> 5. GDPR export includes favorites"
-EXPORT="$(as_user "$USER_A" "select public.export_my_personal_data()->>'favorite_dishes';")"
-# Labels are exported as the user typed them.
-jq -e 'index("Replaced Dish") != null' <<<"$EXPORT" >/dev/null || { echo "ERROR: export missing favorite_dishes: $EXPORT" >&2; exit 1; }
-echo "OK: export_my_personal_data contains favorite_dishes"
+echo "==> 5. GDPR export includes favorites and household fields"
+EXPORT="$(as_user "$USER_A" "select public.export_my_personal_data();")"
+# A stale household column name (space_id vs household_id) makes this export throw, so success
+# is itself the proof that the household columns resolve.
+jq -e '.favorite_dishes | index("Replaced Dish") != null' <<<"$EXPORT" >/dev/null \
+  || { echo "ERROR: export missing favorite_dishes: $EXPORT" >&2; exit 1; }
+jq -e 'has("household_membership")' <<<"$EXPORT" >/dev/null \
+  || { echo "ERROR: export missing household_membership: $EXPORT" >&2; exit 1; }
+echo "OK: export_my_personal_data contains favorite_dishes and household_membership"
+
+echo "==> 6. export is per-account: B has none of A's favorites"
+B_EXPORT="$(as_user "$USER_B" "select public.export_my_personal_data();")"
+jq -e '.favorite_dishes == []' <<<"$B_EXPORT" >/dev/null \
+  || { echo "ERROR: B should have an empty favorite_dishes: $B_EXPORT" >&2; exit 1; }
+jq -e '.favorite_dishes | index("Replaced Dish") == null' <<<"$B_EXPORT" >/dev/null \
+  || { echo "ERROR: B's export leaked A's favorite: $B_EXPORT" >&2; exit 1; }
+echo "OK: B's export is empty and excludes A's favorites"
 
 echo "All favorite-dish DB checks passed."
