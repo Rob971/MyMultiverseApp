@@ -28,11 +28,8 @@ private val log = Logger.withTag("GeminiDishIngredientClient")
  * header with `text/plain`, causing a 400 from the Gemini API.
  */
 internal class GeminiDishIngredientClient(
-    /**
-     * Provides the Gemini API key at call time so the key can be changed in user
-     * settings without recreating the client.
-     */
-    private val apiKeyProvider: () -> String,
+    /** Resolves the ai-generate proxy target (with the user's session) for each request. */
+    private val route: GeminiRoute,
     private val httpClient: HttpClient = HttpClient {
         install(HttpTimeout) {
             requestTimeoutMillis = REQUEST_TIMEOUT_MS
@@ -46,16 +43,12 @@ internal class GeminiDishIngredientClient(
      */
     override suspend fun generateIngredients(dish: String, languageCode: String): Result<List<String>> =
         try {
-            val apiKey = apiKeyProvider()
-            check(apiKey.isNotBlank()) { "Gemini API key is not configured" }
-
+            val target = route.target()
             val requestBody = buildRequestBody(dish, languageCode)
 
             val response = httpClient.post {
-                url(GeminiModelConfig.GENERATE_CONTENT_URL)
-                // Key travels as a header, never in the URL — a timeout exception embeds
-                // the full URL, so a query-string key would leak into the log.
-                header("x-goog-api-key", apiKey)
+                url(target.url)
+                target.headers.forEach { (name, value) -> header(name, value) }
                 // TextContent sets both the body bytes and the Content-Type atomically.
                 // A separate Content-Type header() call is not needed and must not be
                 // used here — it would be silently overridden by Ktor's DefaultTransformers.

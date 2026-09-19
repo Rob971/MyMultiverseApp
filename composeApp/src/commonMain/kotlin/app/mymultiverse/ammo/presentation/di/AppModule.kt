@@ -14,20 +14,24 @@ import app.mymultiverse.ammo.data.invite.InviteSessionStore
 import app.mymultiverse.ammo.data.tour.ProductTourStore
 import app.mymultiverse.ammo.presentation.screens.tour.ProductTourScreenModel
 import app.mymultiverse.ammo.data.repository.SettingsNutritionHouseholdSelectionStore
-import app.mymultiverse.ammo.data.ai.AiSecrets
 import app.mymultiverse.ammo.data.manager.SettingsAiAssistantSettings
 import app.mymultiverse.ammo.data.manager.SyncedAiAssistantSettings
 import app.mymultiverse.ammo.data.supabase.SupabaseAiSettingsRepository
 import app.mymultiverse.ammo.data.supabase.UnconfiguredAiSettingsRepository
 import app.mymultiverse.ammo.domain.repository.AiSettingsRemoteRepository
+import app.mymultiverse.ammo.data.service.AiProxyGeminiRoute
 import app.mymultiverse.ammo.data.service.GeminiApiClient
 import app.mymultiverse.ammo.data.service.GeminiDishIngredientClient
+import app.mymultiverse.ammo.data.service.GeminiRoute
 import app.mymultiverse.ammo.data.service.GeminiTextClient
 import app.mymultiverse.ammo.data.service.LocalNutritionAiAssistantService
 import app.mymultiverse.ammo.data.service.RemoteNutritionAiAssistantService
 import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import app.mymultiverse.ammo.data.supabase.SupabaseAuthRepository
 import app.mymultiverse.ammo.data.supabase.SupabaseClientHolder
+import app.mymultiverse.ammo.data.supabase.SupabaseSecrets
+import app.mymultiverse.ammo.domain.service.GeminiApiException
+import io.github.jan.supabase.auth.auth
 import app.mymultiverse.ammo.data.supabase.SupabaseHouseholdRepository
 import app.mymultiverse.ammo.data.supabase.SupabaseHouseholdCollaborationRepository
 import app.mymultiverse.ammo.data.supabase.UnconfiguredAuthRepository
@@ -133,7 +137,6 @@ private val dataModule = module {
         SyncedAiAssistantSettings(
             local = SettingsAiAssistantSettings(
                 settings = get(),
-                compiledKey = AiSecrets.GEMINI_API_KEY,
             ),
             remote = get(),
             authRepository = get(),
@@ -147,11 +150,19 @@ private val dataModule = module {
         val local = LocalNutritionAiAssistantService(
             currentLanguageCode = { languageManager.currentLanguage.value },
         )
-        val keyProvider: () -> String = { aiSettings.geminiApiKey.value }
-        val geminiApi: GeminiTextClient = GeminiApiClient(apiKeyProvider = keyProvider)
+        val supabase = get<SupabaseClientHolder>().client
+        val geminiRoute: GeminiRoute = if (supabase != null) {
+            AiProxyGeminiRoute(SupabaseSecrets.URL, SupabaseSecrets.ANON_KEY) {
+                supabase.auth.awaitInitialization()
+                supabase.auth.currentAccessTokenOrNull()
+            }
+        } else {
+            GeminiRoute { throw GeminiApiException(GeminiApiException.Reason.AUTH_ERROR) }
+        }
+        val geminiApi: GeminiTextClient = GeminiApiClient(route = geminiRoute)
         RemoteNutritionAiAssistantService(
             local = local,
-            geminiClient = GeminiDishIngredientClient(apiKeyProvider = keyProvider),
+            geminiClient = GeminiDishIngredientClient(route = geminiRoute),
             geminiApi = geminiApi,
             currentLanguageCode = { languageManager.currentLanguage.value },
             aiSettings = aiSettings,

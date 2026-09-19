@@ -28,7 +28,7 @@ private val log = Logger.withTag("GeminiApiClient")
  * so Ktor's DefaultTransformers cannot override the content-type to text/plain.
  */
 internal class GeminiApiClient(
-    private val apiKeyProvider: () -> String,
+    private val route: GeminiRoute,
     private val httpClient: HttpClient = HttpClient {
         install(HttpTimeout) { requestTimeoutMillis = DEFAULT_TIMEOUT_MS }
     },
@@ -42,13 +42,11 @@ internal class GeminiApiClient(
         maxOutputTokens: Int,
         temperature: Double,
     ): Result<String> = try {
-        val apiKey = apiKeyProvider()
-        check(apiKey.isNotBlank()) { "Gemini API key is not configured" }
-
+        val target = route.target()
         val body = buildRequestJson(prompt, maxOutputTokens, temperature)
         val response = httpClient.post {
-            url(GeminiModelConfig.GENERATE_CONTENT_URL)
-            header("x-goog-api-key", apiKey)
+            url(target.url)
+            target.headers.forEach { (name, value) -> header(name, value) }
             setBody(TextContent(body, ContentType.Application.Json))
         }
 
@@ -86,7 +84,7 @@ internal class GeminiApiClient(
         }
 
     private companion object {
-        val AUTH_HTTP_STATUSES = setOf(400, 401, 403)
+        val AUTH_HTTP_STATUSES = setOf(401, 403)
     }
 
     private fun String.escapeJson(): String = buildString {
