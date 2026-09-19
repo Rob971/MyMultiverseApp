@@ -11,6 +11,7 @@ import app.mymultiverse.ammo.domain.nutrition.GroceryListPresentation
 import app.mymultiverse.ammo.domain.nutrition.GroceryPartnerNudge
 import app.mymultiverse.ammo.domain.nutrition.NutritionPartnerNudge
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
+import app.mymultiverse.ammo.domain.nutrition.SeasonalWeekSuggester
 import app.mymultiverse.ammo.domain.nutrition.MealPlanPresentation
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiMode
@@ -95,6 +96,7 @@ class NutritionScreenModel(
     private val favoriteDishesRepository: FavoriteDishesRepository,
     private val ghostPairingDismissStore: GroceryGhostPairingDismissStore,
     private val logger: app.mymultiverse.ammo.data.observability.AppLogger,
+    private val seasonalWeekSuggester: SeasonalWeekSuggester? = null,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
     private val newItemId: () -> String = { "${Random.nextLong()}_${Random.nextInt()}" },
 ) {
@@ -129,6 +131,10 @@ class NutritionScreenModel(
      * sheet is showing an [AiKeyNotConfiguredException] error, so they can retry
      * immediately without having to manually dismiss and re-open the sheet.
      */
+    init {
+        seasonalWeekSuggester?.let { suggester -> scope.launch { suggester.prefetchCatalog() } }
+    }
+
     init {
         scope.launch {
             aiAssistant.geminiApiKey.collect { key ->
@@ -606,39 +612,63 @@ class NutritionScreenModel(
         mealPlanScope: MealPlanGenerationScope = MealPlanGenerationScope.FullWeek,
     ) {
         if (!canWriteHouseholdData.value) return
+        launchAiRequest {
+            when (mode) {
+                NutritionAiMode.Advice -> {
+                    aiAssistant.askAdvice(criteria)
+                        .onSuccess { answer -> _aiState.value = NutritionAiState.Advice(answer) }
+                        .onFailure { error -> _aiState.value = error.toAiErrorState() }
+                }
+
+                NutritionAiMode.GroceryList -> {
+                    aiAssistant.generateGroceryList(criteria)
+                        .onSuccess { labels ->
+                            val addedCount = appendAiGrocery(labels)
+                            _aiState.value = NutritionAiState.GroceryList(itemCount = addedCount)
+                        }
+                        .onFailure { error -> _aiState.value = error.toAiErrorState() }
+                }
+
+                NutritionAiMode.MealPlan -> {
+                    aiAssistant.generateMealPlan(criteria, mealPlanScope, mealPlan.value)
+                        .onSuccess { generation ->
+                            _aiState.value = NutritionAiState.MealPlanPreview(
+                                plan = mealPlan.value.copy(days = generation.days),
+                                summary = generation.summary,
+                                scope = mealPlanScope,
+                            )
+                        }
+                        .onFailure { error -> _aiState.value = error.toAiErrorState() }
+                }
+            }
+        }
+    }
+
+    /** Suggests a week of in-season lunches and dinners, shown in the same preview as a generated plan. */
+    fun suggestSeasonalWeek() {
+        val suggester = seasonalWeekSuggester ?: return
+        if (!canWriteHouseholdData.value) return
+        launchAiRequest {
+            suggester.suggestWeek(mealPlan.value)
+                .onSuccess { generation ->
+                    _aiState.value = NutritionAiState.MealPlanPreview(
+                        plan = mealPlan.value.copy(days = generation.days),
+                        summary = generation.summary,
+                        scope = MealPlanGenerationScope.FullWeek,
+                    )
+                }
+                .onFailure { error -> _aiState.value = error.toAiErrorState() }
+        }
+    }
+
+    /** Runs one AI request: a new request cancels the previous one, and Loading is never left stuck. */
+    private fun launchAiRequest(request: suspend () -> Unit) {
         aiAssistantJob?.cancel()
         val generation = ++aiAssistantJobGeneration
         aiAssistantJob = scope.launch {
             _aiState.value = NutritionAiState.Loading
             try {
-                when (mode) {
-                    NutritionAiMode.Advice -> {
-                        aiAssistant.askAdvice(criteria)
-                            .onSuccess { answer -> _aiState.value = NutritionAiState.Advice(answer) }
-                            .onFailure { error -> _aiState.value = error.toAiErrorState() }
-                    }
-
-                    NutritionAiMode.GroceryList -> {
-                        aiAssistant.generateGroceryList(criteria)
-                            .onSuccess { labels ->
-                                val addedCount = appendAiGrocery(labels)
-                                _aiState.value = NutritionAiState.GroceryList(itemCount = addedCount)
-                            }
-                            .onFailure { error -> _aiState.value = error.toAiErrorState() }
-                    }
-
-                    NutritionAiMode.MealPlan -> {
-                        aiAssistant.generateMealPlan(criteria, mealPlanScope, mealPlan.value)
-                            .onSuccess { generation ->
-                                _aiState.value = NutritionAiState.MealPlanPreview(
-                                    plan = mealPlan.value.copy(days = generation.days),
-                                    summary = generation.summary,
-                                    scope = mealPlanScope,
-                                )
-                            }
-                            .onFailure { error -> _aiState.value = error.toAiErrorState() }
-                    }
-                }
+                request()
             } catch (e: CancellationException) {
                 // Intentional cancel (new request superseded this one) — reset only if still current.
                 if (generation == aiAssistantJobGeneration) {

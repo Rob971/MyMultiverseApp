@@ -193,6 +193,7 @@
     <string name="nutrition_ai_suggestion_protein">غداء عالي البروتين للعائلة</string>
     <string name="nutrition_ai_suggestion_veggies">المزيد من الخضار على العشاء</string>
     <string name="nutrition_ai_suggestion_allergy">وجبات خفيفة مناسبة للحساسية للأطفال</string>
+    <string name="nutrition_ai_suggestion_seasonal_week">أسبوع موسمي</string>
     <string name="nutrition_ai_mode_advice">نصائح</string>
     <string name="nutrition_ai_mode_grocery">مشتريات</string>
     <string name="nutrition_ai_mode_meal_plan">خطة وجبات</string>

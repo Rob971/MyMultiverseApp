@@ -24,6 +24,7 @@ import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiMode
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
+import app.mymultiverse.ammo.domain.nutrition.SeasonalWeekSuggester
 import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
 import app.mymultiverse.ammo.domain.service.GeminiApiException
 import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
@@ -1101,6 +1102,44 @@ class NutritionScreenModelTest {
         assertNull(model.mealGroceryLoading.value)
     }
 
+    // ── seasonal week (S4) ─────────────────────────────────────────────────────
+
+    @Test
+    fun suggestSeasonalWeek_showsTheWeekInTheMealPlanPreview() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val days = (1..7).map { DayMeals(lunch = "Lunch $it", dinner = "Dinner $it") }
+        val suggester = object : SeasonalWeekSuggester {
+            override suspend fun suggestWeek(currentPlan: WeeklyMealPlan) =
+                Result.success(NutritionAiPlanner.MealPlanGeneration(days, "In season"))
+        }
+        val model = nutritionScreenModel(repository, scope = modelScope, seasonalWeekSuggester = suggester)
+        advanceUntilIdle()
+
+        model.suggestSeasonalWeek()
+        advanceUntilIdle()
+
+        val preview = assertIs<NutritionAiState.MealPlanPreview>(model.aiState.value)
+        assertEquals(days, preview.plan.days)
+        assertEquals("In season", preview.summary)
+        assertEquals(MealPlanGenerationScope.FullWeek, preview.scope)
+    }
+
+    @Test
+    fun suggestSeasonalWeek_failure_showsTheAiError() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val suggester = object : SeasonalWeekSuggester {
+            override suspend fun suggestWeek(currentPlan: WeeklyMealPlan): Result<NutritionAiPlanner.MealPlanGeneration> =
+                Result.failure(GeminiApiException(GeminiApiException.Reason.NETWORK))
+        }
+        val model = nutritionScreenModel(repository, scope = modelScope, seasonalWeekSuggester = suggester)
+        advanceUntilIdle()
+
+        model.suggestSeasonalWeek()
+        advanceUntilIdle()
+
+        assertIs<NutritionAiState.Error>(model.aiState.value)
+    }
+
     // ── concurrent runAiAssistant cancellation ────────────────────────────────
 
     @Test
@@ -1212,6 +1251,7 @@ private fun nutritionScreenModel(
     collaborationRepository: FakeHouseholdCollaborationRepository = FakeHouseholdCollaborationRepository(),
     favoriteRepository: FavoriteDishesRepository = FakeFavoriteDishesRepository(),
     ghostPairingDismissStore: GroceryGhostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
+    seasonalWeekSuggester: SeasonalWeekSuggester? = null,
     scope: CoroutineScope,
     newItemId: () -> String = { "item-1" },
 ): NutritionScreenModel =
@@ -1225,6 +1265,7 @@ private fun nutritionScreenModel(
         logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "test")),
         scope = scope,
         newItemId = newItemId,
+        seasonalWeekSuggester = seasonalWeekSuggester,
     )
 
 private class FakeNutritionAdviceService(

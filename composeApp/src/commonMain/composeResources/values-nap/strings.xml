@@ -193,6 +193,7 @@
     <string name="nutrition_ai_suggestion_protein">Pranzo cu protein pe' famiglia</string>
     <string name="nutrition_ai_suggestion_veggies">Cchiù verdure a cena</string>
     <string name="nutrition_ai_suggestion_allergy">Snack senza allergie pe' criature</string>
+    <string name="nutrition_ai_suggestion_seasonal_week">Semmana 'e stagione</string>
     <string name="nutrition_ai_mode_advice">Consiglie</string>
     <string name="nutrition_ai_mode_grocery">Spesa</string>
     <string name="nutrition_ai_mode_meal_plan">Piano pasti</string>

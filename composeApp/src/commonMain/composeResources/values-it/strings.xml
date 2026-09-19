@@ -193,6 +193,7 @@
     <string name="nutrition_ai_suggestion_protein">Pranzi proteici per la famiglia</string>
     <string name="nutrition_ai_suggestion_veggies">Più verdure a cena</string>
     <string name="nutrition_ai_suggestion_allergy">Snack senza allergeni per bambini</string>
+    <string name="nutrition_ai_suggestion_seasonal_week">Settimana di stagione</string>
     <string name="nutrition_ai_mode_advice">Consigli</string>
     <string name="nutrition_ai_mode_grocery">Spesa</string>
     <string name="nutrition_ai_mode_meal_plan">Piano pasti</string>

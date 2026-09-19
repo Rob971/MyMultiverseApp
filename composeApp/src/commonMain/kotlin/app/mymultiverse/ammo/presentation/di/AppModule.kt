@@ -11,7 +11,11 @@ import app.mymultiverse.ammo.data.home.HomeFirstWinChecklistStore
 import app.mymultiverse.ammo.data.home.HomeWeekPlanNudgeStore
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.ammo.data.invite.InviteSessionStore
+import app.mymultiverse.ammo.data.seasonal.GeminiSeasonalWeekSuggester
+import app.mymultiverse.ammo.data.seasonal.SeasonalCatalogRepository
+import app.mymultiverse.ammo.data.seasonal.SeasonalCatalogStore
 import app.mymultiverse.ammo.data.tour.ProductTourStore
+import app.mymultiverse.ammo.domain.nutrition.SeasonalWeekSuggester
 import app.mymultiverse.ammo.presentation.screens.tour.ProductTourScreenModel
 import app.mymultiverse.ammo.data.repository.SettingsNutritionHouseholdSelectionStore
 import app.mymultiverse.ammo.data.manager.SettingsAiAssistantSettings
@@ -67,9 +71,14 @@ import app.mymultiverse.ammo.presentation.screens.household.HouseholdMembersEntr
 import app.mymultiverse.ammo.presentation.screens.household.HouseholdMembersScreenModel
 import app.mymultiverse.ammo.presentation.screens.invite.JoinHouseholdScreenModel
 import app.mymultiverse.ammo.presentation.invite.InviteJoinFlowCoordinator
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -161,14 +170,9 @@ private val dataModule = module {
             appLogger = get(),
         )
     }
-    single<NutritionAiAssistantService> {
-        val languageManager = get<LanguageManager>()
-        val aiSettings = get<AiAssistantSettings>()
-        val local = LocalNutritionAiAssistantService(
-            currentLanguageCode = { languageManager.currentLanguage.value },
-        )
+    single<GeminiRoute> {
         val supabase = get<SupabaseClientHolder>().client
-        val geminiRoute: GeminiRoute = if (supabase != null) {
+        if (supabase != null) {
             AiProxyGeminiRoute(SupabaseSecrets.URL, SupabaseSecrets.ANON_KEY) {
                 supabase.auth.awaitInitialization()
                 supabase.auth.currentAccessTokenOrNull()
@@ -176,6 +180,30 @@ private val dataModule = module {
         } else {
             GeminiRoute { throw GeminiApiException(GeminiApiException.Reason.AUTH_ERROR) }
         }
+    }
+    single<SeasonalWeekSuggester> {
+        val languageManager = get<LanguageManager>()
+        // A 14-meal week takes longer than other AI calls, so only this path waits up to 30 s.
+        val seasonalClient = GeminiApiClient(
+            route = get(),
+            httpClient = HttpClient { install(HttpTimeout) { requestTimeoutMillis = 30_000 } },
+        )
+        GeminiSeasonalWeekSuggester(
+            textClient = seasonalClient,
+            catalogs = SeasonalCatalogRepository(seasonalClient, SeasonalCatalogStore(get())),
+            regionService = get(),
+            favorites = get(),
+            currentLanguageCode = { languageManager.currentLanguage.value },
+            currentMonth = { Clock.System.todayIn(TimeZone.currentSystemDefault()).monthNumber },
+        )
+    }
+    single<NutritionAiAssistantService> {
+        val languageManager = get<LanguageManager>()
+        val aiSettings = get<AiAssistantSettings>()
+        val local = LocalNutritionAiAssistantService(
+            currentLanguageCode = { languageManager.currentLanguage.value },
+        )
+        val geminiRoute: GeminiRoute = get()
         val geminiApi: GeminiTextClient = GeminiApiClient(route = geminiRoute)
         RemoteNutritionAiAssistantService(
             local = local,
@@ -209,6 +237,7 @@ private val presentationModule = module {
             favoriteDishesRepository = get(),
             ghostPairingDismissStore = get(),
             logger = get(),
+            seasonalWeekSuggester = get(),
         )
     }
 }

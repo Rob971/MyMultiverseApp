@@ -151,6 +151,7 @@ object NutritionStringKeys {
         "nutrition_ai_suggestion_protein",
         "nutrition_ai_suggestion_veggies",
         "nutrition_ai_suggestion_allergy",
+        "nutrition_ai_suggestion_seasonal_week",
         "nutrition_ai_mode_advice",
         "nutrition_ai_mode_grocery",
         "nutrition_ai_mode_meal_plan",

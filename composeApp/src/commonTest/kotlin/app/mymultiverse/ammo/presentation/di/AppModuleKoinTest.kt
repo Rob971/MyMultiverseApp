@@ -2,6 +2,8 @@ package app.mymultiverse.ammo.presentation.di
 
 import app.mymultiverse.ammo.data.supabase.SupabaseRuntimeFlags
 import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
+import app.mymultiverse.ammo.domain.location.DeviceRegionService
+import app.mymultiverse.ammo.domain.location.FakeDeviceRegionService
 import app.mymultiverse.ammo.domain.observability.CrashReporter
 import app.mymultiverse.ammo.domain.manager.LanguageManager
 import app.mymultiverse.ammo.domain.manager.ThemeManager
@@ -57,6 +59,7 @@ class AppModuleKoinTest : KoinTest {
     private val testPlatformModule = module {
         single<Settings> { MapSettings() }
         single<LanguageManager> { FakeLanguageManager() }
+        single<DeviceRegionService> { FakeDeviceRegionService() }
         single<ThemeManager> { FakeThemeManager() }
         single<AiAssistantSettings> { FakeAiAssistantSettings() }
         single<CrashReporter> { NoOpCrashReporter() }

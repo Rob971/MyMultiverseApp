@@ -33,6 +33,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
+import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
+import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
+import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
+import app.mymultiverse.ammo.domain.nutrition.SeasonalWeekSuggester
 import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.model.Greeting
 import app.mymultiverse.ammo.domain.model.nutrition.FavoriteDish
@@ -101,6 +105,7 @@ class NutritionUxInstrumentedTest {
         householdId: String? = null,
         favorites: InstrumentedFavoriteDishesRepository = InstrumentedFavoriteDishesRepository(),
         repository: InstrumentedNutritionRepository = InstrumentedNutritionRepository(weekKey, householdId = householdId),
+        seasonalWeekSuggester: SeasonalWeekSuggester? = null,
     ): NutritionScreenModel {
         repository.aiGrocery.value = initialAiGrocery
         plannedLunch?.let { (dayIndex, lunch) ->
@@ -120,6 +125,7 @@ class NutritionUxInstrumentedTest {
             favoriteDishesRepository = favorites,
             ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
             logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "instrumented")),
+            seasonalWeekSuggester = seasonalWeekSuggester,
             scope = scope,
             newItemId = {
                 if (nextItemId == 0) {
@@ -827,6 +833,49 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithTag(AiHelperSheetTestTags.SHEET).assertIsDisplayed()
         composeRule.onNodeWithTag(NutritionAiTestTags.MODE_MEAL_PLAN).assertDoesNotExist()
         composeRule.onNodeWithTag(NutritionAiTestTags.MORE_OPTIONS_TOGGLE).assertIsDisplayed()
+    }
+
+    @Test
+    fun aiHelperSheet_seasonalWeekChip_showsTheWeekAndAcceptsOneMeal() {
+        val weekKey = WeekCalendar.currentWeekKey()
+        val repository = InstrumentedNutritionRepository(weekKey)
+        val days = (1..7).map { DayMeals(lunch = "Seasonal lunch $it", dinner = "Seasonal dinner $it") }
+        val screenModel = nutritionScreenModel(
+            weekKey = weekKey,
+            repository = repository,
+            seasonalWeekSuggester = object : SeasonalWeekSuggester {
+                override suspend fun suggestWeek(currentPlan: WeeklyMealPlan) =
+                    Result.success(NutritionAiPlanner.MealPlanGeneration(days, "In season now"))
+            },
+        )
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    AiHelperSheet(
+                        visible = true,
+                        launchContext = AiHelperLaunchContext(mode = NutritionAiMode.MealPlan),
+                        onDismiss = {},
+                        onApplied = {},
+                        screenModel = screenModel,
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(NutritionAiTestTags.SCROLL_LIST)
+            .performScrollToNode(hasTestTag(NutritionAiTestTags.SEASONAL_WEEK_CHIP))
+        composeRule.onNodeWithText("Seasonal week").assertIsDisplayed()
+        composeRule.onNodeWithTag(NutritionAiTestTags.SEASONAL_WEEK_CHIP).performClick()
+        composeRule.waitFor { screenModel.aiState.value is NutritionAiState.MealPlanPreview }
+
+        // The week lands in the usual preview, where each meal is accepted on its own.
+        val acceptLunchTag = "${NutritionAiTestTags.MEAL_PLAN_ACCEPT_LUNCH_PREFIX}0"
+        composeRule.onNodeWithTag(NutritionAiTestTags.SCROLL_LIST)
+            .performScrollToNode(hasTestTag(acceptLunchTag))
+        composeRule.onNodeWithTag(acceptLunchTag).performClick()
+        composeRule.waitForState(repository.mealPlan) { it.days[0].lunch == "Seasonal lunch 1" }
+        assertEquals("", repository.mealPlan.value.days[0].dinner)
     }
 
     @Test

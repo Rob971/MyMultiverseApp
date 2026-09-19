@@ -193,6 +193,7 @@
     <string name="nutrition_ai_suggestion_protein">Almuerzos proteicos para la familia</string>
     <string name="nutrition_ai_suggestion_veggies">Más verduras en la cena</string>
     <string name="nutrition_ai_suggestion_allergy">Snacks sin alérgenos para niños</string>
+    <string name="nutrition_ai_suggestion_seasonal_week">Semana de temporada</string>
     <string name="nutrition_ai_mode_advice">Consejos</string>
     <string name="nutrition_ai_mode_grocery">Compras</string>
     <string name="nutrition_ai_mode_meal_plan">Plan de comidas</string>
