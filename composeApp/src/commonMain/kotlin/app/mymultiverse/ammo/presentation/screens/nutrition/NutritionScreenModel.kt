@@ -2,6 +2,8 @@ package app.mymultiverse.ammo.presentation.screens.nutrition
 
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
 import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
+import app.mymultiverse.ammo.domain.model.nutrition.FavoriteDish
+import app.mymultiverse.ammo.domain.model.nutrition.favoriteKeyFor
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.nutrition.GroceryGhostPairing
@@ -17,6 +19,8 @@ import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberKind
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.ammo.domain.repository.HouseholdCollaborationRepository
 import app.mymultiverse.ammo.domain.repository.HouseholdRepository
+import app.mymultiverse.ammo.domain.repository.FavoriteDishesRepository
+import app.mymultiverse.ammo.domain.repository.FavoriteMutationException
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
 import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
@@ -72,11 +76,23 @@ data class MealPlanAcceptUndo(
     val previousLabel: String,
 )
 
+/** One-shot feedback surfaced to the meal-plan UI after a favorite mutation. */
+sealed interface FavoriteFeedback {
+    data class Saved(val label: String) : FavoriteFeedback
+    data class Removed(val label: String) : FavoriteFeedback
+    data class Replaced(val label: String) : FavoriteFeedback
+    /** The add was rejected: 10 favorites already saved. [requestedLabel] to re-attempt. */
+    data class CapReached(val requestedLabel: String) : FavoriteFeedback
+    data object OfflineError : FavoriteFeedback
+    data object Error : FavoriteFeedback
+}
+
 class NutritionScreenModel(
     private val session: NutritionSessionCoordinator,
     private val householdRepository: HouseholdRepository,
     private val collaborationRepository: HouseholdCollaborationRepository,
     private val aiAssistant: NutritionAiAssistantService,
+    private val favoriteDishesRepository: FavoriteDishesRepository,
     private val ghostPairingDismissStore: GroceryGhostPairingDismissStore,
     private val logger: app.mymultiverse.ammo.data.observability.AppLogger,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
@@ -282,6 +298,7 @@ class NutritionScreenModel(
         _weekOffset.value = 0
         session.activateHousehold(household.id)
         refreshHouseholdMembers(household)
+        refreshFavorites()
     }
 
     private suspend fun refreshHouseholdMembers(household: HouseholdContext) {
@@ -343,6 +360,17 @@ class NutritionScreenModel(
 
     private val _mealPlanAcceptUndo = MutableStateFlow<MealPlanAcceptUndo?>(null)
     val mealPlanAcceptUndo: StateFlow<MealPlanAcceptUndo?> = _mealPlanAcceptUndo.asStateFlow()
+
+    // Favorites (F2) — personal dishes, read-only cache, server-authoritative.
+    val favoriteDishes: StateFlow<List<FavoriteDish>> = favoriteDishesRepository.favorites
+    val favoritesRemoteAvailable: StateFlow<Boolean> = favoriteDishesRepository.remoteAvailable
+
+    private val _favoriteFeedback = MutableStateFlow<FavoriteFeedback?>(null)
+    val favoriteFeedback: StateFlow<FavoriteFeedback?> = _favoriteFeedback.asStateFlow()
+
+    fun consumeFavoriteFeedback() {
+        _favoriteFeedback.value = null
+    }
 
     data class BulkMealGroceryResult(
         val addedCount: Int,
@@ -694,6 +722,53 @@ class NutritionScreenModel(
     /** Drops the pending accept-undo without restoring anything. */
     fun clearMealPlanAcceptUndo() {
         _mealPlanAcceptUndo.value = null
+    }
+
+    /**
+     * Toggles a meal label in/out of the user's personal favorites. The favorite
+     * state only advances after the remote mutation is confirmed; a failed write
+     * surfaces [FavoriteFeedback] and never pretends to succeed.
+     */
+    fun toggleFavorite(label: String) {
+        val trimmed = label.trim()
+        if (trimmed.isEmpty()) return
+        val key = favoriteKeyFor(trimmed)
+        val alreadyFavorite = favoriteDishes.value.any { it.normalisedLabel == key }
+        scope.launch {
+            if (alreadyFavorite) {
+                favoriteDishesRepository.removeFavorite(key)
+                    .onSuccess { _favoriteFeedback.value = FavoriteFeedback.Removed(trimmed) }
+                    .onFailure { emitFavoriteError(it, trimmed) }
+            } else {
+                favoriteDishesRepository.addFavorite(trimmed)
+                    .onSuccess { _favoriteFeedback.value = FavoriteFeedback.Saved(trimmed) }
+                    .onFailure { emitFavoriteError(it, trimmed) }
+            }
+        }
+    }
+
+    /** Replaces one saved favorite with a new label (used by the cap dialog). */
+    fun replaceFavorite(removeNormalisedLabel: String, newLabel: String) {
+        val trimmed = newLabel.trim()
+        if (trimmed.isEmpty()) return
+        scope.launch {
+            favoriteDishesRepository.replaceFavorite(removeNormalisedLabel, trimmed)
+                .onSuccess { _favoriteFeedback.value = FavoriteFeedback.Replaced(trimmed) }
+                .onFailure { emitFavoriteError(it, trimmed) }
+        }
+    }
+
+    private fun emitFavoriteError(error: Throwable, requestedLabel: String) {
+        val kind = (error as? FavoriteMutationException)?.kind
+        _favoriteFeedback.value = when (kind) {
+            FavoriteMutationException.Kind.CAP_EXCEEDED -> FavoriteFeedback.CapReached(requestedLabel)
+            FavoriteMutationException.Kind.OFFLINE -> FavoriteFeedback.OfflineError
+            else -> FavoriteFeedback.Error
+        }
+    }
+
+    private suspend fun refreshFavorites() {
+        favoriteDishesRepository.refresh()
     }
 
     /**
