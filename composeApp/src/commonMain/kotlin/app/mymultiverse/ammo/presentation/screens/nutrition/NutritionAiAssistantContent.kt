@@ -38,15 +38,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.withLink
-import androidx.compose.ui.text.withStyle
 import app.mymultiverse.ammo.domain.manager.LanguageManager
-import app.mymultiverse.ammo.domain.settings.AiAssistantSettings
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiMode
@@ -59,7 +51,6 @@ import app.mymultiverse.ammo.presentation.components.JourneyEmptyState
 import app.mymultiverse.ammo.presentation.components.NutritionFeatureKind
 import app.mymultiverse.ammo.presentation.components.JourneyTextField
 import app.mymultiverse.ammo.presentation.components.JourneyButtonLabel
-import app.mymultiverse.ammo.presentation.components.JourneyIconButton
 import app.mymultiverse.ammo.presentation.components.JourneyPrimaryButton
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.ammo.presentation.components.rememberFieldScrollIntoViewModifier
@@ -80,12 +71,13 @@ import ammo.composeapp.generated.resources.nutrition_ai_criteria_hint
 import ammo.composeapp.generated.resources.nutrition_ai_description
 import ammo.composeapp.generated.resources.nutrition_ai_empty_question
 import ammo.composeapp.generated.resources.nutrition_ai_error
-import ammo.composeapp.generated.resources.nutrition_ai_gemini_error
-import ammo.composeapp.generated.resources.home_ai_key_how_to_get
-import ammo.composeapp.generated.resources.home_ai_key_label
-import ammo.composeapp.generated.resources.home_ai_key_placeholder
-import ammo.composeapp.generated.resources.home_ai_key_save
-import ammo.composeapp.generated.resources.nutrition_ai_key_required
+import ammo.composeapp.generated.resources.nutrition_ai_error_daily_limit
+import ammo.composeapp.generated.resources.nutrition_ai_error_network
+import ammo.composeapp.generated.resources.nutrition_ai_error_sign_in
+import ammo.composeapp.generated.resources.nutrition_ai_error_unavailable
+import ammo.composeapp.generated.resources.nutrition_ai_generating
+import ammo.composeapp.generated.resources.nutrition_ai_saved_household
+import ammo.composeapp.generated.resources.nutrition_ai_saved_personal
 import ammo.composeapp.generated.resources.nutrition_ai_generate_button
 import ammo.composeapp.generated.resources.nutrition_ai_grocery_cleared
 import ammo.composeapp.generated.resources.nutrition_ai_grocery_result_title
@@ -100,7 +92,6 @@ import ammo.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_none
 import ammo.composeapp.generated.resources.nutrition_ai_adopt_all_grocery_summary
 import ammo.composeapp.generated.resources.nutrition_ai_idle_body
 import ammo.composeapp.generated.resources.nutrition_ai_idle_title
-import ammo.composeapp.generated.resources.nutrition_ai_loading
 import ammo.composeapp.generated.resources.nutrition_ai_meal_plan_result_title
 import ammo.composeapp.generated.resources.nutrition_ai_meal_plan_summary_full_week
 import ammo.composeapp.generated.resources.nutrition_ai_meal_plan_summary_single_day
@@ -161,7 +152,6 @@ fun NutritionAiAssistantContent(
     val mealPlan by screenModel.mealPlan.collectAsState()
     val groceryItems by screenModel.groceryItems.collectAsState()
     val languageManager = koinInject<LanguageManager>()
-    val aiSettings = koinInject<AiAssistantSettings>()
     val currentLanguage by languageManager.currentLanguage.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val mealGroceryLoading by screenModel.mealGroceryLoading.collectAsState()
@@ -178,10 +168,12 @@ fun NutritionAiAssistantContent(
     val isLoading = aiState is NutritionAiState.Loading
     val inputsEnabled = canWrite && !isLoading
     val chipFirstSheet = compact && launchContext != null
-    val modeLocked = chipFirstSheet
-    var showMoreOptions by rememberSaveable(chipFirstSheet) {
-        mutableStateOf(!chipFirstSheet)
-    }
+    // Mode is a decision only when the caller had no intent. Launched from a meal slot or
+    // the seasonal chip, the mode is already known and showing the picker is noise.
+    val modeLocked = launchContext != null
+    // Everyone starts on suggestions. Mode, scope, the free-text field and Generate are
+    // configuration, and they live behind "More options" until someone wants them.
+    var showMoreOptions by rememberSaveable { mutableStateOf(false) }
     val todayIndex = remember(screenModel.weekKey) { WeekCalendar.todayIndexInWeek(screenModel.weekKey) }
     val coroutineScope = rememberCoroutineScope()
     val localSnackbar = remember { SnackbarHostState() }
@@ -196,10 +188,6 @@ fun NutritionAiAssistantContent(
         launchContext.targetMealSlot != null &&
         (launchContext.mealPlanScope is MealPlanGenerationScope.SingleDay ||
             launchContext.mealPlanScope is MealPlanGenerationScope.SingleMeal)
-
-    LaunchedEffect(Unit) {
-        aiSettings.refreshFromRemote()
-    }
 
     val adoptAllNoneMessage = stringResource(Res.string.nutrition_ai_adopt_all_grocery_none)
     val adoptAllSummaryMessage = adoptAllResult?.let { count ->
@@ -401,7 +389,7 @@ fun NutritionAiAssistantContent(
             }
         }
 
-        if (!modeLocked) {
+        if (!modeLocked && showMoreOptions) {
             item {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -435,7 +423,7 @@ fun NutritionAiAssistantContent(
             }
         }
 
-        if (mode == NutritionAiMode.MealPlan && todayIndex != null && !scopeLocked) {
+        if (showMoreOptions && mode == NutritionAiMode.MealPlan && todayIndex != null && !scopeLocked) {
             item {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -483,10 +471,13 @@ fun NutritionAiAssistantContent(
                             if (action != null) {
                                 action()
                             } else {
+                                // A suggestion is a request, not a form pre-fill: run it.
                                 criteria = pick.criteria
-                                if (chipFirstSheet) {
-                                    generate()
-                                }
+                                screenModel.runAiAssistant(
+                                    mode = mode,
+                                    criteria = pick.criteria,
+                                    mealPlanScope = mealPlanScope,
+                                )
                             }
                         },
                     )
@@ -494,7 +485,7 @@ fun NutritionAiAssistantContent(
             }
         }
 
-        if (chipFirstSheet && !showMoreOptions) {
+        if (!showMoreOptions) {
             item {
                 JourneyTertiaryButton(
                     onClick = { showMoreOptions = true },
@@ -506,7 +497,7 @@ fun NutritionAiAssistantContent(
             }
         }
 
-        if (!chipFirstSheet || showMoreOptions) {
+        if (showMoreOptions) {
             item {
                 JourneyTextField(
                     value = criteria,
@@ -623,11 +614,24 @@ fun NutritionAiAssistantContent(
             }
             NutritionAiState.Loading -> {
                 item {
-                    Text(
-                        text = stringResource(Res.string.nutrition_ai_loading),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = JourneySemanticColors.inkMuted(),
-                    )
+                    // A seasonal week can take ~30s. A bare line of grey text reads as a
+                    // frozen sheet, so show motion next to the message.
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = accentColor,
+                            strokeWidth = 2.dp,
+                        )
+                        Text(
+                            text = stringResource(Res.string.nutrition_ai_generating),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = JourneySemanticColors.inkMuted(),
+                        )
+                    }
                 }
             }
             is NutritionAiState.Advice -> {
@@ -772,54 +776,31 @@ fun NutritionAiAssistantContent(
                 item { ResetButton { screenModel.resetAiState(); criteria = "" } }
             }
             is NutritionAiState.Error -> {
-                if (state.isKeyMissing) {
-                    item(key = "ai-key-missing-header") {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            JourneyIcon(
-                                role = AppIconRole.AiAccent,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                            )
-                            Text(
-                                text = stringResource(Res.string.nutrition_ai_key_required),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = SharedJourneyColors.TerracottaOrange,
-                            )
-                        }
-                    }
-                    item(key = "ai-key-inline-form") {
-                        AiKeyInlineForm(
-                            onKeySaved = {
-                                if (criteria.isNotBlank()) {
-                                    generate()
-                                }
-                            },
-                        )
-                    }
-                } else {
-                    item {
-                        Text(
-                            text = when (state.message) {
-                                "empty_question", "empty_criteria" ->
-                                    stringResource(Res.string.nutrition_ai_empty_question)
-                                "gemini_network_error",
-                                "gemini_http_error",
-                                "gemini_parse_error",
-                                "gemini_empty_response",
-                                ->
-                                    stringResource(Res.string.nutrition_ai_gemini_error)
-                                else ->
-                                    stringResource(Res.string.nutrition_ai_error)
-                            },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = SharedJourneyColors.TerracottaOrange,
-                        )
-                    }
-                    item { ResetButton { screenModel.resetAiState() } }
+                item(key = "ai-error-message") {
+                    Text(
+                        text = aiErrorMessage(state.kind),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = SharedJourneyColors.TerracottaOrange,
+                        modifier = Modifier.testTag(NutritionAiTestTags.ERROR_MESSAGE),
+                    )
                 }
+                // Retrying a spent daily allowance or a rejected session just fails again,
+                // so only offer the retry where it can actually succeed.
+                if (state.kind != AiErrorKind.DailyLimitReached &&
+                    state.kind != AiErrorKind.SignInRequired
+                ) {
+                    item(key = "ai-error-retry") {
+                        JourneyTertiaryButton(
+                            onClick = { generate() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(NutritionAiTestTags.ERROR_RETRY),
+                            enabled = inputsEnabled && criteria.isNotBlank(),
+                            label = stringResource(Res.string.nutrition_ai_try_again),
+                        )
+                    }
+                }
+                item { ResetButton { screenModel.resetAiState() } }
             }
         }
     }
@@ -1023,71 +1004,15 @@ private fun SuggestionChip(
 }
 
 /**
- * Inline API key entry form shown inside the AI assistant sheet when a Gemini key is not
- * configured. The user can paste and save the key without leaving the sheet. Once saved,
- * [NutritionScreenModel] auto-resets the error state so they can immediately retry.
+ * One specific, actionable sentence per failure kind. The app holds no Gemini key, so
+ * none of these ever asks the user for one.
  */
 @Composable
-private fun AiKeyInlineForm(
-    aiSettings: AiAssistantSettings = koinInject(),
-    onKeySaved: () -> Unit = {},
-) {
-    var keyInput by rememberSaveable { mutableStateOf("") }
-    var showKey by remember { mutableStateOf(false) }
-
-    val howToGetUrl = "https://aistudio.google.com/app/apikey"
-    val linkText = stringResource(Res.string.home_ai_key_how_to_get)
-    val linkAnnotation = buildAnnotatedString {
-        withLink(LinkAnnotation.Url(howToGetUrl)) {
-            withStyle(
-                SpanStyle(
-                    color = SharedJourneyColors.MediterraneanTeal,
-                    fontWeight = FontWeight.Medium,
-                ),
-            ) {
-                append(linkText)
-            }
-        }
-    }
-
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        JourneyTextField(
-            value = keyInput,
-            onValueChange = { keyInput = it },
-            label = { Text(stringResource(Res.string.home_ai_key_label)) },
-            placeholder = { Text(stringResource(Res.string.home_ai_key_placeholder)) },
-            visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                JourneyIconButton(onClick = { showKey = !showKey }) {
-                    JourneyIcon(
-                        imageVector = if (showKey) AppIcons.VisibilityOff else AppIcons.Visibility,
-                        role = AppIconRole.Muted,
-                        contentDescription = null,
-                    )
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-        )
-        JourneyPrimaryButton(
-            onClick = {
-                val trimmed = keyInput.trim()
-                if (trimmed.isNotBlank()) {
-                    aiSettings.setGeminiApiKey(trimmed)
-                    keyInput = ""
-                    onKeySaved()
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = keyInput.isNotBlank(),
-        ) {
-            JourneyButtonLabel(stringResource(Res.string.home_ai_key_save))
-        }
-        Text(
-            text = linkAnnotation,
-            style = MaterialTheme.typography.bodySmall,
-        )
-    }
+private fun aiErrorMessage(kind: AiErrorKind): String = when (kind) {
+    AiErrorKind.SignInRequired -> stringResource(Res.string.nutrition_ai_error_sign_in)
+    AiErrorKind.DailyLimitReached -> stringResource(Res.string.nutrition_ai_error_daily_limit)
+    AiErrorKind.ServiceUnavailable -> stringResource(Res.string.nutrition_ai_error_unavailable)
+    AiErrorKind.Network -> stringResource(Res.string.nutrition_ai_error_network)
+    AiErrorKind.EmptyInput -> stringResource(Res.string.nutrition_ai_empty_question)
+    AiErrorKind.Generic -> stringResource(Res.string.nutrition_ai_error)
 }

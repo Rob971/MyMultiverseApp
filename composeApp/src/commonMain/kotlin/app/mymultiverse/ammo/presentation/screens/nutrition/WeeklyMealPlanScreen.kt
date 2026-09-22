@@ -72,6 +72,12 @@ import app.mymultiverse.ammo.presentation.components.MealPlanTestTags
 import app.mymultiverse.ammo.presentation.theme.JourneySemanticColors
 import app.mymultiverse.ammo.presentation.theme.SharedJourneyColors
 import ammo.composeapp.generated.resources.Res
+import ammo.composeapp.generated.resources.nutrition_ai_error_daily_limit
+import ammo.composeapp.generated.resources.nutrition_ai_error_network
+import ammo.composeapp.generated.resources.nutrition_ai_error_sign_in
+import ammo.composeapp.generated.resources.nutrition_ai_error_unavailable
+import ammo.composeapp.generated.resources.nutrition_ai_saved_household
+import ammo.composeapp.generated.resources.nutrition_ai_saved_personal
 import ammo.composeapp.generated.resources.nutrition_grocery_cancel_edit
 import ammo.composeapp.generated.resources.nutrition_meal_clear_field
 import ammo.composeapp.generated.resources.nutrition_meal_clear_week
@@ -250,13 +256,36 @@ private fun WeeklyMealPlanScreenContent(
         screenModel.consumeFavoriteFeedback()
     }
 
+    // The AI sheet closes the moment a plan is applied, so the confirmation belongs here.
+    // It names the household when there is one, which is the only signal the user gets
+    // that the week they just generated is now shared.
+    val mealPlanApplied by screenModel.mealPlanAppliedFeedback.collectAsState()
+    val appliedHouseholdMessage = stringResource(Res.string.nutrition_ai_saved_household)
+    val appliedPersonalMessage = stringResource(Res.string.nutrition_ai_saved_personal)
+    LaunchedEffect(mealPlanApplied) {
+        val shared = mealPlanApplied ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(
+            if (shared) appliedHouseholdMessage else appliedPersonalMessage,
+        )
+        screenModel.consumeMealPlanAppliedFeedback()
+    }
+
+    val aiSignInMessage = stringResource(Res.string.nutrition_ai_error_sign_in)
+    val aiDailyLimitMessage = stringResource(Res.string.nutrition_ai_error_daily_limit)
+    val aiUnavailableMessage = stringResource(Res.string.nutrition_ai_error_unavailable)
+    val aiNetworkMessage = stringResource(Res.string.nutrition_ai_error_network)
     val mealGrocerySnackbarMessage = mealGroceryResult?.let { result ->
         val slotLabel = when (result.slot) {
             MealSlot.Lunch -> lunchLabel
             MealSlot.Dinner -> dinnerLabel
         }
         when {
-            result.isKeyMissing -> null  // Handled by opening the AI sheet inline (see LaunchedEffect below)
+            // Say what actually went wrong. This used to open a sheet asking for a
+            // Gemini API key, which the app no longer uses for anything.
+            result.errorKind == AiErrorKind.SignInRequired -> aiSignInMessage
+            result.errorKind == AiErrorKind.DailyLimitReached -> aiDailyLimitMessage
+            result.errorKind == AiErrorKind.ServiceUnavailable -> aiUnavailableMessage
+            result.errorKind == AiErrorKind.Network -> aiNetworkMessage
             result.isError -> groceryError
             result.itemCount == 0 -> groceryNoneNew
             else -> stringResource(
@@ -265,17 +294,6 @@ private fun WeeklyMealPlanScreenContent(
                 result.dayLabel,
                 slotLabel,
             )
-        }
-    }
-
-    // When no key is configured, open the AI sheet so the user can add the key right there
-    // (the sheet shows the inline key form). Clear the result first so a second tap re-triggers.
-    LaunchedEffect(mealGroceryResult) {
-        if (mealGroceryResult?.isKeyMissing == true) {
-            screenModel.consumeMealGroceryResult()
-            screenModel.triggerKeySetupPrompt()
-            onOpenAiSheet(AiHelperLaunchContext(mode = NutritionAiMode.Advice))
-            return@LaunchedEffect
         }
     }
 

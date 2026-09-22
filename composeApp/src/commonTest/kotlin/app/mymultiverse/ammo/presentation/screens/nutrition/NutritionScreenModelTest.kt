@@ -1002,55 +1002,76 @@ class NutritionScreenModelTest {
         assertEquals(NutritionScreenModel.MealPlanPartnerNudgeResult.Cooldown, model.mealPlanPartnerNudgeResult.value)
     }
 
-    // ── AI key-missing state tests ────────────────────────────────────────────
+    // ── AI error classification ───────────────────────────────────────────────
+    //
+    // The app holds no Gemini key: every request goes through the ai-generate proxy.
+    // A rejected request therefore means the SESSION is bad, the daily allowance is
+    // spent, or the service is down — never "the user must paste an API key".
 
     @Test
-    fun runAiAssistant_adviceMode_setsIsKeyMissingWhenKeyNotConfigured() = runTest(testDispatcher) {
-        val repository = FakeNutritionRepository(weekKey)
-        val ai = FakeNutritionAdviceService(keyMissing = true)
-        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+    fun runAiAssistant_adviceMode_reportsServiceUnavailableWhenTheServiceHasNoKey() =
+        runTest(testDispatcher) {
+            val repository = FakeNutritionRepository(weekKey)
+            val ai = FakeNutritionAdviceService(keyMissing = true)
+            val model = nutritionScreenModel(repository, ai, scope = modelScope)
 
-        model.runAiAssistant(NutritionAiMode.Advice, "What should I eat?")
-        advanceUntilIdle()
+            model.runAiAssistant(NutritionAiMode.Advice, "What should I eat?")
+            advanceUntilIdle()
 
-        val state = model.aiState.value
-        assertIs<NutritionAiState.Error>(state)
-        assertTrue(state.isKeyMissing)
-    }
-
-    @Test
-    fun runAiAssistant_groceryMode_setsIsKeyMissingWhenKeyNotConfigured() = runTest(testDispatcher) {
-        val repository = FakeNutritionRepository(weekKey)
-        val ai = FakeNutritionAdviceService(keyMissing = true)
-        val model = nutritionScreenModel(repository, ai, scope = modelScope)
-
-        model.runAiAssistant(NutritionAiMode.GroceryList, "high protein week")
-        advanceUntilIdle()
-
-        val state = model.aiState.value
-        assertIs<NutritionAiState.Error>(state)
-        assertTrue(state.isKeyMissing)
-    }
+            val state = model.aiState.value
+            assertIs<NutritionAiState.Error>(state)
+            assertEquals(AiErrorKind.ServiceUnavailable, state.kind)
+        }
 
     @Test
-    fun runAiAssistant_mealPlanMode_setsIsKeyMissingWhenKeyNotConfigured() = runTest(testDispatcher) {
-        val repository = FakeNutritionRepository(weekKey)
-        val ai = FakeNutritionAdviceService(keyMissing = true)
-        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+    fun runAiAssistant_groceryMode_reportsServiceUnavailableWhenTheServiceHasNoKey() =
+        runTest(testDispatcher) {
+            val repository = FakeNutritionRepository(weekKey)
+            val ai = FakeNutritionAdviceService(keyMissing = true)
+            val model = nutritionScreenModel(repository, ai, scope = modelScope)
 
-        model.runAiAssistant(NutritionAiMode.MealPlan, "vegetarian")
-        advanceUntilIdle()
+            model.runAiAssistant(NutritionAiMode.GroceryList, "high protein week")
+            advanceUntilIdle()
 
-        val state = model.aiState.value
-        assertIs<NutritionAiState.Error>(state)
-        assertTrue(state.isKeyMissing)
-    }
+            val state = model.aiState.value
+            assertIs<NutritionAiState.Error>(state)
+            assertEquals(AiErrorKind.ServiceUnavailable, state.kind)
+        }
+
+    /**
+     * Regression: a rejected session token used to render an inline "paste your Gemini
+     * API key" form. The key moved server-side, so nothing read what the user pasted and
+     * the retry failed identically. 401/403 must ask the user to sign in again.
+     */
+    @Test
+    fun runAiAssistant_mealPlanMode_authFailureAsksForSignIn_notAnApiKey() =
+        runTest(testDispatcher) {
+            val repository = FakeNutritionRepository(weekKey)
+            val ai = FakeNutritionAdviceService(
+                mealPlanFailure = GeminiApiException(
+                    GeminiApiException.Reason.AUTH_ERROR,
+                    httpStatus = 401,
+                ),
+            )
+            val model = nutritionScreenModel(repository, ai, scope = modelScope)
+
+            model.runAiAssistant(NutritionAiMode.MealPlan, "protein with rice")
+            advanceUntilIdle()
+
+            val state = model.aiState.value
+            assertIs<NutritionAiState.Error>(state)
+            assertEquals(AiErrorKind.SignInRequired, state.kind)
+            assertEquals("gemini_auth_error", state.message)
+        }
 
     @Test
-    fun runAiAssistant_mealPlanMode_setsIsKeyMissingWhenGeminiAuthFails() = runTest(testDispatcher) {
+    fun runAiAssistant_mealPlanMode_forbiddenAlsoAsksForSignIn() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
         val ai = FakeNutritionAdviceService(
-            mealPlanFailure = GeminiApiException(GeminiApiException.Reason.AUTH_ERROR, httpStatus = 403),
+            mealPlanFailure = GeminiApiException(
+                GeminiApiException.Reason.AUTH_ERROR,
+                httpStatus = 403,
+            ),
         )
         val model = nutritionScreenModel(repository, ai, scope = modelScope)
 
@@ -1059,8 +1080,46 @@ class NutritionScreenModelTest {
 
         val state = model.aiState.value
         assertIs<NutritionAiState.Error>(state)
-        assertTrue(state.isKeyMissing)
-        assertEquals("gemini_auth_error", state.message)
+        assertEquals(AiErrorKind.SignInRequired, state.kind)
+    }
+
+    /** The daily quota shipped with the proxy: 429 must say so, not "try again". */
+    @Test
+    fun runAiAssistant_mealPlanMode_quotaExceededReportsTheDailyLimit() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService(
+            mealPlanFailure = GeminiApiException(
+                GeminiApiException.Reason.HTTP_ERROR,
+                httpStatus = 429,
+            ),
+        )
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+
+        model.runAiAssistant(NutritionAiMode.MealPlan, "seasonal week")
+        advanceUntilIdle()
+
+        val state = model.aiState.value
+        assertIs<NutritionAiState.Error>(state)
+        assertEquals(AiErrorKind.DailyLimitReached, state.kind)
+    }
+
+    @Test
+    fun runAiAssistant_mealPlanMode_serverKeyMissingReportsUnavailable() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        val ai = FakeNutritionAdviceService(
+            mealPlanFailure = GeminiApiException(
+                GeminiApiException.Reason.HTTP_ERROR,
+                httpStatus = 503,
+            ),
+        )
+        val model = nutritionScreenModel(repository, ai, scope = modelScope)
+
+        model.runAiAssistant(NutritionAiMode.MealPlan, "seasonal week")
+        advanceUntilIdle()
+
+        val state = model.aiState.value
+        assertIs<NutritionAiState.Error>(state)
+        assertEquals(AiErrorKind.ServiceUnavailable, state.kind)
     }
 
     @Test
@@ -1076,31 +1135,59 @@ class NutritionScreenModelTest {
 
         val state = model.aiState.value
         assertIs<NutritionAiState.Error>(state)
-        assertFalse(state.isKeyMissing)
+        assertEquals(AiErrorKind.Network, state.kind)
         assertEquals("gemini_network_error", state.message)
     }
 
     @Test
-    fun generateGroceryForMeal_setsIsKeyMissingWhenKeyNotConfigured() = runTest(testDispatcher) {
+    fun generateGroceryForMeal_reportsTheErrorKindInsteadOfPromptingForAKey() =
+        runTest(testDispatcher) {
+            val repository = FakeNutritionRepository(weekKey)
+            repository.mealPlan.value = repository.mealPlan.value.copy(
+                days = repository.mealPlan.value.days.toMutableList().also {
+                    it[0] = it[0].copy(lunch = "Pasta carbonara")
+                },
+            )
+            val ai = FakeNutritionAdviceService(keyMissing = true)
+            val model = nutritionScreenModel(repository, ai, scope = modelScope)
+            // Let the model collect the initial mealPlan state before generating.
+            advanceUntilIdle()
+
+            model.generateGroceryForMeal(0, MealSlot.Lunch, "Monday")
+            advanceUntilIdle()
+
+            val result = model.mealGroceryResult.value
+            assertNotNull(result)
+            assertTrue(result.isError)
+            assertEquals(AiErrorKind.ServiceUnavailable, result.errorKind)
+            assertNull(model.mealGroceryLoading.value)
+        }
+
+    // ── applying a generated plan ─────────────────────────────────────────────
+
+    @Test
+    fun applyPreviewedMealPlan_confirmsTheSaveOnceThePlanIsWritten() = runTest(testDispatcher) {
         val repository = FakeNutritionRepository(weekKey)
-        repository.mealPlan.value = repository.mealPlan.value.copy(
-            days = repository.mealPlan.value.days.toMutableList().also {
-                it[0] = it[0].copy(lunch = "Pasta carbonara")
-            },
-        )
-        val ai = FakeNutritionAdviceService(keyMissing = true)
+        val ai = FakeNutritionAdviceService()
         val model = nutritionScreenModel(repository, ai, scope = modelScope)
-        // Let the model collect the initial mealPlan state before calling generateGroceryForMeal.
+
+        model.runAiAssistant(NutritionAiMode.MealPlan, "a full week")
+        advanceUntilIdle()
+        val preview = model.aiState.value
+        assertIs<NutritionAiState.MealPlanPreview>(preview)
+        assertNull(model.mealPlanAppliedFeedback.value)
+
+        model.applyPreviewedMealPlan()
         advanceUntilIdle()
 
-        model.generateGroceryForMeal(0, MealSlot.Lunch, "Monday")
-        advanceUntilIdle()
+        assertEquals(preview.plan.days, repository.mealPlan.value.days)
+        // Solo account: saved, but nobody else sees it.
+        assertEquals(false, model.mealPlanAppliedFeedback.value)
 
-        val result = model.mealGroceryResult.value
-        assertNotNull(result)
-        assertTrue(result.isKeyMissing)
-        assertNull(model.mealGroceryLoading.value)
+        model.consumeMealPlanAppliedFeedback()
+        assertNull(model.mealPlanAppliedFeedback.value)
     }
+
 
     // ── seasonal week (S4) ─────────────────────────────────────────────────────
 

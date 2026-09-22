@@ -67,7 +67,36 @@ sealed class NutritionAiState {
         val summary: String,
         val scope: MealPlanGenerationScope,
     ) : NutritionAiState()
-    data class Error(val message: String, val isKeyMissing: Boolean = false) : NutritionAiState()
+    data class Error(
+        val message: String,
+        val kind: AiErrorKind = AiErrorKind.Generic,
+    ) : NutritionAiState()
+}
+
+/**
+ * What the user can actually do about a failed AI request.
+ *
+ * The app holds no Gemini key — every request goes through the `ai-generate` Edge
+ * Function — so a rejected request means the *session* is bad, the daily allowance is
+ * spent, or the service is down. Each kind maps to one specific, actionable message.
+ */
+enum class AiErrorKind {
+    /** The proxy rejected the session token (401/403). Signing in again fixes it. */
+    SignInRequired,
+
+    /** The daily AI allowance is spent. Retrying today will not help. */
+    DailyLimitReached,
+
+    /** The AI service is down or misconfigured server-side. Retrying shortly may help. */
+    ServiceUnavailable,
+
+    /** No connectivity, or the request timed out. */
+    Network,
+
+    /** The user submitted nothing to work with. */
+    EmptyInput,
+
+    Generic,
 }
 
 /** Captures the pre-accept value of one meal slot so an accept can be undone. */
@@ -105,6 +134,14 @@ class NutritionScreenModel(
         private const val SYNCED_PULSE_MS = 2_500L
         private const val COLLABORATION_DEBOUNCE_MS = 2_000L
         private const val MEAL_PLAN_SAVE_DEBOUNCE_MS = 300L
+
+        /** `ai-generate` returns this once a daily user or global limit is spent. */
+        private const val HTTP_TOO_MANY_REQUESTS = 429
+
+        /** Missing server key (503), upstream failure (502) and upstream timeout (504). */
+        private val UPSTREAM_UNAVAILABLE_STATUSES = setOf(502, 503, 504)
+
+        private val EMPTY_INPUT_MESSAGES = setOf("empty_question", "empty_criteria")
     }
 
     // Serializes all grocery and meal-plan writes to prevent read-modify-write races
@@ -126,25 +163,8 @@ class NutritionScreenModel(
     private val _aiState = MutableStateFlow<NutritionAiState>(NutritionAiState.Idle)
     val aiState: StateFlow<NutritionAiState> = _aiState.asStateFlow()
 
-    /**
-     * Auto-reset key-missing AI error state when the user saves a key while the
-     * sheet is showing an [AiKeyNotConfiguredException] error, so they can retry
-     * immediately without having to manually dismiss and re-open the sheet.
-     */
     init {
         seasonalWeekSuggester?.let { suggester -> scope.launch { suggester.prefetchCatalog() } }
-    }
-
-    init {
-        scope.launch {
-            aiAssistant.geminiApiKey.collect { key ->
-                if (key.isBlank()) return@collect
-                val current = _aiState.value
-                if (current is NutritionAiState.Error && current.isKeyMissing) {
-                    _aiState.value = NutritionAiState.Idle
-                }
-            }
-        }
     }
 
     private val _weekOffset = MutableStateFlow(0)
@@ -176,6 +196,18 @@ class NutritionScreenModel(
     private var syncPulseJob: Job? = null
     private var cachedHouseholdMembers: List<HouseholdMember> = emptyList()
     private val _householdMembers = MutableStateFlow<List<HouseholdMember>>(emptyList())
+
+    /**
+     * One-shot confirmation that a generated plan was written, and whether anyone else
+     * will see it. The AI sheet closes on apply, so the host screen shows this, not the
+     * sheet. `true` means the household sees it too.
+     */
+    private val _mealPlanAppliedFeedback = MutableStateFlow<Boolean?>(null)
+    val mealPlanAppliedFeedback: StateFlow<Boolean?> = _mealPlanAppliedFeedback.asStateFlow()
+
+    fun consumeMealPlanAppliedFeedback() {
+        _mealPlanAppliedFeedback.value = null
+    }
     private val pendingCollaborationActivities = mutableListOf<app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivity>()
     private var collaborationDebounceJob: Job? = null
 
@@ -355,7 +387,8 @@ class NutritionScreenModel(
         val dayLabel: String,
         val slot: MealSlot,
         val isError: Boolean = false,
-        val isKeyMissing: Boolean = false,
+        /** Set when [isError]; tells the UI which message to show. */
+        val errorKind: AiErrorKind? = null,
     )
 
     private val _mealGroceryLoading = MutableStateFlow<MealGroceryRequest?>(null)
@@ -692,6 +725,7 @@ class NutritionScreenModel(
         if (!canWriteHouseholdData.value) return
         val preview = _aiState.value as? NutritionAiState.MealPlanPreview ?: return
         repository.saveMealPlan(preview.plan)
+        _mealPlanAppliedFeedback.value = _householdMembers.value.size > 1
         _aiState.value = NutritionAiState.Idle
     }
 
@@ -910,11 +944,7 @@ class NutritionScreenModel(
         _mealGroceryLoading.value = MealGroceryRequest(dayIndex, slot)
         return try {
             aiAssistant.generateGroceryForMeal(mealText)
-                .onFailure { error ->
-                    // Surface key-missing so the AI sheet opens the inline key form
-                    // even when called from the silent (ingredients-after-apply) path.
-                    if (error is AiKeyNotConfiguredException) triggerKeySetupPrompt()
-                }
+                .onFailure { error -> _aiState.value = error.toAiErrorState() }
                 .getOrElse { return 0 }
                 .let { labels -> appendMealGroceryLabels(labels) }
         } finally {
@@ -950,7 +980,7 @@ class NutritionScreenModel(
                             dayLabel = dayLabel,
                             slot = slot,
                             isError = true,
-                            isKeyMissing = error is AiKeyNotConfiguredException,
+                            errorKind = error.toAiErrorKind(),
                         )
                     }
             } finally {
@@ -998,18 +1028,6 @@ class NutritionScreenModel(
     fun resetAiState() {
         _aiState.value = NutritionAiState.Idle
         _mealPlanAcceptUndo.value = null
-    }
-
-    /**
-     * Sets [aiState] to the key-missing error so the AI sheet immediately shows the
-     * inline [AiKeyInlineForm] when opened. Called by the meal→grocery flow when it
-     * detects [AiKeyNotConfiguredException] without the sheet being open.
-     */
-    fun triggerKeySetupPrompt() {
-        _aiState.value = NutritionAiState.Error(
-            message = "ai_key_not_configured",
-            isKeyMissing = true,
-        )
     }
 
     /** @deprecated Use [runAiAssistant] with [NutritionAiMode.Advice]. */
@@ -1192,11 +1210,26 @@ class NutritionScreenModel(
     private fun Throwable.toAiMessage(): String = message ?: "unknown_error"
 
     private fun Throwable.toAiErrorState(): NutritionAiState.Error =
-        NutritionAiState.Error(
-            message = toAiMessage(),
-            isKeyMissing = this is AiKeyNotConfiguredException ||
-                (this is GeminiApiException && isAuthError),
-        )
+        NutritionAiState.Error(message = toAiMessage(), kind = toAiErrorKind())
+
+    /**
+     * Classifies a failure by the one thing the user can do about it. An auth failure is
+     * NOT a missing key: since the key moved server-side, 401/403 means the session token
+     * was rejected, and the fix is signing in again.
+     */
+    private fun Throwable.toAiErrorKind(): AiErrorKind = when {
+        this is GeminiApiException -> when {
+            isAuthError -> AiErrorKind.SignInRequired
+            httpStatus == HTTP_TOO_MANY_REQUESTS -> AiErrorKind.DailyLimitReached
+            httpStatus in UPSTREAM_UNAVAILABLE_STATUSES -> AiErrorKind.ServiceUnavailable
+            reason == GeminiApiException.Reason.NETWORK -> AiErrorKind.Network
+            else -> AiErrorKind.Generic
+        }
+        // Nothing throws this in production any more; treat it as a server-side outage.
+        this is AiKeyNotConfiguredException -> AiErrorKind.ServiceUnavailable
+        toAiMessage() in EMPTY_INPUT_MESSAGES -> AiErrorKind.EmptyInput
+        else -> AiErrorKind.Generic
+    }
 
     private fun newId(): String = newItemId()
 }

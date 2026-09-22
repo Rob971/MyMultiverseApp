@@ -93,9 +93,7 @@
     <string name="nutrition_day_sunday">Sonntag</string>
     <string name="nutrition_ai_question_hint">z. B. proteinreich, nussfrei, schnelle Abendessen</string>
     <string name="nutrition_ai_ask_button">Erstellen</string>
-    <string name="nutrition_ai_loading">Vorschläge werden erstellt…</string>
     <string name="nutrition_ai_error">Vorschläge konnten nicht erstellt werden. Bitte erneut versuchen.</string>
-    <string name="nutrition_ai_gemini_error">KI-Generierung fehlgeschlagen. Verbindung und API-Schlüssel prüfen und erneut versuchen.</string>
     <string name="nutrition_ai_empty_question">Zuerst eine kurze Notiz hinzufügen.</string>
     <string name="nutrition_ai_idle_title">Noch nichts erstellt</string>
     <string name="nutrition_ai_idle_body">Wähle einen Schnellvorschlag oder beschreibe deine Woche, dann auf Erstellen tippen.</string>
@@ -413,18 +411,6 @@
     <string name="home_settings_appearance">Darstellung</string>
     <string name="home_settings_language">Sprache</string>
     <string name="home_settings_ai_section">KI-Zutaten</string>
-    <string name="home_ai_key_label">Gemini API-Schlüssel</string>
-    <string name="home_ai_key_placeholder">Schlüssel hier einfügen</string>
-    <string name="home_ai_key_what_it_does">Erstellt gerichtspezifische Zutatenvorschläge beim Hinzufügen von Mahlzeiten. Kostenlos, ohne Zahlung.</string>
-    <string name="home_ai_key_how_to_get">Kostenlosen Schlüssel von Google AI Studio holen →</string>
-    <string name="home_ai_key_save">Schlüssel speichern</string>
-    <string name="home_ai_key_save_update">Schlüssel aktualisieren</string>
-    <string name="home_ai_key_clear">Löschen</string>
-    <string name="home_ai_key_status_active">● Aktiv</string>
-    <string name="home_ai_key_status_not_configured">Nicht konfiguriert</string>
-    <string name="home_ai_key_saved_snackbar">KI-Schlüssel gespeichert ✓</string>
-    <string name="home_ai_key_cleared_snackbar">KI-Schlüssel gelöscht</string>
-    <string name="nutrition_ai_key_required">Um KI-Funktionen zu nutzen, füge deinen kostenlosen Gemini-Schlüssel hinzu:</string>
 
     <string name="home_hero_plan_meals">Mahlzeiten planen</string>
     <string name="home_hero_grocery_list">Einkaufsliste</string>
@@ -1032,4 +1018,11 @@
     <string name="tour_step_meal_plan_body">Plant Mittag- und Abendessen für jeden Tag. Die ganze Familie sieht denselben Plan in Echtzeit.</string>
     <string name="tour_step_grocery_title">Einkaufsliste</string>
     <string name="tour_step_grocery_body">Fügt Artikel für die Woche hinzu und hakt sie beim Einkaufen ab. Alles bleibt synchronisiert.</string>
+    <string name="nutrition_ai_error_sign_in">Deine Sitzung ist abgelaufen. Melde dich erneut an, um KI-Vorschläge zu nutzen.</string>
+    <string name="nutrition_ai_error_daily_limit">Du hast alle KI-Vorschläge für heute verbraucht. Morgen gibt es neue.</string>
+    <string name="nutrition_ai_error_unavailable">KI-Vorschläge sind gerade nicht verfügbar. Bitte versuche es gleich noch einmal.</string>
+    <string name="nutrition_ai_error_network">Keine Verbindung. Prüfe dein Netz und versuche es erneut.</string>
+    <string name="nutrition_ai_saved_household">Zur Woche deines Haushalts hinzugefügt</string>
+    <string name="nutrition_ai_saved_personal">Zu deiner Woche hinzugefügt</string>
+    <string name="nutrition_ai_generating">Deine Vorschläge werden erstellt…</string>
 </resources>

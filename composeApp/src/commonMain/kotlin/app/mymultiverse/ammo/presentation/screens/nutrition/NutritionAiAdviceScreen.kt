@@ -35,6 +35,8 @@ object NutritionAiTestTags {
     const val INGREDIENTS_STEP = "nutrition_ai_ingredients_step"
     const val INGREDIENTS_ADD_ALL = "nutrition_ai_ingredients_add_all"
     const val INGREDIENTS_SKIP = "nutrition_ai_ingredients_skip"
+    const val ERROR_MESSAGE = "nutrition_ai_error_message"
+    const val ERROR_RETRY = "nutrition_ai_error_retry"
 
     fun contextualChip(ingredientId: String) = "nutrition_ai_contextual_chip_$ingredientId"
 }

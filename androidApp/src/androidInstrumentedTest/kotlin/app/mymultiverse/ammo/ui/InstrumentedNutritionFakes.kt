@@ -105,8 +105,11 @@ class InstrumentedNutritionSessionCoordinator(
 
 class InstrumentedNutritionAdviceService(
     private val answer: String = "Eat more vegetables.",
+    /** When set, every call fails with it — used to drive error-state UI tests. */
+    private val failure: Throwable? = null,
 ) : NutritionAiAssistantService {
     override suspend fun askAdvice(question: String): Result<String> {
+        failure?.let { return Result.failure(it) }
         return if (question.isBlank()) {
             Result.failure(IllegalArgumentException("empty_question"))
         } else {

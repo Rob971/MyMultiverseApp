@@ -9,6 +9,7 @@ import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
@@ -45,6 +46,7 @@ import app.mymultiverse.ammo.domain.model.sharing.NutritionSharingFeature
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
+import app.mymultiverse.ammo.domain.service.GeminiApiException
 import app.mymultiverse.ammo.presentation.components.GroceryGhostPairingTestTags
 import app.mymultiverse.ammo.presentation.components.GroceryInputBarTestTags
 import app.mymultiverse.ammo.presentation.components.GroceryItemRowTestTags
@@ -63,6 +65,7 @@ import app.mymultiverse.ammo.presentation.screens.nutrition.AiHelperLaunchContex
 import app.mymultiverse.ammo.presentation.screens.nutrition.AiHelperSheetTestTags
 import app.mymultiverse.ammo.presentation.screens.nutrition.GroceryShoppingScreen
 import app.mymultiverse.ammo.presentation.screens.nutrition.NutritionAiAdviceScreen
+import app.mymultiverse.ammo.presentation.screens.nutrition.AiErrorKind
 import app.mymultiverse.ammo.presentation.screens.nutrition.NutritionAiState
 import app.mymultiverse.ammo.presentation.screens.nutrition.NutritionAiTestTags
 import app.mymultiverse.ammo.presentation.screens.nutrition.NutritionHubScreen
@@ -106,6 +109,7 @@ class NutritionUxInstrumentedTest {
         favorites: InstrumentedFavoriteDishesRepository = InstrumentedFavoriteDishesRepository(),
         repository: InstrumentedNutritionRepository = InstrumentedNutritionRepository(weekKey, householdId = householdId),
         seasonalWeekSuggester: SeasonalWeekSuggester? = null,
+        aiFailure: Throwable? = null,
     ): NutritionScreenModel {
         repository.aiGrocery.value = initialAiGrocery
         plannedLunch?.let { (dayIndex, lunch) ->
@@ -121,7 +125,7 @@ class NutritionUxInstrumentedTest {
             session = InstrumentedNutritionSessionCoordinator(repository),
             householdRepository = InstrumentedHouseholdRepository(),
             collaborationRepository = InstrumentedHouseholdCollaborationRepository(),
-            aiAssistant = InstrumentedNutritionAdviceService(adviceAnswer),
+            aiAssistant = InstrumentedNutritionAdviceService(adviceAnswer, failure = aiFailure),
             favoriteDishesRepository = favorites,
             ghostPairingDismissStore = GroceryGhostPairingDismissStore(MapSettings()),
             logger = AppLogger(NoOpCrashReporter(), DiagnosticsContext(sessionId = "instrumented")),
@@ -413,6 +417,9 @@ class NutritionUxInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag(NutritionAiTestTags.MORE_OPTIONS_TOGGLE)
+            .performScrollTo()
+            .performClick()
         composeRule.onNodeWithTag(NutritionAiTestTags.CRITERIA_FIELD)
             .performScrollTo()
             .performTextInput("What veggies should we eat?")
@@ -427,6 +434,54 @@ class NutritionUxInstrumentedTest {
         composeRule.onNodeWithText(answer).assertIsDisplayed()
     }
 
+
+    /**
+     * Regression for the dead API-key prompt: when the proxy rejects the session the sheet
+     * used to render a masked "Gemini API Key" field and a link to Google AI Studio. The app
+     * has held no user key since the proxy shipped, so anything pasted there was stored and
+     * never read, and the retry failed identically. The user must be told to sign in instead.
+     */
+    @Test
+    fun nutritionAi_authFailure_asksToSignIn_andNeverAsksForAnApiKey() {
+        val screenModel = nutritionScreenModel(
+            aiFailure = GeminiApiException(GeminiApiException.Reason.AUTH_ERROR, httpStatus = 401),
+        )
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    NutritionAiAdviceScreen(onBack = {}, screenModel = screenModel)
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag(NutritionAiTestTags.MORE_OPTIONS_TOGGLE)
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithTag(NutritionAiTestTags.CRITERIA_FIELD)
+            .performScrollTo()
+            .performTextInput("What veggies should we eat?")
+        composeRule.onNodeWithTag(NutritionAiTestTags.GENERATE_BUTTON)
+            .performScrollTo()
+            .performClick()
+        composeRule.waitFor { screenModel.aiState.value is NutritionAiState.Error }
+
+        val state = screenModel.aiState.value as NutritionAiState.Error
+        assertEquals(AiErrorKind.SignInRequired, state.kind)
+
+        composeRule.onNodeWithTag(NutritionAiTestTags.SCROLL_LIST)
+            .performScrollToNode(hasTestTag(NutritionAiTestTags.ERROR_MESSAGE))
+        composeRule.onNodeWithTag(NutritionAiTestTags.ERROR_MESSAGE).assertIsDisplayed()
+
+        // The key form is gone: no field, no button, no link to Google AI Studio.
+        composeRule.onAllNodesWithText("Gemini API Key").assertCountEquals(0)
+        composeRule.onAllNodesWithText("Save key").assertCountEquals(0)
+        composeRule.onAllNodesWithText("Get a free key from Google AI Studio \u2192")
+            .assertCountEquals(0)
+        // Retrying a rejected session just fails again, so no retry button either.
+        composeRule.onNodeWithTag(NutritionAiTestTags.ERROR_RETRY).assertDoesNotExist()
+    }
+
     @Test
     fun nutritionAi_groceryMode_generatesAndClearsReadOnlyGroceryList() {
         val screenModel = nutritionScreenModel()
@@ -439,6 +494,9 @@ class NutritionUxInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag(NutritionAiTestTags.MORE_OPTIONS_TOGGLE)
+            .performScrollTo()
+            .performClick()
         composeRule.onNodeWithTag(NutritionAiTestTags.MODE_GROCERY)
             .performScrollTo()
             .performClick()
