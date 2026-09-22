@@ -93,9 +93,7 @@
     <string name="nutrition_day_sunday">Domingo</string>
     <string name="nutrition_ai_question_hint">p. ej. alto en proteínas, sin frutos secos, cenas rápidas</string>
     <string name="nutrition_ai_ask_button">Generar</string>
-    <string name="nutrition_ai_loading">Creando sugerencias…</string>
     <string name="nutrition_ai_error">No se pudieron crear las sugerencias. Inténtalo de nuevo.</string>
-    <string name="nutrition_ai_gemini_error">Error en la generación con IA. Comprueba la conexión y la clave API e inténtalo de nuevo.</string>
     <string name="nutrition_ai_empty_question">Añade primero una nota breve.</string>
     <string name="nutrition_ai_idle_title">Aún no se ha generado nada</string>
     <string name="nutrition_ai_idle_body">Elige una sugerencia rápida o describe tu semana, luego pulsa Generar.</string>
@@ -413,18 +411,6 @@
     <string name="home_settings_appearance">Apariencia</string>
     <string name="home_settings_language">Idioma</string>
     <string name="home_settings_ai_section">Ingredientes IA</string>
-    <string name="home_ai_key_label">Clave API Gemini</string>
-    <string name="home_ai_key_placeholder">Pega tu clave aquí</string>
-    <string name="home_ai_key_what_it_does">Genera sugerencias de ingredientes específicas al añadir comidas a tu lista. Nivel gratuito, sin pago.</string>
-    <string name="home_ai_key_how_to_get">Obtén una clave gratuita en Google AI Studio →</string>
-    <string name="home_ai_key_save">Guardar clave</string>
-    <string name="home_ai_key_save_update">Actualizar clave</string>
-    <string name="home_ai_key_clear">Borrar</string>
-    <string name="home_ai_key_status_active">● Activa</string>
-    <string name="home_ai_key_status_not_configured">No configurada</string>
-    <string name="home_ai_key_saved_snackbar">Clave IA guardada ✓</string>
-    <string name="home_ai_key_cleared_snackbar">Clave IA borrada</string>
-    <string name="nutrition_ai_key_required">Para usar las funciones IA, añade tu clave Gemini gratuita:</string>
 
     <string name="home_hero_plan_meals">Planificar comidas</string>
     <string name="home_hero_grocery_list">Lista de la compra</string>
@@ -1032,4 +1018,11 @@
     <string name="tour_step_meal_plan_body">Programa el almuerzo y la cena para cada día. Toda la familia ve el mismo plan en tiempo real.</string>
     <string name="tour_step_grocery_title">Lista de la compra</string>
     <string name="tour_step_grocery_body">Añade artículos para la semana y márcalos mientras compras. Todo se mantiene sincronizado.</string>
+    <string name="nutrition_ai_error_sign_in">Tu sesión ha caducado. Inicia sesión de nuevo para usar las sugerencias de IA.</string>
+    <string name="nutrition_ai_error_daily_limit">Has usado todas las sugerencias de IA de hoy. Se renuevan mañana.</string>
+    <string name="nutrition_ai_error_unavailable">Las sugerencias de IA no están disponibles ahora. Inténtalo de nuevo en un momento.</string>
+    <string name="nutrition_ai_error_network">Sin conexión. Comprueba tu red e inténtalo de nuevo.</string>
+    <string name="nutrition_ai_saved_household">Añadido a la semana de tu hogar</string>
+    <string name="nutrition_ai_saved_personal">Añadido a tu semana</string>
+    <string name="nutrition_ai_generating">Preparando tus sugerencias…</string>
 </resources>

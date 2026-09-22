@@ -213,6 +213,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: ci-gate
     timeout-minutes: 10
+    # Every distribute-* job requires android-ci to have succeeded, so a dispatch that
+    # asks for one must build first. Without these three entries the dispatch "succeeds"
+    # with android-ci skipped and nothing is ever uploaded — which is why no release has
+    # reached Play by dispatch (proved by run 35445436350 on v1.6.12).
     if: >-
       ${{ needs.ci-gate.outputs.run == 'true' &&
           (github.event_name == 'push' ||
@@ -220,7 +224,10 @@ jobs:
           (github.event_name == 'workflow_dispatch' &&
             (github.event.inputs.job == 'all' ||
               github.event.inputs.job == 'android-ci' ||
-              github.event.inputs.job == 'android-instrumented-tests'))) }}
+              github.event.inputs.job == 'android-instrumented-tests' ||
+              github.event.inputs.job == 'distribute-alpha' ||
+              github.event.inputs.job == 'distribute-beta' ||
+              github.event.inputs.job == 'distribute-production'))) }}
 
     steps:
       - name: Checkout

@@ -93,9 +93,7 @@
     <string name="nutrition_day_sunday">الأحد</string>
     <string name="nutrition_ai_question_hint">مثال: غني بالبروتين، خالٍ من المكسرات، عشاء سريع</string>
     <string name="nutrition_ai_ask_button">إنشاء</string>
-    <string name="nutrition_ai_loading">جارٍ إنشاء الاقتراحات…</string>
     <string name="nutrition_ai_error">تعذر إنشاء الاقتراحات. حاول مرة أخرى.</string>
-    <string name="nutrition_ai_gemini_error">فشل التوليد بالذكاء الاصطناعي. تحقق من الاتصال ومفتاح API ثم أعد المحاولة.</string>
     <string name="nutrition_ai_empty_question">أضف ملاحظة قصيرة أولًا.</string>
     <string name="nutrition_ai_idle_title">لم يُنشأ شيء بعد</string>
     <string name="nutrition_ai_idle_body">اختر اقتراحًا سريعًا أو صف أسبوعك، ثم اضغط على إنشاء.</string>
@@ -413,18 +411,6 @@
     <string name="home_settings_appearance">المظهر</string>
     <string name="home_settings_language">اللغة</string>
     <string name="home_settings_ai_section">مكونات الذكاء الاصطناعي</string>
-    <string name="home_ai_key_label">مفتاح Gemini API</string>
-    <string name="home_ai_key_placeholder">الصق مفتاحك هنا</string>
-    <string name="home_ai_key_what_it_does">يولّد مكونات خاصة بكل طبق عند إضافة الوجبات. مجاني تماماً بدون دفع.</string>
-    <string name="home_ai_key_how_to_get">احصل على مفتاح مجاني من Google AI Studio ←</string>
-    <string name="home_ai_key_save">حفظ المفتاح</string>
-    <string name="home_ai_key_save_update">تحديث المفتاح</string>
-    <string name="home_ai_key_clear">مسح</string>
-    <string name="home_ai_key_status_active">● مفعّل</string>
-    <string name="home_ai_key_status_not_configured">غير مُعدّ</string>
-    <string name="home_ai_key_saved_snackbar">تم حفظ مفتاح الذكاء الاصطناعي ✓</string>
-    <string name="home_ai_key_cleared_snackbar">تم مسح مفتاح الذكاء الاصطناعي</string>
-    <string name="nutrition_ai_key_required">لاستخدام ميزات الذكاء الاصطناعي، أضف مفتاح Gemini المجاني:</string>
 
     <string name="home_hero_plan_meals">تخطيط الوجبات</string>
     <string name="home_hero_grocery_list">قائمة البقالة</string>
@@ -1032,4 +1018,11 @@
     <string name="tour_step_meal_plan_body">حدد الغداء والعشاء لكل يوم. تطّلع الأسرة بأكملها على نفس الخطة في الوقت الفعلي.</string>
     <string name="tour_step_grocery_title">قائمة التسوق</string>
     <string name="tour_step_grocery_body">أضف المنتجات للأسبوع وضع علامة عليها أثناء التسوق. كل شيء يبقى متزامناً.</string>
+    <string name="nutrition_ai_error_sign_in">انتهت جلستك. سجّل الدخول مرة أخرى لاستخدام اقتراحات الذكاء الاصطناعي.</string>
+    <string name="nutrition_ai_error_daily_limit">لقد استخدمت كل اقتراحات الذكاء الاصطناعي لهذا اليوم. تتجدد غدًا.</string>
+    <string name="nutrition_ai_error_unavailable">اقتراحات الذكاء الاصطناعي غير متاحة الآن. حاول مرة أخرى بعد قليل.</string>
+    <string name="nutrition_ai_error_network">لا يوجد اتصال. تحقق من الشبكة وحاول مرة أخرى.</string>
+    <string name="nutrition_ai_saved_household">تمت الإضافة إلى أسبوع عائلتك</string>
+    <string name="nutrition_ai_saved_personal">تمت الإضافة إلى أسبوعك</string>
+    <string name="nutrition_ai_generating">جارٍ إعداد اقتراحاتك…</string>
 </resources>

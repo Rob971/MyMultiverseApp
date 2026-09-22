@@ -93,9 +93,7 @@
     <string name="nutrition_day_sunday">Sunday</string>
     <string name="nutrition_ai_question_hint">e.g. high protein, nut-free, quick dinners</string>
     <string name="nutrition_ai_ask_button">Generate</string>
-    <string name="nutrition_ai_loading">Building suggestions…</string>
     <string name="nutrition_ai_error">Couldn't build suggestions. Try again.</string>
-    <string name="nutrition_ai_gemini_error">AI generation failed. Check your connection and API key, then try again.</string>
     <string name="nutrition_ai_empty_question">Add a short note first.</string>
     <string name="nutrition_ai_idle_title">Nothing generated yet</string>
     <string name="nutrition_ai_idle_body">Choose a quick pick or describe your week, then tap Generate.</string>
@@ -413,18 +411,6 @@
     <string name="home_settings_appearance">Appearance</string>
     <string name="home_settings_language">Language</string>
     <string name="home_settings_ai_section">AI Ingredients</string>
-    <string name="home_ai_key_label">Gemini API Key</string>
-    <string name="home_ai_key_placeholder">Paste your key here</string>
-    <string name="home_ai_key_what_it_does">Powers dish-specific ingredient suggestions when adding meals to your grocery list. Free tier, no payment required.</string>
-    <string name="home_ai_key_how_to_get">Get a free key from Google AI Studio →</string>
-    <string name="home_ai_key_save">Save key</string>
-    <string name="home_ai_key_save_update">Update key</string>
-    <string name="home_ai_key_clear">Clear</string>
-    <string name="home_ai_key_status_active">● Active</string>
-    <string name="home_ai_key_status_not_configured">Not configured</string>
-    <string name="home_ai_key_saved_snackbar">AI key saved ✓</string>
-    <string name="home_ai_key_cleared_snackbar">AI key cleared</string>
-    <string name="nutrition_ai_key_required">To use AI features, add your free Gemini API key:</string>
 
     <string name="home_hero_plan_meals">Plan meals</string>
     <string name="home_hero_grocery_list">Grocery list</string>
@@ -1033,4 +1019,11 @@
     <string name="tour_step_meal_plan_body">Set lunch and dinner for every day. The whole family sees the same plan in real time.</string>
     <string name="tour_step_grocery_title">Grocery list</string>
     <string name="tour_step_grocery_body">Add items for the week and check them off as you shop. Everything stays in sync.</string>
+    <string name="nutrition_ai_error_sign_in">Your session expired. Sign in again to use AI suggestions.</string>
+    <string name="nutrition_ai_error_daily_limit">You've used all of today's AI suggestions. They reset tomorrow.</string>
+    <string name="nutrition_ai_error_unavailable">AI suggestions are unavailable right now. Please try again shortly.</string>
+    <string name="nutrition_ai_error_network">No connection. Check your internet and try again.</string>
+    <string name="nutrition_ai_saved_household">Added to your household's week</string>
+    <string name="nutrition_ai_saved_personal">Added to your week</string>
+    <string name="nutrition_ai_generating">Putting your suggestions together…</string>
 </resources>
