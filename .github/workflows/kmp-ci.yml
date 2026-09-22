@@ -45,6 +45,14 @@ on:
           - minor
           - patch
           - none
+      production_rollout:
+        description: "Rollout shape for distribute-production. Play rejects a staged FIRST release on a track with 'Precondition check failed' — use 'full' for that one, then 'staged-20' from then on."
+        required: false
+        default: staged-20
+        type: choice
+        options:
+          - staged-20
+          - full
       keep_releases:
         description: "Firebase App Distribution releases to keep when running firebase-cleanup-releases."
         required: false
@@ -965,8 +973,13 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+      # Two steps rather than one with computed values: the action rejects an empty
+      # userFraction, and a full rollout must omit it entirely rather than send 1.0.
+      # A tag push sends no inputs, so `!= 'full'` keeps the existing staged behaviour.
       - name: Upload to Play Production (20% staged rollout)
-        if: steps.play_secret_check.outputs.has_secret == 'true'
+        if: >-
+          steps.play_secret_check.outputs.has_secret == 'true' &&
+          github.event.inputs.production_rollout != 'full'
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.AMMO_PLAY_SERVICE_ACCOUNT_JSON }}
@@ -975,6 +988,22 @@ jobs:
           track: production
           status: inProgress
           userFraction: 0.20
+          whatsNewDirectory: distribution/whatsnew
+
+      # Play refuses a staged rollout for a track's first release: the edit uploads fine
+      # and then commit fails with "Precondition check failed" (run 35725517800). The
+      # first production release has to go out to everyone.
+      - name: Upload to Play Production (full rollout — first release on the track)
+        if: >-
+          steps.play_secret_check.outputs.has_secret == 'true' &&
+          github.event.inputs.production_rollout == 'full'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.AMMO_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: app.mymultiverse.ammo
+          releaseFiles: androidApp/build/outputs/bundle/release/*.aab
+          track: production
+          status: completed
           whatsNewDirectory: distribution/whatsnew
 
       - name: Create GitHub Release
