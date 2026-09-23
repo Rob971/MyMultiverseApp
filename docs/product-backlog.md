@@ -1,6 +1,6 @@
 # Product UX backlog — nutrition logistics & silent-butler AI
 
-> ⚠️ **Historical record** — frozen at release **1.1.6** (2026-07-03). The README and `.cursor/rules/` are the current source of truth; do not treat "Current sprint" below as current. Kept for backlog archaeology.
+> ⚠️ **Historical record** — frozen at release **1.1.6** (2026-07-03). The README and `docs/conventions.md` are the current source of truth; do not treat "Current sprint" below as current. Kept for backlog archaeology.
 
 **Status:** S13 + member avatars + hero raster icons shipped · **Updated:** 2026-07-03  
 **App:** MyMultiverse (KMP) · **QA YAML baseline:** v76 · **Release:** 1.1.6 (Firebase distributed)  
@@ -8,7 +8,7 @@
 
 This backlog synthesizes product thesis, UX roadmap, and AI interaction model for household grocery + meal planning. Use it as the scope razor before building anything new.
 
-**Related rules:** `.cursor/rules/ui-ux-compose.mdc`, `i18n-multilingual.mdc`, `qa-testing.mdc`
+**Related reference:** `docs/conventions.md` (design system, i18n, testing)
 
 ---
 
