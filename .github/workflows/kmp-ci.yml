@@ -779,8 +779,11 @@ jobs:
             echo "::error::Gradle dependencies task failed — cannot verify the release classpath"
             exit 1
           }
-          echo "$DEPS" | grep -q 'com.google.firebase:firebase-appdistribution:' \
-            && { echo "::error::full App Distribution SDK on the release classpath"; exit 1; }
+          if echo "$DEPS" | grep -q 'com.google.firebase:firebase-appdistribution:'; then
+            echo "::error::full App Distribution SDK on the release classpath"
+            exit 1
+          fi
+          echo "release classpath is clean of the full App Distribution SDK"
         shell: bash
 
       - name: Print Android App Links fingerprint (release keystore)
@@ -893,8 +896,11 @@ jobs:
             echo "::error::Gradle dependencies task failed — cannot verify the release classpath"
             exit 1
           }
-          echo "$DEPS" | grep -q 'com.google.firebase:firebase-appdistribution:' \
-            && { echo "::error::full App Distribution SDK on the release classpath"; exit 1; }
+          if echo "$DEPS" | grep -q 'com.google.firebase:firebase-appdistribution:'; then
+            echo "::error::full App Distribution SDK on the release classpath"
+            exit 1
+          fi
+          echo "release classpath is clean of the full App Distribution SDK"
         shell: bash
 
       - name: Upload signed AAB artifact (beta)
@@ -1034,8 +1040,11 @@ jobs:
             echo "::error::Gradle dependencies task failed — cannot verify the release classpath"
             exit 1
           }
-          echo "$DEPS" | grep -q 'com.google.firebase:firebase-appdistribution:' \
-            && { echo "::error::full App Distribution SDK on the release classpath"; exit 1; }
+          if echo "$DEPS" | grep -q 'com.google.firebase:firebase-appdistribution:'; then
+            echo "::error::full App Distribution SDK on the release classpath"
+            exit 1
+          fi
+          echo "release classpath is clean of the full App Distribution SDK"
         shell: bash
 
       - name: Upload signed AAB artifact (production)

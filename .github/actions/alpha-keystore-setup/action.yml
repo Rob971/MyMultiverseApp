@@ -18,13 +18,23 @@ runs:
         # Never fall back to the runner's auto-generated debug key: that is the bug
         # (each fresh runner would sign with a new key and in-place updates break).
         if [[ -z "${KEYSTORE_BASE64}" ]]; then
-          echo "::error::AMMO_ALPHA_KEYSTORE_BASE64 is empty — create the alpha signing key (docs/in-app-updates-plan.md §5) before merging this change."
+          echo "::error::AMMO_ALPHA_KEYSTORE_BASE64 is empty — create the alpha signing key (docs/in-app-updates-plan.md §5) first."
           exit 1
         fi
-        mkdir -p "$HOME/.android"
+        KEYSTORE_PATH="${RUNNER_TEMP}/ammo-alpha.keystore"
         # --ignore-garbage tolerates line-wrapped base64 (GNU base64 wraps at 76 chars).
-        printf '%s' "${KEYSTORE_BASE64}" | base64 --decode --ignore-garbage > "$HOME/.android/debug.keystore"
-        if ! keytool -list -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey >/dev/null 2>&1; then
+        printf '%s' "${KEYSTORE_BASE64}" | base64 --decode --ignore-garbage > "${KEYSTORE_PATH}"
+        if ! keytool -list -keystore "${KEYSTORE_PATH}" -storepass android -alias androiddebugkey >/dev/null 2>&1; then
           echo "::error::Alpha keystore did not validate (bad base64, wrong password, or wrong alias)."
           exit 1
         fi
+        # AGP does NOT honour ~/.android/debug.keystore on the runner: run 35847115735
+        # packaged an APK signed with a runner-generated key (6CE5D542..) although this step
+        # had installed the alpha key. The build reads AMMO_ALPHA_STORE_FILE instead; the
+        # copy below only keeps the conventional location populated.
+        mkdir -p "$HOME/.android"
+        cp "${KEYSTORE_PATH}" "$HOME/.android/debug.keystore"
+        FINGERPRINT="$(keytool -list -v -keystore "${KEYSTORE_PATH}" -storepass android -alias androiddebugkey \
+          | awk '/SHA256:/{gsub(/:/,"",$2); print toupper($2); exit}')"
+        echo "installed alpha keystore; certificate ${FINGERPRINT}"
+        echo "AMMO_ALPHA_STORE_FILE=${KEYSTORE_PATH}" >> "$GITHUB_ENV"
