@@ -3,6 +3,7 @@ package app.mymultiverse.ammo.presentation.navigation
 import app.mymultiverse.ammo.domain.model.sharing.Household
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembership
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembershipStatus
+import app.mymultiverse.ammo.domain.model.sharing.HouseholdGateError
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.ammo.presentation.invite.InviteJoinAcceptState
 import kotlin.test.Test
@@ -82,6 +83,38 @@ class OnboardingRouteResolverTest {
                 membership = activeMembership,
                 pendingInviteToken = "invite-token",
                 acceptState = InviteJoinAcceptState.Succeeded(householdName = "Our household"),
+            ),
+        )
+    }
+
+    @Test
+    fun resolvePostAuthRoute_withoutInviteAndErrorMembership_returnsHome_notHouseholdSetup() {
+        val route = resolvePostAuthRoute(
+            membership = HouseholdMembershipStatus.Error(HouseholdGateError.Generic),
+            pendingInviteToken = null,
+            acceptState = InviteJoinAcceptState.Idle,
+        )
+
+        assertEquals(AppRoute.Home, route)
+    }
+
+    @Test
+    fun resolvePostAuthRoute_withPendingInviteAndErrorMembership_blocksNeverCreation() {
+        val error = HouseholdMembershipStatus.Error(HouseholdGateError.Generic)
+        val route = resolvePostAuthRoute(
+            membership = error,
+            pendingInviteToken = "invite-token",
+            acceptState = InviteJoinAcceptState.Idle,
+        )
+
+        // With an invite held, an error must not route to creation...
+        assertNull(route)
+        // ...and must keep the shell blocked so the gate renders recovery, not a blank state.
+        assertTrue(
+            shouldBlockAuthenticatedShell(
+                membership = error,
+                pendingInviteToken = "invite-token",
+                acceptState = InviteJoinAcceptState.Idle,
             ),
         )
     }
