@@ -61,3 +61,6 @@ __pycache__/
 
 # Cline agent artifacts (local session output)
 .cline/
+
+# Local Codex/MCP config, not shared
+.codex/
