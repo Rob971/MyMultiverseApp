@@ -138,22 +138,43 @@ class InviteJoinFlowCoordinator(
 
     private suspend fun completeJoinFromToken(token: String): HouseholdInvitePreview {
         val preview = collaborationRepository.previewInvite(token).getOrElse { throwable ->
-            clearPendingInvite()
+            // Clear the token only on server-authoritative terminal rejections. A transient
+            // failure (network, timeout, unknown) must retain it so a retry still reaches the
+            // same invitation instead of silently dropping the user into creation.
+            if (isTerminalInviteError(throwable) || isAlreadyReconciledInviteError(throwable)) {
+                clearPendingInvite()
+            }
             throw throwable
         }
-        collaborationRepository.acceptInvite(preview.inviteId).getOrElse { throwable ->
-            val error = mapAcceptError(throwable)
-            if (error == InviteJoinAcceptError.EmailMismatch) {
+
+        val acceptError = collaborationRepository.acceptInvite(preview.inviteId).exceptionOrNull()
+        if (acceptError != null) {
+            if (mapAcceptError(acceptError) == InviteJoinAcceptError.EmailMismatch) {
                 _acceptState.value = InviteJoinAcceptState.Failed(
-                    error = error,
+                    error = InviteJoinAcceptError.EmailMismatch,
                     mismatchContext = InviteEmailMismatchContext(
                         invitedEmail = preview.inviteeEmail,
                         householdName = preview.householdName,
                     ),
                 )
+                throw acceptError
             }
-            throw throwable
+
+            if (isAlreadyReconciledInviteError(acceptError)) {
+                // The invite was already accepted (e.g. elsewhere) or the invitee already
+                // belongs to a household. Reconcile through membership rather than surfacing
+                // a failure: success only if the active membership is the INVITED household.
+                clearPendingInvite()
+                val status = householdRepository.refreshMembership().getOrNull()
+                if (status is HouseholdMembershipStatus.Active && status.household.id == preview.householdId) {
+                    activateNutritionSessionIfActive(status)
+                    return preview
+                }
+            }
+
+            throw acceptError
         }
+
         clearPendingInvite()
         householdRepository.refreshMembership()
             .onSuccess { status -> activateNutritionSessionIfActive(status) }
@@ -182,4 +203,13 @@ class InviteJoinFlowCoordinator(
             ) -> InviteJoinAcceptError.EmailMismatch
             else -> InviteJoinAcceptError.Generic
         }
+
+    private fun isTerminalInviteError(throwable: Throwable): Boolean =
+        CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INVITE_NOT_FOUND, throwable.message) ||
+            CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INVITE_EXPIRED, throwable.message) ||
+            CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INVITE_DECLINED, throwable.message)
+
+    private fun isAlreadyReconciledInviteError(throwable: Throwable): Boolean =
+        CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INVITE_ALREADY_ACCEPTED, throwable.message) ||
+            CollaborationErrorCodes.messageContains(CollaborationErrorCodes.INVITEE_HOUSEHOLD_ALREADY_ACTIVE, throwable.message)
 }

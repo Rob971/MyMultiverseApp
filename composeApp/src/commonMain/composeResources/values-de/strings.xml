@@ -1025,4 +1025,6 @@
     <string name="nutrition_ai_saved_household">Zur Woche deines Haushalts hinzugefügt</string>
     <string name="nutrition_ai_saved_personal">Zu deiner Woche hinzugefügt</string>
     <string name="nutrition_ai_generating">Deine Vorschläge werden erstellt…</string>
+    <string name="auth_have_invitation">Ich habe eine Einladung</string>
+    <string name="auth_invitation_help">Öffne die Einladungsnachricht und tippe erneut auf den Link, um deiner Familie beizutreten. Wenn du sie nicht findest, bitte die einladende Person, sie erneut zu senden.</string>
 </resources>

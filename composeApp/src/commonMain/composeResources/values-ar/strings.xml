@@ -1025,4 +1025,6 @@
     <string name="nutrition_ai_saved_household">تمت الإضافة إلى أسبوع عائلتك</string>
     <string name="nutrition_ai_saved_personal">تمت الإضافة إلى أسبوعك</string>
     <string name="nutrition_ai_generating">جارٍ إعداد اقتراحاتك…</string>
+    <string name="auth_have_invitation">لدي دعوة</string>
+    <string name="auth_invitation_help">افتح رسالة الدعوة واضغط على الرابط مرة أخرى للانضمام إلى عائلتك. إذا لم تجدها، اطلب من الشخص الذي دعاك إرسالها مجددًا.</string>
 </resources>

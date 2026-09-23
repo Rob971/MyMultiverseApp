@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -60,6 +61,9 @@ class OnboardingUxInstrumentedTest {
         composeRule.onNodeWithTag(AuthTestTags.SCREEN).assertIsDisplayed()
         composeRule.onNodeWithTag(AuthTestTags.GOOGLE_BUTTON).assertIsDisplayed()
         composeRule.onNodeWithTag(AuthTestTags.EMAIL_BUTTON).assertIsDisplayed()
+        composeRule.onNodeWithTag(AuthTestTags.INVITE_HELP).assertDoesNotExist()
+        composeRule.onNodeWithTag(AuthTestTags.INVITE_HELP_BUTTON).performClick()
+        composeRule.onNodeWithTag(AuthTestTags.INVITE_HELP).assertIsDisplayed()
     }
 
     @Test
@@ -136,6 +140,8 @@ class OnboardingUxInstrumentedTest {
             composeRule.onAllNodesWithTag(AuthTestTags.INVITE_BANNER).fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithTag(AuthTestTags.INVITE_BANNER).assertIsDisplayed()
+        composeRule.onNodeWithTag(AuthTestTags.INVITE_BANNER).assertTextContains("guest@example.com", substring = true)
+        composeRule.onNodeWithTag(AuthTestTags.INVITE_HELP_BUTTON).assertDoesNotExist()
     }
 
     @Test

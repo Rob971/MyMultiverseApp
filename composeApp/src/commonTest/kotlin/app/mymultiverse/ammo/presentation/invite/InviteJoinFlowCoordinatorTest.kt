@@ -4,9 +4,12 @@ import app.mymultiverse.ammo.data.invite.InviteRedirectUrls
 import app.mymultiverse.ammo.data.invite.InviteSessionStore
 import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdInvitePreview
+import app.mymultiverse.ammo.domain.model.sharing.Household
+import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembership
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMemberRole
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
+import app.mymultiverse.ammo.domain.sharing.CollaborationErrorCodes
 import app.mymultiverse.ammo.data.observability.NoOpCrashReporter
 import app.mymultiverse.ammo.data.repository.NutritionRepositoryImpl
 import app.mymultiverse.ammo.presentation.di.FakeHouseholdCollaborationRepository
@@ -172,6 +175,134 @@ class InviteJoinFlowCoordinatorTest {
 
         // Cancellation must NOT leave the UI stuck on Failed (would show error sheet permanently).
         assertIs<InviteJoinAcceptState.Idle>(coordinator.acceptState.value)
+    }
+
+    @Test
+    fun acceptPendingInvite_transientPreviewError_retainsToken() = runTest(testDispatcher) {
+        val store = InviteSessionStore(MapSettings()).also { it.setPendingInviteToken("token-abc") }
+        val collaboration = FakeHouseholdCollaborationRepository().also {
+            it.previewInviteResult = Result.failure(IllegalStateException("network timeout"))
+        }
+        val coordinator = createCoordinator(this, store = store, collaboration = collaboration)
+
+        coordinator.acceptPendingInviteIfNeeded()
+        advanceUntilIdle()
+
+        // Transient failure must NOT destroy the invitation.
+        assertEquals("token-abc", store.getPendingInviteToken())
+        assertIs<InviteJoinAcceptState.Failed>(coordinator.acceptState.value)
+    }
+
+    @Test
+    fun acceptPendingInvite_terminalPreviewError_clearsToken() = runTest(testDispatcher) {
+        val store = InviteSessionStore(MapSettings()).also { it.setPendingInviteToken("token-abc") }
+        val collaboration = FakeHouseholdCollaborationRepository().also {
+            it.previewInviteResult = Result.failure(
+                IllegalStateException(CollaborationErrorCodes.INVITE_NOT_FOUND),
+            )
+        }
+        val coordinator = createCoordinator(this, store = store, collaboration = collaboration)
+
+        coordinator.acceptPendingInviteIfNeeded()
+        advanceUntilIdle()
+
+        assertNull(store.getPendingInviteToken())
+        assertNull(coordinator.pendingInviteToken.value)
+    }
+
+    @Test
+    fun acceptPendingInvite_alreadyAccepted_reconcilesMembership() = runTest(testDispatcher) {
+        val store = InviteSessionStore(MapSettings()).also { it.setPendingInviteToken("token-abc") }
+        val collaboration = FakeHouseholdCollaborationRepository().also {
+            it.previewInviteResult = Result.success(samplePreview())
+            it.acceptInviteResult = Result.failure(
+                IllegalStateException(CollaborationErrorCodes.INVITE_ALREADY_ACCEPTED),
+            )
+        }
+        val active = HouseholdMembershipStatus.Active(
+            HouseholdMembership(
+                household = Household(
+                    id = "household-1",
+                    name = "Rossi family",
+                    ownerId = "owner-1",
+                    ownerDisplayName = "Owner",
+                    nutritionFeatures = emptySet(),
+                ),
+                role = HouseholdMemberRole.Editor,
+            ),
+        )
+        val householdRepository = FakeHouseholdRepository(initialMembershipStatus = active)
+        val coordinator = createCoordinator(
+            this, store = store, collaboration = collaboration, householdRepository = householdRepository,
+        )
+
+        coordinator.acceptPendingInviteIfNeeded()
+        advanceUntilIdle()
+
+        // Already-accepted: token cleared, no failure surfaced.
+        assertNull(store.getPendingInviteToken())
+        assertIs<InviteJoinAcceptState.Succeeded>(coordinator.acceptState.value)
+    }
+
+    @Test
+    fun acceptPendingInvite_alreadyAcceptedUnrelatedMembership_isFailure() = runTest(testDispatcher) {
+        val store = InviteSessionStore(MapSettings()).also { it.setPendingInviteToken("token-abc") }
+        val collaboration = FakeHouseholdCollaborationRepository().also {
+            it.previewInviteResult = Result.success(samplePreview())
+            it.acceptInviteResult = Result.failure(
+                IllegalStateException(CollaborationErrorCodes.INVITE_ALREADY_ACCEPTED),
+            )
+        }
+        val unrelatedActive = HouseholdMembershipStatus.Active(
+            HouseholdMembership(
+                household = Household(
+                    id = "OTHER-household",
+                    name = "Someone else",
+                    ownerId = "owner-2",
+                    ownerDisplayName = "Owner 2",
+                    nutritionFeatures = emptySet(),
+                ),
+                role = HouseholdMemberRole.Owner,
+            ),
+        )
+        val householdRepository = FakeHouseholdRepository(initialMembershipStatus = unrelatedActive)
+        val coordinator = createCoordinator(
+            this, store = store, collaboration = collaboration, householdRepository = householdRepository,
+        )
+
+        coordinator.acceptPendingInviteIfNeeded()
+        advanceUntilIdle()
+
+        // Active in a DIFFERENT household must not count as joining the invited one.
+        assertIs<InviteJoinAcceptState.Failed>(coordinator.acceptState.value)
+    }
+
+    @Test
+    fun pendingInviteToken_survivesCoordinatorRecreation() = runTest(testDispatcher) {
+        val store = InviteSessionStore(MapSettings()).also { it.setPendingInviteToken("token-abc") }
+        val first = createCoordinator(this, store = store)
+        assertEquals("token-abc", first.pendingInviteToken.value)
+
+        // A fresh coordinator over the same persistent store (process death / recreation)
+        // must still hold the token.
+        val second = createCoordinator(this, store = store)
+        assertEquals("token-abc", second.pendingInviteToken.value)
+    }
+
+    @Test
+    fun acceptPendingInvite_repeatedRetry_acceptsOnce() = runTest(testDispatcher) {
+        val store = InviteSessionStore(MapSettings()).also { it.setPendingInviteToken("token-abc") }
+        val collaboration = FakeHouseholdCollaborationRepository().also {
+            it.previewInviteResult = Result.success(samplePreview())
+            it.acceptInviteResult = Result.success(Unit)
+        }
+        val coordinator = createCoordinator(this, store = store, collaboration = collaboration)
+
+        coordinator.acceptPendingInviteIfNeeded()
+        coordinator.acceptPendingInviteIfNeeded()
+        advanceUntilIdle()
+
+        assertEquals(1, collaboration.acceptInviteCalls)
     }
 
     private fun createCoordinator(

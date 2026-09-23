@@ -31,7 +31,7 @@ fun resolvePostAuthRoute(
         is HouseholdMembershipStatus.Active ->
             AppRoute.Dashboard(householdId = membership.household.id)
         HouseholdMembershipStatus.None -> AppRoute.HouseholdSetup
-        is HouseholdMembershipStatus.Error -> AppRoute.HouseholdSetup
+        is HouseholdMembershipStatus.Error -> AppRoute.Home
     }
 }
 

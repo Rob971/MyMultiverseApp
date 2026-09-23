@@ -5,7 +5,6 @@ import app.mymultiverse.ammo.domain.auth.AuthFailureCodes
 import app.mymultiverse.ammo.domain.auth.EmailAuthCredentials
 import app.mymultiverse.ammo.domain.auth.EmailAuthValidationError
 import app.mymultiverse.ammo.domain.repository.AuthRepository
-import app.mymultiverse.ammo.presentation.registration.RegistrationData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,8 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-enum class LoginRegistrationStep { Credentials, HouseholdSetup }
 
 sealed interface LoginError {
     data object Generic : LoginError
@@ -40,9 +37,7 @@ data class LoginUiState(
     val email: String = "",
     val password: String = "",
     val isPasswordVisible: Boolean = false,
-    val householdName: String = "",
     val isSignUpMode: Boolean = false,
-    val registrationStep: LoginRegistrationStep = LoginRegistrationStep.Credentials,
     val isLoading: Boolean = false,
     val message: LoginMessage? = null,
     /**
@@ -54,18 +49,11 @@ data class LoginUiState(
 ) {
     val canSubmitEmailAuth: Boolean =
         email.isNotBlank() && password.isNotBlank()
-
-    val canAdvanceToHouseholdStep: Boolean =
-        isSignUpMode && displayName.isNotBlank() && email.isNotBlank() && password.isNotBlank()
-
-    val isOnStep2: Boolean =
-        isSignUpMode && registrationStep == LoginRegistrationStep.HouseholdSetup
 }
 
 class LoginScreenModel(
     private val authRepository: AuthRepository,
     private val logger: AppLogger,
-    private val registrationData: RegistrationData = RegistrationData(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -91,15 +79,10 @@ class LoginScreenModel(
         _uiState.update { it.copy(isPasswordVisible = !it.isPasswordVisible) }
     }
 
-    fun onHouseholdNameChange(value: String) {
-        _uiState.update { it.copy(householdName = value, message = null) }
-    }
-
     fun toggleSignUpMode() {
         _uiState.update {
             it.copy(
                 isSignUpMode = !it.isSignUpMode,
-                registrationStep = LoginRegistrationStep.Credentials,
                 message = null,
                 awaitingEmailConfirmation = false,
             )
@@ -107,79 +90,18 @@ class LoginScreenModel(
     }
 
     /**
-     * In sign-up mode step 1: validates name/email/password, then advances to step 2.
+     * In sign-up mode: performs sign-up directly (single-step).
      * In sign-in mode: performs sign-in directly.
-     * In sign-up mode step 2: creates the account.
      */
     fun submitEmailAuth() {
         val snapshot = _uiState.value
         if (snapshot.isLoading) return
 
-        when {
-            snapshot.isSignUpMode && snapshot.registrationStep == LoginRegistrationStep.Credentials -> {
-                advanceToHouseholdStep()
-            }
-            snapshot.isSignUpMode && snapshot.registrationStep == LoginRegistrationStep.HouseholdSetup -> {
-                performSignUp(snapshot)
-            }
-            else -> {
-                performSignIn(snapshot)
-            }
+        if (snapshot.isSignUpMode) {
+            performSignUp(snapshot)
+        } else {
+            performSignIn(snapshot)
         }
-    }
-
-    /**
-     * Validates step 1 fields and advances to the household setup step.
-     * Called explicitly from the "Continue" button on step 1.
-     */
-    fun advanceToHouseholdStep() {
-        val snapshot = _uiState.value
-        if (snapshot.isLoading) return
-
-        if (snapshot.displayName.isBlank()) {
-            _uiState.update {
-                it.copy(message = LoginMessage.Error(LoginError.BlankDisplayName))
-            }
-            return
-        }
-
-        EmailAuthCredentials.validationError(
-            email = snapshot.email,
-            password = snapshot.password,
-            isSignUp = true,
-        )?.let { validationError ->
-            _uiState.update {
-                it.copy(message = LoginMessage.Error(validationError.toLoginError()))
-            }
-            return
-        }
-
-        _uiState.update {
-            it.copy(
-                registrationStep = LoginRegistrationStep.HouseholdSetup,
-                message = null,
-            )
-        }
-    }
-
-    /** Returns the user to step 1 of registration. */
-    fun goBackToCredentials() {
-        _uiState.update {
-            it.copy(
-                registrationStep = LoginRegistrationStep.Credentials,
-                message = null,
-            )
-        }
-    }
-
-    /**
-     * Skips the household name on step 2 and completes registration with no
-     * household pre-fill. The HouseholdCreationScreen will use the default name.
-     */
-    fun skipHouseholdSetup() {
-        val snapshot = _uiState.value
-        if (snapshot.isLoading) return
-        performSignUp(snapshot.copy(householdName = ""))
     }
 
     fun signInWithGoogle() {
@@ -223,10 +145,25 @@ class LoginScreenModel(
     }
 
     private fun performSignUp(snapshot: LoginUiState) {
+        // Validate credentials up-front. Registration previously used a two-step flow
+        // (credentials → household setup); sign-up is now single-step, so validation
+        // moved here from the removed intermediate screen.
+        if (snapshot.displayName.isBlank()) {
+            _uiState.update { it.copy(message = LoginMessage.Error(LoginError.BlankDisplayName)) }
+            return
+        }
+        EmailAuthCredentials.validationError(
+            email = snapshot.email,
+            password = snapshot.password,
+            isSignUp = true,
+        )?.let { validationError ->
+            _uiState.update { it.copy(message = LoginMessage.Error(validationError.toLoginError())) }
+            return
+        }
+
         scope.launch {
             logger.breadcrumb("auth_sign_up_started")
             _uiState.update { it.copy(isLoading = true, message = null) }
-            val householdName = snapshot.householdName.trim()
             val displayName = snapshot.displayName.trim().takeIf { it.isNotBlank() }
             val result = authRepository.signUpWithEmail(
                 email = snapshot.email,
@@ -236,7 +173,6 @@ class LoginScreenModel(
             val mappedMessage = result.fold(
                 onSuccess = {
                     logger.breadcrumb("auth_sign_up_ok")
-                    if (householdName.isNotBlank()) registrationData.pendingHouseholdName = householdName
                     null
                 },
                 onFailure = { throwable ->
@@ -245,11 +181,6 @@ class LoginScreenModel(
                 },
             )
             val isConfirmationPending = mappedMessage is LoginMessage.EmailConfirmationSent
-            if (isConfirmationPending && householdName.isNotBlank()) {
-                // Preserve household name so the HouseholdCreationScreen is pre-filled
-                // once the user returns and signs in after confirming.
-                registrationData.pendingHouseholdName = householdName
-            }
             _uiState.update { state ->
                 if (isConfirmationPending) {
                     // Auto-transition to sign-in mode: email is pre-filled, user
@@ -257,9 +188,7 @@ class LoginScreenModel(
                     state.copy(
                         isLoading = false,
                         isSignUpMode = false,
-                        registrationStep = LoginRegistrationStep.Credentials,
                         displayName = "",
-                        householdName = "",
                         password = "",
                         isPasswordVisible = false,
                         awaitingEmailConfirmation = true,

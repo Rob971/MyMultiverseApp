@@ -1025,4 +1025,6 @@
     <string name="nutrition_ai_saved_household">Añadido a la semana de tu hogar</string>
     <string name="nutrition_ai_saved_personal">Añadido a tu semana</string>
     <string name="nutrition_ai_generating">Preparando tus sugerencias…</string>
+    <string name="auth_have_invitation">Tengo una invitación</string>
+    <string name="auth_invitation_help">Abre el mensaje de invitación y toca de nuevo el enlace para unirte a tu familia. Si no lo encuentras, pide a quien te invitó que lo envíe otra vez.</string>
 </resources>

@@ -10,6 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,6 +38,9 @@ import app.mymultiverse.ammo.domain.AppBuildInfo
 import app.mymultiverse.ammo.domain.platform.AppStoreLauncher
 import app.mymultiverse.ammo.domain.platform.ReleaseChannel
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembershipStatus
+import app.mymultiverse.ammo.domain.model.sharing.HouseholdGateError
+import app.mymultiverse.ammo.presentation.components.JourneyErrorContent
+import app.mymultiverse.ammo.presentation.components.JourneyLoadingContent
 import app.mymultiverse.ammo.presentation.navigation.resolvePostAuthRoute
 import app.mymultiverse.ammo.presentation.navigation.shouldBlockAuthenticatedShell
 import app.mymultiverse.ammo.presentation.screens.onboarding.AuthScreen
@@ -58,6 +62,10 @@ import app.mymultiverse.ammo.presentation.screens.tour.ProductTourScreenModel
 import app.mymultiverse.ammo.presentation.screens.tour.ProductTourUiState
 import app.mymultiverse.ammo.presentation.screens.tour.SpotlightTourOverlay
 import app.mymultiverse.ammo.presentation.theme.AppTheme
+import org.jetbrains.compose.resources.stringResource
+import ammo.composeapp.generated.resources.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import app.mymultiverse.ammo.presentation.theme.ProvideAppDarkTheme
 import org.koin.compose.koinInject
 
@@ -167,6 +175,7 @@ private fun AuthenticatedApp(
     val membership by householdRepository.observeMembershipStatus().collectAsState(
         initial = HouseholdMembershipStatus.Loading,
     )
+    val retryScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         householdRepository.refreshMembership()
@@ -204,12 +213,16 @@ private fun AuthenticatedApp(
     }
 
     if (shouldBlockAuthenticatedShell(membership, pendingInviteToken, acceptState)) {
-        Box(
+        InviteRecoveryGate(
+            membership = membership,
+            pendingInviteToken = pendingInviteToken,
+            acceptState = acceptState,
+            householdRepository = householdRepository,
+            onRetryAccept = inviteFlow::acceptPendingInviteIfNeeded,
+            onExitInvite = inviteFlow::clearPendingInvite,
+            retryScope = retryScope,
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
-            CircularProgressIndicator()
-        }
+        )
         return
     }
 
@@ -234,6 +247,58 @@ private fun AuthenticatedApp(
             AuthenticatedMainApp()
         }
     }
+}
+
+@Composable
+fun InviteRecoveryGate(
+    membership: HouseholdMembershipStatus,
+    pendingInviteToken: String?,
+    acceptState: InviteJoinAcceptState,
+    householdRepository: HouseholdRepository,
+    onRetryAccept: () -> Unit,
+    onExitInvite: () -> Unit,
+    retryScope: CoroutineScope,
+    modifier: Modifier = Modifier,
+) {
+    val acceptFailed = acceptState as? InviteJoinAcceptState.Failed
+
+    if (membership is HouseholdMembershipStatus.Error || acceptFailed != null) {
+        val cause = (membership as? HouseholdMembershipStatus.Error)?.cause
+        val message = when (cause) {
+            is HouseholdGateError.NotConfigured ->
+                stringResource(Res.string.household_gate_error_not_configured)
+            is HouseholdGateError.AlreadyActive ->
+                stringResource(Res.string.household_gate_error_already_active)
+            else -> stringResource(Res.string.household_gate_error_generic)
+        }
+        val hasExit = !pendingInviteToken.isNullOrBlank()
+        JourneyErrorContent(
+            message = message,
+            retryLabel = stringResource(Res.string.household_gate_retry),
+            onRetry = {
+                if (membership is HouseholdMembershipStatus.Error) {
+                    retryScope.launch { householdRepository.refreshMembership() }
+                } else {
+                    onRetryAccept()
+                }
+            },
+            secondaryActionLabel = if (hasExit) stringResource(Res.string.action_cancel) else null,
+            onSecondaryAction = if (hasExit) { { onExitInvite() } } else null,
+            modifier = modifier,
+            retryButtonTestTag = InviteRecoveryGateTestTags.RETRY,
+            secondaryActionTestTag = InviteRecoveryGateTestTags.CANCEL,
+        )
+    } else {
+        JourneyLoadingContent(
+            message = stringResource(Res.string.household_gate_loading),
+            modifier = modifier,
+        )
+    }
+}
+
+object InviteRecoveryGateTestTags {
+    const val RETRY = "invite_recovery_retry"
+    const val CANCEL = "invite_recovery_cancel"
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

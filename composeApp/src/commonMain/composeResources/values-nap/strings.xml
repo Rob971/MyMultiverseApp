@@ -1025,4 +1025,6 @@
     <string name="nutrition_ai_saved_household">Azzeccato â semmana d' 'a famiglia toja</string>
     <string name="nutrition_ai_saved_personal">Azzeccato â semmana toja</string>
     <string name="nutrition_ai_generating">Sto preparanno 'e cunziglie…</string>
+    <string name="auth_have_invitation">Tengo nu invito</string>
+    <string name="auth_invitation_help">Arape ’o messaggio cu ll’invito e tocca n’ata vota ’o link pe’ trasì dint’â famiglia. Si nun ’o truove, chiedi a chi t’ha invitato ’e mannartelo n’ata vota.</string>
 </resources>
