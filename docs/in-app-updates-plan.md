@@ -82,6 +82,7 @@ runtime", so it may ship only in the tester build.
 | Artifact | Where | Why |
 |---|---|---|
 | `firebase-appdistribution-api:16.0.0-beta15` | `composeApp` androidMain `implementation`, inside the `firebaseCrashlyticsEnabled` guard (`composeApp/build.gradle.kts:167-169`) | what the code compiles against; inert in release builds |
+| — | `:androidApp` needs it **only if** androidApp code touches the SDK. composeApp declares its dependencies as `implementation`, so they are not on androidApp's compile classpath — the repo documents exactly this at `androidApp/build.gradle.kts:193-195`. Keeping the call inside composeApp (below) avoids the second declaration. | |
 | `firebase-appdistribution:16.0.0-beta15` | `:androidApp` **`debugImplementation`**, same guard (`androidApp/build.gradle.kts:180-184`) | debug APK = the Firebase build (`kmp-ci.yml:493,641`); release = the Play AAB |
 
 `beta15`, not the current `beta20`: beta20 needs firebase-common 22.0.1 while crashlytics 19.4.0
@@ -90,10 +91,18 @@ resolves 21.0.0. Confirm with
 
 ### Code
 
-- **Automatic check:** in `MainActivity.onCreate`, when `FirebaseBuildFlags.PUSH_ENABLED` and the
-  build is debuggable (`applicationInfo.flags and FLAG_DEBUGGABLE != 0`), call
-  `FirebaseAppDistribution.getInstance().updateIfNewReleaseAvailable()`. It handles tester sign-in,
-  the prompt, the download and the install handoff. Failures are logged, never surfaced as a crash.
+- **Automatic check:** keep the SDK call inside `composeApp/src/androidFirebase/…`, next to
+  `AndroidFirebasePlatformModule`. That source set is compiled only when `google-services.json`
+  exists, and the no-Firebase module already supplies the fallback, so nothing breaks without it —
+  and `MainActivity` never references the SDK, which matters because composeApp's `implementation`
+  dependencies are not on androidApp's compile classpath (`androidApp/build.gradle.kts:193-195`).
+  Guard it on the build being debuggable (`applicationInfo.flags and FLAG_DEBUGGABLE != 0`), then
+  call `FirebaseAppDistribution.getInstance().updateIfNewReleaseAvailable()`: it handles tester
+  sign-in, the prompt, the download and the install handoff. Failures are logged, never a crash.
+  Trigger it once per launch from `App.kt` through the same platform contract as the button (a
+  second method, no-op on iOS) — not from commonMain calling the store launcher, which would open
+  the App Store on every iOS launch. If the call must live in `:androidApp` instead, declare
+  `firebase-appdistribution-api` there too, inside the `firebaseCrashlyticsEnabled` guard.
 - **Manual button:** it already exists (`HomeAccountSheet.kt:190-213` →
   `HomeScreenModel.checkForUpdates()` at `:635`) and goes through the `AppStoreLauncher` domain
   contract. Keep that boundary — shared code must not gain Firebase dependencies. Add one method to
