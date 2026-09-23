@@ -487,7 +487,7 @@ Firebase App Distribution runs only via **manual dispatch** (`release` or `all`)
 
 ## App versioning
 
-Canonical version: [`gradle/app-version.properties`](gradle/app-version.properties). Full bump policy: [`.cursor/rules/version-management.mdc`](.cursor/rules/version-management.mdc).
+Canonical version: [`gradle/app-version.properties`](gradle/app-version.properties). Full bump policy: [`docs/conventions.md`](docs/conventions.md#versioning).
 
 | Field | Purpose |
 |-------|---------|
@@ -559,8 +559,8 @@ This README is the entry point. Authoritative docs by concern:
 
 | Doc | What it covers |
 |-----|----------------|
-| [`AGENTS.md`](AGENTS.md) | Engineering conventions, stack versions, toolchain, agent workflow |
-| [`.cursor/rules/`](.cursor/rules/) | Binding rules: architecture, i18n (8 locales), UI/UX design system, testing, release, CI |
+| [`AGENTS.md`](AGENTS.md) | Generated: the global operating rules plus this repo's facts block |
+| [`docs/conventions.md`](docs/conventions.md) | Codebase conventions: architecture, i18n (8 locales), design system, testing, release, CI |
 | [`docs/household-collaboration.md`](docs/household-collaboration.md) | Household product spec — roles, invites, members, invariants |
 | [`docs/IP.md`](docs/IP.md) | Intellectual property, ownership, registration checklist |
 | [`docs/BRAND.md`](docs/BRAND.md) | Brand names, logo asset paths, usage rules |
@@ -584,7 +584,7 @@ This README is the entry point. Authoritative docs by concern:
 
 ## Agent / contributor notes
 
-See [`AGENTS.md`](AGENTS.md) and [`.cursor/rules/`](.cursor/rules/) for delivery workflow, i18n (all 8 locales for new strings), and layer boundaries.
+See [`AGENTS.md`](AGENTS.md) and [`docs/conventions.md`](docs/conventions.md) for delivery workflow, i18n (all 8 locales for new strings), and layer boundaries.
 
 ---
 
