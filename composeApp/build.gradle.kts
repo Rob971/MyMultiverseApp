@@ -23,22 +23,28 @@ val firebaseCrashlyticsEnabled = googleServicesFile.exists()
 val generateFirebaseBuildFlags = tasks.register("generateFirebaseBuildFlags") {
     val outputDir = layout.buildDirectory.dir("generated/firebase/kotlin/app/mymultiverse/ammo/data/observability")
 
-    inputs.property("crashlyticsEnabled", firebaseCrashlyticsEnabled)
+    // Build the content here, at configuration time, so doLast closes over a plain String
+    // instead of the build script. A doLast that reads a script-level val or calls a
+    // script-level fun captures the script object, which the configuration cache cannot
+    // serialize — it reuses fine while the task is UP-TO-DATE, then fails with
+    // "this.this$0 is null" the first time the task actually runs.
+    val crashlyticsEnabled = firebaseCrashlyticsEnabled
+    val content = """
+        package app.mymultiverse.ammo.data.observability
+
+        object FirebaseBuildFlags {
+            const val CRASHLYTICS_ENABLED: Boolean = $crashlyticsEnabled
+            const val PUSH_ENABLED: Boolean = $crashlyticsEnabled
+        }
+    """.trimIndent()
+
+    inputs.property("crashlyticsEnabled", crashlyticsEnabled)
     outputs.dir(outputDir)
 
     doLast {
         val dir = outputDir.get().asFile
         dir.mkdirs()
-        dir.resolve("FirebaseBuildFlags.kt").writeText(
-            """
-            package app.mymultiverse.ammo.data.observability
-
-            object FirebaseBuildFlags {
-                const val CRASHLYTICS_ENABLED: Boolean = $firebaseCrashlyticsEnabled
-                const val PUSH_ENABLED: Boolean = $firebaseCrashlyticsEnabled
-            }
-            """.trimIndent(),
-        )
+        dir.resolve("FirebaseBuildFlags.kt").writeText(content)
     }
 }
 
@@ -63,23 +69,25 @@ val generateAppBuildInfo = tasks.register("generateAppBuildInfo") {
     val versionFile = rootProject.layout.projectDirectory.file("gradle/app-version.properties")
     val outputDir = layout.buildDirectory.dir("generated/appinfo/kotlin/app/mymultiverse/ammo/domain")
 
+    // Same reason as generateFirebaseBuildFlags: resolve the script-level values and the
+    // quoteForKotlin call now, so doLast only writes a captured String.
+    val content = """
+        package app.mymultiverse.ammo.domain
+
+        internal object AppBuildInfo {
+            const val VERSION_NAME: String = ${appVersionName.quoteForKotlin()}
+            const val VERSION_CODE: Int = $appVersionCode
+            const val IS_PRERELEASE: Boolean = ${appVersionPrerelease.isNotEmpty()}
+        }
+    """.trimIndent()
+
     inputs.file(versionFile).withPathSensitivity(PathSensitivity.NONE)
     outputs.dir(outputDir)
 
     doLast {
         val dir = outputDir.get().asFile
         dir.mkdirs()
-        dir.resolve("AppBuildInfo.kt").writeText(
-            """
-            package app.mymultiverse.ammo.domain
-
-            internal object AppBuildInfo {
-                const val VERSION_NAME: String = ${appVersionName.quoteForKotlin()}
-                const val VERSION_CODE: Int = $appVersionCode
-                const val IS_PRERELEASE: Boolean = ${appVersionPrerelease.isNotEmpty()}
-            }
-            """.trimIndent(),
-        )
+        dir.resolve("AppBuildInfo.kt").writeText(content)
     }
 }
 
@@ -87,19 +95,40 @@ val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
     val localPropsFile = rootProject.layout.projectDirectory.file("local.properties")
     val outputDir = layout.buildDirectory.dir("generated/supabase/kotlin/app/mymultiverse/ammo/data/supabase")
 
+    // This one must read local.properties at execution time (it is a declared input and
+    // CI rewrites it), so the content cannot be precomputed. Capture the default by value
+    // and quote with a local fun declared inside doLast — a script-level fun would pull
+    // the build script into the serialized task, which the configuration cache rejects.
+    val fallbackSupabaseUrl = defaultSupabaseUrl
+
     inputs.files(localPropsFile).optional().withPathSensitivity(PathSensitivity.NONE)
     outputs.dir(outputDir)
 
     doLast {
+        fun quote(raw: String): String = buildString {
+            append('"')
+            for (ch in raw) {
+                when (ch) {
+                    '\\' -> append("\\\\")
+                    '"' -> append("\\\"")
+                    '\n' -> append("\\n")
+                    '\r' -> append("\\r")
+                    '\t' -> append("\\t")
+                    else -> append(ch)
+                }
+            }
+            append('"')
+        }
+
         val properties = Properties().apply {
             val file = localPropsFile.asFile
             if (file.exists()) {
                 file.inputStream().use { load(it) }
             }
         }
-        val supabaseUrl = properties.getProperty("supabase.url", defaultSupabaseUrl)
+        val supabaseUrl = properties.getProperty("supabase.url", fallbackSupabaseUrl)
             .trim()
-            .ifBlank { defaultSupabaseUrl }
+            .ifBlank { fallbackSupabaseUrl }
         val supabaseAnonKey = properties.getProperty("supabase.anonKey", "").trim()
 
         val dir = outputDir.get().asFile
@@ -109,8 +138,8 @@ val generateSupabaseSecrets = tasks.register("generateSupabaseSecrets") {
             package app.mymultiverse.ammo.data.supabase
 
             internal object SupabaseSecrets {
-                const val URL: String = ${supabaseUrl.quoteForKotlin()}
-                const val ANON_KEY: String = ${supabaseAnonKey.quoteForKotlin()}
+                const val URL: String = ${quote(supabaseUrl)}
+                const val ANON_KEY: String = ${quote(supabaseAnonKey)}
             }
             """.trimIndent(),
         )
