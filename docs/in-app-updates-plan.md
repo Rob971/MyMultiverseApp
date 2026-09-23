@@ -123,9 +123,13 @@ an in-app toggle, an app-owned dialog, new strings, the Play adapter, the iOS ve
 Fail every AAB job when the **resolved release classpath** carries the full SDK:
 
 ```bash
-./gradlew :androidApp:dependencies --configuration releaseRuntimeClasspath \
-  | grep -q 'com.google.firebase:firebase-appdistribution:' \
-  && { echo "::error::full App Distribution SDK on the release classpath"; exit 1; } || true
+set -euo pipefail
+deps="$(./gradlew -q :androidApp:dependencies --configuration releaseRuntimeClasspath)" \
+  || { echo "::error::could not resolve the release classpath"; exit 1; }
+if grep -q 'com.google.firebase:firebase-appdistribution:' <<<"$deps"; then
+  echo "::error::full App Distribution SDK on the release classpath"
+  exit 1
+fi
 ```
 
 **Negative control:** on a scratch branch, make the full SDK a plain `implementation` — the guard must

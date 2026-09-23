@@ -634,7 +634,9 @@ class HomeScreenModel(
 
     fun checkForUpdates() {
         val channel = ReleaseChannel.fromVersionName(AppBuildInfo.VERSION_NAME)
-        appStoreLauncher.openStoreListing(channel)
+        if (!appStoreLauncher.requestUpdate(channel)) {
+            appStoreLauncher.openStoreListing(channel)
+        }
     }
 
     fun onAcceptInviteClicked(invite: HouseholdInvite) {

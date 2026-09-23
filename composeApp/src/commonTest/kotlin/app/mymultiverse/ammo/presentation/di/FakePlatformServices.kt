@@ -32,9 +32,16 @@ class FakePushNotificationRegistrar : PushNotificationRegistrar {
 class FakeAppStoreLauncher : AppStoreLauncher {
     var openStoreListingCalls = 0
     var lastChannel: ReleaseChannel? = null
+    var requestUpdateCalls = 0
+    var requestUpdateResult = false
 
     override fun openStoreListing(channel: ReleaseChannel) {
         openStoreListingCalls++
         lastChannel = channel
+    }
+
+    override fun requestUpdate(channel: ReleaseChannel): Boolean {
+        requestUpdateCalls++
+        return requestUpdateResult
     }
 }

@@ -181,6 +181,7 @@ dependencies {
         implementation(libs.firebase.crashlytics)
         implementation(libs.firebase.messaging)
         implementation(libs.kotlinx.coroutines.play.services)
+        debugImplementation(libs.firebase.appdistribution)
     }
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
