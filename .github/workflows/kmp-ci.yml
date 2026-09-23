@@ -490,6 +490,11 @@ jobs:
           supabase-url: ${{ secrets.SUPABASE_URL }}
           supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
 
+      - name: Install alpha signing key
+        uses: ./.github/actions/alpha-keystore-setup
+        with:
+          keystore-base64: ${{ secrets.AMMO_ALPHA_KEYSTORE_BASE64 }}
+
       - name: Build debug APK for release
         run: ./gradlew :androidApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
 
@@ -506,6 +511,22 @@ jobs:
           echo "sha256=${FINGERPRINT}" >> "$GITHUB_OUTPUT"
           echo "ANDROID_SHA256_FINGERPRINT=${FINGERPRINT}"
           echo "Use this value as ANDROID_SHA256_FINGERPRINT in Rob971/mymultiverse-website when deploying hosting."
+
+      - name: Verify alpha APK signing fingerprint
+        shell: bash
+        env:
+          ALPHA_CERT_SHA256: ${{ vars.ALPHA_CERT_SHA256 }}
+          FINGERPRINT: ${{ steps.app_links_fingerprint.outputs.sha256 }}
+        run: |
+          if [[ -z "${ALPHA_CERT_SHA256}" ]]; then
+            echo "::error::ALPHA_CERT_SHA256 repository variable is not set — create the alpha key first (docs/in-app-updates-plan.md §5)."
+            exit 1
+          fi
+          if [[ "${FINGERPRINT^^}" != "${ALPHA_CERT_SHA256^^}" ]]; then
+            echo "::error::alpha APK signing certificate ${FINGERPRINT} does not match ALPHA_CERT_SHA256 — the signing key changed; this build must not reach testers."
+            exit 1
+          fi
+          echo "alpha APK signing certificate matches ALPHA_CERT_SHA256"
 
       - name: Validate Firebase service account secret
         shell: bash
@@ -638,6 +659,11 @@ jobs:
           VERSION_NAME="$(grep '^version\.name=' gradle/app-version.properties | cut -d= -f2-)"
           echo "Alpha build: ${VERSION_NAME}-alpha.${BUILD}"
 
+      - name: Install alpha signing key
+        uses: ./.github/actions/alpha-keystore-setup
+        with:
+          keystore-base64: ${{ secrets.AMMO_ALPHA_KEYSTORE_BASE64 }}
+
       - name: Build debug APK (alpha track)
         run: ./gradlew :androidApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
 
@@ -645,6 +671,23 @@ jobs:
         run: |
           chmod +x ./scripts/verify-android-apk-entrypoint.sh
           ./scripts/verify-android-apk-entrypoint.sh androidApp/build/outputs/apk/debug/androidApp-debug.apk
+
+      - name: Verify alpha APK signing fingerprint
+        shell: bash
+        env:
+          ALPHA_CERT_SHA256: ${{ vars.ALPHA_CERT_SHA256 }}
+        run: |
+          if [[ -z "${ALPHA_CERT_SHA256}" ]]; then
+            echo "::error::ALPHA_CERT_SHA256 repository variable is not set — create the alpha key first (docs/in-app-updates-plan.md §5)."
+            exit 1
+          fi
+          chmod +x ./scripts/print-android-apk-fingerprint.sh
+          FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh androidApp/build/outputs/apk/debug/androidApp-debug.apk)"
+          if [[ "${FINGERPRINT^^}" != "${ALPHA_CERT_SHA256^^}" ]]; then
+            echo "::error::alpha APK signing certificate ${FINGERPRINT} does not match ALPHA_CERT_SHA256 — the signing key changed; this build must not reach testers."
+            exit 1
+          fi
+          echo "alpha APK signing certificate matches ALPHA_CERT_SHA256"
 
       - name: Validate Firebase service account secret
         shell: bash

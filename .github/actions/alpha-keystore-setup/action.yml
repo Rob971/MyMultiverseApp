@@ -1,0 +1,30 @@
+name: Alpha keystore setup
+description: Restore the stable debug keystore that signs alpha APKs; fail loudly if it is missing
+
+inputs:
+  keystore-base64:
+    description: Base64-encoded alpha debug keystore (the androiddebugkey keystore shared by all CI runs)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Decode and validate alpha keystore
+      shell: bash
+      env:
+        KEYSTORE_BASE64: ${{ inputs.keystore-base64 }}
+      run: |
+        set -euo pipefail
+        # Never fall back to the runner's auto-generated debug key: that is the bug
+        # (each fresh runner would sign with a new key and in-place updates break).
+        if [[ -z "${KEYSTORE_BASE64}" ]]; then
+          echo "::error::AMMO_ALPHA_KEYSTORE_BASE64 is empty — create the alpha signing key (docs/in-app-updates-plan.md §5) before merging this change."
+          exit 1
+        fi
+        mkdir -p "$HOME/.android"
+        # --ignore-garbage tolerates line-wrapped base64 (GNU base64 wraps at 76 chars).
+        printf '%s' "${KEYSTORE_BASE64}" | base64 --decode --ignore-garbage > "$HOME/.android/debug.keystore"
+        if ! keytool -list -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey >/dev/null 2>&1; then
+          echo "::error::Alpha keystore did not validate (bad base64, wrong password, or wrong alias)."
+          exit 1
+        fi
