@@ -9,4 +9,5 @@ package app.mymultiverse.ammo.domain.platform
  */
 interface AppStoreLauncher {
     fun openStoreListing(channel: ReleaseChannel)
+    fun requestUpdate(channel: ReleaseChannel): Boolean = false
 }

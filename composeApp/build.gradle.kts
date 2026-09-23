@@ -167,6 +167,7 @@ kotlin {
             if (firebaseCrashlyticsEnabled) {
                 implementation(libs.firebase.crashlytics)
                 implementation(libs.firebase.messaging)
+                implementation(libs.firebase.appdistribution.api)
                 implementation(libs.kotlinx.coroutines.play.services)
             }
         }

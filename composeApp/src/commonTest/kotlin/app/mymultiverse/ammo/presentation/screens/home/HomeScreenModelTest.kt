@@ -796,8 +796,11 @@ class HomeScreenModelTest {
             appStoreLauncher = launcher,
         )
         advanceUntilIdle()
+        assertEquals(0, launcher.requestUpdateCalls)
         assertEquals(0, launcher.openStoreListingCalls)
         screenModel.checkForUpdates()
+        assertEquals(1, launcher.requestUpdateCalls)
+        // requestUpdate returns false → falls through to openStoreListing
         assertEquals(1, launcher.openStoreListingCalls)
         // In the test build VERSION_NAME has no prerelease suffix → Production channel.
         assertEquals(ReleaseChannel.Production, launcher.lastChannel)

@@ -773,6 +773,16 @@ jobs:
       - name: Build signed release AAB
         run: ./gradlew :androidApp:bundleRelease ${{ env.GRADLE_BUILD_ARGS }}
 
+      - name: Verify release classpath has no App Distribution full SDK
+        run: |
+          DEPS="$(./gradlew :androidApp:dependencies --configuration releaseRuntimeClasspath 2>&1)" || {
+            echo "::error::Gradle dependencies task failed — cannot verify the release classpath"
+            exit 1
+          }
+          echo "$DEPS" | grep -q 'com.google.firebase:firebase-appdistribution:' \
+            && { echo "::error::full App Distribution SDK on the release classpath"; exit 1; }
+        shell: bash
+
       - name: Print Android App Links fingerprint (release keystore)
         env:
           KEY_ALIAS: ${{ secrets.AMMO_UPLOAD_KEY_ALIAS }}
@@ -876,6 +886,16 @@ jobs:
 
       - name: Build signed release AAB (beta)
         run: ./gradlew :androidApp:bundleRelease ${{ env.GRADLE_BUILD_ARGS }}
+
+      - name: Verify release classpath has no App Distribution full SDK
+        run: |
+          DEPS="$(./gradlew :androidApp:dependencies --configuration releaseRuntimeClasspath 2>&1)" || {
+            echo "::error::Gradle dependencies task failed — cannot verify the release classpath"
+            exit 1
+          }
+          echo "$DEPS" | grep -q 'com.google.firebase:firebase-appdistribution:' \
+            && { echo "::error::full App Distribution SDK on the release classpath"; exit 1; }
+        shell: bash
 
       - name: Upload signed AAB artifact (beta)
         uses: actions/upload-artifact@v4
@@ -1007,6 +1027,16 @@ jobs:
 
       - name: Build signed release AAB (production)
         run: ./gradlew :androidApp:bundleRelease ${{ env.GRADLE_BUILD_ARGS }}
+
+      - name: Verify release classpath has no App Distribution full SDK
+        run: |
+          DEPS="$(./gradlew :androidApp:dependencies --configuration releaseRuntimeClasspath 2>&1)" || {
+            echo "::error::Gradle dependencies task failed — cannot verify the release classpath"
+            exit 1
+          }
+          echo "$DEPS" | grep -q 'com.google.firebase:firebase-appdistribution:' \
+            && { echo "::error::full App Distribution SDK on the release classpath"; exit 1; }
+        shell: bash
 
       - name: Upload signed AAB artifact (production)
         uses: actions/upload-artifact@v4

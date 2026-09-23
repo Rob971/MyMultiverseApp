@@ -33,6 +33,9 @@ import app.mymultiverse.ammo.presentation.navigation.NutritionSection
 import app.mymultiverse.ammo.presentation.navigation.rememberAppNavigator
 import app.mymultiverse.ammo.presentation.platform.ConfigureSystemBars
 import app.mymultiverse.ammo.presentation.PlatformPushSetup
+import app.mymultiverse.ammo.domain.AppBuildInfo
+import app.mymultiverse.ammo.domain.platform.AppStoreLauncher
+import app.mymultiverse.ammo.domain.platform.ReleaseChannel
 import app.mymultiverse.ammo.domain.model.sharing.HouseholdMembershipStatus
 import app.mymultiverse.ammo.presentation.navigation.resolvePostAuthRoute
 import app.mymultiverse.ammo.presentation.navigation.shouldBlockAuthenticatedShell
@@ -73,6 +76,7 @@ fun App() {
         val inviteFlow = koinInject<InviteJoinFlowCoordinator>()
         val logger = koinInject<AppLogger>()
         val languageManager = koinInject<LanguageManager>()
+        val appStoreLauncher = koinInject<AppStoreLauncher>()
         val currentLanguage by languageManager.currentLanguage.collectAsState()
         val authState by authRepository.authState.collectAsState(initial = AuthState.Loading)
         val pendingInviteToken by inviteFlow.pendingInviteToken.collectAsState()
@@ -82,6 +86,8 @@ fun App() {
         LaunchedEffect(Unit) {
             logger.startSession()
             inviteFlow.start()
+            val updateChannel = ReleaseChannel.fromVersionName(AppBuildInfo.VERSION_NAME)
+            appStoreLauncher.requestUpdate(updateChannel)
         }
 
         // Track locale in diagnostics context so every Crashlytics event carries the user's language.
