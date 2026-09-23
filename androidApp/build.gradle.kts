@@ -126,6 +126,18 @@ android {
         }
     }
     signingConfigs {
+        // CI signs the Firebase/alpha debug APK with a stable key so one alpha can install
+        // over another. AGP ignores ~/.android/debug.keystore on the runner (run 35847115735
+        // shipped an APK signed with a runner-generated key), so read the decoded keystore
+        // path that .github/actions/alpha-keystore-setup exports.
+        System.getenv("AMMO_ALPHA_STORE_FILE")?.trim()?.takeIf { it.isNotEmpty() }?.let { alphaStore ->
+            getByName("debug") {
+                storeFile = file(alphaStore)
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
         if (releaseSigningProperties != null) {
             create("release") {
                 val props = releaseSigningProperties
