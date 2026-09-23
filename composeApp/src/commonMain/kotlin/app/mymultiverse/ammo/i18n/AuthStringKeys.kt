@@ -6,6 +6,8 @@ object AuthStringKeys {
         "auth_title",
         "auth_subtitle",
         "onboarding_auth_invite_banner",
+        "auth_have_invitation",
+        "auth_invitation_help",
         "household_setup_default_name",
         "auth_subtitle_sign_in",
         "auth_subtitle_sign_up",

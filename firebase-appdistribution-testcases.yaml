@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 99
+version: 100
 updated: 2026-07-26
 
 summary: |
@@ -15,6 +15,7 @@ summary: |
   Seamless onboarding (v44): SSO-only auth screen (terracotta buttons); invite deep link shows "You're invited to join {name}" banner;
   after SSO, new users name their family on a dedicated screen (keyboard opens on the name field); invite join skips family setup and lands on Today.
   Home onboarding (legacy): one-tap Start with [family name] or accept invites for users who already have a household path on Home.
+  Invitation entry: verify the family heading and invited email before sign-in; without a link, tap "I have an invitation" and verify reopen-link guidance.
   Welcome content stays hidden until setup completes.
   Empty states: grocery list and solo-household members use guided CTAs (add item / invite someone).
   Post-create: snackbar on Welcome Home offers Invite action to open Household members.

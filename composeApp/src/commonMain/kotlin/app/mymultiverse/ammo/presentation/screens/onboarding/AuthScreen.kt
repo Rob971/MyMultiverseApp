@@ -22,6 +22,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +35,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.mymultiverse.ammo.domain.AppBuildInfo
 import app.mymultiverse.ammo.presentation.components.GlobalLanguageAction
-import app.mymultiverse.ammo.presentation.components.JourneyBanner
 import app.mymultiverse.ammo.presentation.components.JourneySsoButtonLabel
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
@@ -55,7 +57,10 @@ import ammo.composeapp.generated.resources.home_app_version
 import ammo.composeapp.generated.resources.home_copyright_notice
 import ammo.composeapp.generated.resources.home_designer_credit
 import ammo.composeapp.generated.resources.home_trademark_notice
-import ammo.composeapp.generated.resources.onboarding_auth_invite_banner
+import ammo.composeapp.generated.resources.invite_join_title
+import ammo.composeapp.generated.resources.invite_join_email_warning
+import ammo.composeapp.generated.resources.auth_have_invitation
+import ammo.composeapp.generated.resources.auth_invitation_help
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -64,6 +69,8 @@ import org.koin.compose.koinInject
 
 object AuthTestTags {
     const val SCREEN = "auth_screen"
+    const val INVITE_HELP_BUTTON = "auth_invite_help_button"
+    const val INVITE_HELP = "auth_invite_help"
     const val INVITE_BANNER = "auth_invite_banner"
     const val GOOGLE_BUTTON = "auth_google_button"
     const val APPLE_BUTTON = "auth_apple_button"
@@ -107,6 +114,8 @@ fun AuthScreen(
     }
 
     val inviteHouseholdName = uiState.inviteHouseholdName
+    val inviteEmail = (uiState.invitePreviewState as? InvitePreviewState.Ready)?.preview?.inviteeEmail
+    var showInviteHelp by rememberSaveable { mutableStateOf(false) }
 
     val versionLabel = stringResource(Res.string.home_app_version, AppBuildInfo.VERSION_NAME)
     val copyrightYear = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
@@ -146,7 +155,11 @@ fun AuthScreen(
                 AmmoRoundLogo(modifier = Modifier.size(96.dp))
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = stringResource(Res.string.auth_title),
+                    text = if (!inviteHouseholdName.isNullOrBlank()) {
+                        stringResource(Res.string.invite_join_title, inviteHouseholdName)
+                    } else {
+                        stringResource(Res.string.auth_title)
+                    },
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = JourneySemanticColors.inkDeep(),
@@ -162,9 +175,11 @@ fun AuthScreen(
 
                 if (!inviteHouseholdName.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(20.dp))
-                    JourneyBanner(
-                        headline = stringResource(Res.string.onboarding_auth_invite_banner, inviteHouseholdName),
-                        supportingLine = null,
+                    Text(
+                        text = stringResource(Res.string.invite_join_email_warning, inviteEmail.orEmpty()),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = JourneySemanticColors.inkSecondary(),
+                        textAlign = TextAlign.Center,
                         modifier = Modifier.testTag(AuthTestTags.INVITE_BANNER),
                     )
                 } else if (uiState.invitePreviewState is InvitePreviewState.Loading && !pendingInviteToken.isNullOrBlank()) {
@@ -206,6 +221,23 @@ fun AuthScreen(
                         .testTag(AuthTestTags.EMAIL_BUTTON),
                     label = stringResource(Res.string.auth_continue_with_email),
                 )
+
+                if (pendingInviteToken.isNullOrBlank()) {
+                    JourneyTertiaryButton(
+                        onClick = { showInviteHelp = !showInviteHelp },
+                        label = stringResource(Res.string.auth_have_invitation),
+                        modifier = Modifier.testTag(AuthTestTags.INVITE_HELP_BUTTON),
+                    )
+                    if (showInviteHelp) {
+                        Text(
+                            text = stringResource(Res.string.auth_invitation_help),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = JourneySemanticColors.inkSecondary(),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.testTag(AuthTestTags.INVITE_HELP),
+                        )
+                    }
+                }
 
                 if (feedbackMessage != null) {
                     Spacer(modifier = Modifier.height(16.dp))
