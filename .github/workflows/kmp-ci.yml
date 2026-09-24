@@ -725,6 +725,8 @@ jobs:
     name: Play Store bundle (signed AAB)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      RELEASE_TRACK: beta
     if: >-
       ${{ github.event_name == 'workflow_dispatch' &&
           github.event.inputs.job == 'play-store-bundle' }}
