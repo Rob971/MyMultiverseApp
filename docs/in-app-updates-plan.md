@@ -204,7 +204,7 @@ Both are unverified assumptions — confirm them in step 1.
 - `am instrument` exits 0 even when the process crashes; an instrumented CI job counts only when it
   reports `started=N passed=N`.
 - Never dispatch `distribute-production` as a test — the Play secrets are real.
-- `export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home` before Gradle.
+- `export JAVA_HOME=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home` before Gradle.
 
 ## Sources
 

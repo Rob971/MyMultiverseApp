@@ -10,7 +10,7 @@ realtime, functions, storage) over Postgres RLS + Deno edge functions. AGP
 minSdk 24, compileSdk 36. iOS compiles locally only — the CI iOS job is
 `if: false`. Eight locales: values, -fr, -es, -de, -it, -ar, -ar-rSA, -nap.
 
-PROOF:  export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+PROOF:  export JAVA_HOME=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
         ./gradlew :composeApp:testDebugUnitTest         (includes locale parity suites)
         ./gradlew :androidApp:assembleDebugAndroidTest  when UI, fakes or interfaces changed
         ./gradlew :composeApp:compileKotlinIosSimulatorArm64  after iosMain changes

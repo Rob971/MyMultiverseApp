@@ -243,11 +243,11 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Set up JDK 17
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "25"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -394,11 +394,11 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Set up JDK 17
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "25"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -465,11 +465,11 @@ jobs:
             echo "${key}=${value}" >> "$GITHUB_OUTPUT"
           done <<< "$OUTPUT"
 
-      - name: Set up JDK 17
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "25"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -623,11 +623,11 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Set up JDK 17
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "25"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -725,6 +725,8 @@ jobs:
     name: Play Store bundle (signed AAB)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      RELEASE_TRACK: beta
     if: >-
       ${{ github.event_name == 'workflow_dispatch' &&
           github.event.inputs.job == 'play-store-bundle' }}
@@ -737,11 +739,11 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Set up JDK 17
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "25"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -860,11 +862,11 @@ jobs:
             echo "has_secret=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Set up JDK 17
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "25"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -1004,11 +1006,11 @@ jobs:
             echo "has_secret=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Set up JDK 17
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "25"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4

@@ -263,7 +263,7 @@ project's iOS 14.1 target is rejected by Xcode 27.
 ## Cursor Cloud environment
 
 Linux x86_64, so iOS targets cannot build there. The Android SDK sits at `~/android-sdk` with
-`ANDROID_HOME` exported from `~/.bashrc`; Gradle provisions JDK 17 through the foojay resolver.
+`ANDROID_HOME` exported from `~/.bashrc`; Gradle provisions JDK 25 through the foojay resolver.
 `local.properties` is written from the `SUPABASE_ANON_KEY` secret; without it the app launches into
 `AuthState.ConfigurationMissing` and the nutrition screens are unreachable. Email confirmation and
 Google OAuth are on, so a usable account has to be created in the Supabase dashboard — prefer
