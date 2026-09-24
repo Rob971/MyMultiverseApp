@@ -400,7 +400,7 @@ CI runs unit tests on every push; instrumented + iOS on PR / `main`.
 
 ## Prerequisites
 
-- **JDK 17**
+- **JDK 25**
 - **Android Studio** (latest stable) for Android
 - **Xcode** (macOS) for iOS simulator / device builds
 - A **Supabase** project with migrations applied (see below)
