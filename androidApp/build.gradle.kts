@@ -112,7 +112,7 @@ android {
     defaultConfig {
         applicationId = "app.mymultiverse.ammo"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = versionCodeFinal
         versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
