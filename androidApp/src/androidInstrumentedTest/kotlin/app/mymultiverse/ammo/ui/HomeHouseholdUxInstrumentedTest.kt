@@ -256,7 +256,7 @@ class HomeHouseholdUxInstrumentedTest {
                     HomeAccountSheet(
                         visible = true,
                         householdName = "Our Household",
-                        householdAvatarUrl = "https://example.com/household.jpg",
+                        householdAvatarUrl = "invalid-avatar-url",
                         canRenameHousehold = true,
                         onDismiss = {},
                         onOpenHouseholdMembers = {},
