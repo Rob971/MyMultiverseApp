@@ -55,7 +55,7 @@ class NutritionSyncEngine(
         }
         logger.breadcrumb("sync_pull_ok rows=${fetched.size} week_key=$weekKey")
         refreshStatus(householdId, weekKey)
-        return true
+            return false
     }
 
     suspend fun pushNowOrEnqueue(
@@ -63,16 +63,17 @@ class NutritionSyncEngine(
         weekKey: String,
         dataKind: String,
         payload: String,
-    ) {
+    ): Boolean {
         val api = remote ?: run {
             _status.value = NutritionSyncStatus.RemoteUnavailable
-            return
+            return false
         }
         try {
             api.upsert(householdId, weekKey, dataKind, payload)
             outbox.removeFor(householdId, weekKey, dataKind)
             logger.breadcrumb("sync_push_ok kind=$dataKind week_key=$weekKey")
             refreshStatus(householdId, weekKey)
+            return true
         } catch (e: CancellationException) {
             throw e
         } catch (error: Exception) {
@@ -92,24 +93,27 @@ class NutritionSyncEngine(
                 ),
             )
             refreshStatus(householdId, weekKey)
+            return false
         }
     }
 
-    suspend fun flushPending(householdId: String, weekKey: String) {
+    suspend fun flushPending(householdId: String, weekKey: String): List<PendingNutritionPush> {
         val api = remote ?: run {
             _status.value = NutritionSyncStatus.RemoteUnavailable
-            return
+            return emptyList()
         }
         val pending = outbox.pendingFor(householdId, weekKey)
         if (pending.isEmpty()) {
             refreshStatus(householdId, weekKey)
-            return
+            return emptyList()
         }
         _status.value = NutritionSyncStatus.Syncing
+        val flushed = mutableListOf<PendingNutritionPush>()
         for (item in pending) {
             try {
                 api.upsert(item.householdId, item.weekKey, item.dataKind, item.payload)
                 outbox.remove(item)
+                flushed.add(item)
             } catch (e: CancellationException) {
                 throw e
             } catch (error: Exception) {
@@ -120,11 +124,12 @@ class NutritionSyncEngine(
                     context = syncContext(householdId, weekKey, "flush", item.dataKind),
                 )
                 refreshStatus(householdId, weekKey)
-                return
+                return flushed
             }
         }
         logger.breadcrumb("sync_flush_ok flushed=${pending.size} week_key=$weekKey")
         refreshStatus(householdId, weekKey)
+        return flushed
     }
 
     fun markIdle() {

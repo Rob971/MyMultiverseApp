@@ -103,15 +103,15 @@ class NutritionSessionCoordinatorImpl(
             weekKey = weekKey,
         ) { row ->
             if (row.dataKind == "grocery") {
-                val before = repository.currentGroceryItems()
-                repository.applyRemoteWeekData(row)
-                val after = repository.currentGroceryItems()
-                NutritionCollaborationActivityDetector.detectGroceryChanges(
-                    before = before,
-                    after = after,
-                    actorUserId = row.updatedBy,
-                ).forEach { activity ->
-                    _collaborationActivity.tryEmit(activity)
+                val change = repository.applyRemoteWeekData(row)
+                if (change != null) {
+                    NutritionCollaborationActivityDetector.detectGroceryChanges(
+                        before = change.before,
+                        after = change.after,
+                        actorUserId = row.updatedBy,
+                    ).forEach { activity ->
+                        _collaborationActivity.tryEmit(activity)
+                    }
                 }
             } else {
                 repository.applyRemoteWeekData(row)

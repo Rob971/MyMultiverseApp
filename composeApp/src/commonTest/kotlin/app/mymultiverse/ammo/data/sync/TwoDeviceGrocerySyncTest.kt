@@ -7,8 +7,12 @@ import app.mymultiverse.ammo.data.observability.TestObservability
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
+import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
+import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import com.russhwolf.settings.MapSettings
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,6 +29,9 @@ class TwoDeviceGrocerySyncTest {
         var offline = false
         var failFetchOnly = false
         var upsertCount = 0
+        var failNextUpserts = 0
+        val upsertLog: MutableList<String> = mutableListOf()
+        var gate: CompletableDeferred<Unit>? = null
         private var clock = 0L
 
         override suspend fun fetchWeek(
@@ -52,7 +59,17 @@ class TwoDeviceGrocerySyncTest {
             payload: String,
         ) {
             if (offline) throw IllegalStateException("offline")
+            val currentGate = gate
+            if (currentGate != null) {
+                gate = null
+                currentGate.await()
+            }
+            if (failNextUpserts > 0) {
+                failNextUpserts--
+                throw IllegalStateException("injected failure")
+            }
             upsertCount++
+            upsertLog.add(payload)
             clock++
             data[Triple(householdId, weekKey, dataKind)] = payload to "t$clock"
         }
@@ -282,5 +299,120 @@ class TwoDeviceGrocerySyncTest {
         assertEquals(upsertsAfterB, remote.upsertCount, "second refresh: no upsert")
         a.assertGroceryIs(item("x"), item("y"), item("d"))
         b.assertGroceryIs(item("x"), item("y"), item("d"))
+    }
+
+    @Test
+    fun `(g) flush after failed apply-push advances base — finding 1`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val a = device(remote = remote)
+        val b = device(remote = remote)
+        val abcd = listOf(item("a"), item("b"), item("c"), item("d"))
+        a.seedRemote(abcd, remote)
+        b.seedRemote(abcd, remote)
+
+        // A goes offline and adds x,y — pending
+        remote.offline = true
+        a.repository.saveGroceryItems(
+            listOf(item("a"), item("b"), item("c"), item("d"), item("x"), item("y")),
+        )
+
+        // B deletes d and syncs
+        remote.offline = false
+        b.repository.saveGroceryItems(listOf(item("b"), item("c")))
+
+        // A back online — push fails (enqueues merged), flush succeeds
+        remote.failNextUpserts = 1
+        a.repository.refreshFromRemote()
+
+        // B deletes x and syncs
+        b.repository.saveGroceryItems(listOf(item("b"), item("c"), item("y")))
+
+        // A refreshes — if base was advanced after flush, x stays gone
+        a.repository.refreshFromRemote()
+
+        // x must be absent (partner deleted it; base was advanced so A knows x was merged)
+        a.assertGroceryIs(item("b"), item("c"), item("y"))
+    }
+
+    @Test
+    fun `(h) applyRemoteWeekData returns GroceryChange with before and after for grocery`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val a = device(remote = remote)
+        a.seedRemote(listOf(item("a"), item("b")), remote)
+
+        a.store.saveGroceryItems(listOf(item("a"), item("b"), item("x")))
+
+        val change = a.repository.applyRemoteWeekData(
+            NutritionWeekDataRow(
+                householdId = householdId,
+                weekKey = weekKey,
+                dataKind = "grocery",
+                payload = encode(item("a"), item("c")),
+            ),
+        )
+
+        // GroceryChange must be non-null with correct before and after
+        assertTrue(change != null, "applyRemoteWeekData must return non-null for grocery")
+        assertEquals(listOf("a", "b", "x"), change!!.before.map { it.id })
+        assertEquals(listOf("x", "a", "c"), change!!.after.map { it.id })
+
+        // For ai_grocery and meal_plan, return null
+        val aiChange = a.repository.applyRemoteWeekData(
+            NutritionWeekDataRow(
+                householdId = householdId,
+                weekKey = weekKey,
+                dataKind = "ai_grocery",
+                payload = encode(item("g")),
+            ),
+        )
+        assertEquals(null, aiChange, "ai_grocery must return null")
+
+        val mpChange = a.repository.applyRemoteWeekData(
+            NutritionWeekDataRow(
+                householdId = householdId,
+                weekKey = weekKey,
+                dataKind = "meal_plan",
+                payload = NutritionStorageCodec.encodeMealPlan(
+                    WeeklyMealPlan(weekKey, List(7) { DayMeals() }),
+                ),
+            ),
+        )
+        assertEquals(null, mpChange, "meal_plan must return null")
+    }
+
+    @Test
+    fun `(i) serialization — mutex sequences push calls across operations`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val a = device(remote = remote)
+        a.seedRemote(listOf(item("a")), remote)
+
+        // Base={a}, local={a,b} (local add), remote={a,c} (remote add)
+        a.store.saveGroceryItems(listOf(item("a"), item("b")))
+        val change = a.repository.applyRemoteWeekData(
+            NutritionWeekDataRow(
+                householdId = householdId,
+                weekKey = weekKey,
+                dataKind = "grocery",
+                payload = encode(item("a"), item("c")),
+            ),
+        )
+        // merged = GroceryMerge.merge([a], [a,b], [a,c]) = [b, a, c] != remote
+        assertEquals(listOf("a", "b"), change!!.before.map { it.id })
+        assertEquals(listOf("b", "a", "c"), change!!.after.map { it.id })
+        assertEquals(1, remote.upsertLog.size, "apply must push merged")
+
+        // Now save locally — push adds another entry
+        a.repository.saveGroceryItems(listOf(item("a"), item("b"), item("c"), item("z")))
+        assertEquals(2, remote.upsertLog.size)
+        val savePayload = NutritionStorageCodec.decodeGrocery(remote.upsertLog[1])
+        assertEquals(listOf("a", "b", "c", "z"), savePayload.map { it.id })
+
+        // Final local state is the save result
+        a.assertGroceryIs(item("a"), item("b"), item("c"), item("z"))
+
+        // Verify base was updated correctly after apply+save pushes
+        val lastSynced = a.store.lastSyncedPayload("grocery")
+        val lastSyncedItems = NutritionStorageCodec.decodeGrocery(lastSynced!!)
+        assertEquals(listOf("a", "b", "c", "z"), lastSyncedItems.map { it.id })
     }
 }

@@ -59,21 +59,19 @@ class NutritionLocalStore(
     fun encodeMealPlan(plan: WeeklyMealPlan): String = NutritionStorageCodec.encodeMealPlan(plan)
 
     fun lastSyncedPayload(dataKind: String): String? {
-        val key = when (dataKind) {
-            "grocery" -> NutritionStorageKeys.groceryBase(householdId, weekKey)
-            "ai_grocery" -> NutritionStorageKeys.aiGroceryBase(householdId, weekKey)
-            else -> return null
-        }
+        val key = baseKey(dataKind) ?: return null
         return settings.getStringOrNull(key)
     }
 
     fun markSynced(dataKind: String, payload: String) {
-        val key = when (dataKind) {
-            "grocery" -> NutritionStorageKeys.groceryBase(householdId, weekKey)
-            "ai_grocery" -> NutritionStorageKeys.aiGroceryBase(householdId, weekKey)
-            else -> return
-        }
+        val key = baseKey(dataKind) ?: return
         settings.putString(key, payload)
+    }
+
+    private fun baseKey(dataKind: String): String? = when (dataKind) {
+        "grocery" -> NutritionStorageKeys.groceryBase(householdId, weekKey)
+        "ai_grocery" -> NutritionStorageKeys.aiGroceryBase(householdId, weekKey)
+        else -> null
     }
 
     fun applyPayload(dataKind: String, payload: String) {
