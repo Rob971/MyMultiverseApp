@@ -1348,7 +1348,7 @@ testcases:
       - The tooltip card uses the dark elevated surface colour (dark slate, not white).
       - Step counter, title, description, and button labels are all legible on the dark card surface.
       - Journey button colours (teal primary, outlined secondary) are consistent with the dark palette used elsewhere in the app.
-- id: grocery-sync-offline-merge
+  - id: grocery-sync-offline-merge
     title: Offline edits do not undo a partner's cleanup (v101)
     steps:
       - Two testers (A and B) in the same household open Groceries and see the same list with at least 4 items (e.g. Milk, Eggs, Bread, Rice).
