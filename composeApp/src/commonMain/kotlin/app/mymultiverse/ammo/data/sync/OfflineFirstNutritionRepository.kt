@@ -43,7 +43,11 @@ class OfflineFirstNutritionRepository(
         }
         val pulled = syncEngine.pullRemote(householdId, weekKey) { applyRemoteWeekData(it) }
         if (pulled) {
-            syncEngine.flushPending(householdId, weekKey)
+            mutex.withLock {
+                syncEngine.flushPending(householdId, weekKey)
+                    .filter { it.dataKind == "grocery" || it.dataKind == "ai_grocery" }
+                    .forEach { localStore.markSynced(it.dataKind, it.payload) }
+            }
         }
     }
 
@@ -85,11 +89,9 @@ class OfflineFirstNutritionRepository(
         if (merged != remoteItems) {
             if (remoteEnabled) {
                 val payload = localStore.encodeGrocery(merged)
-                // finding 1: advance base WHETHER or not push succeeds —
-                // the merged payload reflects our chosen state; the outbox
-                // flush will retry, and the base must not cause a resurrection.
-                syncEngine.pushNowOrEnqueue(householdId, weekKey, dataKind, payload)
-                localStore.markSynced(dataKind, payload)
+                if (syncEngine.pushNowOrEnqueue(householdId, weekKey, dataKind, payload)) {
+                    localStore.markSynced(dataKind, payload)
+                }
             }
         } else {
             syncEngine.discardPending(householdId, weekKey, dataKind)

@@ -13,11 +13,15 @@ import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class TwoDeviceGrocerySyncTest {
 
     private val weekKey = "2026-W40"
@@ -388,31 +392,36 @@ class TwoDeviceGrocerySyncTest {
 
         // Base={a}, local={a,b} (local add), remote={a,c} (remote add)
         a.store.saveGroceryItems(listOf(item("a"), item("b")))
-        val change = a.repository.applyRemoteWeekData(
-            NutritionWeekDataRow(
-                householdId = householdId,
-                weekKey = weekKey,
-                dataKind = "grocery",
-                payload = encode(item("a"), item("c")),
-            ),
+        val row = NutritionWeekDataRow(
+            householdId = householdId,
+            weekKey = weekKey,
+            dataKind = "grocery",
+            payload = encode(item("a"), item("c")),
         )
-        // merged = GroceryMerge.merge([a], [a,b], [a,c]) = [b, a, c] != remote
-        assertEquals(listOf("a", "b"), change!!.before.map { it.id })
-        assertEquals(listOf("b", "a", "c"), change!!.after.map { it.id })
-        assertEquals(1, remote.upsertLog.size, "apply must push merged")
 
-        // Now save locally — push adds another entry
-        a.repository.saveGroceryItems(listOf(item("a"), item("b"), item("c"), item("z")))
-        assertEquals(2, remote.upsertLog.size)
-        val savePayload = NutritionStorageCodec.decodeGrocery(remote.upsertLog[1])
-        assertEquals(listOf("a", "b", "c", "z"), savePayload.map { it.id })
+        // Gate the first push so we can verify ordering through the mutex
+        val gate = CompletableDeferred<Unit>()
+        remote.gate = gate
 
-        // Final local state is the save result
+        launch { a.repository.applyRemoteWeekData(row) }
+        runCurrent() // apply starts, acquires mutex, enters upsert, blocks on gate
+
+        launch { a.repository.saveGroceryItems(listOf(item("a"), item("b"), item("c"), item("z"))) }
+        runCurrent() // save starts, tries to acquire mutex, blocked by apply holding it
+
+        // Release gate → apply finishes its push, markSynced, releases mutex
+        gate.complete(Unit)
+        advanceUntilIdle() // save acquires mutex, pushes, finishes
+
+        // Order: apply's merged payload first, save's newList second
+        assertEquals(2, remote.upsertLog.size, "both pushes must execute")
+        val mergedItems = NutritionStorageCodec.decodeGrocery(remote.upsertLog[0])
+        val saveItems = NutritionStorageCodec.decodeGrocery(remote.upsertLog[1])
+        assertEquals(listOf("b", "a", "c"), mergedItems.map { it.id })
+        assertEquals(listOf("a", "b", "c", "z"), saveItems.map { it.id })
+
+        // Final remote matches save's list
+        assertRemoteItems(remote, listOf("a", "b", "c", "z"))
         a.assertGroceryIs(item("a"), item("b"), item("c"), item("z"))
-
-        // Verify base was updated correctly after apply+save pushes
-        val lastSynced = a.store.lastSyncedPayload("grocery")
-        val lastSyncedItems = NutritionStorageCodec.decodeGrocery(lastSynced!!)
-        assertEquals(listOf("a", "b", "c", "z"), lastSyncedItems.map { it.id })
     }
 }

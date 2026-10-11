@@ -55,7 +55,7 @@ class NutritionSyncEngine(
         }
         logger.breadcrumb("sync_pull_ok rows=${fetched.size} week_key=$weekKey")
         refreshStatus(householdId, weekKey)
-            return false
+        return true
     }
 
     suspend fun pushNowOrEnqueue(
