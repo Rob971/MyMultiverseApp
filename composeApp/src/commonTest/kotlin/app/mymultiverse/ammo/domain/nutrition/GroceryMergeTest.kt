@@ -238,7 +238,7 @@ class GroceryMergeTest {
     }
 
     @Test
-    fun `empty base — checked wins on label conflict`() {
+    fun `empty base — greater label wins on conflict`() {
         val local = listOf(item("a", label = "alpha"))
         val remote = listOf(item("a", label = "beta"))
 
@@ -306,5 +306,48 @@ class GroceryMergeTest {
         val remote = listOf(item("a"), item("b"))
         val result = GroceryMerge.merge(emptyList(), emptyList(), remote)
         assertOrder(listOf("a", "b"), result)
+    }
+// ---------------------------------------------------------------
+    // 11. Fast-forward (local == base)
+    // ---------------------------------------------------------------
+
+    @Test
+    fun `fast-forward — local equals base yields remote`() {
+        val base = listOf(item("a"), item("b"))
+        val local = listOf(item("a"), item("b"))
+        val remote = listOf(item("b"), item("c"))
+
+        val result = GroceryMerge.merge(base, local, remote)
+
+        // local == base → fast-forward → result equals remote (same ids, order, fields)
+        assertOrder(listOf("b", "c"), result)
+        assertSameFields(remote[0], result[0])
+        assertSameFields(remote[1], result[1])
+    }
+
+    // ---------------------------------------------------------------
+    // 12. Label edited only on one side
+    // ---------------------------------------------------------------
+
+    @Test
+    fun `label edited only locally — local label wins`() {
+        val base = listOf(item("a", label = "base"))
+        val local = listOf(item("a", label = "local"))
+        val remote = listOf(item("a", label = "base"))
+
+        val result = GroceryMerge.merge(base, local, remote)
+
+        assertEquals("local", result.single().label)
+    }
+
+    @Test
+    fun `label edited only remotely — remote label wins`() {
+        val base = listOf(item("a", label = "base"))
+        val local = listOf(item("a", label = "base"))
+        val remote = listOf(item("a", label = "remote"))
+
+        val result = GroceryMerge.merge(base, local, remote)
+
+        assertEquals("remote", result.single().label)
     }
 }

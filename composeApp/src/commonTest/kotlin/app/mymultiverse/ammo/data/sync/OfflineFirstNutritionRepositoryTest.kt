@@ -110,7 +110,7 @@ class OfflineFirstNutritionRepositoryTest {
     }
 
     @Test
-    fun applyRemoteWeekData_skippedWhenOutboxHasPendingForSameKind() = runTest {
+    fun applyRemoteWeekData_mergesAndDiscardsPendingWhenBaseMissing() = runTest {
         val settings = MapSettings()
         val store = NutritionLocalStore(settings, householdId, weekKey)
         val outbox = NutritionSyncOutbox(settings)
@@ -131,8 +131,9 @@ class OfflineFirstNutritionRepositoryTest {
             NutritionWeekDataRow(householdId = householdId, weekKey = weekKey, dataKind = "grocery", payload = remotePayload)
         )
 
-        // Local store must NOT be overwritten — local-pending wins.
-        assertTrue(repository.observeGroceryItems().first().isEmpty())
+        // With the 3-way merge: remote item is applied; outbox entry for this kind is discarded.
+        assertEquals("Remote item", repository.observeGroceryItems().first().single().label)
+        assertEquals(0, outbox.pendingFor(householdId, weekKey).size)
     }
 
     @Test
