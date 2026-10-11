@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 100
-updated: 2026-07-26
+version: 101
+updated: 2026-10-11
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -1348,3 +1348,15 @@ testcases:
       - The tooltip card uses the dark elevated surface colour (dark slate, not white).
       - Step counter, title, description, and button labels are all legible on the dark card surface.
       - Journey button colours (teal primary, outlined secondary) are consistent with the dark palette used elsewhere in the app.
+- id: grocery-sync-offline-merge
+    title: Offline edits do not undo a partner's cleanup (v101)
+    steps:
+      - Two testers (A and B) in the same household open Groceries and see the same list with at least 4 items (e.g. Milk, Eggs, Bread, Rice).
+      - On A, turn on airplane mode. Leave the app open.
+      - On B (online), remove Milk, Eggs and Bread.
+      - On A (still offline), add two new items (e.g. Apples, Pasta).
+      - On A, turn airplane mode off, then pull to refresh on Groceries.
+    expected:
+      - On A and on B the list shows Rice, Apples and Pasta only. Milk, Eggs and Bread do not come back.
+      - Apples and Pasta appear once on both devices (no duplicates).
+      - The sync status on A returns to idle with no pending changes.
