@@ -30,6 +30,8 @@ class NutritionLocalStore(
 
     fun currentMealPlan(): WeeklyMealPlan = _mealPlan.value
 
+    fun currentAiGroceryItems(): List<GroceryItem> = _aiGroceryItems.value
+
     fun observeAiGroceryItems(): Flow<List<GroceryItem>> = _aiGroceryItems.asStateFlow()
 
     fun observeMealPlan(): Flow<WeeklyMealPlan> = _mealPlan.asStateFlow()
@@ -55,6 +57,22 @@ class NutritionLocalStore(
     fun encodeGrocery(items: List<GroceryItem>): String = NutritionStorageCodec.encodeGrocery(items)
 
     fun encodeMealPlan(plan: WeeklyMealPlan): String = NutritionStorageCodec.encodeMealPlan(plan)
+
+    fun lastSyncedPayload(dataKind: String): String? {
+        val key = baseKey(dataKind) ?: return null
+        return settings.getStringOrNull(key)
+    }
+
+    fun markSynced(dataKind: String, payload: String) {
+        val key = baseKey(dataKind) ?: return
+        settings.putString(key, payload)
+    }
+
+    private fun baseKey(dataKind: String): String? = when (dataKind) {
+        "grocery" -> NutritionStorageKeys.groceryBase(householdId, weekKey)
+        "ai_grocery" -> NutritionStorageKeys.aiGroceryBase(householdId, weekKey)
+        else -> null
+    }
 
     fun applyPayload(dataKind: String, payload: String) {
         when (dataKind) {
