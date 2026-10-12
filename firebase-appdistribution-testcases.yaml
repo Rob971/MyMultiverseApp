@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 101
-updated: 2026-10-11
+version: 102
+updated: 2026-10-12
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -157,10 +157,10 @@ testcases:
   - id: household-gate-pending-invite-two-phone
     title: Two-phone invite — invitee sees invite on Home onboarding (simulate with two accounts)
     steps:
-      - Phone A: sign in, create a household, open Household members, invite Phone B's exact login email.
-      - Phone B: sign up or sign in with that email; do not create a household first.
-      - Phone B: on Home onboarding, confirm the pending invite card appears above Create household.
-      - Phone B: tap Accept.
+      - 'Phone A: sign in, create a household, open Household members, invite Phone B''s exact login email.'
+      - 'Phone B: sign up or sign in with that email; do not create a household first.'
+      - 'Phone B: on Home onboarding, confirm the pending invite card appears above Create household.'
+      - 'Phone B: tap Accept.'
     expected:
       - Phone B reaches Home; both devices show the same household name on Home / Household card.
       - Phone A sees Phone B on the members list after refresh (or after B accepts).
@@ -168,8 +168,8 @@ testcases:
   - id: household-invite-blocked-already-member
     title: Inviter blocked when invitee already belongs to another household
     steps:
-      - Phone B: sign in and create a household (or join one).
-      - Phone A: sign in, create a different household, open Household members, invite Phone B's email.
+      - 'Phone B: sign in and create a household (or join one).'
+      - 'Phone A: sign in, create a different household, open Household members, invite Phone B''s email.'
     expected:
       - Add-person dialog stays open with a clear error that this person already belongs to another household.
       - No new pending invite is created for B on A's household.
@@ -199,8 +199,8 @@ testcases:
     title: Two-phone shared grocery (same household)
     steps:
       - Complete home-onboarding or household-gate-pending-invite-two-phone so A and B share one household.
-      - Phone A: open Nutrition → Grocery, add or edit an item, wait for sync (online).
-      - Phone B: open Nutrition → Grocery, pull to refresh or wait for realtime if enabled.
+      - 'Phone A: open Nutrition → Grocery, add or edit an item, wait for sync (online).'
+      - 'Phone B: open Nutrition → Grocery, pull to refresh or wait for realtime if enabled.'
     expected:
       - Phone B sees Phone A's grocery change in the same week/household scope.
 
@@ -219,7 +219,7 @@ testcases:
     title: Today tab dashboard hub and week context
     steps:
       - With an active household, open the Today tab.
-      - Confirm two circular hero actions below the greeting: Plan lunch and Shopping list (testTags home_hero_plan, home_hero_grocery).
+      - 'Confirm two circular hero actions below the greeting: Plan lunch and Shopping list (testTags home_hero_plan, home_hero_grocery).'
       - In Daily meal plan, switch to This week and confirm week banner.
       - Add grocery items or meal-plan entries on Plan/Groceries tabs; return to Today.
     expected:
@@ -326,7 +326,7 @@ testcases:
     title: Open household from the name button
     steps:
       - From Welcome Home, tap the household name button (shows Manage members or View members).
-      - Owners/admins: use the edit icon on the button to rename without leaving Home.
+      - 'Owners/admins: use the edit icon on the button to rename without leaving Home.'
     expected:
       - Members screen opens from the main button tap.
       - Rename dialog opens only from the edit icon when permitted.
@@ -362,11 +362,11 @@ testcases:
       - Tap the avatar or the "Change family photo" button below it.
       - Pick a photo from the gallery.
     expected:
-      - "Photo updated successfully" snackbar appears.
+      - '"Photo updated successfully" snackbar appears.'
       - The family photo is shown at the top of the Family members screen immediately.
       - After closing the screen and reopening (or restarting the app), the same family photo persists.
       - An editor or viewer does not see the "Change family photo" button and cannot tap the family photo.
-      - If upload fails, a specific inline error appears: connection/bucket issues vs. photo uploaded but not saved to profile or family photo.
+      - 'If upload fails, a specific inline error appears: connection/bucket issues vs. photo uploaded but not saved to profile or family photo.'
 
   - id: household-two-member-list
     title: Two-person family shows both members (not solo invite)
@@ -447,7 +447,7 @@ testcases:
   - id: app-links-hosting
     title: Verify mymultiverse.app hosting (website repo)
     steps:
-      - Maintainer: connect `mymultiverse.app` to Firebase Hosting (DNS away from Squarespace).
+      - 'Maintainer: connect `mymultiverse.app` to Firebase Hosting (DNS away from Squarespace).'
       - Run GitHub Actions workflow **Deploy hosting** in Rob971/mymultiverse-website (or scripts/deploy.sh locally).
       - Run scripts/verify-hosting.sh from a machine with network access.
       - On Android, tap https://mymultiverse.app/invite?token=… from Gmail or Messages (use a real pending invite token).
@@ -488,7 +488,7 @@ testcases:
     steps:
       - Not practical for manual QA on every build; verify in automated tests or staging scripts.
     expected:
-      - Product rule: at most 20 members per household; invite/accept returns a clear error at cap (when enforced).
+      - 'Product rule: at most 20 members per household; invite/accept returns a clear error at cap (when enforced).'
 
   - id: nutrition-household-members
     title: Invite household members (legacy note)
@@ -552,15 +552,15 @@ testcases:
       - Observe unchecked rows also have a teal pencil circle (edit) and a terracotta circle (delete ×) on the right.
       - Tap the checkbox to mark an item as bought; box fills solid teal with a white ✓ checkmark; label turns muted with strikethrough; the edit circle disappears.
       - Tap the filled checkbox again on a checked item to uncheck it; box returns to hollow; edit circle reappears.
-      - Switch the device to dark mode: verify checkbox states remain highly distinguishable (hollow border vs solid teal fill with white ✓).
+      - 'Switch the device to dark mode: verify checkbox states remain highly distinguishable (hollow border vs solid teal fill with white ✓).'
       - Tap the teal pencil circle on an unchecked item; inline edit field opens.
       - Edit the label and tap the confirm icon (or press Done on keyboard) to save; or tap Cancel to discard.
       - Double-tap directly on an item label as an alternate way to open the edit field.
       - Tap the terracotta × circle on an item; confirm the Remove item? dialog by tapping Remove.
       - Tap the × circle on another item and tap Cancel to dismiss without deleting.
     expected:
-      - Unchecked checkbox: hollow square with muted gray border — clearly "not done" state.
-      - Checked checkbox: solid teal square with white ✓ checkmark — clearly "done/purchased" state.
+      - 'Unchecked checkbox: hollow square with muted gray border — clearly "not done" state.'
+      - 'Checked checkbox: solid teal square with white ✓ checkmark — clearly "done/purchased" state.'
       - Both states render correctly in light and dark themes with strong visual contrast.
       - Haptic feedback plays on toggle.
       - Edit pencil circle visible for unchecked items; disappears when item is checked.
@@ -748,7 +748,7 @@ testcases:
     steps:
       - Install a CI or local debug APK built with google-services.json configured.
       - Use the app normally (sign in, open Nutrition, edit grocery).
-      - Optional: trigger a non-fatal path (e.g. airplane mode during sync) and confirm no user-visible crash.
+      - 'Optional: trigger a non-fatal path (e.g. airplane mode during sync) and confirm no user-visible crash.'
     expected:
       - Crashes and non-fatal errors appear in Firebase Console → Crashlytics with app version, user id (after sign-in), and breadcrumbs (session_start, nutrition_household_activated).
 
@@ -913,7 +913,7 @@ testcases:
       - Open Account settings (profile avatar → globe/account button).
       - Scroll to the "AI Ingredients" section.
     expected:
-      - "AI Ingredients" section header is visible below Language.
+      - '"AI Ingredients" section header is visible below Language.'
       - Descriptive text explains that the key enables all AI features (dish ingredients, meal plan, advice, grocery list).
       - A tappable link "Get a free key at aistudio.google.com/app/apikey" is shown.
       - A password-masked text field with a show/hide toggle is available.
@@ -926,13 +926,13 @@ testcases:
     steps:
       - Ensure no Gemini API key is saved (clear it in Account settings or use a fresh install).
       - Open Plan tab — confirm no "add your key" banner appears on the plan screen itself.
-      - Path A (AI sheet): Tap "Plan with AI" to open the AI helper sheet; enter criteria and tap Generate.
-      - Path B (meal ingredient): Enter a specific dish in any meal slot (e.g. "Pasta carbonara"), then tap "Add to grocery list" for that slot.
+      - 'Path A (AI sheet): Tap "Plan with AI" to open the AI helper sheet; enter criteria and tap Generate.'
+      - 'Path B (meal ingredient): Enter a specific dish in any meal slot (e.g. "Pasta carbonara"), then tap "Add to grocery list" for that slot.'
     expected:
       - The Plan tab shows NO proactive AI key prompt or banner before the user taps any AI feature.
-      - Path A: After tapping Generate with no key — Sparkles icon + directive label + inline key-entry form (password field, show/hide, Save key, "Get a free key" link) appears in the sheet. No spinner stuck; no generic error.
-      - Path B: After tapping "Add to grocery list" with no key — the AI sheet opens automatically showing the same inline key-entry form (same UX as Path A). No snackbar directing users to Account settings.
-      - Both paths: Paste a valid Gemini key and tap Save key — the error state clears and the sheet returns to Idle. A second Generate / Add to grocery list attempt succeeds.
+      - 'Path A: After tapping Generate with no key — Sparkles icon + directive label + inline key-entry form (password field, show/hide, Save key, "Get a free key" link) appears in the sheet. No spinner stuck; no generic error.'
+      - 'Path B: After tapping "Add to grocery list" with no key — the AI sheet opens automatically showing the same inline key-entry form (same UX as Path A). No snackbar directing users to Account settings.'
+      - 'Both paths: Paste a valid Gemini key and tap Save key — the error state clears and the sheet returns to Idle. A second Generate / Add to grocery list attempt succeeds.'
 
   - id: ai-advice-gemini
     title: Nutrition advice via Gemini (key configured)
@@ -1125,7 +1125,7 @@ testcases:
   - id: phase3-grocery-collaboration-snackbar
     title: Debounced grocery activity snackbar
     steps:
-      - Two editors on the same household week: account A on Grocery tab, account B adds or checks off an item remotely.
+      - 'Two editors on the same household week: account A on Grocery tab, account B adds or checks off an item remotely.'
       - Wait ~2 seconds after the remote change syncs on A.
     expected:
       - A non-blocking snackbar names the remote member and item (e.g. Maria added milk) or batches multiple updates.
