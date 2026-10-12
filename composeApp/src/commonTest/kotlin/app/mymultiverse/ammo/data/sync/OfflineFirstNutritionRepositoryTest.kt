@@ -187,6 +187,8 @@ class OfflineFirstNutritionRepositoryTest {
     private object FailingRemote : NutritionRemoteDataSource {
         override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
 
+        override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
+
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) {
             throw IllegalStateException("offline")
         }
@@ -201,6 +203,8 @@ class OfflineFirstNutritionRepositoryTest {
             fetchCount++
             return rows
         }
+
+        override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
 
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }

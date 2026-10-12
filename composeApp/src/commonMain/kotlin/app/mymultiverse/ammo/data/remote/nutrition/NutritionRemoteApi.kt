@@ -4,9 +4,12 @@ import app.mymultiverse.ammo.data.supabase.ensureCurrentProfile
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.exception.PostgrestRestException
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.datetime.Clock
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * Supabase PostgREST access for shared nutrition week payloads.
@@ -49,6 +52,26 @@ class NutritionRemoteApi(
                 onConflict = "household_id,week_key,data_kind"
             }
     }
+
+    override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean {
+        val userId = requireAuthenticatedUserId()
+        ensureProfile(userId)
+        return try {
+            client.postgrest["nutrition_household_week_carry"]
+                .insert(CarryClaim(householdId = householdId, weekKey = weekKey))
+            true
+        } catch (e: PostgrestRestException) {
+            // 23505 = unique_violation — someone already claimed this week
+            if (e.code == "23505") false
+            else throw e
+        }
+    }
+
+    @Serializable
+    internal data class CarryClaim(
+        @SerialName("household_id") val householdId: String,
+        @SerialName("week_key") val weekKey: String,
+    )
 
     private suspend fun requireAuthenticatedUserId(): String {
         client.auth.awaitInitialization()

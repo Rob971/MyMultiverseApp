@@ -27,6 +27,7 @@ class SyncRegressionTest {
                     payload = it.value.first, updatedAt = it.value.second)
             }
         }
+        override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) {
             if (offline || failUpserts) throw IllegalStateException("push failed")
             clock++

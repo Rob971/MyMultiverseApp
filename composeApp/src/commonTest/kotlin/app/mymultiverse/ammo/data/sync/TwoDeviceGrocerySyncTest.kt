@@ -1,11 +1,13 @@
 package app.mymultiverse.ammo.data.sync
 
-import app.mymultiverse.ammo.data.repository.NutritionStorageCodec
 import app.mymultiverse.ammo.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.ammo.data.local.nutrition.NutritionSyncOutbox
+import app.mymultiverse.ammo.data.local.nutrition.NutritionWeekMaintenanceStore
 import app.mymultiverse.ammo.data.observability.TestObservability
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteDataSource
+import app.mymultiverse.ammo.data.repository.NutritionStorageCodec
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
+import app.mymultiverse.ammo.data.sync.NutritionWeekMaintenanceRunner
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
@@ -17,6 +19,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -29,6 +32,11 @@ class TwoDeviceGrocerySyncTest {
 
     private class FakeRemoteDataSource(
         val data: MutableMap<Triple<String, String, String>, Pair<String, String>> = mutableMapOf(),
+        /**
+         * Simulates server-held claim registry: household_id -> week_key.
+         * claimWeekCarry returns true when the key is new, false when already claimed.
+         */
+        private val claims: MutableMap<String, MutableSet<String>> = mutableMapOf(),
     ) : NutritionRemoteDataSource {
         var offline = false
         var failFetchOnly = false
@@ -37,6 +45,7 @@ class TwoDeviceGrocerySyncTest {
         val upsertLog: MutableList<String> = mutableListOf()
         var gate: CompletableDeferred<Unit>? = null
         private var clock = 0L
+        var claimCount = 0
 
         override suspend fun fetchWeek(
             householdId: String,
@@ -54,6 +63,13 @@ class TwoDeviceGrocerySyncTest {
                     updatedAt = value.second,
                 )
             }
+        }
+
+        override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean {
+            if (offline) throw IllegalStateException("offline")
+            claimCount++
+            val weekSet = claims.getOrPut(householdId) { mutableSetOf() }
+            return weekSet.add(weekKey)
         }
 
         override suspend fun upsert(
@@ -103,6 +119,7 @@ class TwoDeviceGrocerySyncTest {
     private fun device(
         settings: MapSettings = MapSettings(),
         remote: FakeRemoteDataSource,
+        weekKey: String = this.weekKey,
     ): DeviceComponents {
         val store = NutritionLocalStore(settings, householdId, weekKey)
         val outbox = NutritionSyncOutbox(settings)
@@ -142,6 +159,7 @@ class TwoDeviceGrocerySyncTest {
     private fun assertRemoteItems(
         remote: FakeRemoteDataSource,
         expectedIds: List<String>,
+        weekKey: String = this.weekKey,
     ) {
         val keys = remote.data.filter { (k, _) ->
             k.first == householdId && k.second == weekKey && k.third == "grocery"
@@ -423,5 +441,66 @@ class TwoDeviceGrocerySyncTest {
         // Final remote matches save's list
         assertRemoteItems(remote, listOf("a", "b", "c", "z"))
         a.assertGroceryIs(item("a"), item("b"), item("c"), item("z"))
+    }
+
+    /** Sequential id generator so carried items stay unique. */
+    private fun sequentialId(prefix: String): () -> String {
+        var seq = 0
+        return { "$prefix-${seq++}" }
+    }
+
+    @Test
+    fun `S4 incident - partner carries and clears, returning device with stale marker does not re-carry`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val today = LocalDate(2026, 6, 17) // Wednesday
+        val currentWeek = "2026-06-15"
+        val previousWeek = "2026-06-08"
+
+        // Previous week's groceries on the remote: Milk and Eggs (both unchecked).
+        remote.set(
+            Triple(householdId, previousWeek, "grocery"),
+            encode(item("milk", "Milk"), item("eggs", "Eggs")),
+            "t1",
+        )
+
+        // Partner device A binds to the current week and carries (claim -> true).
+        val settingsA = MapSettings()
+        val a = device(settings = settingsA, remote = remote, weekKey = currentWeek)
+        val runnerA = NutritionWeekMaintenanceRunner(
+            settings = settingsA,
+            maintenanceStore = NutritionWeekMaintenanceStore(settingsA),
+            remoteApi = remote,
+            newItemId = sequentialId("a"),
+        )
+        runnerA.runForCurrentWeek(a.repository, householdId, currentWeek, today = today)
+        // merged order: eggs (id a-1) prepended after milk (id a-0); original labels kept.
+        a.assertGroceryIs(item("a-1", "Eggs"), item("a-0", "Milk"))
+        assertRemoteItems(remote, listOf("a-1", "a-0"), weekKey = currentWeek)
+
+        // Partner clears the list — the empty list is now on the remote.
+        a.repository.saveGroceryItems(emptyList())
+        assertRemoteItems(remote, emptyList(), weekKey = currentWeek)
+
+        // Returning device B still has last week's local marker, so it would retry the carry.
+        val settingsB = MapSettings()
+        NutritionWeekMaintenanceStore(settingsB).setLastMaintainedWeekKey(householdId, previousWeek)
+        val b = device(settings = settingsB, remote = remote, weekKey = currentWeek)
+        val runnerB = NutritionWeekMaintenanceRunner(
+            settings = settingsB,
+            maintenanceStore = NutritionWeekMaintenanceStore(settingsB),
+            remoteApi = remote,
+            newItemId = sequentialId("b"),
+        )
+        runnerB.runForCurrentWeek(b.repository, householdId, currentWeek, today = today)
+
+        // The returning device's list stays empty and the remote list stays empty.
+        b.assertGroceryIs()
+        assertRemoteItems(remote, emptyList(), weekKey = currentWeek)
+        // B's marker is set (claim=false) so it will not retry.
+        assertEquals(
+            currentWeek,
+            NutritionWeekMaintenanceStore(settingsB).lastMaintainedWeekKey(householdId),
+            "M4: marker must be set when another device already claimed",
+        )
     }
 }
