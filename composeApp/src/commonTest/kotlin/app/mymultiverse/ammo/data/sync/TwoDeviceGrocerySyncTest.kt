@@ -784,8 +784,32 @@ class TwoDeviceGrocerySyncTest {
 
         a.repository.saveGroceryItems(listOf(item("a"), item("b")))
 
-        assertRemoteItems(remote, listOf("a", "b"))
-        a.assertGroceryIs(item("a"), item("b"))
+        // The fallback uploads the merged union (local-only items first, then the server's
+        // list), not the raw local list; the content is the same, the order is the merge's.
+        assertRemoteItems(remote, listOf("b", "a"))
+        a.assertGroceryIs(item("b"), item("a"))
+    }
+
+    @Test
+    fun `S3 version null fallback merges before the blind upsert — a partner's item is not overwritten`() = runTest {
+        val remote = FakeRemoteDataSource()
+        // Server without the version column: the row the partner wrote has no version
+        remote.data[Triple(householdId, weekKey, "grocery")] = Triple(
+            encode(item("a"), item("c")), "t0", null,
+        )
+        val a = device(remote = remote) // never pulled: no base, no stored version
+
+        a.repository.saveGroceryItems(listOf(item("a"), item("b")))
+
+        val expected = setOf("a", "b", "c")
+        assertEquals(
+            expected,
+            NutritionStorageCodec.decodeGrocery(remote.data[Triple(householdId, weekKey, "grocery")]?.first ?: "")
+                .map { it.id }.toSet(),
+            "the blind upsert must carry the partner's c",
+        )
+        assertEquals(expected, a.repository.currentGroceryItems().map { it.id }.toSet())
+        assertEquals(1, remote.blindUpsertCount)
     }
 
     @Test

@@ -114,7 +114,6 @@ class OfflineFirstNutritionRepository(
             }
         } else {
             syncEngine.discardPending(householdId, weekKey, dataKind)
-            syncEngine.discardPending(householdId, weekKey, dataKind)
         }
         return GroceryChange(before = before, after = merged)
     }
@@ -181,14 +180,6 @@ class OfflineFirstNutritionRepository(
             }
             // Conflict: fetch current server state, merge, retry
             val remoteRow = syncEngine.fetchRow(householdId, weekKey, kind) ?: break
-            // Capability fallback: if the server row has no version column
-            // (migration not deployed), use a legacy blind upsert.
-            if (remoteRow.version == null) {
-                if (syncEngine.pushNowOrEnqueue(householdId, weekKey, kind, currentPayload)) {
-                    localStore.markSynced(kind, currentPayload)
-                }
-                return
-            }
             val remoteItems = NutritionStorageCodec.decodeGrocery(remoteRow.payload)
             val localItems = currentItems(kind)
             val basePayload = localStore.lastSyncedPayload(kind)
@@ -200,7 +191,18 @@ class OfflineFirstNutritionRepository(
             val merged = GroceryMerge.merge(baseItems, localItems, remoteItems)
             saveLocalItems(kind, merged)
             currentPayload = localStore.encodeGrocery(merged)
-            version = remoteRow.version
+            val remoteVersion = remoteRow.version
+            if (remoteVersion == null) {
+                // Capability fallback: the server has no version column yet (migration not
+                // deployed). There is nothing to compare against, so use the legacy blind
+                // upsert, but of the merged union: a partner's items already in hand must
+                // not be overwritten.
+                if (syncEngine.pushNowOrEnqueue(householdId, weekKey, kind, currentPayload)) {
+                    localStore.markSynced(kind, currentPayload)
+                }
+                return
+            }
+            version = remoteVersion
         }
         // Bounded retry exhausted — enqueue and leave pending
         syncEngine.enqueuePending(householdId, weekKey, kind, currentPayload)
