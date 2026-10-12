@@ -60,6 +60,8 @@ import app.mymultiverse.ammo.presentation.components.MealPlanPartnerNudgeTestTag
 import app.mymultiverse.ammo.presentation.components.PartnerNudgeCard
 import app.mymultiverse.ammo.presentation.components.NutritionProgressChip
 import app.mymultiverse.ammo.presentation.components.NutritionScaffold
+import app.mymultiverse.ammo.presentation.components.NutritionSyncStatusBanner
+import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.WeekSelectorBanner
 import app.mymultiverse.ammo.presentation.components.nutritionDayLabel
@@ -169,6 +171,7 @@ private fun WeeklyMealPlanScreenContent(
     screenModel: NutritionScreenModel,
 ) {
     val mealPlan by screenModel.mealPlan.collectAsState()
+    val syncStatus by screenModel.syncStatus.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val showPartnerNudge by screenModel.showMealPlanPartnerNudge.collectAsState()
@@ -579,6 +582,12 @@ private fun WeeklyMealPlanScreenContent(
                             todayLabel = if (weekOffset > 0) todayLabel else null,
                             onToday = if (weekOffset > 0) { { screenModel.selectWeekOffset(0) } } else null,
                         )
+                    }
+
+                    if (syncStatus != NutritionSyncStatus.Idle) {
+                        item(key = "sync-banner") {
+                            NutritionSyncStatusBanner(status = syncStatus)
+                        }
                     }
 
                     item(key = "week-overview") {

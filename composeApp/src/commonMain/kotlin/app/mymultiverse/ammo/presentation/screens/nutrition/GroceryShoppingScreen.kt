@@ -91,6 +91,8 @@ import app.mymultiverse.ammo.presentation.components.JourneyIcon
 import app.mymultiverse.ammo.presentation.components.JourneyIconButton
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.ammo.presentation.components.WeekSelectorBanner
+import app.mymultiverse.ammo.presentation.components.NutritionSyncStatusBanner
+import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.ammo.presentation.components.GroceryPartnerNudgeTestTags
 import app.mymultiverse.ammo.presentation.components.GroceryGhostPairingBanner
@@ -141,6 +143,7 @@ fun GroceryShoppingScreen(
 ) {
     val items by screenModel.groceryItems.collectAsState()
     val collaborationSnackbar by screenModel.collaborationSnackbar.collectAsState()
+    val syncStatus by screenModel.syncStatus.collectAsState()
     val ghostPairingOffer by screenModel.ghostPairingOffer.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val showPartnerNudge by screenModel.showGroceryPartnerNudge.collectAsState()
@@ -340,6 +343,7 @@ fun GroceryShoppingScreen(
 
             val index = groceryActiveItemListIndex(
                 canWrite = canWrite,
+                hasSyncBanner = syncStatus != NutritionSyncStatus.Idle,
                 hasViewerNotice = !canWrite,
                 hasGhostPairing = canWrite && ghostPairingOffer != null,
                 hasShoppingModeToggle = sections.completed.isNotEmpty() && totalCount > 0,
@@ -413,6 +417,11 @@ fun GroceryShoppingScreen(
                 .testTag(GroceryListTestTags.SCROLL_LIST)
 
             val groceryListContent: LazyListScope.() -> Unit = {
+                if (syncStatus != NutritionSyncStatus.Idle) {
+                    item(key = "sync-banner") {
+                        NutritionSyncStatusBanner(status = syncStatus)
+                    }
+                }
                 groceryShoppingListItems(
                     weekLabel = weekLabel,
                     previousWeekLabel = previousWeekLabel,
@@ -535,6 +544,7 @@ fun GroceryShoppingScreen(
 
 private fun groceryActiveItemListIndex(
     canWrite: Boolean,
+    hasSyncBanner: Boolean,
     hasViewerNotice: Boolean,
     hasGhostPairing: Boolean,
     hasShoppingModeToggle: Boolean,
@@ -543,6 +553,7 @@ private fun groceryActiveItemListIndex(
 ): Int {
     if (hasEmptyState) return -1
     var index = 1 // to-buy header after week selector (0)
+    if (hasSyncBanner) index++ // sync banner sits between the week selector and the header
     if (hasViewerNotice) index++
     if (hasGhostPairing) index++
     if (hasShoppingModeToggle) index++

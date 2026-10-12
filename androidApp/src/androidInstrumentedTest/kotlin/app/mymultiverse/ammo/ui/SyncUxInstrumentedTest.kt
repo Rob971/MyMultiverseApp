@@ -3,7 +3,9 @@ package app.mymultiverse.ammo.ui
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.mymultiverse.ammo.data.nutrition.GroceryGhostPairingDismissStore
@@ -14,6 +16,8 @@ import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivity
 import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivityKind
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
+import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
+import app.mymultiverse.ammo.presentation.components.NutritionSyncStatusTestTags
 import app.mymultiverse.ammo.presentation.screens.nutrition.GroceryShoppingScreen
 import app.mymultiverse.ammo.presentation.screens.nutrition.NutritionScreenModel
 import app.mymultiverse.ammo.presentation.theme.AppTheme
@@ -21,6 +25,7 @@ import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -83,5 +88,34 @@ class SyncUxInstrumentedTest {
         }
         composeRule.onNodeWithText("removed Milk", substring = true, useUnmergedTree = true)
             .assertIsDisplayed()
+    }
+
+    @Test
+    fun syncBanner_isDisplayedOnGroceryScreenWhenPendingPush() {
+        val repository = InstrumentedNutritionRepository(WeekCalendar.currentWeekKey())
+        val coordinator = InstrumentedNutritionSessionCoordinator(repository)
+        val screenModel = screenModel(coordinator, repository)
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
+            }
+        }
+
+        assertTrue(
+            "no banner when Idle",
+            composeRule.onAllNodesWithTag(NutritionSyncStatusTestTags.BANNER)
+                .fetchSemanticsNodes().isEmpty(),
+        )
+
+        coordinator.emitSyncStatus(NutritionSyncStatus.PendingPush(2))
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag(NutritionSyncStatusTestTags.BANNER)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag(NutritionSyncStatusTestTags.BANNER).assertIsDisplayed()
     }
 }
