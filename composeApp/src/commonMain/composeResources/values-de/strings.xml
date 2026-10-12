@@ -858,7 +858,7 @@
     <string name="sharing_members_error_invitee_household_already_active">Diese Person gehört bereits zu einer anderen Familiengruppe und kann nicht hinzugefügt werden.</string>
     <string name="sharing_members_loading">Mitglieder werden geladen...</string>
     <string name="nutrition_sync_status_syncing">Geteilte Listen und Pläne werden aktualisiert...</string>
-    <string name="nutrition_sync_status_pending">%1$d Änderungen noch nicht gespeichert</string>
+    <string name="nutrition_sync_status_pending">Noch nicht gespeichert: %1$d</string>
     <string name="nutrition_sync_status_offline">Du bist offline — Änderungen werden auf diesem Gerät gespeichert</string>
     <string name="nutrition_sync_status_synced">Alles ist auf dem neuesten Stand</string>
     <string name="auth_sign_out">Abmelden</string>

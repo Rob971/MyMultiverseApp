@@ -859,7 +859,7 @@
     <string name="sharing_members_error_invitee_household_already_active">This person already belongs to another family group and cannot be added.</string>
     <string name="sharing_members_loading">Loading members...</string>
     <string name="nutrition_sync_status_syncing">Updating shared lists and plans...</string>
-    <string name="nutrition_sync_status_pending">%1$d changes not saved yet</string>
+    <string name="nutrition_sync_status_pending">Not saved yet: %1$d</string>
     <string name="nutrition_sync_status_offline">You're offline — changes save on this device</string>
     <string name="nutrition_sync_status_synced">Everything is up to date</string>
     <string name="auth_sign_out">Sign out</string>
