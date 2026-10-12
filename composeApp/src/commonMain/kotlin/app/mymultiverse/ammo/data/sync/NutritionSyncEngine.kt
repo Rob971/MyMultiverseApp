@@ -181,6 +181,13 @@ class NutritionSyncEngine(
         return flushed
     }
 
+    /**
+     * Returns all pending outbox items without processing them.
+     * Used by callers that need to route items through different code paths.
+     */
+    fun peekPending(householdId: String, weekKey: String): List<PendingNutritionPush> =
+        outbox.pendingFor(householdId, weekKey)
+
     fun markIdle() {
         _status.value = NutritionSyncStatus.Idle
     }

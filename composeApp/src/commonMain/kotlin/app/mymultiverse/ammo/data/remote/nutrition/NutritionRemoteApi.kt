@@ -65,7 +65,7 @@ class NutritionRemoteApi(
             val userId = requireAuthenticatedUserId()
             ensureProfile(userId)
             return try {
-                client.postgrest["nutrition_household_week_data"]
+                val versionRow = client.postgrest["nutrition_household_week_data"]
                     .insert(
                         NutritionWeekDataRow(
                             householdId = householdId,
@@ -79,8 +79,9 @@ class NutritionRemoteApi(
                         select(Columns.raw("version"))
                     }
                     .decodeSingleOrNull<VersionRow>()
-                // insert succeeded; version = 1 (column default)
-                PushResult.ok(1)
+                // insert succeeded; version = 1 (column default) or whatever the server returned
+                val newVersion = versionRow?.version ?: 1
+                PushResult.ok(newVersion)
             } catch (e: PostgrestRestException) {
                 if (e.code == "23505") PushResult.conflict()
                 else throw e

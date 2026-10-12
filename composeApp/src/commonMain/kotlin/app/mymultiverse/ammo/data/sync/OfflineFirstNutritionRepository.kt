@@ -45,13 +45,24 @@ class OfflineFirstNutritionRepository(
         val pulled = syncEngine.pullRemote(householdId, weekKey) { applyRemoteWeekData(it) }
         if (pulled) {
             mutex.withLock {
-                // Flush grocery/ai_grocery pending items through CAS loop.
-                // Non-grocery (meal_plan) stays on the blind upsert path.
+                // After pullRemote the merge has already incorporated local changes
+                // into the merged result. For existing rows, discard the stale
+                // pending outbox entry. For rows not on the server, flush through
+                // CAS loop to create them.
+                syncEngine.peekPending(householdId, weekKey).forEach { item ->
+                    if (item.dataKind == "grocery" || item.dataKind == "ai_grocery") {
+                        val remoteRow = syncEngine.fetchRow(householdId, weekKey, item.dataKind)
+                        if (remoteRow == null) {
+                            // Row doesn't exist on server — push it via CAS
+                            flushPendingCAS(item.dataKind, item.payload)
+                        } else {
+                            // Row exists — merge already incorporated local changes
+                            syncEngine.discardPending(householdId, weekKey, item.dataKind)
+                        }
+                    }
+                }
+                // Remaining pending items (meal_plan) use the legacy blind flush
                 syncEngine.flushPending(householdId, weekKey)
-                    .filter { it.dataKind == "grocery" || it.dataKind == "ai_grocery" }
-                    .forEach { flushPendingCAS(it.dataKind, it.payload) }
-                syncEngine.flushPending(householdId, weekKey)
-                    .filter { it.dataKind != "grocery" && it.dataKind != "ai_grocery" }
                     .forEach { localStore.markSynced(it.dataKind, it.payload) }
             }
         }
@@ -97,6 +108,7 @@ class OfflineFirstNutritionRepository(
                 pushWithCASLoop(dataKind, merged)
             }
         } else {
+            syncEngine.discardPending(householdId, weekKey, dataKind)
             syncEngine.discardPending(householdId, weekKey, dataKind)
         }
         return GroceryChange(before = before, after = merged)
