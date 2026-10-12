@@ -8,6 +8,8 @@ import io.github.jan.supabase.postgrest.exception.PostgrestRestException
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.datetime.Clock
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * Supabase PostgREST access for shared nutrition week payloads.
@@ -65,10 +67,10 @@ class NutritionRemoteApi(
         }
     }
 
-    @kotlinx.serialization.Serializable
-    private data class CarryClaim(
-        val householdId: String,
-        val weekKey: String,
+    @Serializable
+    internal data class CarryClaim(
+        @SerialName("household_id") val householdId: String,
+        @SerialName("week_key") val weekKey: String,
     )
 
     private suspend fun requireAuthenticatedUserId(): String {
