@@ -10,6 +10,12 @@ internal object NutritionStorageKeys {
     fun mealPlan(householdId: String?, weekKey: String): String =
         scoped("meal_plan", householdId, weekKey)
 
+    fun mealPlanBase(householdId: String?, weekKey: String): String =
+        scoped("meal_plan_base", householdId, weekKey)
+
+    fun mealPlanVersion(householdId: String?, weekKey: String): String =
+        scoped("meal_plan_version", householdId, weekKey)
+
     fun groceryBase(householdId: String?, weekKey: String): String =
         scoped("grocery_base", householdId, weekKey)
 
