@@ -3,6 +3,8 @@ package app.mymultiverse.ammo.data.sync
 import app.mymultiverse.ammo.data.observability.TestObservability
 import app.mymultiverse.ammo.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteDataSource
+import app.mymultiverse.ammo.data.remote.nutrition.PushResult
+import app.mymultiverse.ammo.data.remote.nutrition.pushViaUpsert
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import com.russhwolf.settings.MapSettings
@@ -158,6 +160,14 @@ class NutritionSessionCoordinatorImplTest {
     private class ObservingRemote(
         private val activeHouseholdId: () -> String?,
     ) : NutritionRemoteDataSource {
+
+        override suspend fun pushIfVersion(
+            householdId: String,
+            weekKey: String,
+            dataKind: String,
+            payload: String,
+            expectedVersion: Long?,
+        ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
         var householdIdDuringFetch: String? = null
 
         override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
@@ -171,6 +181,14 @@ class NutritionSessionCoordinatorImplTest {
     }
 
     private object FailingFetchRemote : NutritionRemoteDataSource {
+
+        override suspend fun pushIfVersion(
+            householdId: String,
+            weekKey: String,
+            dataKind: String,
+            payload: String,
+            expectedVersion: Long?,
+        ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
         override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
             throw IllegalStateException("offline")
         }

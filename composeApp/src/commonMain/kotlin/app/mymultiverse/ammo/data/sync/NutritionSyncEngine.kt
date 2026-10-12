@@ -146,12 +146,22 @@ class NutritionSyncEngine(
         }
     }
 
-    suspend fun flushPending(householdId: String, weekKey: String): List<PendingNutritionPush> {
+    /**
+     * Blind-flushes the outbox with plain upserts. Kinds in [excludeKinds] are left
+     * in the outbox untouched: grocery kinds go through the compare-and-swap loop
+     * instead, and must never be sent blind.
+     */
+    suspend fun flushPending(
+        householdId: String,
+        weekKey: String,
+        excludeKinds: Set<String> = emptySet(),
+    ): List<PendingNutritionPush> {
         val api = remote ?: run {
             _status.value = NutritionSyncStatus.RemoteUnavailable
             return emptyList()
         }
         val pending = outbox.pendingFor(householdId, weekKey)
+            .filter { it.dataKind !in excludeKinds }
         if (pending.isEmpty()) {
             refreshStatus(householdId, weekKey)
             return emptyList()

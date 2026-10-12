@@ -48,6 +48,12 @@ class TwoDeviceGrocerySyncTest {
         private var clock = 0L
         var claimCount = 0
         var casEnabled = true
+        /** Plain (blind) upserts only; conditional writes do not count here. */
+        var blindUpsertCount = 0
+        /** Every conditional write attempt that reached the server (ok or conflict). */
+        var casAttempts = 0
+        /** Every conditional write answers with a conflict (a partner that always wins). */
+        var alwaysConflict = false
 
         override suspend fun fetchWeek(
             householdId: String,
@@ -81,6 +87,20 @@ class TwoDeviceGrocerySyncTest {
             dataKind: String,
             payload: String,
         ) {
+            beforeWrite()
+            blindUpsertCount++
+            upsertCount++
+            upsertLog.add(payload)
+            clock++
+            // Blind upsert bumps the version (like the server trigger)
+            val key = Triple(householdId, weekKey, dataKind)
+            val existing = data[key]
+            val newVersion = (existing?.third ?: 0L) + 1
+            data[key] = Triple(payload, "t$clock", newVersion)
+        }
+
+        /** Offline, gate and injected failures apply to blind and conditional writes alike. */
+        private suspend fun beforeWrite() {
             if (offline) throw IllegalStateException("offline")
             val currentGate = gate
             if (currentGate != null) {
@@ -91,14 +111,6 @@ class TwoDeviceGrocerySyncTest {
                 failNextUpserts--
                 throw IllegalStateException("injected failure")
             }
-            upsertCount++
-            upsertLog.add(payload)
-            clock++
-            // Blind upsert bumps the version (like the server trigger)
-            val key = Triple(householdId, weekKey, dataKind)
-            val existing = data[key]
-            val newVersion = (existing?.third ?: 0L) + 1
-            data[key] = Triple(payload, "t$clock", newVersion)
         }
 
         override suspend fun pushIfVersion(
@@ -112,7 +124,9 @@ class TwoDeviceGrocerySyncTest {
                 upsert(householdId, weekKey, dataKind, payload)
                 return PushResult.ok(0)
             }
-            if (offline) throw IllegalStateException("offline")
+            beforeWrite()
+            casAttempts++
+            if (alwaysConflict) return PushResult.conflict()
             val key = Triple(householdId, weekKey, dataKind)
             val existing = data[key]
             if (expectedVersion == null) {
@@ -317,21 +331,42 @@ class TwoDeviceGrocerySyncTest {
         a.seedRemote(baseItem, remote)
         b.seedRemote(baseItem, remote)
 
-        // B edits label and pushes successfully
+        // B edits the label and pushes: B's base is now B_label at the server's version
         b.repository.saveGroceryItems(listOf(item("a", label = "B_label")))
 
-        // A edits label and pushes — remote now has A_label
+        // A refreshes (sees B_label), then edits and pushes A_label
+        a.repository.refreshFromRemote()
         a.repository.saveGroceryItems(listOf(item("a", label = "A_label")))
 
-        // B refreshes — should fast-forward to A_label (B's local == B's base after push)
+        // B refreshes: B's local equals its base, so the remote edit fast-forwards.
+        // Without markSynced after B's push, base would still be "base", both sides would
+        // look changed, and the tie rule would keep B_label.
         b.repository.refreshFromRemote()
 
-        // B refreshes — should fast-forward: local == base -> remote wins
-        // CAS merge from the pushList path changes ordering; verify A_label wins
-        val bAfter = b.repository.currentGroceryItems()
-        val bLabel = if (bAfter.size == 1) bAfter[0].label else "count=${bAfter.size}"
-        assertTrue(bLabel == "A_label" || bLabel == "B_label",
-            "B must have one of the two labels, got: $bLabel")
+        assertEquals("A_label", b.repository.currentGroceryItems().single().label)
+        assertEquals(0, remote.blindUpsertCount, "every write must go through the version precondition")
+    }
+
+    @Test
+    fun `S3 concurrent label edits — both devices resolve to the same label by the tie rule`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val a = device(remote = remote)
+        val b = device(remote = remote)
+        val baseItem = listOf(item("a", label = "base"))
+        a.seedRemote(baseItem, remote)
+        b.seedRemote(baseItem, remote)
+
+        // Neither device has seen the other's edit
+        a.repository.saveGroceryItems(listOf(item("a", label = "A_label")))
+        b.repository.saveGroceryItems(listOf(item("a", label = "B_label"))) // conflicts, merges, retries
+
+        a.repository.refreshFromRemote()
+
+        // Both edits changed the label: the greater label wins, on both devices
+        assertEquals("B_label", a.repository.currentGroceryItems().single().label)
+        assertEquals("B_label", b.repository.currentGroceryItems().single().label)
+        assertEquals(2L, remote.data[Triple(householdId, weekKey, "grocery")]?.third)
+        assertEquals(0, remote.blindUpsertCount)
     }
 
     @Test
@@ -391,21 +426,106 @@ class TwoDeviceGrocerySyncTest {
         remote.failNextUpserts = 1
         a.repository.refreshFromRemote()
 
-        // B deletes x and syncs
+        // B refreshes, so it has really seen x and y, then deletes x and syncs
+        b.repository.refreshFromRemote()
         b.repository.saveGroceryItems(listOf(item("b"), item("c"), item("y")))
 
-        // A refreshes — if base was advanced after flush, x stays gone
+        // A refreshes: the flush advanced A's base to the list that contained x, so B's
+        // deletion of a known item is honoured instead of being read as a stale snapshot.
         a.repository.refreshFromRemote()
 
-        // x must be absent (partner deleted it; base was advanced so A knows x was merged)
-        // x must be absent (partner deleted it; base was advanced so A knows x was merged)
-        // With CAS, B's merge preserves x (concurrent add), so x survives.
-        // Verify both devices are consistent: same items.
-        val aIds = a.repository.currentGroceryItems().map { it.id }.toSet()
-        val bIds = b.repository.currentGroceryItems().map { it.id }.toSet()
-        assertEquals(aIds, bIds, "A and B must have the same items after CAS convergence")
-        assertTrue("b" in aIds && "c" in aIds && "y" in aIds,
-            "A must have b,c,y; CAS preserves x: got $aIds")
+        // x gone (deleted by the partner after seeing it); y kept (A's own offline add)
+        a.assertGroceryIs(item("b"), item("c"), item("y"))
+        b.assertGroceryIs(item("b"), item("c"), item("y"))
+        assertEquals(0, remote.blindUpsertCount, "no write may bypass the version precondition")
+    }
+
+    @Test
+    fun `S3 a stale writer that never saw an item does not delete it`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val a = device(remote = remote)
+        val b = device(remote = remote)
+        val ab = listOf(item("b"), item("c"))
+        a.seedRemote(ab, remote)
+        b.seedRemote(ab, remote)
+
+        // A adds x and y and pushes
+        a.repository.saveGroceryItems(listOf(item("b"), item("c"), item("x"), item("y")))
+
+        // B never refreshed: it has not seen x, so omitting x is not a deletion
+        b.repository.saveGroceryItems(listOf(item("b"), item("c"), item("y"))) // conflicts, merges
+
+        a.repository.refreshFromRemote()
+        val expected = setOf("b", "c", "x", "y")
+        assertEquals(expected, a.repository.currentGroceryItems().map { it.id }.toSet())
+        assertEquals(expected, b.repository.currentGroceryItems().map { it.id }.toSet())
+        assertEquals(0, remote.blindUpsertCount)
+    }
+
+    @Test
+    fun `S3 bounded retry — a remote that always conflicts gets exactly three attempts then the entry stays pending`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val a = device(remote = remote)
+        a.seedRemote(listOf(item("a")), remote)
+        remote.alwaysConflict = true
+
+        a.repository.saveGroceryItems(listOf(item("a"), item("b")))
+
+        assertEquals(3, remote.casAttempts, "bounded: three conditional attempts, no more")
+        assertEquals(0, remote.blindUpsertCount)
+        assertTrue(a.engine.hasPending(householdId, weekKey, "grocery"), "the write must stay queued")
+        assertEquals(setOf("a", "b"), a.repository.currentGroceryItems().map { it.id }.toSet())
+    }
+
+    @Test
+    fun `S3 a transport failure is not a conflict — one attempt, no merge, entry queued then flushed by CAS`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val a = device(remote = remote)
+        a.seedRemote(listOf(item("a")), remote)
+
+        remote.failNextUpserts = 5
+        a.repository.saveGroceryItems(listOf(item("a"), item("b")))
+
+        assertEquals(4, remote.failNextUpserts, "a failure is one attempt: no retry loop, no merge round-trip")
+        assertTrue(a.engine.hasPending(householdId, weekKey, "grocery"))
+
+        remote.failNextUpserts = 0
+        a.repository.refreshFromRemote()
+
+        assertTrue(!a.engine.hasPending(householdId, weekKey, "grocery"), "the next refresh must push it")
+        assertEquals(
+            setOf("a", "b"),
+            NutritionStorageCodec.decodeGrocery(remote.data[Triple(householdId, weekKey, "grocery")]?.first ?: "")
+                .map { it.id }.toSet(),
+        )
+        assertEquals(0, remote.blindUpsertCount)
+    }
+
+    @Test
+    fun `S3 a grocery entry whose conditional push failed is never flushed blind in the same refresh`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val a = device(remote = remote)
+        a.seedRemote(listOf(item("a")), remote)
+
+        remote.offline = true
+        a.repository.saveGroceryItems(listOf(item("a"), item("b"))) // queued
+        remote.offline = false
+
+        // The apply-merge push and the flush push both fail on this refresh
+        remote.failNextUpserts = 2
+        a.repository.refreshFromRemote()
+
+        assertEquals(0, remote.blindUpsertCount, "a failed CAS push must not fall back to a blind upsert")
+        assertTrue(a.engine.hasPending(householdId, weekKey, "grocery"))
+
+        a.repository.refreshFromRemote() // recovered: goes out through the precondition
+        assertTrue(!a.engine.hasPending(householdId, weekKey, "grocery"))
+        assertEquals(0, remote.blindUpsertCount)
+        assertEquals(
+            setOf("a", "b"),
+            NutritionStorageCodec.decodeGrocery(remote.data[Triple(householdId, weekKey, "grocery")]?.first ?: "")
+                .map { it.id }.toSet(),
+        )
     }
 
     @Test
@@ -487,21 +607,12 @@ class TwoDeviceGrocerySyncTest {
         assertEquals(2, remote.upsertLog.size, "both pushes must execute")
         val mergedItems = NutritionStorageCodec.decodeGrocery(remote.upsertLog[0])
         val saveItems = NutritionStorageCodec.decodeGrocery(remote.upsertLog[1])
-        // CAS merge changes ordering; verify content by set
-        assertEquals(setOf("b", "a", "c"), mergedItems.map { it.id }.toSet(),
-            "merged items must contain a,b,c")
-        assertEquals(setOf("a", "b", "c", "z"), saveItems.map { it.id }.toSet(),
-            "saved items must contain a,b,c,z")
+        assertEquals(listOf("b", "a", "c"), mergedItems.map { it.id })
+        assertEquals(listOf("a", "b", "c", "z"), saveItems.map { it.id })
 
-        // Final remote and device have all items (CAS merge changes ordering)
-        assertEquals(setOf("a", "b", "c", "z"),
-            NutritionStorageCodec.decodeGrocery(
-                remote.data[Triple(householdId, weekKey, "grocery")]?.first ?: ""
-            ).map { it.id }.toSet(),
-            "remote must have all items")
-        assertEquals(setOf("a", "b", "c", "z"),
-            a.repository.currentGroceryItems().map { it.id }.toSet(),
-            "device must have all items")
+        // Final remote matches save's list
+        assertRemoteItems(remote, listOf("a", "b", "c", "z"))
+        a.assertGroceryIs(item("a"), item("b"), item("c"), item("z"))
     }
 
     /** Sequential id generator so carried items stay unique. */

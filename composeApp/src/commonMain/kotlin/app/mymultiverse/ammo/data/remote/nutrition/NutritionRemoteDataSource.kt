@@ -46,9 +46,8 @@ interface NutritionRemoteDataSource {
      *   PushResult(ok=false) on stale-version or duplicate insert,
      *   PushResult(failed=true) on network/transient error.
      *
-     * Default implementation: delegates to the legacy blind [upsert] for
-     * backward compatibility. Real implementation in [NutritionRemoteApi]
-     * and CAS-capable test fakes override this.
+     * No default body: every implementation (including test fakes) must state
+     * what a conditional write does, so none can silently skip the precondition.
      */
     suspend fun pushIfVersion(
         householdId: String,
@@ -56,8 +55,5 @@ interface NutritionRemoteDataSource {
         dataKind: String,
         payload: String,
         expectedVersion: Long?,
-    ): PushResult {
-        upsert(householdId, weekKey, dataKind, payload)
-        return PushResult.ok(1)
-    }
+    ): PushResult
 }

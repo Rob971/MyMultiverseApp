@@ -31,6 +31,10 @@ class OfflineFirstNutritionRepository(
 
     private val mutex = Mutex()
 
+    private companion object {
+        val GROCERY_KINDS = setOf("grocery", "ai_grocery")
+    }
+
     override fun observeGroceryItems(): Flow<List<GroceryItem>> = localStore.observeGroceryItems()
 
     override fun observeAiGroceryItems(): Flow<List<GroceryItem>> = localStore.observeAiGroceryItems()
@@ -61,8 +65,9 @@ class OfflineFirstNutritionRepository(
                         }
                     }
                 }
-                // Remaining pending items (meal_plan) use the legacy blind flush
-                syncEngine.flushPending(householdId, weekKey)
+                // Only non-grocery kinds (meal_plan) use the legacy blind flush; a grocery
+                // entry that is still pending here failed its CAS push and stays queued.
+                syncEngine.flushPending(householdId, weekKey, excludeKinds = GROCERY_KINDS)
                     .forEach { localStore.markSynced(it.dataKind, it.payload) }
             }
         }
