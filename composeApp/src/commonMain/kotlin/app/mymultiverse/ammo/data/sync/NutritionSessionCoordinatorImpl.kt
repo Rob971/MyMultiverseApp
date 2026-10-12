@@ -14,11 +14,15 @@ import app.mymultiverse.ammo.domain.repository.NutritionRepository
 import app.mymultiverse.ammo.domain.repository.NutritionSessionCoordinator
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import com.russhwolf.settings.Settings
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.receiveAsFlow
 
 class NutritionSessionCoordinatorImpl(
     private val settings: Settings,
@@ -37,26 +41,43 @@ class NutritionSessionCoordinatorImpl(
     private val personalRepository = NutritionRepositoryImpl(settings)
     private val _nutrition = MutableStateFlow<NutritionRepository>(personalRepository)
     private val _collaborationActivity = MutableSharedFlow<NutritionCollaborationActivity>(extraBufferCapacity = 8)
+    /**
+     * Bounded channel for pull-path removals while no subscriber is listening.
+     * Channel has exactly-once, bounded, race-free semantics: items sent via
+     * [trySend] are buffered until drained by the first subscriber; overflow
+     * drops the oldest item.
+     */
+    private val pullActivities = Channel<NutritionCollaborationActivity>(
+        capacity = 8,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
     private var activeHouseholdId: String? = null
 
     override val nutrition = _nutrition.asStateFlow()
 
     override fun observeSyncStatus(): Flow<NutritionSyncStatus> = syncEngine.observeStatus()
 
-    override fun observeCollaborationActivity(): Flow<NutritionCollaborationActivity> =
-        _collaborationActivity.asSharedFlow()
+    override fun observeCollaborationActivity(): Flow<NutritionCollaborationActivity> {
+        // Merge pull-path removals (from the bounded channel) with realtime events
+        // (from the SharedFlow). Single consumer by design: NutritionScreenModel
+        // collects once. A second concurrent collector would split pull items
+        // between collectors — the channel has exactly-once delivery.
+        return merge(pullActivities.receiveAsFlow(), _collaborationActivity.asSharedFlow())
+    }
 
     override suspend fun activateHousehold(householdId: String) {
+        val previousId = activeHouseholdId
         activeHouseholdId = householdId
         bindRepository(
             householdId = householdId,
             weekKey = WeekCalendar.currentWeekKey(),
+            previousHouseholdId = previousId,
         )
     }
 
     override suspend fun selectWeek(weekKey: String) {
         val householdId = activeHouseholdId ?: return
-        bindRepository(householdId = householdId, weekKey = weekKey)
+        bindRepository(householdId = householdId, weekKey = weekKey, previousHouseholdId = null)
     }
 
     override fun deactivate() {
@@ -64,14 +85,23 @@ class NutritionSessionCoordinatorImpl(
         syncEngine.markIdle()
         diagnostics.activeHouseholdId = null
         activeHouseholdId = null
+        // Drain the pull-activities channel — any undelivered removals belong to
+        // the deactivated household and must not surface on the next subscription.
+        while (pullActivities.tryReceive().isSuccess) {}
         _nutrition.value = personalRepository
         logger.breadcrumb("nutrition_session_deactivated")
     }
 
-    private suspend fun bindRepository(householdId: String, weekKey: String) {
+    private suspend fun bindRepository(householdId: String, weekKey: String, previousHouseholdId: String?) {
         realtimeSync?.stop()
         diagnostics.activeHouseholdId = householdId
         logger.breadcrumb("nutrition_household_activated household_id=$householdId week_key=$weekKey")
+        // Drain the pull-activities channel when switching to a different household.
+        // Same-household activation (e.g. selectWeek) must NOT drain: an undelivered
+        // removal from the initial activation must survive the repository rebuild.
+        if (previousHouseholdId != null && previousHouseholdId != householdId) {
+            while (pullActivities.tryReceive().isSuccess) {}
+        }
         val repository = OfflineFirstNutritionRepository(
             localStore = NutritionLocalStore(
                 settings = settings,
@@ -82,6 +112,12 @@ class NutritionSessionCoordinatorImpl(
             householdId = householdId,
             weekKey = weekKey,
             remoteEnabled = remoteApi != null,
+            onCollaborationActivity = { activity ->
+                // Pull-path removals go into the bounded channel. The channel
+                // provides exactly-once delivery to the first subscriber; no
+                // replay, no duplication, no cross-household leakage.
+                pullActivities.trySend(activity)
+            },
         )
         _nutrition.value = repository
         repository.refreshFromRemote()

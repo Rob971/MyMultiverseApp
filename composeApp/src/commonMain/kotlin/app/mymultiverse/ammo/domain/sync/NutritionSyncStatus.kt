@@ -17,4 +17,12 @@ sealed class NutritionSyncStatus {
 
     /** Brief confirmation after pending edits were shared successfully. */
     data object Synced : NutritionSyncStatus()
+
+    /**
+     * Whether the sync banner should be rendered on list screens (grocery, meal plan).
+     * Only persistent states that the user must know about are shown here;
+     * transient Syncing/Synced states remain on the hub where nothing is being tapped.
+     */
+    fun shouldShowOnListScreen(): Boolean =
+        this is PendingPush || this is RemoteUnavailable
 }

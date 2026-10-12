@@ -174,6 +174,7 @@
     <string name="nutrition_collaboration_actor_unknown">Qualcuno</string>
     <string name="nutrition_collaboration_grocery_added">%1$s azzeccato %2$s</string>
     <string name="nutrition_collaboration_grocery_checked">%1$s spuntato %2$s</string>
+    <string name="nutrition_collaboration_grocery_removed">%1$s levato %2$s</string>
     <string name="nutrition_collaboration_grocery_batch">%1$s aggiornato %2$d cose 'n lista</string>
     <string name="nutrition_grocery_toggle_item">Segna comme comprato</string>
     <string name="nutrition_grocery_keep_screen_on">Tien' 'o schermo acceso mentre faje 'a spesa</string>
@@ -857,7 +858,7 @@
     <string name="sharing_members_error_invitee_household_already_active">Sta persona appiene già a n'ata gruppo famigliare e nun se può azzeccà.</string>
     <string name="sharing_members_loading">Caricamento membri...</string>
     <string name="nutrition_sync_status_syncing">Sto aggiornanno 'e liste e 'e piani condivisi...</string>
-    <string name="nutrition_sync_status_pending">%1$d cagnature nun ancora salvate</string>
+    <string name="nutrition_sync_status_pending">Nun'ancora salvato: %1$d</string>
     <string name="nutrition_sync_status_offline">Siè offline — 'e cagnature se salvano ncopp'â stu dispositivo</string>
     <string name="nutrition_sync_status_synced">Tutto è aggiornato</string>
     <string name="auth_sign_out">Scì 'o sistema</string>

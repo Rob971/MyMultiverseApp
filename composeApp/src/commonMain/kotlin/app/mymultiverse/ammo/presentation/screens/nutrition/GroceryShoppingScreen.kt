@@ -40,6 +40,7 @@ import ammo.composeapp.generated.resources.nutrition_collaboration_actor_unknown
 import ammo.composeapp.generated.resources.nutrition_collaboration_grocery_added
 import ammo.composeapp.generated.resources.nutrition_collaboration_grocery_batch
 import ammo.composeapp.generated.resources.nutrition_collaboration_grocery_checked
+import ammo.composeapp.generated.resources.nutrition_collaboration_grocery_removed
 import ammo.composeapp.generated.resources.nutrition_grocery_add_button
 import ammo.composeapp.generated.resources.nutrition_grocery_add_hint
 import ammo.composeapp.generated.resources.nutrition_grocery_cancel_edit
@@ -90,6 +91,8 @@ import app.mymultiverse.ammo.presentation.components.JourneyIcon
 import app.mymultiverse.ammo.presentation.components.JourneyIconButton
 import app.mymultiverse.ammo.presentation.components.JourneyTertiaryButton
 import app.mymultiverse.ammo.presentation.components.WeekSelectorBanner
+import app.mymultiverse.ammo.presentation.components.NutritionSyncStatusBanner
+import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import app.mymultiverse.ammo.presentation.components.FamilyLogisticsSectionHeader
 import app.mymultiverse.ammo.presentation.components.GroceryPartnerNudgeTestTags
 import app.mymultiverse.ammo.presentation.components.GroceryGhostPairingBanner
@@ -140,6 +143,7 @@ fun GroceryShoppingScreen(
 ) {
     val items by screenModel.groceryItems.collectAsState()
     val collaborationSnackbar by screenModel.collaborationSnackbar.collectAsState()
+    val syncStatus by screenModel.syncStatus.collectAsState()
     val ghostPairingOffer by screenModel.ghostPairingOffer.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val showPartnerNudge by screenModel.showGroceryPartnerNudge.collectAsState()
@@ -230,6 +234,11 @@ fun GroceryShoppingScreen(
                 actor,
                 event.batchedCount,
             )
+            event.kind == NutritionCollaborationActivityKind.GroceryRemoved -> stringResource(
+                Res.string.nutrition_collaboration_grocery_removed,
+                actor,
+                event.itemLabel,
+            )
             event.kind == NutritionCollaborationActivityKind.GroceryAdded -> stringResource(
                 Res.string.nutrition_collaboration_grocery_added,
                 actor,
@@ -243,9 +252,25 @@ fun GroceryShoppingScreen(
         }
     }
 
-    LaunchedEffect(collaborationSnackbarMessage) {
+    LaunchedEffect(collaborationSnackbarMessage, canWrite) {
         val message = collaborationSnackbarMessage ?: return@LaunchedEffect
-        snackbarHostState.showSnackbar(message)
+        val event = collaborationSnackbar ?: return@LaunchedEffect
+        val removedItem = event.removedItem
+        val isSingleRemovalUndoable = event.kind == NutritionCollaborationActivityKind.GroceryRemoved &&
+            event.batchedCount == 1 && canWrite && removedItem != null
+        // Single removal -> message + Undo; a batch keeps the existing count message
+        // with no Undo (deliberate cut: an Undo would not know which item the batch dropped).
+        if (isSingleRemovalUndoable) {
+            val result = snackbarHostState.showJourneyActionSnackbar(
+                message = message,
+                actionLabel = undoLabel,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                screenModel.restoreRemovedGroceryItem(removedItem)
+            }
+        } else {
+            snackbarHostState.showSnackbar(message)
+        }
         screenModel.consumeCollaborationSnackbar()
     }
 
@@ -317,7 +342,8 @@ fun GroceryShoppingScreen(
             if (activeIndex < 0) return@LaunchedEffect
 
             val index = groceryActiveItemListIndex(
-                canWrite = canWrite,
+                syncStatus = syncStatus,
+                hasPartnerNudge = showPartnerNudge,
                 hasViewerNotice = !canWrite,
                 hasGhostPairing = canWrite && ghostPairingOffer != null,
                 hasShoppingModeToggle = sections.completed.isNotEmpty() && totalCount > 0,
@@ -391,6 +417,11 @@ fun GroceryShoppingScreen(
                 .testTag(GroceryListTestTags.SCROLL_LIST)
 
             val groceryListContent: LazyListScope.() -> Unit = {
+                if (syncStatus.shouldShowOnListScreen()) {
+                    item(key = "sync-banner") {
+                        NutritionSyncStatusBanner(status = syncStatus)
+                    }
+                }
                 groceryShoppingListItems(
                     weekLabel = weekLabel,
                     previousWeekLabel = previousWeekLabel,
@@ -509,22 +540,6 @@ fun GroceryShoppingScreen(
             }
         }
     }
-}
-
-private fun groceryActiveItemListIndex(
-    canWrite: Boolean,
-    hasViewerNotice: Boolean,
-    hasGhostPairing: Boolean,
-    hasShoppingModeToggle: Boolean,
-    hasEmptyState: Boolean,
-    activeItemIndex: Int,
-): Int {
-    if (hasEmptyState) return -1
-    var index = 1 // to-buy header after week selector (0)
-    if (hasViewerNotice) index++
-    if (hasGhostPairing) index++
-    if (hasShoppingModeToggle) index++
-    return index + activeItemIndex
 }
 
 private fun LazyListScope.groceryShoppingListItems(

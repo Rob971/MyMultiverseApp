@@ -138,6 +138,7 @@ object NutritionStringKeys {
         "nutrition_collaboration_actor_unknown",
         "nutrition_collaboration_grocery_added",
         "nutrition_collaboration_grocery_checked",
+        "nutrition_collaboration_grocery_removed",
         "nutrition_collaboration_grocery_batch",
         "nutrition_grocery_toggle_item",
         "nutrition_grocery_keep_screen_on",

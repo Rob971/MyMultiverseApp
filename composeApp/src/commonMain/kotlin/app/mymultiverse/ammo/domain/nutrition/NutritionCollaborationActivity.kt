@@ -5,12 +5,19 @@ import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 enum class NutritionCollaborationActivityKind {
     GroceryAdded,
     GroceryChecked,
+    GroceryRemoved,
 }
 
 data class NutritionCollaborationActivity(
     val actorUserId: String?,
     val kind: NutritionCollaborationActivityKind,
     val itemLabel: String,
+    /**
+     * The item as it existed before a [NutritionCollaborationActivityKind.GroceryRemoved],
+     * so a viewer can offer to re-add it with its original id, label and checked state.
+     * Null for added/checked activities.
+     */
+    val removedItem: GroceryItem? = null,
 )
 
 object NutritionCollaborationActivityDetector {
@@ -20,7 +27,19 @@ object NutritionCollaborationActivityDetector {
         actorUserId: String?,
     ): List<NutritionCollaborationActivity> {
         val beforeById = before.associateBy { it.id }
+        val afterIds = after.mapTo(mutableSetOf()) { it.id }
         val activities = mutableListOf<NutritionCollaborationActivity>()
+
+        for (item in before) {
+            if (item.id !in afterIds) {
+                activities += NutritionCollaborationActivity(
+                    actorUserId = actorUserId,
+                    kind = NutritionCollaborationActivityKind.GroceryRemoved,
+                    itemLabel = item.label,
+                    removedItem = item,
+                )
+            }
+        }
 
         for (item in after) {
             if (item.id !in beforeById) {

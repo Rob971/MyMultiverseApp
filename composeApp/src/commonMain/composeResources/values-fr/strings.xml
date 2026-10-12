@@ -174,6 +174,7 @@
     <string name="nutrition_collaboration_actor_unknown">Quelqu'un</string>
     <string name="nutrition_collaboration_grocery_added">%1$s a ajouté %2$s</string>
     <string name="nutrition_collaboration_grocery_checked">%1$s a coché %2$s</string>
+    <string name="nutrition_collaboration_grocery_removed">%1$s a retiré %2$s</string>
     <string name="nutrition_collaboration_grocery_batch">%1$s a mis à jour %2$d articles sur la liste</string>
     <string name="nutrition_grocery_toggle_item">Marquer comme acheté</string>
     <string name="nutrition_grocery_keep_screen_on">Garder l'écran allumé pendant les courses</string>
@@ -857,7 +858,7 @@
     <string name="sharing_members_error_invitee_household_already_active">Cette personne appartient déjà à un autre groupe familial et ne peut pas être ajoutée.</string>
     <string name="sharing_members_loading">Chargement des membres...</string>
     <string name="nutrition_sync_status_syncing">Mise à jour des listes et plans partagés...</string>
-    <string name="nutrition_sync_status_pending">%1$d modifications pas encore enregistrées</string>
+    <string name="nutrition_sync_status_pending">Pas encore enregistré : %1$d</string>
     <string name="nutrition_sync_status_offline">Vous êtes hors ligne — les modifications sont enregistrées sur cet appareil</string>
     <string name="nutrition_sync_status_synced">Tout est à jour</string>
     <string name="auth_sign_out">Se déconnecter</string>

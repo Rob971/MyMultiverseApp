@@ -30,7 +30,7 @@ class NutritionRepositoryImpl(
 
     override fun observeMealPlan(): Flow<WeeklyMealPlan> = localStore.observeMealPlan()
 
-    override suspend fun refreshFromRemote() = Unit
+    override suspend fun refreshFromRemote() {}
 
     override suspend fun saveGroceryItems(items: List<GroceryItem>) {
         localStore.saveGroceryItems(items)

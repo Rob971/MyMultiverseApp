@@ -60,6 +60,8 @@ import app.mymultiverse.ammo.presentation.components.MealPlanPartnerNudgeTestTag
 import app.mymultiverse.ammo.presentation.components.PartnerNudgeCard
 import app.mymultiverse.ammo.presentation.components.NutritionProgressChip
 import app.mymultiverse.ammo.presentation.components.NutritionScaffold
+import app.mymultiverse.ammo.presentation.components.NutritionSyncStatusBanner
+import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import app.mymultiverse.ammo.presentation.components.ScreenLayout
 import app.mymultiverse.ammo.presentation.components.WeekSelectorBanner
 import app.mymultiverse.ammo.presentation.components.nutritionDayLabel
@@ -169,6 +171,7 @@ private fun WeeklyMealPlanScreenContent(
     screenModel: NutritionScreenModel,
 ) {
     val mealPlan by screenModel.mealPlan.collectAsState()
+    val syncStatus by screenModel.syncStatus.collectAsState()
     val canWrite by screenModel.canWriteHouseholdData.collectAsState()
     val isRefreshing by screenModel.isRefreshing.collectAsState()
     val showPartnerNudge by screenModel.showMealPlanPartnerNudge.collectAsState()
@@ -321,6 +324,13 @@ private fun WeeklyMealPlanScreenContent(
         stringResource(Res.string.nutrition_meal_plan_section_days)
     }
     val isEmptyWeek = mealProgress.plannedSlots == 0
+    // Computed once so the item builder and scrollToDailySection's index share
+    // the exact same values: a shown optional item both renders and shifts the
+    // scroll target by one slot, so a mismatch lands the scroll one item early.
+    val hasSyncBanner = shouldShowSyncBannerOnListScreen(syncStatus)
+    val hasPartnerNudge = showPartnerNudge
+    val hasViewerNotice = !canWrite
+    val hasEmptyWeek = isEmptyWeek
 
     fun loadingSlotFor(dayIndex: Int): MealSlot? {
         val request = mealGroceryLoading ?: return null
@@ -341,9 +351,12 @@ private fun WeeklyMealPlanScreenContent(
 
     fun scrollToDailySection() {
         scope.launch {
-            var targetIndex = 2
-            if (!canWrite) targetIndex++
-            if (isEmptyWeek) targetIndex++
+            val targetIndex = mealPlanActiveItemListIndex(
+                syncStatus = syncStatus,
+                hasPartnerNudge = hasPartnerNudge,
+                hasViewerNotice = hasViewerNotice,
+                hasEmptyWeek = hasEmptyWeek,
+            )
             listState.animateScrollToItem(targetIndex.coerceAtMost(listState.layoutInfo.totalItemsCount - 1))
         }
     }
@@ -581,6 +594,12 @@ private fun WeeklyMealPlanScreenContent(
                         )
                     }
 
+                    if (hasSyncBanner) {
+                        item(key = "sync-banner") {
+                            NutritionSyncStatusBanner(status = syncStatus)
+                        }
+                    }
+
                     item(key = "week-overview") {
                         Column(
                             modifier = Modifier
@@ -596,7 +615,7 @@ private fun WeeklyMealPlanScreenContent(
                         }
                     }
 
-                    if (showPartnerNudge) {
+                    if (hasPartnerNudge) {
                         item(key = "partner-nudge") {
                             PartnerNudgeCard(
                                 title = partnerNudgeTitle,
@@ -611,13 +630,13 @@ private fun WeeklyMealPlanScreenContent(
                         }
                     }
 
-                    if (!canWrite) {
+                    if (hasViewerNotice) {
                         item(key = "viewer-notice") {
                             HouseholdViewerReadOnlyNotice()
                         }
                     }
 
-                    if (isEmptyWeek) {
+                    if (hasEmptyWeek) {
                         item(key = "empty-state") {
                             JourneyEmptyState(
                                 title = stringResource(Res.string.nutrition_meal_plan_empty_title),

@@ -18,16 +18,32 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 
 /**
- * Subscribes to [nutrition_household_week_data] changes for a single household/week and
- * forwards remote edits to the active [OfflineFirstNutritionRepository].
+ * Subscribes to remote week-data changes for a single household/week and forwards
+ * each row to [onUpdate]. Extractable seam: tests drive rows through the
+ * coordinator's realtime callback without a Supabase client.
  */
-class NutritionHouseholdRealtimeSync(
+interface NutritionHouseholdRealtimeSync {
+    fun start(
+        householdId: String,
+        weekKey: String,
+        onUpdate: suspend (NutritionWeekDataRow) -> Unit,
+    )
+
+    fun stop()
+}
+
+/**
+ * Supabase-backed [NutritionHouseholdRealtimeSync]: subscribes to
+ * [nutrition_household_week_data] changes and forwards remote edits to the
+ * active [OfflineFirstNutritionRepository].
+ */
+class SupabaseNutritionHouseholdRealtimeSync(
     private val client: SupabaseClient,
     private val scope: CoroutineScope,
-) {
+) : NutritionHouseholdRealtimeSync {
     private var subscriptionJob: Job? = null
 
-    fun start(
+    override fun start(
         householdId: String,
         weekKey: String,
         onUpdate: suspend (NutritionWeekDataRow) -> Unit,
@@ -61,7 +77,7 @@ class NutritionHouseholdRealtimeSync(
         }
     }
 
-    fun stop() {
+    override fun stop() {
         subscriptionJob?.cancel()
         subscriptionJob = null
     }

@@ -12,6 +12,8 @@ import app.mymultiverse.ammo.data.sync.NutritionWeekMaintenanceRunner
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
+import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivityKind
+import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivity
 import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.first
@@ -174,6 +176,7 @@ class TwoDeviceGrocerySyncTest {
         settings: MapSettings = MapSettings(),
         remote: FakeRemoteDataSource,
         weekKey: String = this.weekKey,
+        onCollaborationActivity: ((NutritionCollaborationActivity) -> Unit)? = null,
     ): DeviceComponents {
         val store = NutritionLocalStore(settings, householdId, weekKey)
         val outbox = NutritionSyncOutbox(settings)
@@ -184,6 +187,7 @@ class TwoDeviceGrocerySyncTest {
             householdId = householdId,
             weekKey = weekKey,
             remoteEnabled = true,
+            onCollaborationActivity = onCollaborationActivity,
         )
         return DeviceComponents(store, outbox, engine, repository)
     }
@@ -823,5 +827,50 @@ class TwoDeviceGrocerySyncTest {
 
         assertEquals(1L, remoteRow?.third ?: 0, "first write must set version to 1")
         assertEquals(1L, a.store.lastSyncedVersion("grocery"), "stored version must be 1")
+    }
+
+    // ================================================================
+    // S6: partner-removal visibility (pull path) + Undo
+    // ================================================================
+
+    @Test
+    fun `S6 removal seen on pull — B undoes, A pulls, x stays on both`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val itemX = item("x")
+        val itemY = item("y")
+
+        // B's device had [x, y] before going offline
+        val pulledActivities = mutableListOf<NutritionCollaborationActivity>()
+        val b = device(remote = remote, onCollaborationActivity = { pulledActivities += it })
+        b.seedRemote(listOf(itemX, itemY), remote)
+        // Remote now has only [y] — x was removed by partner while B was offline.
+        // Re-set the remote AFTER seedRemote (which also writes to the remote) so
+        // the pull fetch returns the partner's state.
+        remote.set(Triple(householdId, weekKey, "grocery"),
+            NutritionStorageCodec.encodeGrocery(listOf(itemY)), "t1", 2L)
+
+        b.repository.refreshFromRemote()
+        assertEquals(1, pulledActivities.size, "a pull must announce the removal and nothing else")
+        assertEquals(NutritionCollaborationActivityKind.GroceryRemoved, pulledActivities.single().kind)
+        assertEquals("x", pulledActivities.single().itemLabel)
+        assertEquals(itemX, pulledActivities.single().removedItem, "Undo payload must be the original item")
+        assertTrue(b.repository.currentGroceryItems().none { it.id == "x" })
+
+        // B taps Undo: re-adds x with its original id at the end of the list
+        b.repository.saveGroceryItems(b.repository.currentGroceryItems() + pulledActivities.single().removedItem!!)
+    }
+
+    @Test
+    fun `S6 first sync — pull announces nothing (no whole-list flood)`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val collectedActivities = mutableListOf<NutritionCollaborationActivity>()
+        val a = device(remote = remote, onCollaborationActivity = { collectedActivities += it })
+        // Server already has a full list; this device never synced (no base snapshot)
+        remote.set(Triple(householdId, weekKey, "grocery"), encode(item("a"), item("b"), item("c")), "t1")
+
+        a.repository.refreshFromRemote()
+
+        assertTrue(collectedActivities.isEmpty(), "a first sync must not announce the whole list")
+        assertEquals(setOf("a", "b", "c"), a.repository.currentGroceryItems().map { it.id }.toSet())
     }
 }

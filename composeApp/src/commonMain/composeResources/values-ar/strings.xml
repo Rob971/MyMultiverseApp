@@ -174,6 +174,7 @@
     <string name="nutrition_collaboration_actor_unknown">شخص ما</string>
     <string name="nutrition_collaboration_grocery_added">أضاف %1$s %2$s</string>
     <string name="nutrition_collaboration_grocery_checked">حدّد %1$s %2$s كمُشترى</string>
+    <string name="nutrition_collaboration_grocery_removed">أزال %1$s %2$s</string>
     <string name="nutrition_collaboration_grocery_batch">حدّث %1$s %2$d عناصر في قائمة البقالة</string>
     <string name="nutrition_grocery_toggle_item">تحديد كمشترى</string>
     <string name="nutrition_grocery_keep_screen_on">إبقاء الشاشة مضاءة أثناء التسوق</string>
@@ -857,7 +858,7 @@
     <string name="sharing_members_error_invitee_household_already_active">هذا الشخص ينتمي بالفعل إلى مجموعة عائلية أخرى ولا يمكن إضافته.</string>
     <string name="sharing_members_loading">جارٍ تحميل الأعضاء...</string>
     <string name="nutrition_sync_status_syncing">جارٍ تحديث القوائم والخطط المشتركة...</string>
-    <string name="nutrition_sync_status_pending">%1$d تغييرات لم تُحفظ بعد</string>
+    <string name="nutrition_sync_status_pending">لم يُحفظ بعد: %1$d</string>
     <string name="nutrition_sync_status_offline">أنت غير متصل — التغييرات تُحفظ على هذا الجهاز</string>
     <string name="nutrition_sync_status_synced">كل شيء محدّث</string>
     <string name="auth_sign_out">تسجيل الخروج</string>
