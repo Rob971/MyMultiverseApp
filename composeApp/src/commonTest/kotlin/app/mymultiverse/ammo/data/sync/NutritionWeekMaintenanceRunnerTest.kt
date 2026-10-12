@@ -5,6 +5,8 @@ import app.mymultiverse.ammo.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.ammo.data.local.nutrition.NutritionWeekMaintenanceStore
 import app.mymultiverse.ammo.data.observability.TestObservability
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteDataSource
+import app.mymultiverse.ammo.data.remote.nutrition.PushResult
+import app.mymultiverse.ammo.data.remote.nutrition.pushViaUpsert
 import app.mymultiverse.ammo.data.repository.NutritionStorageCodec
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
@@ -157,6 +159,14 @@ class NutritionWeekMaintenanceRunnerTest {
         val repository = offlineRepository(settings, householdId, currentWeek)
 
         val failingRemote = object : NutritionRemoteDataSource {
+
+            override suspend fun pushIfVersion(
+                householdId: String,
+                weekKey: String,
+                dataKind: String,
+                payload: String,
+                expectedVersion: Long?,
+            ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
             override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
                 throw RuntimeException("network_unavailable")
             }
@@ -302,6 +312,14 @@ class NutritionWeekMaintenanceRunnerTest {
         val repository = offlineRepository(settings, householdId, currentWeek)
 
         val fetchFailingRemote = object : NutritionRemoteDataSource {
+
+            override suspend fun pushIfVersion(
+                householdId: String,
+                weekKey: String,
+                dataKind: String,
+                payload: String,
+                expectedVersion: Long?,
+            ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
             var claimCount = 0
             override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
                 throw RuntimeException("network_unavailable")
@@ -429,6 +447,14 @@ class NutritionWeekMaintenanceRunnerTest {
 
         // A viewer's insert is RLS-denied — surfaces as an exception, not as false.
         val viewerRemote = object : NutritionRemoteDataSource {
+
+            override suspend fun pushIfVersion(
+                householdId: String,
+                weekKey: String,
+                dataKind: String,
+                payload: String,
+                expectedVersion: Long?,
+            ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
             var claimAttempts = 0
             override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
             override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean {
@@ -472,6 +498,14 @@ class NutritionWeekMaintenanceRunnerTest {
          */
         private val claims: MutableMap<String, MutableSet<String>> = mutableMapOf(),
     ) : NutritionRemoteDataSource {
+
+        override suspend fun pushIfVersion(
+            householdId: String,
+            weekKey: String,
+            dataKind: String,
+            payload: String,
+            expectedVersion: Long?,
+        ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
         var fetchCount = 0
         var claimCount = 0
         var failNextClaims = 0

@@ -3,6 +3,8 @@ package app.mymultiverse.ammo.data.household
 import app.mymultiverse.ammo.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.ammo.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteDataSource
+import app.mymultiverse.ammo.data.remote.nutrition.PushResult
+import app.mymultiverse.ammo.data.remote.nutrition.pushViaUpsert
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.ammo.data.observability.TestObservability
 import app.mymultiverse.ammo.data.sync.NutritionSyncEngine
@@ -93,6 +95,14 @@ class HouseholdNutritionPersistenceFlowTest {
 }
 
 private class RecordingHouseholdRemote : NutritionRemoteDataSource {
+
+    override suspend fun pushIfVersion(
+        householdId: String,
+        weekKey: String,
+        dataKind: String,
+        payload: String,
+        expectedVersion: Long?,
+    ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
     data class UpsertCall(
         val householdId: String,
         val weekKey: String,
@@ -114,6 +124,14 @@ private class RecordingHouseholdRemote : NutritionRemoteDataSource {
 private class StaticHouseholdRemote(
     private val rows: List<NutritionWeekDataRow>,
 ) : NutritionRemoteDataSource {
+
+    override suspend fun pushIfVersion(
+        householdId: String,
+        weekKey: String,
+        dataKind: String,
+        payload: String,
+        expectedVersion: Long?,
+    ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
     val fetchCalls = mutableListOf<Pair<String, String>>()
 
     override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {

@@ -63,14 +63,29 @@ class NutritionLocalStore(
         return settings.getStringOrNull(key)
     }
 
-    fun markSynced(dataKind: String, payload: String) {
+    fun lastSyncedVersion(dataKind: String): Long? {
+        val key = versionKey(dataKind) ?: return null
+        return settings.getStringOrNull(key)?.toLongOrNull()
+    }
+
+    fun markSynced(dataKind: String, payload: String, version: Long? = null) {
         val key = baseKey(dataKind) ?: return
         settings.putString(key, payload)
+        if (version != null) {
+            val vk = versionKey(dataKind) ?: return
+            settings.putString(vk, version.toString())
+        }
     }
 
     private fun baseKey(dataKind: String): String? = when (dataKind) {
         "grocery" -> NutritionStorageKeys.groceryBase(householdId, weekKey)
         "ai_grocery" -> NutritionStorageKeys.aiGroceryBase(householdId, weekKey)
+        else -> null
+    }
+
+    private fun versionKey(dataKind: String): String? = when (dataKind) {
+        "grocery" -> NutritionStorageKeys.groceryVersion(householdId, weekKey)
+        "ai_grocery" -> NutritionStorageKeys.aiGroceryVersion(householdId, weekKey)
         else -> null
     }
 

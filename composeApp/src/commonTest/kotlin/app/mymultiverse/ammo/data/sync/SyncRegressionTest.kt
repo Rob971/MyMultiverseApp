@@ -4,6 +4,8 @@ import app.mymultiverse.ammo.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.ammo.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.ammo.data.observability.TestObservability
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteDataSource
+import app.mymultiverse.ammo.data.remote.nutrition.PushResult
+import app.mymultiverse.ammo.data.remote.nutrition.pushViaUpsert
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import com.russhwolf.settings.MapSettings
@@ -16,6 +18,14 @@ class SyncRegressionTest {
     private val wk = "2026-W40"
 
     private class Remote : NutritionRemoteDataSource {
+
+        override suspend fun pushIfVersion(
+            householdId: String,
+            weekKey: String,
+            dataKind: String,
+            payload: String,
+            expectedVersion: Long?,
+        ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
         val rows = mutableMapOf<String, Pair<String, String>>()
         var offline = false
         var failUpserts = false

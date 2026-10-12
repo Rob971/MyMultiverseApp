@@ -4,6 +4,8 @@ import app.mymultiverse.ammo.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.ammo.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.ammo.data.observability.TestObservability
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteDataSource
+import app.mymultiverse.ammo.data.remote.nutrition.PushResult
+import app.mymultiverse.ammo.data.remote.nutrition.pushViaUpsert
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
@@ -185,6 +187,14 @@ class OfflineFirstNutritionRepositoryTest {
         )
 
     private object FailingRemote : NutritionRemoteDataSource {
+
+        override suspend fun pushIfVersion(
+            householdId: String,
+            weekKey: String,
+            dataKind: String,
+            payload: String,
+            expectedVersion: Long?,
+        ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
         override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
 
         override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
@@ -197,6 +207,14 @@ class OfflineFirstNutritionRepositoryTest {
     private class StaticRemote(
         private val rows: List<NutritionWeekDataRow>,
     ) : NutritionRemoteDataSource {
+
+        override suspend fun pushIfVersion(
+            householdId: String,
+            weekKey: String,
+            dataKind: String,
+            payload: String,
+            expectedVersion: Long?,
+        ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
         var fetchCount = 0
 
         override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
