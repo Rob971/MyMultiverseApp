@@ -45,7 +45,7 @@ import app.mymultiverse.ammo.data.supabase.UnconfiguredAuthRepository
 import app.mymultiverse.ammo.data.supabase.UnconfiguredHouseholdRepository
 import app.mymultiverse.ammo.data.supabase.UnconfiguredHouseholdCollaborationRepository
 import app.mymultiverse.ammo.data.sync.NutritionSessionCoordinatorImpl
-import app.mymultiverse.ammo.data.sync.NutritionHouseholdRealtimeSync
+import app.mymultiverse.ammo.data.sync.SupabaseNutritionHouseholdRealtimeSync
 import app.mymultiverse.ammo.domain.observability.DiagnosticsContext
 import app.mymultiverse.ammo.domain.repository.AuthRepository
 import app.mymultiverse.ammo.domain.repository.GreetingRepository
@@ -136,7 +136,7 @@ private val dataModule = module {
             settings = settings,
             remoteApi = client?.let { NutritionRemoteApi(it) },
             outbox = get(),
-            realtimeSync = client?.let { NutritionHouseholdRealtimeSync(it, get()) },
+            realtimeSync = client?.let { SupabaseNutritionHouseholdRealtimeSync(it, get()) },
             logger = get(),
             diagnostics = get(),
         )

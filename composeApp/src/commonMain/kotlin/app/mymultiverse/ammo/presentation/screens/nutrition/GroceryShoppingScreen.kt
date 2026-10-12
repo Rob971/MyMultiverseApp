@@ -342,8 +342,8 @@ fun GroceryShoppingScreen(
             if (activeIndex < 0) return@LaunchedEffect
 
             val index = groceryActiveItemListIndex(
-                canWrite = canWrite,
-                hasSyncBanner = syncStatus.shouldShowOnListScreen(),
+                syncStatus = syncStatus,
+                hasPartnerNudge = showPartnerNudge,
                 hasViewerNotice = !canWrite,
                 hasGhostPairing = canWrite && ghostPairingOffer != null,
                 hasShoppingModeToggle = sections.completed.isNotEmpty() && totalCount > 0,
@@ -540,24 +540,6 @@ fun GroceryShoppingScreen(
             }
         }
     }
-}
-
-private fun groceryActiveItemListIndex(
-    canWrite: Boolean,
-    hasSyncBanner: Boolean,
-    hasViewerNotice: Boolean,
-    hasGhostPairing: Boolean,
-    hasShoppingModeToggle: Boolean,
-    hasEmptyState: Boolean,
-    activeItemIndex: Int,
-): Int {
-    if (hasEmptyState) return -1
-    var index = 1 // to-buy header after week selector (0)
-    if (hasSyncBanner) index++ // sync banner is above the week selector
-    if (hasViewerNotice) index++
-    if (hasGhostPairing) index++
-    if (hasShoppingModeToggle) index++
-    return index + activeItemIndex
 }
 
 private fun LazyListScope.groceryShoppingListItems(

@@ -324,6 +324,13 @@ private fun WeeklyMealPlanScreenContent(
         stringResource(Res.string.nutrition_meal_plan_section_days)
     }
     val isEmptyWeek = mealProgress.plannedSlots == 0
+    // Computed once so the item builder and scrollToDailySection's index share
+    // the exact same values: a shown optional item both renders and shifts the
+    // scroll target by one slot, so a mismatch lands the scroll one item early.
+    val hasSyncBanner = shouldShowSyncBannerOnListScreen(syncStatus)
+    val hasPartnerNudge = showPartnerNudge
+    val hasViewerNotice = !canWrite
+    val hasEmptyWeek = isEmptyWeek
 
     fun loadingSlotFor(dayIndex: Int): MealSlot? {
         val request = mealGroceryLoading ?: return null
@@ -345,10 +352,10 @@ private fun WeeklyMealPlanScreenContent(
     fun scrollToDailySection() {
         scope.launch {
             val targetIndex = mealPlanActiveItemListIndex(
-                hasSyncBanner = syncStatus != NutritionSyncStatus.Idle,
-                hasPartnerNudge = showPartnerNudge,
-                hasViewerNotice = !canWrite,
-                hasEmptyWeek = isEmptyWeek,
+                syncStatus = syncStatus,
+                hasPartnerNudge = hasPartnerNudge,
+                hasViewerNotice = hasViewerNotice,
+                hasEmptyWeek = hasEmptyWeek,
             )
             listState.animateScrollToItem(targetIndex.coerceAtMost(listState.layoutInfo.totalItemsCount - 1))
         }
@@ -587,7 +594,7 @@ private fun WeeklyMealPlanScreenContent(
                         )
                     }
 
-                    if (syncStatus.shouldShowOnListScreen()) {
+                    if (hasSyncBanner) {
                         item(key = "sync-banner") {
                             NutritionSyncStatusBanner(status = syncStatus)
                         }
@@ -608,7 +615,7 @@ private fun WeeklyMealPlanScreenContent(
                         }
                     }
 
-                    if (showPartnerNudge) {
+                    if (hasPartnerNudge) {
                         item(key = "partner-nudge") {
                             PartnerNudgeCard(
                                 title = partnerNudgeTitle,
@@ -623,13 +630,13 @@ private fun WeeklyMealPlanScreenContent(
                         }
                     }
 
-                    if (!canWrite) {
+                    if (hasViewerNotice) {
                         item(key = "viewer-notice") {
                             HouseholdViewerReadOnlyNotice()
                         }
                     }
 
-                    if (isEmptyWeek) {
+                    if (hasEmptyWeek) {
                         item(key = "empty-state") {
                             JourneyEmptyState(
                                 title = stringResource(Res.string.nutrition_meal_plan_empty_title),
@@ -713,25 +720,4 @@ private fun WeeklyMealPlanScreenContent(
             }
         }
     }
-}
-
-/**
- * Computes the LazyColumn index of the first day card (daily-section-header),
- * accounting for all optional items that precede it in the item list:
- * `sync-banner`, `partner-nudge`, `viewer-notice`, `empty-state`.
- * Always precedes: `week-selector` (0) and `week-overview` (1).
- * Used by BOTH the item builder and [scrollToDailySection] so they cannot drift.
- */
-private fun mealPlanActiveItemListIndex(
-    hasSyncBanner: Boolean,
-    hasPartnerNudge: Boolean,
-    hasViewerNotice: Boolean,
-    hasEmptyWeek: Boolean,
-): Int {
-    var index = 2 // week-selector (0) + week-overview (1) always present
-    if (hasSyncBanner) index++
-    if (hasPartnerNudge) index++
-    if (hasViewerNotice) index++
-    if (hasEmptyWeek) index++
-    return index
 }

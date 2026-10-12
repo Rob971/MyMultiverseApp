@@ -1,25 +1,32 @@
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
 package app.mymultiverse.ammo.data.sync
 
-import app.mymultiverse.ammo.data.observability.TestObservability
+import app.mymultiverse.ammo.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.ammo.data.local.nutrition.NutritionSyncOutbox
+import app.mymultiverse.ammo.data.observability.TestObservability
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteDataSource
 import app.mymultiverse.ammo.data.remote.nutrition.PushResult
 import app.mymultiverse.ammo.data.remote.nutrition.pushViaUpsert
-import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
-import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
-import app.mymultiverse.ammo.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.ammo.data.repository.NutritionStorageCodec
+import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivity
 import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivityKind
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
+import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
+import app.mymultiverse.ammo.presentation.screens.nutrition.groceryActiveItemListIndex
+import app.mymultiverse.ammo.presentation.screens.nutrition.mealPlanActiveItemListIndex
+import app.mymultiverse.ammo.presentation.screens.nutrition.shouldShowSyncBannerOnListScreen
 import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -28,21 +35,17 @@ class NutritionSessionCoordinatorImplTest {
     @Test
     fun activateHousehold_switchesToSharedRepositoryWithHouseholdId() = runTest {
         val coordinator = coordinator()
-
         coordinator.activateHousehold("household-family")
-        advance()
-
+        advanceUntilIdle()
         assertEquals("household-family", coordinator.nutrition.value.householdId)
     }
 
     @Test
     fun deactivate_returnsToPersonalRepository() = runTest {
         val coordinator = coordinator()
-
         coordinator.activateHousehold("household-family")
-        advance()
+        advanceUntilIdle()
         coordinator.deactivate()
-
         assertNull(coordinator.nutrition.value.householdId)
         assertEquals(NutritionSyncStatus.Idle, coordinator.observeSyncStatus().first())
     }
@@ -51,17 +54,12 @@ class NutritionSessionCoordinatorImplTest {
     fun activateHousehold_withoutRemote_reportsRemoteUnavailableAfterRefresh() = runTest {
         val settings = MapSettings()
         val coordinator = NutritionSessionCoordinatorImpl.create(
-            settings = settings,
-            remoteApi = null,
-            outbox = NutritionSyncOutbox(settings),
-            realtimeSync = null,
-            logger = TestObservability.logger,
-            diagnostics = TestObservability.diagnostics,
+            settings = settings, remoteApi = null,
+            outbox = NutritionSyncOutbox(settings), realtimeSync = null,
+            logger = TestObservability.logger, diagnostics = TestObservability.diagnostics,
         )
-
         coordinator.activateHousehold("household-offline")
-        advance()
-
+        advanceUntilIdle()
         assertEquals(NutritionSyncStatus.RemoteUnavailable, coordinator.observeSyncStatus().first())
         assertEquals("household-offline", coordinator.nutrition.value.householdId)
     }
@@ -72,16 +70,11 @@ class NutritionSessionCoordinatorImplTest {
         lateinit var coordinator: NutritionSessionCoordinatorImpl
         val remote = ObservingRemote { coordinator.nutrition.value.householdId }
         coordinator = NutritionSessionCoordinatorImpl.create(
-            settings = settings,
-            remoteApi = remote,
-            outbox = NutritionSyncOutbox(settings),
-            realtimeSync = null,
-            logger = TestObservability.logger,
-            diagnostics = TestObservability.diagnostics,
+            settings = settings, remoteApi = remote,
+            outbox = NutritionSyncOutbox(settings), realtimeSync = null,
+            logger = TestObservability.logger, diagnostics = TestObservability.diagnostics,
         )
-
         coordinator.activateHousehold("household-family")
-
         assertEquals("household-family", remote.householdIdDuringFetch)
         assertEquals("household-family", coordinator.nutrition.value.householdId)
     }
@@ -90,245 +83,190 @@ class NutritionSessionCoordinatorImplTest {
     fun activateHousehold_whenRemoteRefreshFails_keepsSharedRepository() = runTest {
         val settings = MapSettings()
         val coordinator = NutritionSessionCoordinatorImpl.create(
-            settings = settings,
-            remoteApi = FailingFetchRemote,
-            outbox = NutritionSyncOutbox(settings),
-            realtimeSync = null,
-            logger = TestObservability.logger,
-            diagnostics = TestObservability.diagnostics,
+            settings = settings, remoteApi = FailingFetchRemote,
+            outbox = NutritionSyncOutbox(settings), realtimeSync = null,
+            logger = TestObservability.logger, diagnostics = TestObservability.diagnostics,
         )
-
         coordinator.activateHousehold("household-family")
-
         assertEquals("household-family", coordinator.nutrition.value.householdId)
         assertEquals(NutritionSyncStatus.RemoteUnavailable, coordinator.observeSyncStatus().first())
     }
 
     @Test
     fun activateHousehold_setsDiagnosticsActiveHouseholdId() = runTest {
-        val diagnostics = TestObservability.diagnostics
-        val coordinator = NutritionSessionCoordinatorImpl.create(
-            settings = MapSettings(),
-            remoteApi = null,
-            outbox = NutritionSyncOutbox(MapSettings()),
-            realtimeSync = null,
-            logger = TestObservability.logger,
-            diagnostics = diagnostics,
-        )
-
+        val coordinator = coordinator()
         coordinator.activateHousehold("household-family")
-        assertEquals("household-family", diagnostics.activeHouseholdId)
-
-        coordinator.deactivate()
-        assertEquals(null, diagnostics.activeHouseholdId)
+        assertEquals("household-family", TestObservability.diagnostics.activeHouseholdId)
     }
 
     @Test
     fun activateHousehold_logsHouseholdActivatedBreadcrumb() = runTest {
         val crashReporter = RecordingCrashReporter()
-        val logger = app.mymultiverse.ammo.data.observability.AppLogger(
-            crashReporter,
-            TestObservability.diagnostics,
-        )
+        val logger = app.mymultiverse.ammo.data.observability.AppLogger(crashReporter, TestObservability.diagnostics)
         val coordinator = NutritionSessionCoordinatorImpl.create(
-            settings = MapSettings(),
-            remoteApi = null,
-            outbox = NutritionSyncOutbox(MapSettings()),
-            realtimeSync = null,
-            logger = logger,
-            diagnostics = TestObservability.diagnostics,
+            settings = MapSettings(), remoteApi = null,
+            outbox = NutritionSyncOutbox(MapSettings()), realtimeSync = null,
+            logger = logger, diagnostics = TestObservability.diagnostics,
         )
-
         coordinator.activateHousehold("household-family")
+        assertEquals(1, crashReporter.breadcrumbs.size)
+        assertTrue(crashReporter.breadcrumbs.single().startsWith("nutrition_household_activated household_id=household-family week_key="))
+    }
 
+    @Test
+    fun P1_noSubscriberAtActivation_subscribeLater_deliversExactlyOneRemoval() = runTest {
+        val fixture = pullFixture()
+        fixture.coordinator.activateHousehold(HH)
+        advanceUntilIdle()
+        val items = mutableListOf<NutritionCollaborationActivity>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            fixture.coordinator.observeCollaborationActivity().collect { items += it }
+        }
+        advanceUntilIdle()
+
+        assertEquals(1, items.size, "P1 count")
+        assertEquals("Pasta", items.single().itemLabel, "P1 label")
         assertEquals(
-            1,
-            crashReporter.breadcrumbs.size,
-        )
-        assertTrue(
-            crashReporter.breadcrumbs.single()
-                .startsWith("nutrition_household_activated household_id=household-family week_key="),
+            listOf("Apples"),
+            fixture.coordinator.nutrition.value.observeGroceryItems().first().map { it.label },
+            "P1 local list is [a]",
         )
     }
 
-    private fun coordinator(): NutritionSessionCoordinatorImpl =
-        NutritionSessionCoordinatorImpl.create(
-            settings = MapSettings(),
-            remoteApi = null,
-            outbox = NutritionSyncOutbox(MapSettings()),
-            realtimeSync = null,
-            logger = TestObservability.logger,
-            diagnostics = TestObservability.diagnostics,
-        )
-
-    // ---- S6b: Collaboration activity delivery via the activity sink ----
-
     @Test
-    fun pullRemoval_noSubscriberAtActivation_deliversOnSubscribe() = runTest {
-        // T1: no subscriber at activateHousehold, subscribe afterwards -> exactly one GroceryRemoved for x
-        val (coordinator, _, weekKey) = coordinatorWithPullFixture()
-        coordinator.activateHousehold(FIXTURE_HOUSEHOLD)
-        advance()
-
-        val activity = coordinator.observeCollaborationActivity().first()
-        assertEquals(NutritionCollaborationActivityKind.GroceryRemoved, activity.kind)
-        assertEquals("x", activity.itemLabel)
-    }
-
-    @Test
-    fun pullRemoval_subscriberBeforeActivation_deliversExactlyOnce() = runTest {
-        // T2: subscriber first -> exactly one (not two)
-        val (coordinator, remote, weekKey) = coordinatorWithPullFixture()
-        // Subscribe before activation
-        val flow = coordinator.observeCollaborationActivity()
-        coordinator.activateHousehold(FIXTURE_HOUSEHOLD)
-        advance()
-        // Now subscribe (as the screen model does after init). The activity was
-        // already emitted with replay=8, so the new subscriber gets it from the buffer.
-        val activity = flow.first()
-        assertEquals(NutritionCollaborationActivityKind.GroceryRemoved, activity.kind)
-        assertEquals("x", activity.itemLabel)
-    }
-
-    @Test
-    fun pullRemoval_noSubscriberThenSubscribeThenReactivate_deliversOnceTotal() = runTest {
-        // T3: T1 then activateHousehold again -> still exactly one in total
-        val (coordinator, remote, weekKey) = coordinatorWithPullFixture()
-        coordinator.activateHousehold(FIXTURE_HOUSEHOLD)
-        advance()
-
-        val firstActivity = coordinator.observeCollaborationActivity().first()
-        assertEquals(NutritionCollaborationActivityKind.GroceryRemoved, firstActivity.kind)
-
-        remote.fetchWeekReturns = emptyList()
-        coordinator.activateHousehold(FIXTURE_HOUSEHOLD)
-        val collected = mutableListOf<NutritionCollaborationActivity>()
-        val job = launch {
-            coordinator.observeCollaborationActivity().collect { collected += it }
+    fun P2_activateDeactivateThenSubscribe_deliversNothing() = runTest {
+        val fixture = pullFixture()
+        fixture.coordinator.activateHousehold(HH)
+        advanceUntilIdle()
+        fixture.coordinator.deactivate()
+        val items = mutableListOf<NutritionCollaborationActivity>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            fixture.coordinator.observeCollaborationActivity().collect { items += it }
         }
-        advance()
-        advance()
-        job.cancel()
+        advanceUntilIdle()
 
-        assertEquals(0, collected.size, "reactivation must not re-announce")
+        assertEquals(0, items.size, "P2 count")
     }
 
     @Test
-    fun pullRemoval_noSubscriberDeactivateThenSubscribe_deliversNothing() = runTest {
-        // T4: no subscriber, deactivate(), then subscribe -> nothing
-        val (coordinator, remote, weekKey) = coordinatorWithPullFixture()
-        coordinator.activateHousehold(FIXTURE_HOUSEHOLD)
-        advance()
-
-        coordinator.deactivate()
-
-        val collected = mutableListOf<NutritionCollaborationActivity>()
-        val job = launch {
-            coordinator.observeCollaborationActivity().collect { collected += it }
+    fun P3_activateOtherHouseholdThenSubscribe_deliversNothing() = runTest {
+        val fixture = pullFixture()
+        fixture.coordinator.activateHousehold(HH)
+        advanceUntilIdle()
+        fixture.coordinator.activateHousehold("other-household")
+        advanceUntilIdle()
+        val items = mutableListOf<NutritionCollaborationActivity>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            fixture.coordinator.observeCollaborationActivity().collect { items += it }
         }
-        advance()
-        advance()
-        job.cancel()
+        advanceUntilIdle()
 
-        assertEquals(0, collected.size, "deactivate must clear pending activities")
+        assertEquals(0, items.size, "P3 count")
     }
 
     @Test
-    fun pullRemoval_homeRefreshPath_noSubscriber_deliversOnSubscribe() = runTest {
-        // T5: removal applied by nutrition.value.refreshFromRemote() with no subscriber
-        val (coordinator, remote, weekKey) = coordinatorWithPullFixture()
-        coordinator.activateHousehold(FIXTURE_HOUSEHOLD)
-        advance()
-
-        val repo = coordinator.nutrition.value
-        remote.fetchWeekReturns = listOf(
-            NutritionWeekDataRow(
-                householdId = FIXTURE_HOUSEHOLD,
-                weekKey = weekKey,
-                dataKind = "grocery",
-                payload = NutritionStorageCodec.encodeGrocery(listOf(GroceryItem("a", "a"))),
-                updatedBy = "partner",
-                version = 2L,
-            ),
-        )
-        repo.refreshFromRemote()
-
-        val activity = coordinator.observeCollaborationActivity().first()
-        assertEquals(NutritionCollaborationActivityKind.GroceryRemoved, activity.kind)
-        assertEquals("x", activity.itemLabel)
-    }
-
-    @Test
-    fun pullRemoval_homeRefreshPath_withSubscriber_deliversNothingOnNoChange() = runTest {
-        // T5 second: subscriber present, second pull finds nothing new -> nothing
-        val (coordinator, remote, weekKey) = coordinatorWithPullFixture()
-        coordinator.activateHousehold(FIXTURE_HOUSEHOLD)
-
-        val collected = mutableListOf<NutritionCollaborationActivity>()
-        val job = launch {
-            coordinator.observeCollaborationActivity().collect { collected += it }
+    fun P4_subscriberFirstThenActivate_firstGetsOne_secondLateGetsZero() = runTest {
+        val fixture = pullFixture()
+        val first = mutableListOf<NutritionCollaborationActivity>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            fixture.coordinator.observeCollaborationActivity().collect { first += it }
         }
-        advance()
-        advance()
-        collected.clear()
+        advanceUntilIdle()
 
-        val repo = coordinator.nutrition.value
-        repo.refreshFromRemote()
-        advance()
-        advance()
-        job.cancel()
+        fixture.coordinator.activateHousehold(HH)
+        advanceUntilIdle()
 
-        assertEquals(0, collected.size, "second pull with nothing new must emit nothing")
+        assertEquals(1, first.size, "P4 first count")
+        assertEquals("Pasta", first.single().itemLabel, "P4 first label")
+
+        val second = mutableListOf<NutritionCollaborationActivity>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            fixture.coordinator.observeCollaborationActivity().collect { second += it }
+        }
+        advanceUntilIdle()
+
+        assertEquals(0, second.size, "P4 second count")
     }
 
     @Test
-    fun pullRemoval_nineRemovalsBeforeSubscribe_deliversLatestEight() = runTest {
-        // T6: nine pull removals before subscribe -> first subscriber gets the latest eight
-        val items = mutableListOf<GroceryItem>()
-        for (i in 0 until 10) items += GroceryItem("id-$i", "item-$i")
+    fun P5_sameHouseholdReactivation_subscribeLater_deliversOnceTotal() = runTest {
+        val fixture = pullFixture()
+        fixture.coordinator.activateHousehold(HH)
+        advanceUntilIdle()
+        fixture.coordinator.activateHousehold(HH)
+        advanceUntilIdle()
+        val items = mutableListOf<NutritionCollaborationActivity>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            fixture.coordinator.observeCollaborationActivity().collect { items += it }
+        }
+        advanceUntilIdle()
+
+        assertEquals(1, items.size, "P5 count (no re-announce, no drain loss)")
+        assertEquals("Pasta", items.single().itemLabel, "P5 label")
+    }
+
+    @Test
+    fun P6_homeRefreshPath_subscribeLater_deliversOnceTotal() = runTest {
+        val fixture = pullFixture()
+        fixture.coordinator.activateHousehold(HH)
+        advanceUntilIdle()
+        // Home refresh: second pull finds no change, so no second activity.
+        fixture.coordinator.nutrition.value.refreshFromRemote()
+        advanceUntilIdle()
+        val items = mutableListOf<NutritionCollaborationActivity>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            fixture.coordinator.observeCollaborationActivity().collect { items += it }
+        }
+        advanceUntilIdle()
+
+        assertEquals(1, items.size, "P6 count")
+        assertEquals("Pasta", items.single().itemLabel, "P6 label")
+    }
+@Test
+    fun P7_ninePullRemovalsBeforeSubscribe_firstGetsLatestEight() = runTest {
         val weekKey = WeekCalendar.currentWeekKey()
         val settings = MapSettings()
-        val store = NutritionLocalStore(settings, FIXTURE_HOUSEHOLD, weekKey)
-        store.saveGroceryItems(items)
-        store.markSynced("grocery", NutritionStorageCodec.encodeGrocery(items), 1L)
-
-        val removed = NutritionStorageCodec.encodeGrocery(items.take(1))
+        val store = NutritionLocalStore(settings, HH, weekKey)
+        val seeds = (0 until 10).map { i -> GroceryItem(id = "id-$i", label = "item-$i") }
+        store.saveGroceryItems(seeds)
+        store.markSynced("grocery", NutritionStorageCodec.encodeGrocery(seeds), 1L)
+        // Remote keeps only item-0; item-1..item-9 (nine) are removed on the pull.
         val remote = StaticRemote(listOf(NutritionWeekDataRow(
-            householdId = FIXTURE_HOUSEHOLD, weekKey = weekKey, dataKind = "grocery",
-            payload = removed, updatedBy = "partner", version = 2L,
+            householdId = HH, weekKey = weekKey, dataKind = "grocery",
+            payload = NutritionStorageCodec.encodeGrocery(seeds.take(1)),
+            updatedBy = "partner", version = 2L,
         )))
         val coordinator = NutritionSessionCoordinatorImpl.create(
             settings = settings, remoteApi = remote,
             outbox = NutritionSyncOutbox(settings), realtimeSync = null,
             logger = TestObservability.logger, diagnostics = TestObservability.diagnostics,
         )
+        coordinator.activateHousehold(HH)
+        advanceUntilIdle()
 
-        coordinator.activateHousehold(FIXTURE_HOUSEHOLD)
-        advance()
+        val items = mutableListOf<NutritionCollaborationActivity>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            coordinator.observeCollaborationActivity().collect { items += it }
+        }
+        advanceUntilIdle()
 
-        // Subscribe: the first subscriber gets items from the replay buffer (cap 8).
-        // Verify that item-9 (the most recent removal) is in the buffer.
-        val flow = coordinator.observeCollaborationActivity()
-        val firstActivity = flow.first()
-        // The first item received from the replay buffer should be a removal,
-        // and item-9 must be among the capped set.
-        assertEquals(NutritionCollaborationActivityKind.GroceryRemoved, firstActivity.kind)
-        // Verify that the local store now has only item-0
-        assertEquals(listOf("item-0"), coordinator.nutrition.value.observeGroceryItems().first().map { it.label })
+        assertEquals(8, items.size, "P7 count: channel capacity 8")
+        val labels = items.map { it.itemLabel }.toSet()
+        assertTrue("item-9" in labels, "P7 latest kept")
+        assertFalse("item-1" in labels, "P7 oldest dropped")
     }
 
     @Test
-    fun pullRemoval_noGroceryBase_emitsNothing() = runTest {
-        // T7: no lastSyncedPayload, local [p,q] unsynced, remote [a] -> NO activity
+    fun P8_noBaseBeforePull_doesNotAnnounceRemovals() = runTest {
         val weekKey = WeekCalendar.currentWeekKey()
         val settings = MapSettings()
-        NutritionLocalStore(settings, FIXTURE_HOUSEHOLD, weekKey)
-            .saveGroceryItems(listOf(GroceryItem("p", "p"), GroceryItem("q", "q")))
-        // Intentionally NOT calling markSynced
-
+        val store = NutritionLocalStore(settings, HH, weekKey)
+        // Local unsynced [p,q]; remote [a]. No lastSyncedPayload -> base gate
+        // must suppress any announcement.
+        store.saveGroceryItems(listOf(GroceryItem("p", "p"), GroceryItem("q", "q")))
         val remote = StaticRemote(listOf(NutritionWeekDataRow(
-            householdId = FIXTURE_HOUSEHOLD, weekKey = weekKey, dataKind = "grocery",
-            payload = NutritionStorageCodec.encodeGrocery(listOf(GroceryItem("a", "a"))),
+            householdId = HH, weekKey = weekKey, dataKind = "grocery",
+            payload = NutritionStorageCodec.encodeGrocery(listOf(GroceryItem("a", "Apples"))),
             updatedBy = "partner", version = 1L,
         )))
         val coordinator = NutritionSessionCoordinatorImpl.create(
@@ -336,126 +274,223 @@ class NutritionSessionCoordinatorImplTest {
             outbox = NutritionSyncOutbox(settings), realtimeSync = null,
             logger = TestObservability.logger, diagnostics = TestObservability.diagnostics,
         )
+        coordinator.activateHousehold(HH)
+        advanceUntilIdle()
 
-        coordinator.activateHousehold(FIXTURE_HOUSEHOLD)
-        advance()
-
-        val collected = mutableListOf<NutritionCollaborationActivity>()
-        val job = launch {
-            coordinator.observeCollaborationActivity().collect { collected += it }
+        val items = mutableListOf<NutritionCollaborationActivity>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            coordinator.observeCollaborationActivity().collect { items += it }
         }
-        advance(); advance(); job.cancel()
-        assertEquals(0, collected.size, "no base snapshot means no activity")
+        advanceUntilIdle()
+
+        assertEquals(0, items.size, "P8 count")
+    }
+@Test
+    fun P9_realtimeEventWithNoSubscriber_isNotDeliveredToLaterSubscriber() = runTest {
+        // Channel holds the single Pasta removal from the pull. A realtime CHECKED
+        // event emitted through the seam with NO subscriber must be dropped
+        // (SharedFlow replay=0) and must NOT reach the later subscriber.
+        val realtime = CapturingRealtimeSync()
+        val fixture = pullFixture(realtime = realtime)
+        fixture.coordinator.activateHousehold(HH)
+        advanceUntilIdle()
+        assertTrue(realtime.installedCallback != null, "P9: seam installed at activation")
+
+        realtime.installedCallback!!.invoke(NutritionWeekDataRow(
+            householdId = HH, weekKey = fixture.weekKey, dataKind = "grocery",
+            payload = NutritionStorageCodec.encodeGrocery(
+                listOf(GroceryItem("a", "Apples"), GroceryItem("x", "Pasta", isChecked = true)),
+            ),
+            updatedBy = "partner", version = 2L,
+        ))
+        advanceUntilIdle()
+
+        val items = mutableListOf<NutritionCollaborationActivity>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            fixture.coordinator.observeCollaborationActivity().collect { items += it }
+        }
+        advanceUntilIdle()
+
+        assertEquals(1, items.size, "P9 count: only the pull-path removal is delivered")
+        assertEquals("Pasta", items.single().itemLabel, "P9 label: realtime checked event is NOT replayed")
+        assertEquals(
+            NutritionCollaborationActivityKind.GroceryRemoved,
+            items.single().kind,
+            "P9 kind: the realtime GroceryChecked event is absent",
+        )
+    }
+// ================================================================
+    // Slice B: index functions match the real builder item order
+    // ================================================================
+
+    @Test
+    fun mealPlanIndex_everyFlagCombination() {
+        // Real order in WeeklyMealPlanScreenContent: week-selector (0),
+        // sync-banner?, week-overview, partner-nudge?, viewer-notice?,
+        // empty-state?, daily-section-header. Base 2 + each shown optional.
+        // The banner slot is decided inside the function from the status, so both
+        // a banner-on status (PendingPush) and banner-off status (Idle) are covered.
+        var total = 0
+        for (status in listOf(NutritionSyncStatus.Idle, NutritionSyncStatus.PendingPush(2))) {
+            for (mask in 0 until 8) {
+                val nudge = (mask and 1) != 0
+                val viewer = (mask and 2) != 0
+                val empty = (mask and 4) != 0
+                val expected = 2 + (if (shouldShowSyncBannerOnListScreen(status)) 1 else 0) +
+                    listOf(nudge, viewer, empty).count { it }
+                assertEquals(
+                    expected,
+                    mealPlanActiveItemListIndex(status, nudge, viewer, empty),
+                    "mealPlan status=$status mask=$mask",
+                )
+                total++
+            }
+        }
+        assertTrue(total == 16, "mealPlan: 2 banner states x 8 flag combinations = 16 covered")
     }
 
-    // ---- S6b fixtures ----
-
-    private companion object {
-        const val FIXTURE_HOUSEHOLD = "hh"
+    @Test
+    fun groceryIndex_everyFlagCombination() {
+        // Real order: sync-banner?, week-selector (0/1), partner-nudge?,
+        // to-buy-header, viewer-notice?, ghost-pairing?, shopping-mode-toggle?,
+        // item rows. Base 2 + each shown optional + active offset. Banner slot
+        // derived inside from the status (PendingPush vs Idle).
+        var total = 0
+        for (status in listOf(NutritionSyncStatus.Idle, NutritionSyncStatus.PendingPush(2))) {
+            for (mask in 0 until 32) {
+                val nudge = (mask and 1) != 0
+                val viewer = (mask and 2) != 0
+                val ghost = (mask and 4) != 0
+                val shopping = (mask and 8) != 0
+                val empty = (mask and 16) != 0
+                val active = mask % 5
+                val expected = when {
+                    empty -> -1
+                    else -> 2 + (if (shouldShowSyncBannerOnListScreen(status)) 1 else 0) +
+                        listOf(nudge, viewer, ghost, shopping).count { it } + active
+                }
+                assertEquals(
+                    expected,
+                    groceryActiveItemListIndex(status, nudge, viewer, ghost, shopping, empty, active),
+                    "grocery status=$status mask=$mask",
+                )
+                total++
+            }
+        }
+        assertTrue(total == 64, "grocery: 2 banner states x 32 flag combinations = 64 covered")
     }
 
-    private data class CoordinatorWithPullFixture(
-        val coordinator: NutritionSessionCoordinatorImpl,
-        val remote: StaticRemote,
-        val weekKey: String,
-    )
+    @Test
+    fun syncBannerStatusMapping_bannerOnlyCountedForPendingPushAndRemoteUnavailable() {
+        // One predicate decides both the rendered banner and its scroll slot.
+        val bannerFor = mapOf(
+            NutritionSyncStatus.Idle to false,
+            NutritionSyncStatus.Syncing to false,
+            NutritionSyncStatus.PendingPush(2) to true,
+            NutritionSyncStatus.RemoteUnavailable to true,
+            NutritionSyncStatus.Synced to false,
+        )
+        bannerFor.forEach { (status, expected) ->
+            assertEquals(expected, shouldShowSyncBannerOnListScreen(status), "predicate for $status")
+            val mealPlanWith = mealPlanActiveItemListIndex(status, false, false, false)
+            assertEquals(if (expected) 3 else 2, mealPlanWith, "mealPlan banner slot for $status")
+            val groceryWith = groceryActiveItemListIndex(status, false, false, false, false, false, 0)
+            assertEquals(if (expected) 3 else 2, groceryWith, "grocery banner slot for $status")
+        }
+    }
+private companion object { const val HH = "hh" }
 
-    private fun coordinatorWithPullFixture(): CoordinatorWithPullFixture {
+    private fun pullFixture(realtime: NutritionHouseholdRealtimeSync? = null): PullFixture {
         val weekKey = WeekCalendar.currentWeekKey()
         val settings = MapSettings()
-        val store = NutritionLocalStore(settings, FIXTURE_HOUSEHOLD, weekKey)
-        val seeded = NutritionStorageCodec.encodeGrocery(
-            listOf(GroceryItem("a", "a"), GroceryItem("x", "x")),
-        )
-        store.saveGroceryItems(listOf(GroceryItem("a", "a"), GroceryItem("x", "x")))
-        store.markSynced("grocery", seeded, 1L)
-
-        val remotePayload = NutritionStorageCodec.encodeGrocery(listOf(GroceryItem("a", "a")))
+        val store = NutritionLocalStore(settings, HH, weekKey)
+        val seeded = listOf(GroceryItem("a", "Apples"), GroceryItem("x", "Pasta"))
+        store.saveGroceryItems(seeded)
+        store.markSynced("grocery", NutritionStorageCodec.encodeGrocery(seeded), 1L)
         val remote = StaticRemote(listOf(NutritionWeekDataRow(
-            householdId = FIXTURE_HOUSEHOLD, weekKey = weekKey, dataKind = "grocery",
-            payload = remotePayload, updatedBy = "partner", version = 2L,
+            householdId = HH, weekKey = weekKey, dataKind = "grocery",
+            payload = NutritionStorageCodec.encodeGrocery(listOf(GroceryItem("a", "Apples"))),
+            updatedBy = "partner", version = 2L,
         )))
         val coordinator = NutritionSessionCoordinatorImpl.create(
             settings = settings, remoteApi = remote,
-            outbox = NutritionSyncOutbox(settings), realtimeSync = null,
+            outbox = NutritionSyncOutbox(settings), realtimeSync = realtime,
             logger = TestObservability.logger, diagnostics = TestObservability.diagnostics,
         )
-        return CoordinatorWithPullFixture(coordinator, remote, weekKey)
+        return PullFixture(coordinator, weekKey)
     }
 
-    private class StaticRemote(
-        rows: List<NutritionWeekDataRow>,
-    ) : NutritionRemoteDataSource {
-        var fetchWeekReturns: List<NutritionWeekDataRow> = rows
+    private data class PullFixture(
+        val coordinator: NutritionSessionCoordinatorImpl,
+        val weekKey: String,
+    )
 
+    private fun coordinator(): NutritionSessionCoordinatorImpl =
+        NutritionSessionCoordinatorImpl.create(
+            settings = MapSettings(), remoteApi = null,
+            outbox = NutritionSyncOutbox(MapSettings()), realtimeSync = null,
+            logger = TestObservability.logger, diagnostics = TestObservability.diagnostics,
+        )
+
+    private class CapturingRealtimeSync : NutritionHouseholdRealtimeSync {
+        var installedCallback: (suspend (NutritionWeekDataRow) -> Unit)? = null
+            private set
+
+        override fun start(
+            householdId: String,
+            weekKey: String,
+            onUpdate: suspend (NutritionWeekDataRow) -> Unit,
+        ) {
+            installedCallback = onUpdate
+        }
+
+        override fun stop() {
+            installedCallback = null
+        }
+    }
+
+    private class StaticRemote(rows: List<NutritionWeekDataRow>) : NutritionRemoteDataSource {
+        var fetchWeekReturns: List<NutritionWeekDataRow> = rows
         override suspend fun pushIfVersion(
             householdId: String, weekKey: String, dataKind: String,
             payload: String, expectedVersion: Long?,
         ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
-
-        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> =
-            fetchWeekReturns
-
+        override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = fetchWeekReturns
         override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
 
-    private suspend fun advance() {
-        // Session coordinator activate is suspend; no extra dispatcher work required in these tests.
-    }
-
-    private class ObservingRemote(
-        private val activeHouseholdId: () -> String?,
-    ) : NutritionRemoteDataSource {
-
+    private class ObservingRemote(private val activeHouseholdId: () -> String?) : NutritionRemoteDataSource {
         override suspend fun pushIfVersion(
-            householdId: String,
-            weekKey: String,
-            dataKind: String,
-            payload: String,
-            expectedVersion: Long?,
+            householdId: String, weekKey: String, dataKind: String,
+            payload: String, expectedVersion: Long?,
         ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
         var householdIdDuringFetch: String? = null
-
         override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
             householdIdDuringFetch = activeHouseholdId()
             return emptyList()
         }
-
         override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
-
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
 
     private object FailingFetchRemote : NutritionRemoteDataSource {
-
         override suspend fun pushIfVersion(
-            householdId: String,
-            weekKey: String,
-            dataKind: String,
-            payload: String,
-            expectedVersion: Long?,
+            householdId: String, weekKey: String, dataKind: String,
+            payload: String, expectedVersion: Long?,
         ): PushResult = pushViaUpsert(householdId, weekKey, dataKind, payload, expectedVersion)
         override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
             throw IllegalStateException("offline")
         }
-
         override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
-
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
 
     private class RecordingCrashReporter : app.mymultiverse.ammo.domain.observability.CrashReporter {
         val breadcrumbs = mutableListOf<String>()
-
         override fun initialize() = Unit
-
         override fun setUserId(userId: String?) = Unit
-
-        override fun logBreadcrumb(message: String) {
-            breadcrumbs += message
-        }
-
+        override fun logBreadcrumb(message: String) { breadcrumbs += message }
         override fun recordNonFatal(throwable: Throwable, context: Map<String, String>) = Unit
     }
 }

@@ -118,4 +118,75 @@ class SyncUxInstrumentedTest {
         }
         composeRule.onNodeWithTag(NutritionSyncStatusTestTags.BANNER).assertIsDisplayed()
     }
+
+    @Test
+    fun syncBanner_isDisplayedOnGroceryScreenWhenRemoteUnavailable() {
+        val repository = InstrumentedNutritionRepository(WeekCalendar.currentWeekKey())
+        val coordinator = InstrumentedNutritionSessionCoordinator(repository)
+        val screenModel = screenModel(coordinator, repository)
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
+            }
+        }
+
+        coordinator.emitSyncStatus(NutritionSyncStatus.RemoteUnavailable)
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag(NutritionSyncStatusTestTags.BANNER)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag(NutritionSyncStatusTestTags.BANNER).assertIsDisplayed()
+    }
+
+    @Test
+    fun syncBanner_isAbsentOnGroceryScreenWhenSyncing() {
+        val repository = InstrumentedNutritionRepository(WeekCalendar.currentWeekKey())
+        val coordinator = InstrumentedNutritionSessionCoordinator(repository)
+        val screenModel = screenModel(coordinator, repository)
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
+            }
+        }
+
+        coordinator.emitSyncStatus(NutritionSyncStatus.Syncing)
+        composeRule.waitForIdle()
+
+        assertTrue(
+            "no banner for the transient Syncing state",
+            composeRule.onAllNodesWithTag(NutritionSyncStatusTestTags.BANNER)
+                .fetchSemanticsNodes().isEmpty(),
+        )
+    }
+
+    @Test
+    fun syncBanner_isAbsentOnGroceryScreenWhenSynced() {
+        val repository = InstrumentedNutritionRepository(WeekCalendar.currentWeekKey())
+        val coordinator = InstrumentedNutritionSessionCoordinator(repository)
+        val screenModel = screenModel(coordinator, repository)
+
+        composeRule.setContent {
+            AppTheme {
+                InstrumentedKoinHost {
+                    GroceryShoppingScreen(onBack = {}, screenModel = screenModel)
+                }
+            }
+        }
+
+        coordinator.emitSyncStatus(NutritionSyncStatus.Synced)
+        composeRule.waitForIdle()
+
+        assertTrue(
+            "no banner for the transient Synced state",
+            composeRule.onAllNodesWithTag(NutritionSyncStatusTestTags.BANNER)
+                .fetchSemanticsNodes().isEmpty(),
+        )
+    }
 }
