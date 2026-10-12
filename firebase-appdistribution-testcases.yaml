@@ -1395,24 +1395,29 @@ testcases:
       - Editing the same cell resolves to the value of the device that saved last (same cell never shows two values).
       - The sync status on both devices shows idle with no pending changes.
   - id: grocery-removal-undo
-    title: A partner's removal shows '<name> removed <item>' with Undo, including after coming back online (v106)
+    title: A partner's removal shows '<name> removed <item>' with Undo, including after coming back online or opening the app late (v106)
     steps:
       - Two testers (A and B) in the same household open Groceries and see the same list with at least 3 items.
       - On B, turn on airplane mode (or keep the app closed) so B misses the change.
       - On A (online), delete one item (e.g. Rice) from the list.
       - On B, turn airplane mode off — the grocery screen comes back online (pull to refresh if needed).
       - On B, tap Undo on the snackbar ('removed' message).
+      - (variant) B opens the app on Home, then opens the Nutrition tab — the removal message appears on first open of Groceries.
+      - (variant) B pulls to refresh on Home while A's removal is pending — the removal message appears.
     expected:
       - On B, a snackbar names the removal (e.g. 'Someone removed Rice') and offers Undo — including when B was offline at the time of the removal.
       - Tapping Undo re-adds Rice (same item, no duplicate) on B immediately, and it appears on A after a refresh.
       - A further pull to refresh on both devices keeps Rice — it does not disappear again.
       - Viewers never see Undo.
   - id: grocery-sync-banner-visible
-    title: Sync banner is visible on the grocery screen while changes are pending (v106)
+    title: Sync banner is visible on the grocery screen only for offline/pending states, does not flicker on each add (v106)
     steps:
-      - Open Groceries in a shared household and turn on airplane mode.
-      - Add an item — the list shows it immediately.
+      - Open Groceries in a shared household.
+      - Add an item while online — the banner must NOT appear for Syncing/Synced.
+      - Turn on airplane mode.
+      - Add another item — the list shows it immediately.
       - Look at the top of the grocery list while still offline.
     expected:
-      - A banner at the top of the grocery list shows the pending state (not saved yet), while the offline item is still listed.
-      - The banner disappears once the push succeeds after coming back online.
+      - While online and working normally, the banner does not appear (no flicker on each add).
+      - A banner at the top of the grocery list shows the pending state (not saved yet) when offline, while the offline item is still listed.
+      - The banner disappears once the push succeeds after coming back online — no transient Syncing/Synced banner on the list screen.
