@@ -12,6 +12,7 @@ import app.mymultiverse.ammo.data.sync.NutritionWeekMaintenanceRunner
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.nutrition.DayMeals
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
+import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivityKind
 import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.first
@@ -823,5 +824,61 @@ class TwoDeviceGrocerySyncTest {
 
         assertEquals(1L, remoteRow?.third ?: 0, "first write must set version to 1")
         assertEquals(1L, a.store.lastSyncedVersion("grocery"), "stored version must be 1")
+    }
+
+    // ================================================================
+    // S6: partner-removal visibility (pull path) + Undo
+    // ================================================================
+
+    @Test
+    fun `S6 removal seen on pull — B undoes, A pulls, x stays on both`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val a = device(remote = remote)
+        val b = device(remote = remote)
+        val itemX = item("x")
+        val itemY = item("y")
+        val itemZ = item("z")
+        a.seedRemote(listOf(itemX, itemY), remote)
+        b.seedRemote(listOf(itemX, itemY), remote)
+
+        // A removes x AND adds z, then pushes
+        a.repository.saveGroceryItems(listOf(itemY, itemZ))
+
+        // B pulls: the removal reaches B through the pull path — and z's add does NOT
+        // leak as an announcement (the pull emits removals only)
+        val activities = b.repository.refreshFromRemote()
+        assertEquals(1, activities.size, "a pull must announce the removal and nothing else")
+        assertEquals(NutritionCollaborationActivityKind.GroceryRemoved, activities.single().kind)
+        assertEquals("x", activities.single().itemLabel)
+        assertEquals(itemX, activities.single().removedItem, "Undo payload must be the original item")
+        assertTrue(b.repository.currentGroceryItems().none { it.id == "x" })
+
+        // B taps Undo: re-adds x with its original id at the end of the list
+        b.repository.saveGroceryItems(b.repository.currentGroceryItems() + activities.single().removedItem!!)
+
+        // A pulls again: the S1 merge must treat B's re-add as a genuine add
+        a.repository.refreshFromRemote()
+        assertTrue(a.repository.currentGroceryItems().any { it.id == "x" }, "x must be back after A's pull")
+
+        // x stays back after a further refresh on BOTH devices (no ping-pong, no resurrection)
+        a.repository.refreshFromRemote()
+        b.repository.refreshFromRemote()
+        assertTrue(a.repository.currentGroceryItems().any { it.id == "x" })
+        assertTrue(b.repository.currentGroceryItems().any { it.id == "x" })
+        assertRemoteItems(remote, listOf("y", "z", "x"), weekKey = weekKey)
+        assertEquals(0, remote.blindUpsertCount, "every write must go through the version precondition")
+    }
+
+    @Test
+    fun `S6 first sync — pull announces nothing (no whole-list flood)`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val a = device(remote = remote)
+        // Server already has a full list; this device never synced (no base snapshot)
+        remote.set(Triple(householdId, weekKey, "grocery"), encode(item("a"), item("b"), item("c")), "t1")
+
+        val activities = a.repository.refreshFromRemote()
+
+        assertTrue(activities.isEmpty(), "a first sync must not announce the whole list")
+        assertEquals(setOf("a", "b", "c"), a.repository.currentGroceryItems().map { it.id }.toSet())
     }
 }

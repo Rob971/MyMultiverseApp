@@ -174,6 +174,7 @@
     <string name="nutrition_collaboration_actor_unknown">Jemand</string>
     <string name="nutrition_collaboration_grocery_added">%1$s hat %2$s hinzugefügt</string>
     <string name="nutrition_collaboration_grocery_checked">%1$s hat %2$s abgehakt</string>
+    <string name="nutrition_collaboration_grocery_removed">%1$s hat %2$s entfernt</string>
     <string name="nutrition_collaboration_grocery_batch">%1$s hat %2$d Artikel auf der Liste aktualisiert</string>
     <string name="nutrition_grocery_toggle_item">Als gekauft markieren</string>
     <string name="nutrition_grocery_keep_screen_on">Bildschirm beim Einkaufen eingeschaltet lassen</string>

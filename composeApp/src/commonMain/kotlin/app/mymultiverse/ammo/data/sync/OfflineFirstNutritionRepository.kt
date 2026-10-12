@@ -9,6 +9,9 @@ import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.nutrition.GroceryMerge
 import app.mymultiverse.ammo.domain.nutrition.MealPlanMerge
+import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivity
+import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivityDetector
+import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivityKind
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
@@ -17,6 +20,7 @@ import kotlinx.coroutines.sync.withLock
 data class GroceryChange(
     val before: List<GroceryItem>,
     val after: List<GroceryItem>,
+    val actorUserId: String? = null,
 )
 
 /** Local-first repository: writes are immediate, pushes go through CAS — no kind is flushed blind. */
@@ -36,12 +40,19 @@ class OfflineFirstNutritionRepository(
 
     override fun observeMealPlan(): Flow<WeeklyMealPlan> = localStore.observeMealPlan()
 
-    override suspend fun refreshFromRemote() {
+    override suspend fun refreshFromRemote(): List<NutritionCollaborationActivity> {
         if (!remoteEnabled) {
             syncEngine.markRemoteUnavailable()
-            return
+            return emptyList()
         }
-        val pulled = syncEngine.pullRemote(householdId, weekKey) { applyRemoteWeekData(it) }
+        // Reminders only make sense relative to a snapshot this device actually
+        // held: on a first sync the local "before" is empty, so announcing anything
+        // there would describe the whole list, not a partner's edit.
+        val hadGroceryBaseBeforePull = localStore.lastSyncedPayload("grocery") != null
+        val pulledChanges = mutableListOf<GroceryChange>()
+        val pulled = syncEngine.pullRemote(householdId, weekKey) { row ->
+            applyRemoteWeekData(row)?.let { pulledChanges += it }
+        }
         if (pulled) {
             mutex.withLock {
                 // After pullRemote the merge has already incorporated local offline
@@ -58,6 +69,14 @@ class OfflineFirstNutritionRepository(
                     }
                 }
             }
+        }
+        if (!hadGroceryBaseBeforePull) return emptyList()
+        return pulledChanges.flatMap { change ->
+            NutritionCollaborationActivityDetector.detectGroceryChanges(
+                before = change.before,
+                after = change.after,
+                actorUserId = change.actorUserId,
+            ).filter { it.kind == NutritionCollaborationActivityKind.GroceryRemoved }
         }
     }
 
@@ -102,7 +121,7 @@ class OfflineFirstNutritionRepository(
         } else {
             syncEngine.discardPending(householdId, weekKey, dataKind)
         }
-        return GroceryChange(before = before, after = merged)
+        return GroceryChange(before = before, after = merged, actorUserId = row.updatedBy)
     }
 
     private suspend fun applyMealPlanRemoteLocked(row: NutritionWeekDataRow) {

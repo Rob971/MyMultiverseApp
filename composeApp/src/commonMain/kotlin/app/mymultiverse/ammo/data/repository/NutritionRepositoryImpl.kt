@@ -3,6 +3,7 @@ package app.mymultiverse.ammo.data.repository
 import app.mymultiverse.ammo.data.local.nutrition.NutritionLocalStore
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
+import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivity
 import app.mymultiverse.ammo.domain.nutrition.WeekCalendar
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
 import com.russhwolf.settings.Settings
@@ -30,7 +31,7 @@ class NutritionRepositoryImpl(
 
     override fun observeMealPlan(): Flow<WeeklyMealPlan> = localStore.observeMealPlan()
 
-    override suspend fun refreshFromRemote() = Unit
+    override suspend fun refreshFromRemote(): List<NutritionCollaborationActivity> = emptyList()
 
     override suspend fun saveGroceryItems(items: List<GroceryItem>) {
         localStore.saveGroceryItems(items)

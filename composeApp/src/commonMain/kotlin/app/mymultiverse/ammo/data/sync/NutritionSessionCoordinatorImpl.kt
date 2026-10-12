@@ -84,7 +84,11 @@ class NutritionSessionCoordinatorImpl(
             remoteEnabled = remoteApi != null,
         )
         _nutrition.value = repository
-        repository.refreshFromRemote()
+        repository.refreshFromRemote().forEach { activity ->
+            // A partner's removal seen while this device was offline comes back on
+            // the initial pull, not on a realtime event. The pull emits removals only.
+            _collaborationActivity.tryEmit(activity)
+        }
         if (weekKey == WeekCalendar.currentWeekKey()) {
             val beforeCarry = repository.currentGroceryItems().size
             weekMaintenanceRunner.runForCurrentWeek(

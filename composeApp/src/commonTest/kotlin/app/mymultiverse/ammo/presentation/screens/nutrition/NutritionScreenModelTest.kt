@@ -24,6 +24,7 @@ import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.MealSlot
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiMode
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
+import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivity
 import app.mymultiverse.ammo.domain.nutrition.SeasonalWeekSuggester
 import app.mymultiverse.ammo.domain.service.AiKeyNotConfiguredException
 import app.mymultiverse.ammo.domain.service.GeminiApiException
@@ -181,6 +182,35 @@ class NutritionScreenModelTest {
         advanceUntilIdle()
 
         assertEquals(listOf("Rice", "Beans"), repository.grocery.value.map { it.label })
+    }
+
+    @Test
+    fun restoreRemovedGroceryItem_readdsAtEndWithOriginalId() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.grocery.value = listOf(GroceryItem("2", "Beans", false))
+        val model = nutritionScreenModel(repository, scope = modelScope)
+        advanceUntilIdle()
+
+        val removed = GroceryItem("1", "Rice", isChecked = true)
+        model.restoreRemovedGroceryItem(removed)
+        advanceUntilIdle()
+
+        // Re-added at the END of the list, keeping id, label and checked state.
+        assertEquals(listOf(GroceryItem("2", "Beans", false), removed), repository.grocery.value)
+    }
+
+    @Test
+    fun restoreRemovedGroceryItem_noopWhenIdAlreadyPresent() = runTest(testDispatcher) {
+        val repository = FakeNutritionRepository(weekKey)
+        repository.grocery.value = listOf(GroceryItem("1", "Rice", false))
+        val model = nutritionScreenModel(repository, scope = modelScope)
+        advanceUntilIdle()
+
+        model.restoreRemovedGroceryItem(GroceryItem("1", "Rice", isChecked = true))
+        advanceUntilIdle()
+
+        assertEquals(1, repository.grocery.value.size, "an existing id must not be re-added")
+        assertEquals("Rice", repository.grocery.value.single().label)
     }
 
     @Test
@@ -1272,7 +1302,7 @@ private class FakeNutritionRepository(
 
     override fun observeMealPlan(): Flow<WeeklyMealPlan> = mealPlan
 
-    override suspend fun refreshFromRemote() = Unit
+    override suspend fun refreshFromRemote(): List<NutritionCollaborationActivity> = emptyList()
 
     override suspend fun saveGroceryItems(items: List<GroceryItem>) {
         grocery.value = items

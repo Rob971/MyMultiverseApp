@@ -218,6 +218,8 @@ class NutritionScreenModel(
         val kind: NutritionCollaborationActivityKind,
         val itemLabel: String,
         val batchedCount: Int,
+        /** Set for a single removal, so the host screen can offer Undo. Null otherwise. */
+        val removedItem: GroceryItem? = null,
     )
 
     private val _collaborationSnackbar = MutableStateFlow<CollaborationSnackbarEvent?>(null)
@@ -511,6 +513,25 @@ class NutritionScreenModel(
                 if (current.none { it.id == item.id }) {
                     current.add(insertAt, item)
                     repository.saveGroceryItems(current)
+                }
+            }
+        }
+    }
+
+    /**
+     * Undoes a partner's removal: re-adds the item with its ORIGINAL id, label and
+     * checked state through the normal save path, at the END of the list, and does
+     * nothing if that id is already present (the S1 merge then treats the re-add as
+     * a genuine add rather than resurrecting a deleted item).
+     */
+    fun restoreRemovedGroceryItem(item: GroceryItem) {
+        if (!canWriteHouseholdData.value) return
+        scope.launch {
+            groceryMutex.withLock {
+                val current = groceryItems.value
+                if (current.none { it.id == item.id }) {
+                    repository.saveGroceryItems(current + item)
+                    logger.breadcrumb("grocery_restore_removed id=${item.id}")
                 }
             }
         }
@@ -1194,6 +1215,8 @@ class NutritionScreenModel(
             kind = latest.kind,
             itemLabel = latest.itemLabel,
             batchedCount = batch.size,
+            // Undo is offered only for a single removal, never for a batch.
+            removedItem = if (batch.size == 1) latest.removedItem else null,
         )
     }
 

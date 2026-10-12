@@ -40,6 +40,7 @@ import ammo.composeapp.generated.resources.nutrition_collaboration_actor_unknown
 import ammo.composeapp.generated.resources.nutrition_collaboration_grocery_added
 import ammo.composeapp.generated.resources.nutrition_collaboration_grocery_batch
 import ammo.composeapp.generated.resources.nutrition_collaboration_grocery_checked
+import ammo.composeapp.generated.resources.nutrition_collaboration_grocery_removed
 import ammo.composeapp.generated.resources.nutrition_grocery_add_button
 import ammo.composeapp.generated.resources.nutrition_grocery_add_hint
 import ammo.composeapp.generated.resources.nutrition_grocery_cancel_edit
@@ -230,6 +231,11 @@ fun GroceryShoppingScreen(
                 actor,
                 event.batchedCount,
             )
+            event.kind == NutritionCollaborationActivityKind.GroceryRemoved -> stringResource(
+                Res.string.nutrition_collaboration_grocery_removed,
+                actor,
+                event.itemLabel,
+            )
             event.kind == NutritionCollaborationActivityKind.GroceryAdded -> stringResource(
                 Res.string.nutrition_collaboration_grocery_added,
                 actor,
@@ -243,9 +249,25 @@ fun GroceryShoppingScreen(
         }
     }
 
-    LaunchedEffect(collaborationSnackbarMessage) {
+    LaunchedEffect(collaborationSnackbarMessage, canWrite) {
         val message = collaborationSnackbarMessage ?: return@LaunchedEffect
-        snackbarHostState.showSnackbar(message)
+        val event = collaborationSnackbar ?: return@LaunchedEffect
+        val removedItem = event.removedItem
+        val isSingleRemovalUndoable = event.kind == NutritionCollaborationActivityKind.GroceryRemoved &&
+            event.batchedCount == 1 && canWrite && removedItem != null
+        // Single removal -> message + Undo; a batch keeps the existing count message
+        // with no Undo (deliberate cut: an Undo would not know which item the batch dropped).
+        if (isSingleRemovalUndoable) {
+            val result = snackbarHostState.showJourneyActionSnackbar(
+                message = message,
+                actionLabel = undoLabel,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                screenModel.restoreRemovedGroceryItem(removedItem)
+            }
+        } else {
+            snackbarHostState.showSnackbar(message)
+        }
         screenModel.consumeCollaborationSnackbar()
     }
 

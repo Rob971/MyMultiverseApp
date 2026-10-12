@@ -5,6 +5,7 @@ import app.mymultiverse.ammo.domain.model.nutrition.FavoriteDish
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
 import app.mymultiverse.ammo.domain.nutrition.MealPlanGenerationScope
 import app.mymultiverse.ammo.domain.nutrition.NutritionAiPlanner
+import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivity
 import app.mymultiverse.ammo.domain.repository.FavoriteDishesRepository
 import app.mymultiverse.ammo.domain.repository.FavoriteMutationException
 import app.mymultiverse.ammo.domain.repository.NutritionRepository
@@ -14,8 +15,10 @@ import app.mymultiverse.ammo.domain.service.NutritionAiAssistantService
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOf
 
@@ -37,7 +40,7 @@ class InstrumentedNutritionRepository(
 
     override fun observeMealPlan(): Flow<WeeklyMealPlan> = mealPlan
 
-    override suspend fun refreshFromRemote() = Unit
+    override suspend fun refreshFromRemote(): List<NutritionCollaborationActivity> = emptyList()
 
     override suspend fun saveGroceryItems(items: List<GroceryItem>) {
         grocery.value = items
@@ -71,16 +74,26 @@ class InstrumentedNutritionSessionCoordinator(
     repository: InstrumentedNutritionRepository,
 ) : NutritionSessionCoordinator {
     private val _nutrition = MutableStateFlow<NutritionRepository>(repository)
+    private val _syncStatus = MutableStateFlow<NutritionSyncStatus>(NutritionSyncStatus.Idle)
+    private val _collaborationActivity = MutableSharedFlow<NutritionCollaborationActivity>(extraBufferCapacity = 8)
 
     var activatedHouseholdId: String? = null
         private set
 
     override val nutrition = _nutrition.asStateFlow()
 
-    override fun observeSyncStatus(): Flow<NutritionSyncStatus> = flowOf(NutritionSyncStatus.Idle)
+    override fun observeSyncStatus(): Flow<NutritionSyncStatus> = _syncStatus
 
-    override fun observeCollaborationActivity(): Flow<app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivity> =
-        flowOf()
+    override fun observeCollaborationActivity(): Flow<NutritionCollaborationActivity> =
+        _collaborationActivity.asSharedFlow()
+
+    fun emitSyncStatus(status: NutritionSyncStatus) {
+        _syncStatus.value = status
+    }
+
+    fun emitCollaborationActivity(activity: NutritionCollaborationActivity) {
+        _collaborationActivity.tryEmit(activity)
+    }
 
     override suspend fun activateHousehold(householdId: String) {
         activatedHouseholdId = householdId
