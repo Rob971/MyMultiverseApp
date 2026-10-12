@@ -36,15 +36,22 @@ class NutritionSessionCoordinatorImpl(
 
     private val personalRepository = NutritionRepositoryImpl(settings)
     private val _nutrition = MutableStateFlow<NutritionRepository>(personalRepository)
-    private val _collaborationActivity = MutableSharedFlow<NutritionCollaborationActivity>(extraBufferCapacity = 8)
+    private val _collaborationActivity = MutableSharedFlow<NutritionCollaborationActivity>(extraBufferCapacity = 8, replay = 8)
+    private val _pendingActivities = mutableListOf<NutritionCollaborationActivity>()
     private var activeHouseholdId: String? = null
 
     override val nutrition = _nutrition.asStateFlow()
 
     override fun observeSyncStatus(): Flow<NutritionSyncStatus> = syncEngine.observeStatus()
 
-    override fun observeCollaborationActivity(): Flow<NutritionCollaborationActivity> =
-        _collaborationActivity.asSharedFlow()
+    override fun observeCollaborationActivity(): Flow<NutritionCollaborationActivity> {
+        // Emit any activities that accumulated while no subscriber was present.
+        // With replay=8, the SharedFlow buffers these for the first subscriber.
+        val pending = _pendingActivities.toList()
+        _pendingActivities.clear()
+        pending.forEach { _collaborationActivity.tryEmit(it) }
+        return _collaborationActivity.asSharedFlow()
+    }
 
     override suspend fun activateHousehold(householdId: String) {
         activeHouseholdId = householdId
@@ -64,6 +71,7 @@ class NutritionSessionCoordinatorImpl(
         syncEngine.markIdle()
         diagnostics.activeHouseholdId = null
         activeHouseholdId = null
+        _pendingActivities.clear()
         _nutrition.value = personalRepository
         logger.breadcrumb("nutrition_session_deactivated")
     }
@@ -72,6 +80,9 @@ class NutritionSessionCoordinatorImpl(
         realtimeSync?.stop()
         diagnostics.activeHouseholdId = householdId
         logger.breadcrumb("nutrition_household_activated household_id=$householdId week_key=$weekKey")
+        // A household switch means any pending activities from the previous household
+        // are stale — they belong to a different grocery list.
+        _pendingActivities.clear()
         val repository = OfflineFirstNutritionRepository(
             localStore = NutritionLocalStore(
                 settings = settings,
@@ -82,13 +93,20 @@ class NutritionSessionCoordinatorImpl(
             householdId = householdId,
             weekKey = weekKey,
             remoteEnabled = remoteApi != null,
+            onCollaborationActivity = { activity ->
+                // Always try to emit: with replay=8 the item is buffered for
+                // the first subscriber even when none is currently registered.
+                _collaborationActivity.tryEmit(activity)
+                // Also stash in pending so the replay buffer can be cleared
+                // on household switch (see deactivate/bindRepository).
+                _pendingActivities.add(activity)
+                if (_pendingActivities.size > 8) {
+                    _pendingActivities.removeAt(0)
+                }
+            },
         )
         _nutrition.value = repository
-        repository.refreshFromRemote().forEach { activity ->
-            // A partner's removal seen while this device was offline comes back on
-            // the initial pull, not on a realtime event. The pull emits removals only.
-            _collaborationActivity.tryEmit(activity)
-        }
+        repository.refreshFromRemote()
         if (weekKey == WeekCalendar.currentWeekKey()) {
             val beforeCarry = repository.currentGroceryItems().size
             weekMaintenanceRunner.runForCurrentWeek(

@@ -30,6 +30,12 @@ class OfflineFirstNutritionRepository(
     override val householdId: String,
     override val weekKey: String,
     private val remoteEnabled: Boolean,
+    /**
+     * Called for each collaboration activity detected during `refreshFromRemote`.
+     * The coordinator uses this to emit or stash activities regardless of which
+     * caller invoked the refresh.
+     */
+    private val onCollaborationActivity: ((NutritionCollaborationActivity) -> Unit)? = null,
 ) : NutritionRepository {
 
     private val mutex = Mutex()
@@ -40,10 +46,10 @@ class OfflineFirstNutritionRepository(
 
     override fun observeMealPlan(): Flow<WeeklyMealPlan> = localStore.observeMealPlan()
 
-    override suspend fun refreshFromRemote(): List<NutritionCollaborationActivity> {
+    override suspend fun refreshFromRemote() {
         if (!remoteEnabled) {
             syncEngine.markRemoteUnavailable()
-            return emptyList()
+            return
         }
         // Reminders only make sense relative to a snapshot this device actually
         // held: on a first sync the local "before" is empty, so announcing anything
@@ -70,13 +76,15 @@ class OfflineFirstNutritionRepository(
                 }
             }
         }
-        if (!hadGroceryBaseBeforePull) return emptyList()
-        return pulledChanges.flatMap { change ->
+        if (!hadGroceryBaseBeforePull) return
+        pulledChanges.flatMap { change ->
             NutritionCollaborationActivityDetector.detectGroceryChanges(
                 before = change.before,
                 after = change.after,
                 actorUserId = change.actorUserId,
             ).filter { it.kind == NutritionCollaborationActivityKind.GroceryRemoved }
+        }.forEach { activity ->
+            onCollaborationActivity?.invoke(activity)
         }
     }
 

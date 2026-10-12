@@ -2,7 +2,6 @@ package app.mymultiverse.ammo.domain.repository
 
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
 import app.mymultiverse.ammo.domain.model.nutrition.WeeklyMealPlan
-import app.mymultiverse.ammo.domain.nutrition.NutritionCollaborationActivity
 import kotlinx.coroutines.flow.Flow
 
 interface NutritionRepository {
@@ -11,12 +10,11 @@ interface NutritionRepository {
 
     /**
      * Pulls remote state into local and flushes queued pushes.
-     *
-     * @return collaboration activities observed on this pull (currently only
-     *   [NutritionCollaborationActivityKind.GroceryRemoved], and only when a base
-     *   snapshot existed before the pull). Empty on a first sync or when nothing changed.
+     * Collaboration activities observed on this pull are delivered via the
+     * [OfflineFirstNutritionRepository] activity sink so every caller (Home refresh,
+     * pull-to-refresh, activation) emits with no caller code required.
      */
-    suspend fun refreshFromRemote(): List<NutritionCollaborationActivity>
+    suspend fun refreshFromRemote()
 
     fun observeGroceryItems(): Flow<List<GroceryItem>>
     fun observeAiGroceryItems(): Flow<List<GroceryItem>>

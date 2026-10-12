@@ -40,7 +40,7 @@ class InstrumentedNutritionRepository(
 
     override fun observeMealPlan(): Flow<WeeklyMealPlan> = mealPlan
 
-    override suspend fun refreshFromRemote(): List<NutritionCollaborationActivity> = emptyList()
+    override suspend fun refreshFromRemote() {}
 
     override suspend fun saveGroceryItems(items: List<GroceryItem>) {
         grocery.value = items
