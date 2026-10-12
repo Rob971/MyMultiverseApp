@@ -343,7 +343,7 @@ fun GroceryShoppingScreen(
 
             val index = groceryActiveItemListIndex(
                 canWrite = canWrite,
-                hasSyncBanner = syncStatus != NutritionSyncStatus.Idle,
+                hasSyncBanner = syncStatus.shouldShowOnListScreen(),
                 hasViewerNotice = !canWrite,
                 hasGhostPairing = canWrite && ghostPairingOffer != null,
                 hasShoppingModeToggle = sections.completed.isNotEmpty() && totalCount > 0,
@@ -417,7 +417,7 @@ fun GroceryShoppingScreen(
                 .testTag(GroceryListTestTags.SCROLL_LIST)
 
             val groceryListContent: LazyListScope.() -> Unit = {
-                if (syncStatus != NutritionSyncStatus.Idle) {
+                if (syncStatus.shouldShowOnListScreen()) {
                     item(key = "sync-banner") {
                         NutritionSyncStatusBanner(status = syncStatus)
                     }
@@ -553,7 +553,7 @@ private fun groceryActiveItemListIndex(
 ): Int {
     if (hasEmptyState) return -1
     var index = 1 // to-buy header after week selector (0)
-    if (hasSyncBanner) index++ // sync banner sits between the week selector and the header
+    if (hasSyncBanner) index++ // sync banner is above the week selector
     if (hasViewerNotice) index++
     if (hasGhostPairing) index++
     if (hasShoppingModeToggle) index++
