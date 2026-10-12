@@ -50,6 +50,19 @@ class NutritionWeekMaintenanceRunner(
         val remoteLoadResult = runCatchingCancellable { loadGroceryItems(householdId, previousWeekKey) }
         // If remote fetch fails (network), do not mark maintained — carry will retry on next bind.
         val previousItems = remoteLoadResult.getOrElse { return }
+
+        // S4: claim this (household, week) server-side — at most one device carries.
+        // Must come after the fetch: a failed fetch must not burn the claim.
+        if (remoteApi != null) {
+            val claimed = runCatchingCancellable { remoteApi.claimWeekCarry(householdId, weekKey) }
+                .getOrElse { return }   // network / RLS denial — retry next bind
+            if (!claimed) {
+                // Another device already carried — set local marker so we do not retry.
+                maintenanceStore.setLastMaintainedWeekKey(householdId, weekKey)
+                return
+            }
+        }
+
         val carried = NutritionWeekMaintenance.uncheckedGroceryToCarry(previousItems)
         val merged = NutritionWeekMaintenance.mergeCarriedGrocery(
             carried = carried,

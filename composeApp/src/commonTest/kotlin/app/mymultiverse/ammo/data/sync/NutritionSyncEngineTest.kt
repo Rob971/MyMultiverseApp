@@ -127,6 +127,8 @@ class NutritionSyncEngineTest {
     private object FailingRemote : NutritionRemoteDataSource {
         override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
 
+        override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
+
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) {
             throw IllegalStateException("offline")
         }
@@ -137,6 +139,8 @@ class NutritionSyncEngineTest {
             throw IllegalStateException("offline")
         }
 
+        override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
+
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
 
@@ -145,6 +149,8 @@ class NutritionSyncEngineTest {
         val upserts = mutableListOf<PendingNutritionPush>()
 
         override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
+
+        override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
 
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) {
             upsertCount++
@@ -185,6 +191,8 @@ class NutritionSyncEngineTest {
         private val rows: List<NutritionWeekDataRow>,
     ) : NutritionRemoteDataSource {
         override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = rows
+
+        override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
 
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }

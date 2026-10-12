@@ -104,6 +104,8 @@ private class RecordingHouseholdRemote : NutritionRemoteDataSource {
 
     override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> = emptyList()
 
+    override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
+
     override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) {
         upserts += UpsertCall(householdId, weekKey, dataKind, payload)
     }
@@ -118,6 +120,8 @@ private class StaticHouseholdRemote(
         fetchCalls += householdId to weekKey
         return rows
     }
+
+    override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
 
     override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
 }

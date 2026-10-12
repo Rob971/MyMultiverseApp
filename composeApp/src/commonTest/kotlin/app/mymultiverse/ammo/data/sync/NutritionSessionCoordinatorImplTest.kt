@@ -165,6 +165,8 @@ class NutritionSessionCoordinatorImplTest {
             return emptyList()
         }
 
+        override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
+
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
 
@@ -172,6 +174,8 @@ class NutritionSessionCoordinatorImplTest {
         override suspend fun fetchWeek(householdId: String, weekKey: String): List<NutritionWeekDataRow> {
             throw IllegalStateException("offline")
         }
+
+        override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean = true
 
         override suspend fun upsert(householdId: String, weekKey: String, dataKind: String, payload: String) = Unit
     }
