@@ -80,12 +80,14 @@ class NutritionLocalStore(
     private fun baseKey(dataKind: String): String? = when (dataKind) {
         "grocery" -> NutritionStorageKeys.groceryBase(householdId, weekKey)
         "ai_grocery" -> NutritionStorageKeys.aiGroceryBase(householdId, weekKey)
+        "meal_plan" -> NutritionStorageKeys.mealPlanBase(householdId, weekKey)
         else -> null
     }
 
     private fun versionKey(dataKind: String): String? = when (dataKind) {
         "grocery" -> NutritionStorageKeys.groceryVersion(householdId, weekKey)
         "ai_grocery" -> NutritionStorageKeys.aiGroceryVersion(householdId, weekKey)
+        "meal_plan" -> NutritionStorageKeys.mealPlanVersion(householdId, weekKey)
         else -> null
     }
 

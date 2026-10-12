@@ -33,28 +33,6 @@ class NutritionSyncEngineTest {
     }
 
     @Test
-    fun flushPending_clearsOutboxAfterSuccessfulPush() = runTest {
-        val outbox = NutritionSyncOutbox(MapSettings())
-        outbox.enqueue(
-            PendingNutritionPush(
-                householdId = "household-1",
-                weekKey = "2025-W24",
-                dataKind = "grocery",
-                payload = "payload",
-                enqueuedAtEpochMs = 1L,
-            ),
-        )
-        val remote = RecordingRemote()
-        val engine = NutritionSyncEngine(remote, outbox, TestObservability.logger)
-
-        engine.flushPending("household-1", "2025-W24")
-
-        assertEquals(0, outbox.pendingFor("household-1", "2025-W24").size)
-        assertEquals(1, remote.upsertCount)
-        assertEquals(NutritionSyncStatus.Idle, engine.observeStatus().first())
-    }
-
-    @Test
     fun pushNowOrEnqueue_successClearsStalePendingForSameKind() = runTest {
         val outbox = NutritionSyncOutbox(MapSettings())
         outbox.enqueue(

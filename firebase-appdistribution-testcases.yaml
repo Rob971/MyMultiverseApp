@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 104
+version: 105
 updated: 2026-10-12
 
 summary: |
@@ -1381,4 +1381,16 @@ testcases:
     expected:
       - On both A (after refresh) and B, the list shows both Apples and Pasta.
       - Neither item appears on its own or duplicated.
+      - The sync status on both devices shows idle with no pending changes.
+  - id: meal-plan-concurrent-cell-cas
+    title: Two devices editing different meal cells at the same moment keep both (v105)
+    steps:
+      - Two testers (A and B) in the same household open the meal plan tab and see the same week with empty cells.
+      - A sets Monday lunch (e.g. 'Lentil soup') — it appears immediately.
+      - While A is still online, B sets Friday dinner (e.g. 'Pizza') — it appears on B immediately.
+      - On A, pull to refresh on the meal plan tab.
+      - Optionally: A sets Monday lunch to something else while B is viewing — the value last saved wins on both.
+    expected:
+      - On both A (after refresh) and B, Monday lunch shows A's edit and Friday dinner shows B's edit — no cell is lost.
+      - Editing the same cell resolves to the value of the device that saved last (same cell never shows two values).
       - The sync status on both devices shows idle with no pending changes.
