@@ -4,6 +4,7 @@ import app.mymultiverse.ammo.data.local.nutrition.NutritionSyncOutbox
 import app.mymultiverse.ammo.data.local.nutrition.PendingNutritionPush
 import app.mymultiverse.ammo.data.observability.AppLogger
 import app.mymultiverse.ammo.data.remote.nutrition.NutritionRemoteDataSource
+import app.mymultiverse.ammo.data.remote.nutrition.PushResult
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.ammo.domain.sync.NutritionSyncStatus
 import kotlinx.coroutines.CancellationException
@@ -58,6 +59,62 @@ class NutritionSyncEngine(
         return true
     }
 
+    /**
+     * Compare-and-swap push: updates the row only if the stored version matches.
+     * Returns the server result. On success the outbox entry is removed.
+     * On failure (Conflict or exception) the outbox is updated (existing entry
+     * updated with the new payload, or a new entry enqueued).
+     *
+     * This is the single-attempt primitive. Callers implement the retry loop.
+     */
+    suspend fun pushCAS(
+        householdId: String,
+        weekKey: String,
+        dataKind: String,
+        payload: String,
+        expectedVersion: Long?,
+    ): PushResult {
+        val api = remote ?: run {
+            _status.value = NutritionSyncStatus.RemoteUnavailable
+            return PushResult.failed()
+        }
+        return try {
+            val result = api.pushIfVersion(householdId, weekKey, dataKind, payload, expectedVersion)
+            if (result.ok) {
+                outbox.removeFor(householdId, weekKey, dataKind)
+                logger.breadcrumb("sync_push_cas_ok kind=$dataKind week_key=$weekKey ver=$expectedVersion")
+                refreshStatus(householdId, weekKey)
+            } else {
+                logger.breadcrumb("sync_push_cas_conflict kind=$dataKind week_key=$weekKey ver=$expectedVersion")
+            }
+            result
+        } catch (e: CancellationException) {
+            throw e
+        } catch (error: Exception) {
+            logger.recordError(
+                tag = TAG,
+                message = "push_cas_failed_enqueue",
+                throwable = error,
+                context = syncContext(householdId, weekKey, "push_cas", dataKind),
+            )
+            enqueue(householdId, weekKey, dataKind, payload)
+            refreshStatus(householdId, weekKey)
+            PushResult.failed()
+        }
+    }
+
+    private suspend fun enqueue(householdId: String, weekKey: String, dataKind: String, payload: String) {
+        outbox.enqueue(
+            PendingNutritionPush(
+                householdId = householdId,
+                weekKey = weekKey,
+                dataKind = dataKind,
+                payload = payload,
+                enqueuedAtEpochMs = Clock.System.now().toEpochMilliseconds(),
+            ),
+        )
+    }
+
     suspend fun pushNowOrEnqueue(
         householdId: String,
         weekKey: String,
@@ -83,15 +140,7 @@ class NutritionSyncEngine(
                 throwable = error,
                 context = syncContext(householdId, weekKey, "push", dataKind),
             )
-            outbox.enqueue(
-                PendingNutritionPush(
-                    householdId = householdId,
-                    weekKey = weekKey,
-                    dataKind = dataKind,
-                    payload = payload,
-                    enqueuedAtEpochMs = Clock.System.now().toEpochMilliseconds(),
-                ),
-            )
+            enqueue(householdId, weekKey, dataKind, payload)
             refreshStatus(householdId, weekKey)
             return false
         }
@@ -145,6 +194,36 @@ class NutritionSyncEngine(
      * given household/week.  Used by [OfflineFirstNutritionRepository.applyRemoteWeekData]
      * to skip a realtime overwrite while the user has pending local edits.
      */
+    /**
+     * Fetches a single nutrition row from the remote by dataKind.
+     * Returns null if the row does not exist on the server.
+     */
+    suspend fun fetchRow(
+        householdId: String,
+        weekKey: String,
+        dataKind: String,
+    ): NutritionWeekDataRow? {
+        val api = remote ?: return null
+        return try {
+            api.fetchWeek(householdId, weekKey)
+                .firstOrNull { it.dataKind == dataKind }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    suspend fun enqueuePending(
+        householdId: String,
+        weekKey: String,
+        dataKind: String,
+        payload: String,
+    ) {
+        enqueue(householdId, weekKey, dataKind, payload)
+        refreshStatus(householdId, weekKey)
+    }
+
     fun hasPending(householdId: String, weekKey: String, dataKind: String): Boolean =
         outbox.pendingFor(householdId, weekKey).any { it.dataKind == dataKind }
 

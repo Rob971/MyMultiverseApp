@@ -1,7 +1,7 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 103
+version: 104
 updated: 2026-10-12
 
 summary: |
@@ -1371,3 +1371,14 @@ testcases:
       - B's list does NOT re-add the item A deleted (no second carry from the returning device).
       - The item appears on neither A nor B after the delete, and there are no duplicates.
       - The sync status on B returns to idle with no pending changes.
+  - id: grocery-concurrent-add-cas
+    title: Two devices adding different items at the same moment keep both (v104)
+    steps:
+      - Two testers (A and B) in the same household open Groceries and see an empty list.
+      - A adds a new item ('Apples') — it appears on the list immediately.
+      - While A is still online, B adds a new item ('Pasta') — it appears on B's list immediately.
+      - On A, pull to refresh on Groceries.
+    expected:
+      - On both A (after refresh) and B, the list shows both Apples and Pasta.
+      - Neither item appears on its own or duplicated.
+      - The sync status on both devices shows idle with no pending changes.

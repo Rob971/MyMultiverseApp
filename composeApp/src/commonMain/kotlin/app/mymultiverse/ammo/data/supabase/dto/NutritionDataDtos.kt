@@ -11,4 +11,5 @@ data class NutritionWeekDataRow(
     val payload: String,
     @SerialName("updated_at") val updatedAt: String? = null,
     @SerialName("updated_by") val updatedBy: String? = null,
+    @SerialName("version") val version: Long? = null,
 )

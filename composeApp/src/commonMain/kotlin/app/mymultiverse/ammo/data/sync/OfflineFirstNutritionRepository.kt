@@ -1,6 +1,7 @@
 package app.mymultiverse.ammo.data.sync
 
 import app.mymultiverse.ammo.data.local.nutrition.NutritionLocalStore
+import app.mymultiverse.ammo.data.remote.nutrition.PushResult
 import app.mymultiverse.ammo.data.repository.NutritionStorageCodec
 import app.mymultiverse.ammo.data.supabase.dto.NutritionWeekDataRow
 import app.mymultiverse.ammo.domain.model.nutrition.GroceryItem
@@ -44,8 +45,13 @@ class OfflineFirstNutritionRepository(
         val pulled = syncEngine.pullRemote(householdId, weekKey) { applyRemoteWeekData(it) }
         if (pulled) {
             mutex.withLock {
+                // Flush grocery/ai_grocery pending items through CAS loop.
+                // Non-grocery (meal_plan) stays on the blind upsert path.
                 syncEngine.flushPending(householdId, weekKey)
                     .filter { it.dataKind == "grocery" || it.dataKind == "ai_grocery" }
+                    .forEach { flushPendingCAS(it.dataKind, it.payload) }
+                syncEngine.flushPending(householdId, weekKey)
+                    .filter { it.dataKind != "grocery" && it.dataKind != "ai_grocery" }
                     .forEach { localStore.markSynced(it.dataKind, it.payload) }
             }
         }
@@ -85,13 +91,10 @@ class OfflineFirstNutritionRepository(
             GroceryMerge.merge(baseItems, localItems, remoteItems)
         }
         saveLocalItems(dataKind, merged)
-        localStore.markSynced(dataKind, row.payload)
+        localStore.markSynced(dataKind, row.payload, row.version)
         if (merged != remoteItems) {
             if (remoteEnabled) {
-                val payload = localStore.encodeGrocery(merged)
-                if (syncEngine.pushNowOrEnqueue(householdId, weekKey, dataKind, payload)) {
-                    localStore.markSynced(dataKind, payload)
-                }
+                pushWithCASLoop(dataKind, merged)
             }
         } else {
             syncEngine.discardPending(householdId, weekKey, dataKind)
@@ -123,11 +126,67 @@ class OfflineFirstNutritionRepository(
 
     private suspend fun pushList(kind: String, items: List<GroceryItem>) {
         mutex.withLock {
-            val payload = localStore.encodeGrocery(items)
-            if (syncEngine.pushNowOrEnqueue(householdId, weekKey, kind, payload)) {
-                localStore.markSynced(kind, payload)
-            }
+            pushWithCASLoop(kind, items)
         }
+    }
+
+    /**
+     * Flushes a pending outbox item through the CAS+merge loop.
+     * Called by [refreshFromRemote] for grocery/ai_grocery items.
+     */
+    private suspend fun flushPendingCAS(kind: String, payload: String) {
+        val items = NutritionStorageCodec.decodeGrocery(payload)
+        pushWithCASLoop(kind, items)
+    }
+
+    /**
+     * Compare-and-swap write loop with bounded retry.
+     *
+     * Tries up to 3 pushes with the stored version. On Conflict, fetches the
+     * current server state, 3-way merges, updates local store, and retries.
+     * After 3 attempts the payload is enqueued to the outbox as pending.
+     */
+    private suspend fun pushWithCASLoop(kind: String, items: List<GroceryItem>) {
+        var version = localStore.lastSyncedVersion(kind)
+        var currentPayload = localStore.encodeGrocery(items)
+        for (attempt in 1..3) {
+            val result = syncEngine.pushCAS(
+                householdId, weekKey, kind, currentPayload, version,
+            )
+            if (result.ok) {
+                localStore.markSynced(kind, currentPayload, result.newVersion)
+                return
+            }
+            if (result.failed) {
+                // Network/transient error — enqueue and stop immediately
+                syncEngine.enqueuePending(householdId, weekKey, kind, currentPayload)
+                return
+            }
+            // Conflict: fetch current server state, merge, retry
+            val remoteRow = syncEngine.fetchRow(householdId, weekKey, kind) ?: break
+            // Capability fallback: if the server row has no version column
+            // (migration not deployed), use a legacy blind upsert.
+            if (remoteRow.version == null) {
+                if (syncEngine.pushNowOrEnqueue(householdId, weekKey, kind, currentPayload)) {
+                    localStore.markSynced(kind, currentPayload)
+                }
+                return
+            }
+            val remoteItems = NutritionStorageCodec.decodeGrocery(remoteRow.payload)
+            val localItems = currentItems(kind)
+            val basePayload = localStore.lastSyncedPayload(kind)
+            val baseItems = if (basePayload != null) {
+                NutritionStorageCodec.decodeGrocery(basePayload)
+            } else {
+                emptyList()
+            }
+            val merged = GroceryMerge.merge(baseItems, localItems, remoteItems)
+            saveLocalItems(kind, merged)
+            currentPayload = localStore.encodeGrocery(merged)
+            version = remoteRow.version
+        }
+        // Bounded retry exhausted — enqueue and leave pending
+        syncEngine.enqueuePending(householdId, weekKey, kind, currentPayload)
     }
 
     private fun currentItems(dataKind: String): List<GroceryItem> = when (dataKind) {

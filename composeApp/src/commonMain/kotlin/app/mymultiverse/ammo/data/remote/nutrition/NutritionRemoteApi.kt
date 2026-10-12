@@ -53,6 +53,65 @@ class NutritionRemoteApi(
             }
     }
 
+    override suspend fun pushIfVersion(
+        householdId: String,
+        weekKey: String,
+        dataKind: String,
+        payload: String,
+        expectedVersion: Long?,
+    ): PushResult {
+        if (expectedVersion == null) {
+            // First write: INSERT. 23505 = another device already created the row.
+            val userId = requireAuthenticatedUserId()
+            ensureProfile(userId)
+            return try {
+                client.postgrest["nutrition_household_week_data"]
+                    .insert(
+                        NutritionWeekDataRow(
+                            householdId = householdId,
+                            weekKey = weekKey,
+                            dataKind = dataKind,
+                            payload = payload,
+                            updatedAt = Clock.System.now().toString(),
+                            updatedBy = userId,
+                        ),
+                    ) {
+                        select(Columns.raw("version"))
+                    }
+                    .decodeSingleOrNull<VersionRow>()
+                // insert succeeded; version = 1 (column default)
+                PushResult.ok(1)
+            } catch (e: PostgrestRestException) {
+                if (e.code == "23505") PushResult.conflict()
+                else throw e
+            }
+        }
+        // Conditional UPDATE: only if version matches what the client last saw.
+        val userId = requireAuthenticatedUserId()
+        ensureProfile(userId)
+        val result = client.postgrest["nutrition_household_week_data"]
+            .update(
+                NutritionWeekDataRow(
+                    householdId = householdId,
+                    weekKey = weekKey,
+                    dataKind = dataKind,
+                    payload = payload,
+                    updatedAt = Clock.System.now().toString(),
+                    updatedBy = userId,
+                ),
+            ) {
+                filter {
+                    eq("household_id", householdId)
+                    eq("week_key", weekKey)
+                    eq("data_kind", dataKind)
+                    eq("version", expectedVersion.toString())
+                }
+                select(Columns.raw("version"))
+            }
+            .decodeSingleOrNull<VersionRow>()
+        return if (result != null) PushResult.ok(result.version) else PushResult.conflict()
+    }
+
     override suspend fun claimWeekCarry(householdId: String, weekKey: String): Boolean {
         val userId = requireAuthenticatedUserId()
         ensureProfile(userId)
@@ -71,6 +130,15 @@ class NutritionRemoteApi(
     internal data class CarryClaim(
         @SerialName("household_id") val householdId: String,
         @SerialName("week_key") val weekKey: String,
+    )
+
+    /**
+     * PostgREST response when selecting only the version column.
+     * The returned JSON is [{"version": N}].
+     */
+    @Serializable
+    internal data class VersionRow(
+        val version: Long,
     )
 
     private suspend fun requireAuthenticatedUserId(): String {
