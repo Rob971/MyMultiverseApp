@@ -45,19 +45,19 @@ class OfflineFirstNutritionRepository(
         val pulled = syncEngine.pullRemote(householdId, weekKey) { applyRemoteWeekData(it) }
         if (pulled) {
             mutex.withLock {
-                // After pullRemote the merge has already incorporated local changes
-                // into the merged result. For existing rows, discard the stale
-                // pending outbox entry. For rows not on the server, flush through
-                // CAS loop to create them.
+                // After pullRemote the merge has already incorporated local
+                // offline changes into the local list. For rows that exist on
+                // the server, push the CURRENT local items (merged result)
+                // through CAS to keep the server in sync. Remove the outbox
+                // entry only on CAS success. For rows not on the server, CAS
+                // insert the pending payload.
                 syncEngine.peekPending(householdId, weekKey).forEach { item ->
                     if (item.dataKind == "grocery" || item.dataKind == "ai_grocery") {
                         val remoteRow = syncEngine.fetchRow(householdId, weekKey, item.dataKind)
                         if (remoteRow == null) {
-                            // Row doesn't exist on server — push it via CAS
                             flushPendingCAS(item.dataKind, item.payload)
                         } else {
-                            // Row exists — merge already incorporated local changes
-                            syncEngine.discardPending(householdId, weekKey, item.dataKind)
+                            pushWithCASLoop(item.dataKind, currentItems(item.dataKind))
                         }
                     }
                 }
