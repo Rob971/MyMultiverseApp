@@ -21,9 +21,12 @@ job=android-instrumented-tests` (~8 min, one dispatch per ref — the
 concurrency group cancels the earlier one). `am instrument` exits 0 even when
 the process crashes, so the job counts only when it reports started=N passed=N.
 
-MERGING TO main SHIPS. Every push to main runs `distribute-alpha`, sending a
-debug APK to Firebase App Distribution testers once Android CI and the UI
-tests pass. Any doc claiming "no auto-release on merge" is wrong. Supabase
+MERGING TO main SHIPS. Every push to main that touches an `android_ci` path
+(ci-changes job in kmp-ci.yml; docs- or supabase-only pushes skip Android CI)
+runs `distribute-alpha`, sending a debug APK to Firebase App Distribution
+testers once Android CI and the UI tests pass. android-ci builds that APK
+(stamped alpha, alpha key) and distribute-alpha only uploads it. Any doc
+claiming "no auto-release on merge" is wrong. Supabase
 Deploy runs on main too, so after a merge read `gh run list --commit <sha>`
 for BOTH workflows before calling anything shipped.
 

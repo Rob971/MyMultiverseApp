@@ -118,6 +118,7 @@ jobs:
     needs: ci-gate
     if: needs.ci-gate.outputs.run == 'true'
     outputs:
+      android_ci: ${{ steps.outputs.outputs.android_ci }}
       android_instrumented: ${{ steps.outputs.outputs.android_instrumented }}
     steps:
       - name: Checkout
@@ -131,6 +132,18 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
+            android_ci:
+              - 'composeApp/**'
+              - 'androidApp/**'
+              - 'gradle/**'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+              - 'gradle.properties'
+              - '.github/workflows/kmp-ci.yml'
+              - '.github/actions/**'
+              - 'scripts/verify-android-apk-entrypoint.sh'
+              - 'scripts/print-android-apk-fingerprint.sh'
+              - 'firebase-appdistribution-testcases.yaml'
             android_instrumented:
               - 'composeApp/**'
               - 'androidApp/**'
@@ -145,9 +158,12 @@ jobs:
       - name: Publish path filter outputs
         id: outputs
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          # Tag pushes build unconditionally: distribute-production needs android-ci.
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" || "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "android_ci=true" >> "$GITHUB_OUTPUT"
             echo "android_instrumented=true" >> "$GITHUB_OUTPUT"
           else
+            echo "android_ci=${{ steps.filter.outputs.android_ci }}" >> "$GITHUB_OUTPUT"
             echo "android_instrumented=${{ steps.filter.outputs.android_instrumented }}" >> "$GITHUB_OUTPUT"
           fi
 
@@ -219,14 +235,18 @@ jobs:
   android-ci:
     name: Android CI
     runs-on: ubuntu-latest
-    needs: ci-gate
+    needs:
+      - ci-gate
+      - ci-changes
     timeout-minutes: 10
     # Every distribute-* job requires android-ci to have succeeded, so a dispatch that
     # asks for one must build first. Without these three entries the dispatch "succeeds"
     # with android-ci skipped and nothing is ever uploaded — which is why no release has
     # reached Play by dispatch (proved by run 35445436350 on v1.6.12).
+    # Path filter saves quota: android-ci skips when no Android files changed.
     if: >-
       ${{ needs.ci-gate.outputs.run == 'true' &&
+          needs.ci-changes.outputs.android_ci == 'true' &&
           (github.event_name == 'push' ||
           github.event_name == 'pull_request' ||
           (github.event_name == 'workflow_dispatch' &&
@@ -268,9 +288,41 @@ jobs:
           supabase-url: ${{ secrets.SUPABASE_URL }}
           supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
 
-      - name: Run Android unit tests and build test APKs
+      # Unit tests run BEFORE the alpha stamp below: ReleaseChannel.fromVersionName reads the
+      # stamped VERSION_NAME, and HomeScreenModelTest.checkForUpdates_delegatesToAppStoreLauncher
+      # asserts the Production channel, so stamping first fails Android CI on every main push.
+      - name: Run Android unit tests
+        run: ./gradlew :composeApp:testDebugUnitTest ${{ env.GRADLE_BUILD_ARGS }}
+
+      # Alpha prerelease stamp and signing — only on main/master or when distribute-alpha
+      # is dispatched. This lets distribute-alpha reuse the APK instead of rebuilding it.
+      - name: Stamp alpha prerelease label (for distribute-alpha reuse)
+        if: >
+          github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' ||
+          (github.event_name == 'workflow_dispatch' &&
+            (github.event.inputs.job == 'all' || github.event.inputs.job == 'distribute-alpha'))
+        run: |
+          BUILD="${GITHUB_RUN_NUMBER:-0}"
+          if grep -q '^version\.prerelease=' gradle/app-version.properties; then
+            sed -i "s|^version\.prerelease=.*|version.prerelease=alpha.${BUILD}|" gradle/app-version.properties
+          else
+            echo "version.prerelease=alpha.${BUILD}" >> gradle/app-version.properties
+          fi
+          VERSION_NAME="$(grep '^version\.name=' gradle/app-version.properties | cut -d= -f2-)"
+          echo "Alpha build: ${VERSION_NAME}-alpha.${BUILD}"
+
+      - name: Install alpha signing key (for distribute-alpha reuse)
+        if: >
+          github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' ||
+          (github.event_name == 'workflow_dispatch' &&
+            (github.event.inputs.job == 'all' || github.event.inputs.job == 'distribute-alpha'))
+        uses: ./.github/actions/alpha-keystore-setup
+        with:
+          keystore-base64: ${{ secrets.AMMO_ALPHA_KEYSTORE_BASE64 }}
+
+      - name: Build debug and test APKs
         run: >-
-          ./gradlew :composeApp:testDebugUnitTest :androidApp:assembleDebug
+          ./gradlew :androidApp:assembleDebug
           :androidApp:assembleDebugAndroidTest ${{ env.GRADLE_BUILD_ARGS }}
 
       - name: Verify launcher activity is packaged in debug APK
@@ -337,7 +389,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-api-34-x86_64-${{ hashFiles('.github/workflows/kmp-ci.yml', 'androidApp/build.gradle.kts', 'composeApp/build.gradle.kts') }}
+          key: avd-api-34-x86_64-${{ hashFiles('androidApp/build.gradle.kts', 'composeApp/build.gradle.kts') }}
           restore-keys: |
             avd-api-34-x86_64-
 
@@ -595,11 +647,13 @@ jobs:
   # ALPHA TRACK — automatic Firebase App Distribution on every green main push.
   # No version bump, no git commit; the github.run_number surfaces in release notes.
   # Also runnable manually: workflow_dispatch → job=distribute-alpha.
+  # REUSES the debug APK built by android-ci (which stamps prerelease and uses the
+  # alpha keystore when on main), saving ~2.8 min per run. No Gradle build needed.
   # ─────────────────────────────────────────────────────────────────────────
   distribute-alpha:
     name: Alpha — Firebase App Distribution
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     needs:
       - ci-gate
       - android-ci
@@ -623,32 +677,30 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Set up JDK 25
-        uses: actions/setup-java@v4
+      - name: Download alpha-signed debug APK from android-ci
+        uses: actions/download-artifact@v4
         with:
-          distribution: temurin
-          java-version: "25"
+          name: androidApp-debug-apk
+          path: apk-from-ci
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-read-only: true
-          gradle-home-cache-cleanup: false
+      - name: Verify APK exists
+        run: |
+          APK=$(find apk-from-ci -name '*.apk' | head -n 1)
+          if [[ -z "$APK" ]]; then
+            echo "::error::No APK found in downloaded artifact — android-ci may not have produced one."
+            exit 1
+          fi
+          echo "APK=$APK" >> "$GITHUB_ENV"
+          echo "Using prebuilt APK: $APK"
 
-      - name: Android CI setup
-        uses: ./.github/actions/android-ci-setup
-        with:
-          supabase-url: ${{ secrets.SUPABASE_URL }}
-          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
-          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      - name: Verify launcher activity in debug APK
+        run: |
+          chmod +x ./scripts/verify-android-apk-entrypoint.sh
+          ./scripts/verify-android-apk-entrypoint.sh "${{ env.APK }}"
 
-      - name: Require Supabase secrets
-        uses: ./.github/actions/require-supabase-secrets
-        with:
-          supabase-url: ${{ secrets.SUPABASE_URL }}
-          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
-
-      - name: Stamp alpha prerelease label (in-memory, no git commit)
+      # firebase-distribute derives the release-notes version from the working tree's
+      # gradle/app-version.properties, which this fresh checkout lacks the stamp for.
+      - name: Stamp alpha prerelease label (release notes only, in-memory)
         run: |
           BUILD="${GITHUB_RUN_NUMBER:-0}"
           if grep -q '^version\.prerelease=' gradle/app-version.properties; then
@@ -656,21 +708,6 @@ jobs:
           else
             echo "version.prerelease=alpha.${BUILD}" >> gradle/app-version.properties
           fi
-          VERSION_NAME="$(grep '^version\.name=' gradle/app-version.properties | cut -d= -f2-)"
-          echo "Alpha build: ${VERSION_NAME}-alpha.${BUILD}"
-
-      - name: Install alpha signing key
-        uses: ./.github/actions/alpha-keystore-setup
-        with:
-          keystore-base64: ${{ secrets.AMMO_ALPHA_KEYSTORE_BASE64 }}
-
-      - name: Build debug APK (alpha track)
-        run: ./gradlew :androidApp:assembleDebug ${{ env.GRADLE_BUILD_ARGS }}
-
-      - name: Verify launcher activity in debug APK
-        run: |
-          chmod +x ./scripts/verify-android-apk-entrypoint.sh
-          ./scripts/verify-android-apk-entrypoint.sh androidApp/build/outputs/apk/debug/androidApp-debug.apk
 
       - name: Verify alpha APK signing fingerprint
         shell: bash
@@ -682,7 +719,7 @@ jobs:
             exit 1
           fi
           chmod +x ./scripts/print-android-apk-fingerprint.sh
-          FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh androidApp/build/outputs/apk/debug/androidApp-debug.apk)"
+          FINGERPRINT="$(./scripts/print-android-apk-fingerprint.sh "${{ env.APK }}")"
           if [[ "${FINGERPRINT^^}" != "${ALPHA_CERT_SHA256^^}" ]]; then
             echo "::error::alpha APK signing certificate ${FINGERPRINT} does not match ALPHA_CERT_SHA256 — the signing key changed; this build must not reach testers."
             exit 1
@@ -710,7 +747,7 @@ jobs:
       - name: Distribute to Firebase App Distribution (alpha group)
         uses: ./.github/actions/firebase-distribute
         with:
-          apk-path: androidApp/build/outputs/apk/debug/androidApp-debug.apk
+          apk-path: ${{ env.APK }}
           firebase-app-id: ${{ env.FIREBASE_APP_ID }}
           firebase-project-id: ${{ env.FIREBASE_PROJECT_ID }}
           firebase-tools-version: ${{ env.FIREBASE_TOOLS_VERSION }}
