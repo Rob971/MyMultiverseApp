@@ -608,8 +608,6 @@ jobs:
           firebase-service-account-json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           firebase-testers: ${{ secrets.FIREBASE_TESTERS }}
           firebase-groups: ${{ secrets.FIREBASE_GROUPS }}
-          github-ref-name: ${{ github.ref_name }}
-          github-sha: ${{ github.sha }}
 
       - name: Fetch, merge latest main, commit version bump, tag, and push
         env:
@@ -754,8 +752,6 @@ jobs:
           firebase-service-account-json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           firebase-testers: ${{ secrets.FIREBASE_ALPHA_TESTERS }}
           firebase-groups: ${{ secrets.FIREBASE_ALPHA_GROUPS }}
-          github-ref-name: ${{ github.ref_name }}
-          github-sha: ${{ github.sha }}
 
   # ─────────────────────────────────────────────────────────────────────────
   play-store-bundle:
