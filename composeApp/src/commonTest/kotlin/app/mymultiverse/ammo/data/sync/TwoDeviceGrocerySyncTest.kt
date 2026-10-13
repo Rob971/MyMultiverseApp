@@ -873,4 +873,21 @@ class TwoDeviceGrocerySyncTest {
         assertTrue(collectedActivities.isEmpty(), "a first sync must not announce the whole list")
         assertEquals(setOf("a", "b", "c"), a.repository.currentGroceryItems().map { it.id }.toSet())
     }
+
+    // Guards: the removal detector diffs against the LOCAL before-snapshot; diffing against the remote list would announce the user's own removal.
+    @Test
+    fun `S6 own offline removal is not announced when the device comes back online`() = runTest {
+        val remote = FakeRemoteDataSource()
+        val activities = mutableListOf<NutritionCollaborationActivity>()
+        val a = device(remote = remote, onCollaborationActivity = { activities += it })
+        a.seedRemote(listOf(item("x"), item("y")), remote)
+        remote.offline = true
+        a.repository.saveGroceryItems(listOf(item("y"))) // A removes x while offline
+        remote.offline = false
+
+        a.repository.refreshFromRemote()
+
+        assertTrue(activities.isEmpty(), "a device must not be told about its own offline removal: $activities")
+        assertRemoteItems(remote, listOf("y"))
+    }
 }
