@@ -1,8 +1,8 @@
 # Manual QA checklist for Firebase App Distribution testers.
 # Single-household model: shared nutrition (grocery + meal plan) for 2+ members.
 
-version: 106
-updated: 2026-10-12
+version: 107
+updated: 2026-11-02
 
 summary: |
   Verify auth, household members on Home, nutrition hub (grocery shopping list and weekly meal plan),
@@ -759,6 +759,7 @@ testcases:
     expected:
       - Grocery screen shows week label, empty state or existing items, and add field (sticky bottom bar on phone; right side panel when shortest width >= 600dp).
       - Keyboard does not cover the input when typing.
+      - From the Grocery tab (bottom tab bar visible), tapping the add field puts the input bar directly on top of the keyboard, with no empty band between them.
 
   - id: grocery-crud
     title: Add, check off, edit, reorder, and delete grocery items
