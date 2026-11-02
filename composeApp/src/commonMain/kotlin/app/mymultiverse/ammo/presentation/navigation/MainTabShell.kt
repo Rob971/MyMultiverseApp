@@ -1,6 +1,7 @@
 package app.mymultiverse.ammo.presentation.navigation
 
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.NavigationBar
@@ -106,7 +107,9 @@ fun MainTabShell(
                 }
             },
         ) { padding ->
-            content(Modifier.padding(padding))
+            // Consume what the tab bar reserves so nested imePadding()/navigationBarsPadding()
+            // add only the rest; otherwise the tab bar is counted twice above the keyboard.
+            content(Modifier.padding(padding).consumeWindowInsets(padding))
         }
     }
 }
